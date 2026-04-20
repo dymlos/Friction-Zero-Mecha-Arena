@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/match_controller.gd" id="1_controller"]
+[ext_resource type="Resource" path="res://data/config/default_match_config.tres" id="2_config"]
+
+[node name="MatchController" type="Node"]
+script = ExtResource("1_controller")
+match_config = ExtResource("2_config")

@@ -1,0 +1,42 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/main/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/arenas/arena_blockout.tscn" id="2_arena"]
+[ext_resource type="PackedScene" path="res://scenes/robots/robot_base.tscn" id="3_robot"]
+[ext_resource type="PackedScene" path="res://scenes/systems/match_controller.tscn" id="4_controller"]
+[ext_resource type="PackedScene" path="res://scenes/ui/match_hud.tscn" id="5_hud"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="ArenaRoot" type="Node3D" parent="."]
+
+[node name="ArenaBlockout" parent="ArenaRoot" instance=ExtResource("2_arena")]
+
+[node name="RobotRoot" type="Node3D" parent="."]
+
+[node name="PlayerOneRobot" parent="RobotRoot" instance=ExtResource("3_robot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.8, 0)
+robot_id = 1
+display_name = "Player 1"
+
+[node name="PlayerTwoRobot" parent="RobotRoot" instance=ExtResource("3_robot")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 4, 0.8, 0)
+robot_id = 2
+display_name = "Player 2"
+
+[node name="Systems" type="Node" parent="."]
+
+[node name="MatchController" parent="Systems" instance=ExtResource("4_controller")]
+
+[node name="UI" type="Node" parent="."]
+
+[node name="MatchHud" parent="UI" instance=ExtResource("5_hud")]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 15, 14)
+current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 8, 0)
+light_energy = 2.0

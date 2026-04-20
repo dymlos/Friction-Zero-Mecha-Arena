@@ -1,0 +1,68 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/robots/robot_base.gd" id="1_robot"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_body"]
+radius = 0.45
+height = 1.4
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
+radius = 0.45
+height = 1.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+size = Vector3(0.25, 0.25, 0.85)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+size = Vector3(0.28, 0.28, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="Material_body"]
+albedo_color = Color(0.16, 0.45, 0.55, 1)
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="Material_parts"]
+albedo_color = Color(0.84, 0.85, 0.78, 1)
+roughness = 0.65
+
+[sub_resource type="StandardMaterial3D" id="Material_front"]
+albedo_color = Color(0.95, 0.78, 0.18, 1)
+emission_enabled = true
+emission = Color(0.95, 0.55, 0.1, 1)
+emission_energy_multiplier = 0.25
+
+[node name="RobotBase" type="CharacterBody3D"]
+script = ExtResource("1_robot")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape_body")
+
+[node name="BodyVisual" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_body")
+material_override = SubResource("Material_body")
+
+[node name="FacingMarker" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, 0, 0, 0.12, 0, 0, 0, 0.18, 0, 0.58, -0.42)
+mesh = SubResource("BoxMesh_arm")
+material_override = SubResource("Material_front")
+
+[node name="ModularParts" type="Node3D" parent="."]
+
+[node name="LeftArm" type="MeshInstance3D" parent="ModularParts"]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, -0.48, 0, -0.2)
+mesh = SubResource("BoxMesh_arm")
+material_override = SubResource("Material_parts")
+
+[node name="RightArm" type="MeshInstance3D" parent="ModularParts"]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0.48, 0, -0.2)
+mesh = SubResource("BoxMesh_arm")
+material_override = SubResource("Material_parts")
+
+[node name="LeftLeg" type="MeshInstance3D" parent="ModularParts"]
+transform = Transform3D(0.85, 0, 0, 0, 0.85, 0, 0, 0, 0.85, -0.28, 0, 0.55)
+mesh = SubResource("BoxMesh_leg")
+material_override = SubResource("Material_parts")
+
+[node name="RightLeg" type="MeshInstance3D" parent="ModularParts"]
+transform = Transform3D(0.85, 0, 0, 0, 0.85, 0, 0, 0, 0.85, 0.28, 0, 0.55)
+mesh = SubResource("BoxMesh_leg")
+material_override = SubResource("Material_parts")

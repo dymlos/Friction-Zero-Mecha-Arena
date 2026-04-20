@@ -1,0 +1,68 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/arenas/arena_base.gd" id="1_arena"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_platform"]
+size = Vector3(24, 0.6, 16)
+
+[sub_resource type="BoxShape3D" id="BoxShape_platform"]
+size = Vector3(24, 0.6, 16)
+
+[sub_resource type="StandardMaterial3D" id="Material_platform"]
+albedo_color = Color(0.26, 0.28, 0.3, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_edge_marker"]
+size = Vector3(1, 0.08, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_edge"]
+albedo_color = Color(0.9, 0.2, 0.16, 1)
+emission_enabled = true
+emission = Color(0.9, 0.1, 0.06, 1)
+emission_energy_multiplier = 0.35
+
+[node name="ArenaBlockout" type="Node3D"]
+script = ExtResource("1_arena")
+
+[node name="Platform" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Platform"]
+shape = SubResource("BoxShape_platform")
+
+[node name="PlatformVisual" type="MeshInstance3D" parent="Platform"]
+mesh = SubResource("BoxMesh_platform")
+material_override = SubResource("Material_platform")
+
+[node name="EdgeMarkers" type="Node3D" parent="."]
+
+[node name="NorthEdge" type="MeshInstance3D" parent="EdgeMarkers"]
+transform = Transform3D(24, 0, 0, 0, 1, 0, 0, 0, 0.14, 0, 0.34, -8)
+mesh = SubResource("BoxMesh_edge_marker")
+material_override = SubResource("Material_edge")
+
+[node name="SouthEdge" type="MeshInstance3D" parent="EdgeMarkers"]
+transform = Transform3D(24, 0, 0, 0, 1, 0, 0, 0, 0.14, 0, 0.34, 8)
+mesh = SubResource("BoxMesh_edge_marker")
+material_override = SubResource("Material_edge")
+
+[node name="WestEdge" type="MeshInstance3D" parent="EdgeMarkers"]
+transform = Transform3D(0.14, 0, 0, 0, 1, 0, 0, 0, 16, -12, 0.34, 0)
+mesh = SubResource("BoxMesh_edge_marker")
+material_override = SubResource("Material_edge")
+
+[node name="EastEdge" type="MeshInstance3D" parent="EdgeMarkers"]
+transform = Transform3D(0.14, 0, 0, 0, 1, 0, 0, 0, 16, 12, 0.34, 0)
+mesh = SubResource("BoxMesh_edge_marker")
+material_override = SubResource("Material_edge")
+
+[node name="SpawnPlayer1" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.8, 0)
+
+[node name="SpawnPlayer2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.8, 0)
+
+[node name="SpawnPlayer3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, -4)
+
+[node name="SpawnPlayer4" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 4)
