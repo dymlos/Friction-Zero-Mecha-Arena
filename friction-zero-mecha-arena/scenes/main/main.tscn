@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/main/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/arenas/arena_blockout.tscn" id="2_arena"]
 [ext_resource type="PackedScene" path="res://scenes/robots/robot_base.tscn" id="3_robot"]
 [ext_resource type="PackedScene" path="res://scenes/systems/match_controller.tscn" id="4_controller"]
 [ext_resource type="PackedScene" path="res://scenes/ui/match_hud.tscn" id="5_hud"]
+[ext_resource type="Script" path="res://scripts/systems/shared_arena_camera.gd" id="6_camera"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
@@ -19,6 +20,7 @@ script = ExtResource("1_main")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.8, 0)
 robot_id = 1
 display_name = "Player 1"
+is_player_controlled = true
 
 [node name="PlayerTwoRobot" parent="RobotRoot" instance=ExtResource("3_robot")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 4, 0.8, 0)
@@ -35,7 +37,10 @@ display_name = "Player 2"
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 15, 14)
+projection = 1
 current = true
+size = 18.0
+script = ExtResource("6_camera")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 8, 0)

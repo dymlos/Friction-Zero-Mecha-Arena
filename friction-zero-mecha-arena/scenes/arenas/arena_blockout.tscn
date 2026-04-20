@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/arenas/arena_base.gd" id="1_arena"]
 
@@ -12,6 +12,13 @@ size = Vector3(24, 0.6, 16)
 albedo_color = Color(0.26, 0.28, 0.3, 1)
 roughness = 0.8
 
+[sub_resource type="BoxMesh" id="BoxMesh_void"]
+size = Vector3(40, 0.08, 28)
+
+[sub_resource type="StandardMaterial3D" id="Material_void"]
+albedo_color = Color(0.018, 0.022, 0.028, 1)
+roughness = 1.0
+
 [sub_resource type="BoxMesh" id="BoxMesh_edge_marker"]
 size = Vector3(1, 0.08, 1)
 
@@ -23,6 +30,11 @@ emission_energy_multiplier = 0.35
 
 [node name="ArenaBlockout" type="Node3D"]
 script = ExtResource("1_arena")
+
+[node name="VoidVisual" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.45, 0)
+mesh = SubResource("BoxMesh_void")
+material_override = SubResource("Material_void")
 
 [node name="Platform" type="StaticBody3D" parent="."]
 

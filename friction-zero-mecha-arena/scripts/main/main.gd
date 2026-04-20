@@ -22,6 +22,8 @@ func _register_existing_robots() -> void:
 	for child in robot_root.get_children():
 		if child is RobotBase:
 			match_controller.register_robot(child)
+			child.fell_into_void.connect(_on_robot_fell_into_void)
+			child.respawned.connect(_on_robot_respawned)
 
 
 func _report_startup_structure() -> void:
@@ -31,3 +33,11 @@ func _report_startup_structure() -> void:
 
 	print("Friction Zero base cargada.")
 	print("Arenas: %s | Robots: %s | Sistemas: %s" % [arena_count, robot_count, system_count])
+
+
+func _on_robot_fell_into_void(robot: RobotBase) -> void:
+	ui.show_status("%s cayo al vacio. Reinicio de prototipo..." % robot.display_name)
+
+
+func _on_robot_respawned(robot: RobotBase) -> void:
+	ui.show_status("%s volvio al punto de prueba" % robot.display_name)
