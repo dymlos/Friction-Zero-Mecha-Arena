@@ -14,7 +14,7 @@ const BODY_PARTS := [
 	"right_leg",
 ]
 
-const INPUT_BINDINGS := {
+const KEYBOARD_INPUT_BINDINGS := {
 	"move_left": [KEY_A, KEY_LEFT],
 	"move_right": [KEY_D, KEY_RIGHT],
 	"move_forward": [KEY_W, KEY_UP],
@@ -31,6 +31,8 @@ const INPUT_BINDINGS := {
 @export_group("Prototype Controls")
 @export var is_player_controlled := false
 @export_range(1, 8) var player_index := 1
+@export var joypad_device := -1
+@export_range(0.0, 0.8, 0.05) var joystick_deadzone := 0.25
 
 @export_group("Prototype Movement")
 @export var max_move_speed := 7.5
@@ -58,6 +60,7 @@ var _attack_cooldown_remaining := 0.0
 var _is_respawning := false
 var _starting_collision_layer := 1
 var _starting_collision_mask := 1
+var _was_joypad_attack_pressed := false
 
 
 func _ready() -> void:
@@ -68,6 +71,7 @@ func _ready() -> void:
 	reset_modular_state()
 	if is_player_controlled:
 		_ensure_default_input_actions()
+		_report_joypad_status()
 
 
 func _physics_process(delta: float) -> void:
@@ -148,8 +152,9 @@ func _update_prototype_movement(delta: float) -> void:
 	var move_direction := Vector3(input_vector.x, 0.0, input_vector.y)
 
 	if move_direction.length_squared() > 0.0:
+		var input_strength := clampf(input_vector.length(), 0.0, 1.0)
 		move_direction = move_direction.normalized()
-		var target_velocity := move_direction * max_move_speed
+		var target_velocity := move_direction * max_move_speed * input_strength
 		_planar_velocity = _planar_velocity.move_toward(target_velocity, move_acceleration * delta)
 		_face_direction(move_direction, delta)
 	else:
@@ -174,7 +179,7 @@ func _update_prototype_attack() -> void:
 	if not is_player_controlled:
 		return
 
-	if not Input.is_action_just_pressed(_player_action_name("attack")):
+	if not _is_attack_just_pressed():
 		return
 
 	if _attack_cooldown_remaining > 0.0:
@@ -225,12 +230,17 @@ func _get_move_input_vector() -> Vector2:
 	if not is_player_controlled:
 		return Vector2.ZERO
 
-	return Input.get_vector(
+	var keyboard_vector := Input.get_vector(
 		_player_action_name("move_left"),
 		_player_action_name("move_right"),
 		_player_action_name("move_forward"),
 		_player_action_name("move_back")
 	)
+	var joypad_vector := _get_joypad_move_vector()
+	if joypad_vector.length_squared() > keyboard_vector.length_squared():
+		return joypad_vector
+
+	return keyboard_vector
 
 
 func _face_direction(direction: Vector3, delta: float) -> void:
@@ -245,15 +255,104 @@ func _player_action_name(action_suffix: String) -> StringName:
 
 
 func _ensure_default_input_actions() -> void:
-	for action_suffix in INPUT_BINDINGS:
+	for action_suffix in KEYBOARD_INPUT_BINDINGS:
 		var action_name := _player_action_name(action_suffix)
 		if not InputMap.has_action(action_name):
-			InputMap.add_action(action_name)
+			InputMap.add_action(action_name, joystick_deadzone)
+		else:
+			InputMap.action_set_deadzone(action_name, joystick_deadzone)
 
-		if not InputMap.action_get_events(action_name).is_empty():
-			continue
-
-		for keycode in INPUT_BINDINGS[action_suffix]:
+		for keycode in KEYBOARD_INPUT_BINDINGS[action_suffix]:
 			var event := InputEventKey.new()
 			event.physical_keycode = keycode
-			InputMap.action_add_event(action_name, event)
+			_add_input_event_if_missing(action_name, event)
+
+
+func _add_input_event_if_missing(action_name: StringName, event: InputEvent) -> void:
+	if not InputMap.action_has_event(action_name, event):
+		InputMap.action_add_event(action_name, event)
+
+
+func _get_joypad_move_vector() -> Vector2:
+	var best_vector := Vector2.ZERO
+	for device in _get_joypad_devices_to_read():
+		var raw_vector := Vector2(
+			Input.get_joy_axis(device, JOY_AXIS_LEFT_X),
+			Input.get_joy_axis(device, JOY_AXIS_LEFT_Y)
+		)
+		var filtered_vector := _apply_radial_deadzone(raw_vector)
+		var dpad_vector := _get_dpad_move_vector(device)
+		var device_vector := filtered_vector
+		if dpad_vector.length_squared() > device_vector.length_squared():
+			device_vector = dpad_vector
+
+		if device_vector.length_squared() > best_vector.length_squared():
+			best_vector = device_vector
+
+	return best_vector
+
+
+func _is_attack_just_pressed() -> bool:
+	var keyboard_pressed := Input.is_action_just_pressed(_player_action_name("attack"))
+	var joypad_pressed := _is_joypad_attack_pressed()
+	var joypad_just_pressed := joypad_pressed and not _was_joypad_attack_pressed
+	_was_joypad_attack_pressed = joypad_pressed
+	return keyboard_pressed or joypad_just_pressed
+
+
+func _is_joypad_attack_pressed() -> bool:
+	for device in _get_joypad_devices_to_read():
+		if Input.is_joy_button_pressed(device, JOY_BUTTON_A):
+			return true
+
+	return false
+
+
+func _get_joypad_devices_to_read() -> Array[int]:
+	var connected_devices := Input.get_connected_joypads()
+	var devices: Array[int] = []
+	if joypad_device >= 0:
+		if connected_devices.has(joypad_device):
+			devices.append(joypad_device)
+		return devices
+
+	for device in connected_devices:
+		devices.append(int(device))
+
+	return devices
+
+
+func _apply_radial_deadzone(raw_vector: Vector2) -> Vector2:
+	var length := raw_vector.length()
+	if length <= joystick_deadzone:
+		return Vector2.ZERO
+
+	var scaled_length := inverse_lerp(joystick_deadzone, 1.0, minf(length, 1.0))
+	return raw_vector.normalized() * scaled_length
+
+
+func _get_dpad_move_vector(device: int) -> Vector2:
+	var dpad_vector := Vector2.ZERO
+	if Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_LEFT):
+		dpad_vector.x -= 1.0
+	if Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_RIGHT):
+		dpad_vector.x += 1.0
+	if Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_UP):
+		dpad_vector.y -= 1.0
+	if Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_DOWN):
+		dpad_vector.y += 1.0
+
+	return dpad_vector.normalized()
+
+
+func _report_joypad_status() -> void:
+	var connected_devices := Input.get_connected_joypads()
+	if connected_devices.is_empty():
+		print("%s: no hay joystick conectado; queda teclado como fallback." % display_name)
+		return
+
+	var device_names: Array[String] = []
+	for device in connected_devices:
+		device_names.append("%s:%s" % [device, Input.get_joy_name(int(device))])
+
+	print("%s: joysticks detectados -> %s" % [display_name, device_names])
