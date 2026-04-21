@@ -2,6 +2,7 @@ extends SceneTree
 
 const ARENA_SCENE := preload("res://scenes/arenas/arena_blockout.tscn")
 const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
@@ -16,6 +17,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_arena_rotates_mirrored_pickup_layouts()
 	await _validate_main_scene_advances_pickup_layout_between_rounds()
+	await _validate_ffa_scene_uses_denser_edge_pickup_rotation()
 	_finish()
 
 
@@ -109,6 +111,13 @@ func _validate_main_scene_advances_pickup_layout_between_rounds() -> void:
 		initial_signature != "",
 		"La ronda inicial deberia arrancar con un layout activo de pickups, no con todos los bordes apagados."
 	)
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
+	_assert(round_label is Label, "La escena principal deberia seguir exponiendo el bloque de estado de ronda en HUD.")
+	if round_label is Label:
+		_assert(
+			String((round_label as Label).text).contains("Borde |"),
+			"El HUD compacto deberia resumir que tipos de pickups de borde estan activos en la ronda actual."
+		)
 
 	main.call("_on_robot_fell_into_void", robots[2])
 	await process_frame
@@ -123,6 +132,79 @@ func _validate_main_scene_advances_pickup_layout_between_rounds() -> void:
 	_assert(
 		initial_signature != next_signature,
 		"La escena principal deberia avanzar la rotacion de pickups al comenzar una ronda nueva."
+	)
+
+	await _cleanup_node(main)
+
+
+func _validate_ffa_scene_uses_denser_edge_pickup_rotation() -> void:
+	var main := FFA_SCENE.instantiate()
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var arena := main.get_node_or_null("ArenaRoot/ArenaBlockout")
+	var match_controller := main.get_node_or_null("Systems/MatchController")
+	var robots := _get_scene_robots(main)
+	_assert(arena is ArenaBase, "La escena FFA deberia seguir montando una arena real para probar el layout.")
+	_assert(match_controller is MatchController, "La escena FFA deberia seguir exponiendo MatchController.")
+	_assert(robots.size() >= 4, "La escena FFA deberia seguir ofreciendo cuatro robots para validar la rotacion FFA.")
+	if not (arena is ArenaBase) or not (match_controller is MatchController) or robots.size() < 4:
+		await _cleanup_node(main)
+		return
+
+	var controller := match_controller as MatchController
+	controller.round_reset_delay = 0.01
+
+	var initial_pickups := _get_spawn_enabled_pickups(_get_edge_pickups(main))
+	var initial_counts := _count_pickups_by_type(initial_pickups)
+	_assert(
+		initial_pickups.size() == 6,
+		"FFA deberia activar tres pares de pickups por ronda para sostener mas oportunismo sin volver al borde completo."
+	)
+	_assert(
+		initial_counts.size() == 3,
+		"FFA deberia exponer tres tipos de pickup por ronda para que el borde tenga mas decisiones activas."
+	)
+	_assert(
+		initial_counts.has("pulse"),
+		"FFA deberia priorizar que pulso aparezca en la mayoria de las rondas para medir mejor la tension parte vs pulso."
+	)
+	for pickup_count in initial_counts.values():
+		_assert(
+			int(pickup_count) == 2,
+			"Cada tipo activo en FFA deberia seguir apareciendo como par espejado."
+		)
+
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
+	_assert(round_label is Label, "La escena FFA deberia seguir exponiendo el bloque de estado de ronda en HUD.")
+	if round_label is Label:
+		var round_text := String((round_label as Label).text)
+		_assert(
+			round_text.contains("Borde |"),
+			"El HUD compacto deberia resumir tambien en FFA los tipos activos de pickup por ronda."
+		)
+		_assert(
+			round_text.contains("pulso"),
+			"El resumen del borde en FFA deberia dejar visible cuando pulso forma parte de la ronda actual."
+		)
+
+	main.call("_on_robot_fell_into_void", robots[1])
+	await process_frame
+	main.call("_on_robot_fell_into_void", robots[2])
+	await process_frame
+	main.call("_on_robot_fell_into_void", robots[3])
+	await _wait_frames(10)
+
+	var next_signature := _get_active_layout_signature(main)
+	_assert(
+		next_signature != "",
+		"Tras el reset de ronda, FFA deberia volver a activar un layout valido de pickups."
+	)
+	_assert(
+		next_signature != _build_layout_signature(initial_counts),
+		"FFA deberia rotar el layout entre rondas en lugar de repetir siempre el mismo trio."
 	)
 
 	await _cleanup_node(main)

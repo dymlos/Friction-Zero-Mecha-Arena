@@ -37,9 +37,9 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - segundo incentivo de borde: el mismo arena ahora suma pickups de movilidad en norte/sur; activan una ventana corta de traccion/control reforzados, exponen al robot en bordes sin cobertura y siguen el borde vivo cuando la arena se contrae
 - tercer incentivo de borde: el mismo arena ahora suma pickups de energia en diagonales; cortan la recuperacion posterior al overdrive, refuerzan temporalmente el par energetico seleccionado y tambien siguen el borde vivo cuando la arena se contrae
 - primer item de una sola carga en mano: el mismo arena ahora suma pickups de pulso en las diagonales restantes; cargan un `pulso` visible en el robot, comparten slot con las partes transportadas y convierten el siguiente ataque en un disparo repulsor corto
-- rotacion semialeatoria controlada de borde: esos ocho pedestales ya no quedan todos activos a la vez; `ArenaBase` rota por ronda un mazo de cuatro cruces y deja solo dos pares espejados activos para bajar clutter sin perder justicia espacial
+- rotacion semialeatoria controlada de borde: esos ocho pedestales ya no quedan todos activos a la vez; `ArenaBase` usa un perfil `Equipos` de dos pares espejados por ronda y un perfil `FFA` de tres tipos activos por ronda para subir el oportunismo sin volver al borde completo
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
-- HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia, buffs temporales y si un robot transporta una parte
+- HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia, buffs temporales y si un robot transporta una parte; ahora tambien resume `Borde | ...` con los tipos activos de pickup de la ronda
 - lectura de eliminacion compacta en el mismo HUD:
   - robots inutilizados muestran cuenta atras breve de explosion en el roster
   - robots fuera conservan causa corta (`vacio` o `explosion`)
@@ -54,6 +54,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 
 ## Lo completado en esta iteracion
 
+- Se diferenció la rotación de pickups de borde por modo y se volvió visible en el HUD existente:
+  - `ArenaBase` ahora conserva `Equipos` con dos pares espejados por ronda, pero en `FFA` rota layouts `3-de-4` para dejar seis pickups activos / tres tipos por ronda
+  - `Main` configura ese perfil según `MatchController.match_mode` antes de arrancar el match y agrega `Borde | ...` al bloque compacto de estado
+  - `edge_pickup_layout_rotation_test.gd` ahora cubre tanto la escena principal `main.tscn` como `main_ffa.tscn`, verificando densidad FFA, presencia de `pulso` y avance del layout entre rondas
 - Se convirtió el borde fijo en una rotación semialeatoria controlada:
   - `ArenaBase` ahora arma un mazo seedado con los cuatro cruces base (`repair/energy` x `mobility/pulse`) y activa solo dos pares espejados por ronda
   - `MatchController` emite `round_started` y `Main` reaplica ese layout al inicio de cada ronda real, sin meter un director de match nuevo
@@ -196,12 +200,12 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
-- El nuevo sistema de items sigue siendo deliberadamente simple: hoy existen reparacion instantanea, impulso corto, recarga breve y un solo item de carga (`pulse_charge`); la semialeatoriedad actual es un mazo controlado de layouts por ronda, pero todavia no hay inventario completo, pesos por modo/mapa ni variedad real de utilities.
+- El nuevo sistema de items sigue siendo deliberadamente simple: hoy existen reparacion instantanea, impulso corto, recarga breve y un solo item de carga (`pulse_charge`); la semialeatoriedad actual ya diferencia `Equipos` (2 pares) y `FFA` (3 tipos), pero todavia no hay inventario completo, pesos finos por modo/mapa ni variedad real de utilities.
 - El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
-- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay cuatro tipos de pickup y solo dos pares activos por ronda; todavia faltan pesos por modo/mapa, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
+- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay cuatro tipos de pickup, con `Equipos` usando dos pares y `FFA` tres tipos activos por ronda; todavia faltan pesos finos por modo/mapa, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.

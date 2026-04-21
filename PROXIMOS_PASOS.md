@@ -52,8 +52,9 @@
 
 10. **Validar y tensionar el nuevo incentivo de borde**
    - playtestear si `repair_amount`, `boost_duration`, `surge_duration`, el nuevo `pulse_charge` y sus `respawn_delay` vuelven los bordes realmente tentadores o si alguno de los cuatro incentivos domina demasiado.
-   - medir si las nuevas coberturas blockout, la rotacion semialeatoria por ronda y los dos pares activos ya generan duelos más tácticos o si algunos layouts siguen volviendo flancos demasiado seguros.
-   - ajustar si el mazo actual necesita pesos por modo/mapa, otra seed por arena o un tercer par activo para FFA antes de abrir más tipos de item.
+   - medir si las nuevas coberturas blockout, la rotacion semialeatoria por ronda y el nuevo split `Equipos=2 pares / FFA=3 tipos` ya generan duelos más tácticos o si algunos layouts siguen volviendo flancos demasiado seguros.
+   - ajustar si el mazo actual necesita pesos finos por modo/mapa, otra seed por arena o más presencia de `pulso`/`energia` antes de abrir más tipos de item.
+   - revisar si la línea `Borde | ...` alcanza como lectura de laboratorio o si conviene una telemetría/playtest scene mejor antes de sumar más variedad.
    - decidir si el siguiente paso de items debe ser variar el contenido del mazo, sumar más items de una sola carga o pasar a una capa mínima de inventario explícito.
    - mantener el centro limpio y legible, evitando saturar la arena con demasiados objetos.
 

@@ -226,6 +226,14 @@
    - `MatchController` emite `round_started`, `Main` aplica el layout al `ArenaBase` activo y cada pickup expone `set_spawn_enabled()` para apagarse completo cuando no forma parte del layout actual.
    - Motivo: mantener responsabilidades claras, evitar un director extra de mapa y conservar el telegraph local de pedestal/cooldown dentro de los pickups ya existentes.
 
+57. **Los layouts de edge pickups cambian segun el modo de match**
+   - `ArenaBase` ahora usa un perfil `teams` con dos pares espejados por ronda y un perfil `ffa` con layouts `3-de-4`, ambos seedados y reutilizando el mismo contrato `activate_edge_pickup_layout_for_round(round_number)`.
+   - Motivo: Team vs Team necesita preservar claridad para rescate/choque, mientras FFA gana mas oportunismo y presencia de utilidad sin volver a ocho pickups activos ni romper justicia espacial.
+
+58. **El HUD compacto resume el layout activo del borde**
+   - `Main` agrega `Borde | ...` a las lineas de ronda usando `ArenaBase.get_active_edge_pickup_layout_summary()`.
+   - Motivo: hacer medible y legible la rotación semialeatoria durante playtests sin sumar otro panel de UI ni depender de memoria externa.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

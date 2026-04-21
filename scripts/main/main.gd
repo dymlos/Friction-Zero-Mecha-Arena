@@ -27,6 +27,7 @@ func _ready() -> void:
 	# La logica concreta vive en scripts mas chicos para que el proyecto crezca ordenado.
 	_arena = _get_active_arena()
 	_configure_playable_prototype()
+	_configure_edge_pickup_layout_profile()
 	_connect_arena_pickups()
 	_connect_match_flow()
 	_register_existing_robots()
@@ -155,7 +156,7 @@ func _apply_match_pressure_to_arena() -> void:
 
 
 func _refresh_hud() -> void:
-	ui.show_round_state(match_controller.get_round_state_lines())
+	ui.show_round_state(_build_round_state_lines())
 	ui.show_roster(match_controller.get_robot_status_lines())
 
 
@@ -164,6 +165,14 @@ func _connect_match_flow() -> void:
 		return
 
 	match_controller.round_started.connect(_on_round_started)
+
+
+func _configure_edge_pickup_layout_profile() -> void:
+	if _arena == null:
+		return
+
+	var layout_profile := ArenaBase.EDGE_PICKUP_LAYOUT_PROFILE_FFA if match_controller.match_mode == MatchController.MatchMode.FFA else ArenaBase.EDGE_PICKUP_LAYOUT_PROFILE_TEAMS
+	_arena.set_edge_pickup_layout_profile(layout_profile)
 
 
 func _report_startup_structure() -> void:
@@ -233,6 +242,18 @@ func _build_startup_status() -> String:
 		match_controller.registered_robots.size(),
 		control_summary,
 	]
+
+
+func _build_round_state_lines() -> Array[String]:
+	var lines := match_controller.get_round_state_lines()
+	if _arena == null:
+		return lines
+
+	var edge_summary := _arena.get_active_edge_pickup_layout_summary()
+	if edge_summary != "":
+		lines.append("Borde | %s" % edge_summary)
+
+	return lines
 
 
 func _on_robot_fell_into_void(robot: RobotBase) -> void:
