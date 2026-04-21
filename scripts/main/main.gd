@@ -9,6 +9,7 @@ const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
 const EdgeMobilityPickup = preload("res://scripts/pickups/edge_mobility_pickup.gd")
 const EdgeEnergyPickup = preload("res://scripts/pickups/edge_energy_pickup.gd")
+const EdgePulsePickup = preload("res://scripts/pickups/edge_pulse_pickup.gd")
 
 @export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
 
@@ -197,6 +198,16 @@ func _connect_arena_pickups() -> void:
 
 		energy_pickup.pickup_collected.connect(_on_edge_energy_pickup_collected)
 
+	for node in get_tree().get_nodes_in_group("edge_pulse_pickups"):
+		if not (node is EdgePulsePickup):
+			continue
+
+		var pulse_pickup := node as EdgePulsePickup
+		if pulse_pickup.pickup_collected.is_connected(_on_edge_pulse_pickup_collected):
+			continue
+
+		pulse_pickup.pickup_collected.connect(_on_edge_pulse_pickup_collected)
+
 
 func _build_startup_status() -> String:
 	var control_segments: Array[String] = []
@@ -273,4 +284,15 @@ func _on_edge_energy_pickup_collected(robot: RobotBase, surge_duration: float) -
 	ui.show_status("%s recargo energia de borde (%.1fs)" % [
 		robot.display_name,
 		surge_duration,
+	])
+
+
+func _on_edge_pulse_pickup_collected(robot: RobotBase, item_name: String) -> void:
+	var item_label := robot.get_carried_item_display_name()
+	if item_label == "":
+		item_label = item_name
+
+	ui.show_status("%s aseguro %s de borde" % [
+		robot.display_name,
+		item_label,
 	])

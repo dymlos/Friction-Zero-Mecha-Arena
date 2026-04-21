@@ -237,6 +237,8 @@ func _build_robot_status_line(robot: RobotBase) -> String:
 		line += " | energia"
 	if robot.is_mobility_boost_active():
 		line += " | impulso"
+	if robot.has_carried_item():
+		line += " | item %s" % robot.get_carried_item_display_name()
 	if robot.is_carrying_part():
 		line += " | carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name())
 

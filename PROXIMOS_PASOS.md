@@ -51,7 +51,12 @@
    - mantener Easy como modo plenamente jugable y legible
 
 10. **Validar y tensionar el nuevo incentivo de borde**
-   - playtestear si `repair_amount`, `boost_duration`, `surge_duration` y sus `respawn_delay` vuelven los bordes realmente tentadores o si alguno de los tres incentivos domina demasiado.
-   - medir si las nuevas coberturas blockout, la reparacion lateral, el impulso norte/sur y la energia diagonal ya generan duelos más tácticos o si empiezan a volver algunos flancos demasiado seguros.
-   - decidir si el siguiente paso de items debe ser variacion semialeatoria sobre `edge_pickups` o un primer item de “una sola carga” en mano.
+   - playtestear si `repair_amount`, `boost_duration`, `surge_duration`, el nuevo `pulse_charge` y sus `respawn_delay` vuelven los bordes realmente tentadores o si alguno de los cuatro incentivos domina demasiado.
+   - medir si las nuevas coberturas blockout, la reparacion lateral, el impulso norte/sur, la energia diagonal y el pulso repulsor ya generan duelos más tácticos o si empiezan a volver algunos flancos demasiado seguros.
+   - decidir si el siguiente paso de items debe ser variacion semialeatoria sobre `edge_pickups`, más items de una sola carga o una capa mínima de inventario explícito.
    - mantener el centro limpio y legible, evitando saturar la arena con demasiados objetos.
+
+11. **Validar el primer item de una carga en mano**
+   - medir si compartir slot entre `pulse_charge` y `DetachedPart` genera la decisión correcta o si frustra demasiado rescates importantes.
+   - revisar si el pulso usando el mismo botón de ataque se entiende al instante o si necesita una pista diegética/visual adicional sobre el robot.
+   - ajustar `pulse_charge_projectile_speed`, `pulse_charge_impulse` y `pulse_charge_damage` para que el item reposicione sin eclipsar la embestida base.

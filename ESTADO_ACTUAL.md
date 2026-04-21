@@ -36,6 +36,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - incentivo real de borde: el arena blockout ahora tiene pickups de reparacion instantanea en los flancos; curan la parte activa mas dañada, obligan a exponerse cerca del vacio para estabilizarse y siguen el borde vivo cuando la arena se contrae
 - segundo incentivo de borde: el mismo arena ahora suma pickups de movilidad en norte/sur; activan una ventana corta de traccion/control reforzados, exponen al robot en bordes sin cobertura y siguen el borde vivo cuando la arena se contrae
 - tercer incentivo de borde: el mismo arena ahora suma pickups de energia en diagonales; cortan la recuperacion posterior al overdrive, refuerzan temporalmente el par energetico seleccionado y tambien siguen el borde vivo cuando la arena se contrae
+- primer item de una sola carga en mano: el mismo arena ahora suma pickups de pulso en las diagonales restantes; cargan un `pulso` visible en el robot, comparten slot con las partes transportadas y convierten el siguiente ataque en un disparo repulsor corto
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
 - HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia, buffs temporales y si un robot transporta una parte
 - lectura de eliminacion compacta en el mismo HUD:
@@ -52,6 +53,14 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 
 ## Lo completado en esta iteracion
 
+- Se agregó el primer item universal de una sola carga en mano:
+  - existe una escena nueva `edge_pulse_pickup.tscn` con pedestal persistente, cooldown visible y contrato de pickup equivalente al resto de incentivos de borde
+  - al tocarla, `RobotBase` guarda `pulse_charge`, reaprovecha `CarryIndicator`, muestra `item pulso` en el roster y no permite mezclar la carga con una `DetachedPart`
+  - al usar el mismo botón de ataque, el robot consume la carga y dispara `PulseBolt`, un proyectil corto que empuja y daña al primer robot/cobertura que encuentra
+- Se integró ese item al laboratorio real sin abrir todavía un sistema completo de skills:
+  - `arena_blockout.tscn` suma dos pickups de pulso en las diagonales libres para complementar reparación lateral + impulso norte/sur + energía diagonal
+  - `Main` publica una línea breve cuando alguien asegura el item y `MatchController` mantiene el estado visible mientras la carga sigue guardada
+  - `edge_pulse_pickup_test.gd` cubre API del robot, telegraph de cooldown, disparo repulsor, integración en `main.tscn` y reposicionamiento con contracción
 - Se agrego el pickup universal de energia que faltaba en el mapa:
   - existe una escena nueva `edge_energy_pickup.tscn` con pedestal persistente, cooldown visible y contrato de activacion equivalente al resto de pickups de borde
   - al tocarla, `RobotBase` corta la recuperacion post-overdrive, reaplica el foco energetico actual y activa una recarga breve sobre ese mismo par
@@ -152,6 +161,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 ## Validacion realizada
 
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/arena_edge_cover_layout_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/edge_pulse_pickup_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/edge_repair_pickup_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_mode_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_lab_scene_test.gd`
@@ -172,17 +182,17 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_hard_control_mode_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 5`
 
-Resultado: las diecinueve verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: las veinte verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
-- El nuevo item universal sigue siendo deliberadamente simple: hoy solo existen reparacion instantanea, impulso corto y recarga breve; todavia no hay inventario, carga manual ni semialeatoriedad de spawns.
+- El nuevo sistema de items sigue siendo deliberadamente simple: hoy existen reparacion instantanea, impulso corto, recarga breve y un solo item de carga (`pulse_charge`); todavia no hay inventario completo, semialeatoriedad de spawns ni variedad real de utilities.
 - El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
-- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay reparacion fija + impulso fijo + energia fija; todavia faltan variacion semialeatoria, utility y decidir si algun item debe pasar a “una carga en mano” en vez de activarse al tocarlo.
+- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay reparacion fija + impulso fijo + energia fija + pulso cargable; todavia faltan variacion semialeatoria, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.

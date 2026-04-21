@@ -210,6 +210,14 @@
    - Al recoger energia, `RobotBase` corta la recuperacion post-overdrive, reaplica el foco actual y suma una ventana corta de rendimiento extra sobre ese mismo par; no reactiva overdrive ni elimina todo el cooldown restante.
    - Motivo: volver valioso el pickup de energia sin volverlo spam ni borrar la identidad de riesgo/recompensa del overdrive.
 
+53. **Primer item cargable comparte slot con las partes transportadas**
+   - `RobotBase` ahora usa un unico slot/logica de payload visible: puede llevar una `DetachedPart` o una `pulse_charge`, pero no ambos a la vez.
+   - Motivo: mantener legible la pantalla compartida, evitar estados superpuestos y volver real la decision entre rescate/negacion y utilidad ofensiva.
+
+54. **El primer skillshot entra como item de borde, no como kit base**
+   - `EdgePulsePickup` entrega una sola carga de `pulse_charge`; al usarla, `RobotBase` consume el item y dispara `PulseBolt`, un proyectil corto que empuja y daña al primer objetivo o cobertura física que encuentra.
+   - Motivo: validar la tensión “choque vs influencia a distancia” sin abrir todavía un sistema completo de habilidades, munición por personaje ni HUD nuevo.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

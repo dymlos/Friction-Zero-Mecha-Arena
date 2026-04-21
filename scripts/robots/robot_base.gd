@@ -2,6 +2,7 @@ extends CharacterBody3D
 class_name RobotBase
 
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
+const PulseBolt = preload("res://scripts/projectiles/pulse_bolt.gd")
 
 signal fell_into_void(robot: RobotBase)
 signal respawned(robot: RobotBase)
@@ -15,6 +16,7 @@ enum ControlMode { EASY, HARD }
 enum KeyboardProfile { NONE, WASD_SPACE, ARROWS_ENTER, NUMPAD, IJKL }
 
 const DETACHED_PART_SCENE := preload("res://scenes/robots/detached_part.tscn")
+const PULSE_BOLT_SCENE := preload("res://scenes/projectiles/pulse_bolt.tscn")
 
 const BODY_PARTS := [
 	"left_arm",
@@ -35,6 +37,14 @@ const CARRY_PART_COLORS := {
 	"right_arm": Color(0.98, 0.58, 0.15, 1.0),
 	"left_leg": Color(0.22, 0.56, 0.94, 1.0),
 	"right_leg": Color(0.29, 0.72, 1.0, 1.0),
+}
+
+const CARRIED_ITEM_LABELS := {
+	"pulse_charge": "pulso",
+}
+
+const CARRIED_ITEM_COLORS := {
+	"pulse_charge": Color(1.0, 0.86, 0.24, 1.0),
 }
 
 const PART_VISUAL_PATHS := {
@@ -186,6 +196,14 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export_range(0.2, 2.0, 0.05) var maximum_energy_multiplier := 1.35
 @export_range(1.0, 1.5, 0.05) var energy_pickup_pair_multiplier := 1.12
 
+@export_group("Prototype Utility Item")
+@export var pulse_charge_projectile_speed := 13.5
+@export var pulse_charge_projectile_lifetime := 1.0
+@export var pulse_charge_impulse := 8.8
+@export var pulse_charge_damage := 18.0
+@export var pulse_charge_spawn_distance := 1.0
+@export var pulse_charge_spawn_height := 0.72
+
 @export_group("Prototype Combat")
 @export var passive_push_strength := 4.0
 @export var attack_impulse_strength := 11.0
@@ -242,9 +260,10 @@ var _material_base_values: Dictionary = {}
 var _damage_feedback_nodes: Dictionary = {}
 var _collision_damage_ready_at: Dictionary = {}
 var _carried_part: DetachedPart = null
+var _carried_item_name := ""
 var _carry_indicator: MeshInstance3D = null
 var _carry_indicator_animation_time := 0.0
-var _last_carried_part_name := ""
+var _last_indicator_payload_name := ""
 var _selected_energy_part_name := "left_arm"
 var _energy_shift_cooldown_remaining := 0.0
 var _overdrive_part_name := ""
@@ -304,6 +323,18 @@ func get_carried_part_name() -> String:
 		return ""
 
 	return _carried_part.part_name
+
+
+func has_carried_item() -> bool:
+	return _carried_item_name != ""
+
+
+func get_carried_item_name() -> String:
+	return _carried_item_name
+
+
+func get_carried_item_display_name() -> String:
+	return str(CARRIED_ITEM_LABELS.get(_carried_item_name, _carried_item_name))
 
 
 func get_active_part_count() -> int:
@@ -458,6 +489,45 @@ func apply_energy_surge(duration: float) -> bool:
 	return true
 
 
+func store_carried_item(item_name: String) -> bool:
+	if item_name == "":
+		return false
+	if not CARRIED_ITEM_LABELS.has(item_name):
+		return false
+	if _is_respawning or _is_disabled:
+		return false
+	if is_instance_valid(_carried_part) or has_carried_item():
+		return false
+
+	_carried_item_name = item_name
+	_refresh_visual_state()
+	return true
+
+
+func use_carried_item() -> bool:
+	if not has_carried_item():
+		return false
+	if _is_respawning or _is_disabled:
+		return false
+	if is_instance_valid(_carried_part):
+		return false
+
+	var item_name := _carried_item_name
+	var used := false
+	match item_name:
+		"pulse_charge":
+			used = _spawn_pulse_charge()
+		_:
+			used = false
+
+	if not used:
+		return false
+
+	_carried_item_name = ""
+	_refresh_visual_state()
+	return true
+
+
 func _ready() -> void:
 	_spawn_transform = global_transform
 	_starting_collision_layer = collision_layer
@@ -507,6 +577,7 @@ func reset_modular_state() -> void:
 	_energy_surge_part_name = ""
 	_energy_surge_remaining = 0.0
 	_mobility_boost_remaining = 0.0
+	_carried_item_name = ""
 	for part_name in BODY_PARTS:
 		part_health[part_name] = max_part_health
 		part_energy[part_name] = starting_energy_per_part
@@ -621,6 +692,8 @@ func try_pick_up_detached_part(detached_part: DetachedPart) -> bool:
 		return false
 	if _is_respawning or _is_disabled:
 		return false
+	if has_carried_item():
+		return false
 	if is_instance_valid(_carried_part):
 		return false
 
@@ -644,6 +717,7 @@ func hold_for_round_reset() -> void:
 	_attack_cooldown_remaining = 0.0
 	_planar_velocity = Vector3.ZERO
 	external_impulse = Vector3.ZERO
+	_clear_carried_item()
 	_deny_carried_part_if_any()
 	_exit_disabled_state()
 	visible = false
@@ -709,6 +783,7 @@ func fall_into_void() -> void:
 		return
 
 	_is_respawning = true
+	_clear_carried_item()
 	_deny_carried_part_if_any()
 	fell_into_void.emit(self)
 	visible = false
@@ -730,6 +805,7 @@ func reset_to_spawn() -> void:
 	external_impulse = Vector3.ZERO
 	_attack_cooldown_remaining = 0.0
 	_carried_part = null
+	_carried_item_name = ""
 	_held_for_round_reset = false
 	visible = true
 	collision_layer = _starting_collision_layer
@@ -781,6 +857,10 @@ func _update_prototype_attack() -> void:
 	if not _is_attack_just_pressed():
 		return
 
+	if has_carried_item():
+		use_carried_item()
+		return
+
 	if _attack_cooldown_remaining > 0.0:
 		return
 
@@ -808,6 +888,33 @@ func _update_prototype_attack() -> void:
 
 		other.apply_impulse(direction_to_other * attack_impulse_strength * arm_power)
 		other.receive_attack_hit(direction_to_other, attack_damage * arm_power)
+
+
+func _spawn_pulse_charge() -> bool:
+	var scene_instance := PULSE_BOLT_SCENE.instantiate()
+	if not (scene_instance is PulseBolt):
+		return false
+
+	var pulse_bolt := scene_instance as PulseBolt
+	var projectile_parent := get_parent()
+	if projectile_parent == null:
+		projectile_parent = get_tree().current_scene
+	if projectile_parent == null:
+		return false
+
+	var forward := _get_combat_forward_vector()
+	var spawn_position := global_position + Vector3.UP * pulse_charge_spawn_height + forward * pulse_charge_spawn_distance
+	projectile_parent.add_child(pulse_bolt)
+	pulse_bolt.configure(
+		self,
+		spawn_position,
+		forward,
+		pulse_charge_projectile_speed,
+		pulse_charge_projectile_lifetime,
+		pulse_charge_impulse,
+		pulse_charge_damage
+	)
+	return true
 
 
 func _apply_passive_collision_pushes() -> void:
@@ -1393,15 +1500,15 @@ func _refresh_carry_indicator() -> void:
 	if _carry_indicator == null:
 		return
 
-	if not is_carrying_part():
+	var payload_name := _get_indicator_payload_name()
+	if payload_name == "":
 		_carry_indicator.visible = false
-		_last_carried_part_name = ""
+		_last_indicator_payload_name = ""
 		return
 
-	var carried_part_name := get_carried_part_name()
-	if carried_part_name != _last_carried_part_name:
-		_refresh_carry_indicator_color(carried_part_name)
-		_last_carried_part_name = carried_part_name
+	if payload_name != _last_indicator_payload_name:
+		_refresh_carry_indicator_color(payload_name)
+		_last_indicator_payload_name = payload_name
 
 	_carry_indicator.visible = true
 
@@ -1414,7 +1521,7 @@ func _refresh_carry_indicator_color(part_name: String) -> void:
 	if material == null:
 		return
 
-	var color: Color = CARRY_PART_COLORS.get(part_name, Color(1.0, 0.57, 0.1, 1.0))
+	var color: Color = CARRY_PART_COLORS.get(part_name, CARRIED_ITEM_COLORS.get(part_name, Color(1.0, 0.57, 0.1, 1.0)))
 	material.albedo_color = color
 	material.emission = color
 	material.emission_energy_multiplier = 2.2
@@ -1423,7 +1530,7 @@ func _refresh_carry_indicator_color(part_name: String) -> void:
 func _update_carry_indicator_animation(delta: float) -> void:
 	if _carry_indicator == null:
 		return
-	if not is_carrying_part():
+	if _get_indicator_payload_name() == "":
 		_carry_indicator_animation_time = 0.0
 		_carry_indicator.scale = Vector3.ONE
 		_carry_indicator.rotation = Vector3.ZERO
@@ -1436,6 +1543,23 @@ func _update_carry_indicator_animation(delta: float) -> void:
 	_carry_indicator.scale = Vector3(pulse, 1.0 + pulse * 0.25, pulse)
 	_carry_indicator.position.y = carry_indicator_base_height + wave * carry_indicator_bob_height
 	_carry_indicator.rotation.y = fmod(_carry_indicator.rotation.y + carry_indicator_rotation_speed * delta, TAU)
+
+
+func _get_indicator_payload_name() -> String:
+	if is_carrying_part():
+		return get_carried_part_name()
+	if has_carried_item():
+		return get_carried_item_name()
+
+	return ""
+
+
+func _clear_carried_item() -> void:
+	if not has_carried_item():
+		return
+
+	_carried_item_name = ""
+	_refresh_visual_state()
 
 
 func _refresh_part_visual_state(part_name: String) -> void:
