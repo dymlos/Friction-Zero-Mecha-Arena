@@ -20,7 +20,10 @@ func _ready() -> void:
 	_configure_playable_prototype()
 	_register_existing_robots()
 	_report_startup_structure()
-	ui.show_status("Friction Zero: %s robots en arena" % match_controller.registered_robots.size())
+	ui.show_status(
+		"Friction Zero: %s robots en arena | energia P1 Q/E/R | P2 , . /"
+		% match_controller.registered_robots.size()
+	)
 	_refresh_hud()
 
 

@@ -42,6 +42,18 @@
    - El HUD nuevo solo lista estado, partes activas y carga de parte por robot.
    - Motivo: mejora la lectura del loop modular y del rescate sin romper la prioridad del proyecto por claridad y pantalla compartida limpia.
 
+11. **Redistribucion de energia discreta por foco de parte**
+   - Cambiar el foco reasigna energia entre las cuatro partes usando presets simples en vez de sliders o menus.
+   - Motivo: vuelve tactica la energia ya en este prototipo sin exigir una UI compleja ni microgestion poco legible.
+
+12. **Energia aplicada como multiplicador real separado de la salud**
+   - La salud sigue definiendo la degradacion base; la energia ahora suma o resta rendimiento sobre movilidad y empuje aunque la pieza siga sana.
+   - Motivo: evita que la energia quede anulada por clamps internos y hace visible la decision antes del choque.
+
+13. **Overdrive corto con recuperacion y cooldown**
+   - El overdrive concentra energia en la parte foco durante una ventana breve y luego deja una penalizacion temporal antes de volver a estar disponible.
+   - Motivo: respeta la idea de apuesta de alto riesgo/alta recompensa sin convertir la redistribucion en spam.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

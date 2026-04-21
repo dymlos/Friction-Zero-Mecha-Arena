@@ -7,10 +7,10 @@
    - probar handoff real de partes entre aliados, no solo autoretorno
    - ajustar pickup delay, radio de retorno y cleanup segun sensacion
 
-2. **Dar un primer uso real a la energia**
-   - redistribucion discreta
-   - cooldown o coste para evitar spam
-   - feedback minimo no invasivo
+2. **Pulir la energia ahora que ya es jugable**
+   - decidir si el foco debe quedar en presets por arquetipo o en redistribucion libre mas adelante
+   - ligar mejor la lectura diegetica del foco/overdrive con materiales o VFX sobrios
+   - revisar valores de multiplicadores, duracion y recuperacion contra sensacion real en partida
 
 3. **Mejorar validacion jugable**
    - escena o configuracion de prueba para dos jugadores activos y al menos un rescate aliado

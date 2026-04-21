@@ -52,7 +52,17 @@ const INPUT_ACTION_SUFFIXES := [
 	"move_forward",
 	"move_back",
 	"attack",
+	"energy_prev",
+	"energy_next",
+	"overdrive",
 ]
+
+const ENERGY_LIMB_PAIRS := {
+	"left_arm": ["left_arm", "right_arm"],
+	"right_arm": ["left_arm", "right_arm"],
+	"left_leg": ["left_leg", "right_leg"],
+	"right_leg": ["left_leg", "right_leg"],
+}
 
 const KEYBOARD_PROFILE_BINDINGS := {
 	KeyboardProfile.NONE: {},
@@ -62,6 +72,9 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"move_forward": [KEY_W],
 		"move_back": [KEY_S],
 		"attack": [KEY_SPACE],
+		"energy_prev": [KEY_Q],
+		"energy_next": [KEY_E],
+		"overdrive": [KEY_R],
 	},
 	KeyboardProfile.ARROWS_ENTER: {
 		"move_left": [KEY_LEFT],
@@ -69,6 +82,9 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"move_forward": [KEY_UP],
 		"move_back": [KEY_DOWN],
 		"attack": [KEY_ENTER],
+		"energy_prev": [KEY_COMMA],
+		"energy_next": [KEY_PERIOD],
+		"overdrive": [KEY_SLASH],
 	},
 }
 
@@ -93,6 +109,23 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var glide_damping := 4.0
 @export var turn_speed := 10.0
 @export var gravity := 28.0
+
+@export_group("Prototype Energy")
+@export var focused_part_energy := 40.0
+@export var focused_pair_energy := 30.0
+@export var unfocused_part_energy := 15.0
+@export var overdrive_part_energy := 55.0
+@export var overdrive_pair_energy := 20.0
+@export var overdrive_other_part_energy := 12.5
+@export var overdrive_recovery_part_energy := 10.0
+@export var overdrive_recovery_pair_energy := 20.0
+@export var overdrive_recovery_other_part_energy := 35.0
+@export var energy_shift_cooldown := 0.6
+@export var overdrive_duration := 1.2
+@export var overdrive_recovery_duration := 0.7
+@export var overdrive_cooldown := 2.0
+@export_range(0.2, 2.0, 0.05) var minimum_energy_multiplier := 0.55
+@export_range(0.2, 2.0, 0.05) var maximum_energy_multiplier := 1.35
 
 @export_group("Prototype Combat")
 @export var passive_push_strength := 3.5
@@ -126,12 +159,21 @@ var _is_disabled := false
 var _starting_collision_layer := 1
 var _starting_collision_mask := 1
 var _was_joypad_attack_pressed := false
+var _was_joypad_energy_prev_pressed := false
+var _was_joypad_energy_next_pressed := false
+var _was_joypad_overdrive_pressed := false
 var _part_visual_nodes: Dictionary = {}
 var _part_flash_strength: Dictionary = {}
 var _core_visual_nodes: Array[MeshInstance3D] = []
 var _material_base_values: Dictionary = {}
 var _collision_damage_ready_at: Dictionary = {}
 var _carried_part: DetachedPart = null
+var _selected_energy_part_name := "left_arm"
+var _energy_shift_cooldown_remaining := 0.0
+var _overdrive_part_name := ""
+var _overdrive_duration_remaining := 0.0
+var _overdrive_recovery_remaining := 0.0
+var _overdrive_cooldown_remaining := 0.0
 
 @onready var disabled_explosion_timer: Timer = $DisabledExplosionTimer
 
@@ -184,6 +226,74 @@ func get_active_part_count() -> int:
 	return active_parts
 
 
+func get_part_energy_amount(part_name: String) -> float:
+	return float(part_energy.get(part_name, starting_energy_per_part))
+
+
+func get_energy_focus_part_name() -> String:
+	return _selected_energy_part_name
+
+
+func get_energy_state_summary() -> String:
+	var part_label := get_part_display_name(_selected_energy_part_name)
+	if is_overdrive_active():
+		return "OD %s" % part_label
+	if _overdrive_recovery_remaining > 0.0:
+		return "Rec %s" % part_label
+	if _is_energy_balanced():
+		return "Eq"
+	return "Foco %s" % part_label
+
+
+func get_effective_leg_drive_multiplier() -> float:
+	return _get_leg_health_multiplier() * _get_leg_energy_multiplier()
+
+
+func get_effective_arm_power_multiplier() -> float:
+	return _get_arm_health_multiplier() * _get_arm_energy_multiplier()
+
+
+func is_overdrive_active() -> bool:
+	return _overdrive_duration_remaining > 0.0
+
+
+func is_overdrive_cooling_down() -> bool:
+	return _overdrive_cooldown_remaining > 0.0
+
+
+func set_energy_focus(part_name: String) -> bool:
+	if not BODY_PARTS.has(part_name):
+		return false
+	if is_overdrive_active() or _overdrive_recovery_remaining > 0.0:
+		return false
+	if _energy_shift_cooldown_remaining > 0.0:
+		return false
+
+	_selected_energy_part_name = part_name
+	_energy_shift_cooldown_remaining = energy_shift_cooldown
+	_apply_focus_energy_distribution(_selected_energy_part_name)
+	_refresh_visual_state()
+	return true
+
+
+func activate_overdrive() -> bool:
+	if _is_disabled:
+		return false
+	if is_instance_valid(_carried_part):
+		return false
+	if _selected_energy_part_name == "":
+		return false
+	if is_overdrive_active() or _overdrive_recovery_remaining > 0.0 or is_overdrive_cooling_down():
+		return false
+
+	_overdrive_part_name = _selected_energy_part_name
+	_overdrive_duration_remaining = overdrive_duration
+	_overdrive_cooldown_remaining = overdrive_cooldown
+	_apply_overdrive_energy_distribution(_overdrive_part_name)
+	_refresh_visual_state()
+	return true
+
+
 func _ready() -> void:
 	_spawn_transform = global_transform
 	_starting_collision_layer = collision_layer
@@ -202,6 +312,8 @@ func _physics_process(delta: float) -> void:
 		return
 
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
+	_update_energy_state(delta)
+	_update_energy_controls()
 	_update_prototype_movement(delta)
 	_update_detached_part_interactions()
 	_update_prototype_attack()
@@ -216,11 +328,18 @@ func reset_modular_state() -> void:
 	disabled_explosion_timer.stop()
 	_part_flash_strength.clear()
 	_collision_damage_ready_at.clear()
+	_selected_energy_part_name = "left_arm"
+	_energy_shift_cooldown_remaining = 0.0
+	_overdrive_part_name = ""
+	_overdrive_duration_remaining = 0.0
+	_overdrive_recovery_remaining = 0.0
+	_overdrive_cooldown_remaining = 0.0
 	for part_name in BODY_PARTS:
 		part_health[part_name] = max_part_health
 		part_energy[part_name] = starting_energy_per_part
 		_part_flash_strength[part_name] = 0.0
 
+	_apply_balanced_energy_distribution()
 	_refresh_visual_state()
 
 
@@ -382,8 +501,8 @@ func reset_to_spawn() -> void:
 func _update_prototype_movement(delta: float) -> void:
 	var input_vector := _get_move_input_vector()
 	var move_direction := Vector3(input_vector.x, 0.0, input_vector.y)
-	var leg_drive_multiplier := _get_leg_drive_multiplier()
-	var leg_control_multiplier := _get_leg_control_multiplier()
+	var leg_drive_multiplier := get_effective_leg_drive_multiplier()
+	var leg_control_multiplier := _get_effective_leg_control_multiplier()
 
 	if move_direction.length_squared() > 0.0:
 		var input_strength := clampf(input_vector.length(), 0.0, 1.0)
@@ -428,7 +547,7 @@ func _update_prototype_attack() -> void:
 	var forward := -global_transform.basis.z
 	forward.y = 0.0
 	forward = forward.normalized()
-	var arm_power := _get_arm_power_multiplier()
+	var arm_power := get_effective_arm_power_multiplier()
 	apply_impulse(forward * attack_impulse_strength * arm_power * 0.25)
 
 	for node in get_tree().get_nodes_in_group("robots"):
@@ -464,7 +583,7 @@ func _apply_passive_collision_pushes() -> void:
 			push_direction = -global_transform.basis.z
 
 		push_direction = push_direction.normalized()
-		other_robot.apply_impulse(push_direction * passive_push_strength * _get_arm_power_multiplier())
+		other_robot.apply_impulse(push_direction * passive_push_strength * get_effective_arm_power_multiplier())
 		_try_apply_collision_damage(other_robot, push_direction)
 
 
@@ -478,7 +597,7 @@ func _try_apply_collision_damage(other_robot: RobotBase, push_direction: Vector3
 	if closing_speed < collision_damage_threshold:
 		return
 
-	var damage_amount := (closing_speed - collision_damage_threshold) * collision_damage_scale * _get_arm_power_multiplier()
+	var damage_amount := (closing_speed - collision_damage_threshold) * collision_damage_scale * get_effective_arm_power_multiplier()
 	if damage_amount <= 0.0:
 		return
 
@@ -606,6 +725,52 @@ func _find_nearby_detached_part() -> DetachedPart:
 	return nearest_part
 
 
+func _update_energy_state(delta: float) -> void:
+	_energy_shift_cooldown_remaining = maxf(_energy_shift_cooldown_remaining - delta, 0.0)
+	_overdrive_cooldown_remaining = maxf(_overdrive_cooldown_remaining - delta, 0.0)
+
+	if is_overdrive_active():
+		_overdrive_duration_remaining = maxf(_overdrive_duration_remaining - delta, 0.0)
+		if _overdrive_duration_remaining == 0.0:
+			_overdrive_recovery_remaining = overdrive_recovery_duration
+			_apply_overdrive_recovery_distribution(_overdrive_part_name)
+			_refresh_visual_state()
+		return
+
+	if _overdrive_recovery_remaining <= 0.0:
+		return
+
+	_overdrive_recovery_remaining = maxf(_overdrive_recovery_remaining - delta, 0.0)
+	if _overdrive_recovery_remaining == 0.0:
+		_apply_focus_energy_distribution(_selected_energy_part_name)
+		_refresh_visual_state()
+
+
+func _update_energy_controls() -> void:
+	if not is_player_controlled or _is_disabled:
+		return
+
+	if _energy_shift_cooldown_remaining <= 0.0:
+		if _is_energy_prev_just_pressed():
+			_cycle_energy_focus(-1)
+		elif _is_energy_next_just_pressed():
+			_cycle_energy_focus(1)
+
+	if _is_overdrive_just_pressed():
+		activate_overdrive()
+
+
+func _cycle_energy_focus(direction: int) -> void:
+	if BODY_PARTS.is_empty():
+		return
+
+	var current_index := BODY_PARTS.find(_selected_energy_part_name)
+	if current_index < 0:
+		current_index = 0
+	var target_index := posmod(current_index + direction, BODY_PARTS.size())
+	set_energy_focus(BODY_PARTS[target_index])
+
+
 func _get_move_input_vector() -> Vector2:
 	if not is_player_controlled or _is_disabled:
 		return Vector2.ZERO
@@ -623,34 +788,128 @@ func _get_move_input_vector() -> Vector2:
 	return keyboard_vector
 
 
-func _get_leg_drive_multiplier() -> float:
-	return lerpf(0.22, 1.0, _get_pair_operational_ratio("left_leg", "right_leg"))
+func _get_leg_health_multiplier() -> float:
+	return lerpf(0.22, 1.0, _get_pair_health_ratio("left_leg", "right_leg"))
 
 
-func _get_leg_control_multiplier() -> float:
-	return lerpf(0.4, 1.0, _get_pair_operational_ratio("left_leg", "right_leg"))
+func _get_effective_leg_control_multiplier() -> float:
+	return _get_leg_control_health_multiplier() * _get_leg_energy_multiplier()
 
 
-func _get_arm_power_multiplier() -> float:
+func _get_leg_control_health_multiplier() -> float:
+	return lerpf(0.4, 1.0, _get_pair_health_ratio("left_leg", "right_leg"))
+
+
+func _get_arm_health_multiplier() -> float:
 	if _is_disabled:
 		return 0.0
 
-	return lerpf(0.3, 1.0, _get_pair_operational_ratio("left_arm", "right_arm"))
+	return lerpf(0.3, 1.0, _get_pair_health_ratio("left_arm", "right_arm"))
 
 
-func _get_pair_operational_ratio(part_a: String, part_b: String) -> float:
-	var part_a_ratio := _get_part_operational_ratio(part_a)
-	var part_b_ratio := _get_part_operational_ratio(part_b)
+func _get_leg_energy_multiplier() -> float:
+	return _get_pair_energy_multiplier("left_leg", "right_leg")
+
+
+func _get_arm_energy_multiplier() -> float:
+	if _is_disabled:
+		return 0.0
+
+	return _get_pair_energy_multiplier("left_arm", "right_arm")
+
+
+func _get_pair_health_ratio(part_a: String, part_b: String) -> float:
+	var part_a_ratio := get_part_health_ratio(part_a)
+	var part_b_ratio := get_part_health_ratio(part_b)
 	return clampf((part_a_ratio + part_b_ratio) * 0.5, 0.0, 1.0)
 
 
-func _get_part_operational_ratio(part_name: String) -> float:
-	var health_ratio := get_part_health_ratio(part_name)
-	var energy_ratio := 1.0
-	if starting_energy_per_part > 0.0:
-		energy_ratio = clampf(float(part_energy.get(part_name, starting_energy_per_part)) / starting_energy_per_part, 0.5, 1.25)
+func _get_pair_energy_multiplier(part_a: String, part_b: String) -> float:
+	var part_a_multiplier := _get_part_energy_multiplier(part_a)
+	var part_b_multiplier := _get_part_energy_multiplier(part_b)
+	return clampf((part_a_multiplier + part_b_multiplier) * 0.5, minimum_energy_multiplier, maximum_energy_multiplier)
 
-	return clampf(health_ratio * energy_ratio, 0.0, 1.0)
+
+func _get_part_energy_multiplier(part_name: String) -> float:
+	if starting_energy_per_part <= 0.0:
+		return 1.0
+
+	return clampf(
+		get_part_energy_amount(part_name) / starting_energy_per_part,
+		minimum_energy_multiplier,
+		maximum_energy_multiplier
+	)
+
+
+func _is_energy_balanced() -> bool:
+	for part_name in BODY_PARTS:
+		if not is_equal_approx(get_part_energy_amount(part_name), starting_energy_per_part):
+			return false
+
+	return true
+
+
+func _get_energy_focus_color() -> Color:
+	if _selected_energy_part_name.contains("leg"):
+		return Color(0.2, 0.64, 0.92, 1.0)
+	return Color(0.98, 0.58, 0.14, 1.0)
+
+
+func _get_energy_visual_blend() -> float:
+	if is_overdrive_active():
+		return 0.85
+	if _overdrive_recovery_remaining > 0.0:
+		return 0.45
+	if _is_energy_balanced():
+		return 0.0
+	return 0.28
+
+
+func _apply_balanced_energy_distribution() -> void:
+	for part_name in BODY_PARTS:
+		part_energy[part_name] = starting_energy_per_part
+
+
+func _apply_focus_energy_distribution(part_name: String) -> void:
+	if not BODY_PARTS.has(part_name):
+		return
+
+	var focused_parts: Array = ENERGY_LIMB_PAIRS.get(part_name, [])
+	for body_part in BODY_PARTS:
+		part_energy[body_part] = unfocused_part_energy
+
+	for focused_part in focused_parts:
+		part_energy[focused_part] = focused_pair_energy
+
+	part_energy[part_name] = focused_part_energy
+
+
+func _apply_overdrive_energy_distribution(part_name: String) -> void:
+	if not BODY_PARTS.has(part_name):
+		return
+
+	var focused_parts: Array = ENERGY_LIMB_PAIRS.get(part_name, [])
+	for body_part in BODY_PARTS:
+		part_energy[body_part] = overdrive_other_part_energy
+
+	for focused_part in focused_parts:
+		part_energy[focused_part] = overdrive_pair_energy
+
+	part_energy[part_name] = overdrive_part_energy
+
+
+func _apply_overdrive_recovery_distribution(part_name: String) -> void:
+	if not BODY_PARTS.has(part_name):
+		return
+
+	var focused_parts: Array = ENERGY_LIMB_PAIRS.get(part_name, [])
+	for body_part in BODY_PARTS:
+		part_energy[body_part] = overdrive_recovery_other_part_energy
+
+	for focused_part in focused_parts:
+		part_energy[focused_part] = overdrive_recovery_pair_energy
+
+	part_energy[part_name] = overdrive_recovery_part_energy
 
 
 func _select_part_from_world_direction(world_direction: Vector3) -> String:
@@ -750,11 +1009,15 @@ func _refresh_core_visuals() -> void:
 		var base_emission_energy: float = float(base_values["emission_energy"])
 		var damage_blend := (1.0 - intact_ratio) * 0.4
 		var disabled_blend := 0.55 if _is_disabled else 0.0
+		var energy_color := _get_energy_focus_color()
+		var energy_blend := _get_energy_visual_blend()
 		material.albedo_color = base_albedo.lerp(Color(0.09, 0.08, 0.08, 1.0), damage_blend + disabled_blend)
+		material.albedo_color = material.albedo_color.lerp(energy_color, energy_blend * 0.18)
 		if material.emission_enabled:
 			var warning_color := Color(1.0, 0.28, 0.12, 1.0)
 			material.emission = base_emission.lerp(warning_color, damage_blend + disabled_blend)
-			material.emission_energy_multiplier = maxf(base_emission_energy, 0.12 + disabled_blend * 0.85)
+			material.emission = material.emission.lerp(energy_color, energy_blend)
+			material.emission_energy_multiplier = maxf(base_emission_energy, 0.12 + disabled_blend * 0.85 + energy_blend * 0.75)
 
 
 func _apply_material_damage_tint(mesh_instance: MeshInstance3D, health_ratio: float, flash_strength: float) -> void:
@@ -860,9 +1123,41 @@ func _is_attack_just_pressed() -> bool:
 	return keyboard_pressed or joypad_just_pressed
 
 
+func _is_energy_prev_just_pressed() -> bool:
+	var keyboard_pressed := Input.is_action_just_pressed(_player_action_name("energy_prev"))
+	var joypad_pressed := _is_joypad_button_pressed(JOY_BUTTON_LEFT_SHOULDER)
+	var joypad_just_pressed := joypad_pressed and not _was_joypad_energy_prev_pressed
+	_was_joypad_energy_prev_pressed = joypad_pressed
+	return keyboard_pressed or joypad_just_pressed
+
+
+func _is_energy_next_just_pressed() -> bool:
+	var keyboard_pressed := Input.is_action_just_pressed(_player_action_name("energy_next"))
+	var joypad_pressed := _is_joypad_button_pressed(JOY_BUTTON_RIGHT_SHOULDER)
+	var joypad_just_pressed := joypad_pressed and not _was_joypad_energy_next_pressed
+	_was_joypad_energy_next_pressed = joypad_pressed
+	return keyboard_pressed or joypad_just_pressed
+
+
+func _is_overdrive_just_pressed() -> bool:
+	var keyboard_pressed := Input.is_action_just_pressed(_player_action_name("overdrive"))
+	var joypad_pressed := _is_joypad_button_pressed(JOY_BUTTON_Y)
+	var joypad_just_pressed := joypad_pressed and not _was_joypad_overdrive_pressed
+	_was_joypad_overdrive_pressed = joypad_pressed
+	return keyboard_pressed or joypad_just_pressed
+
+
 func _is_joypad_attack_pressed() -> bool:
 	for device in _get_joypad_devices_to_read():
 		if Input.is_joy_button_pressed(device, JOY_BUTTON_A):
+			return true
+
+	return false
+
+
+func _is_joypad_button_pressed(button_index: JoyButton) -> bool:
+	for device in _get_joypad_devices_to_read():
+		if Input.is_joy_button_pressed(device, button_index):
 			return true
 
 	return false
