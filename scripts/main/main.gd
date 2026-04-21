@@ -732,22 +732,22 @@ func _on_post_death_support_state_changed(support_ship: PilotSupportShip) -> voi
 	_refresh_hud()
 
 
-func _on_post_death_support_payload_collected(support_ship: PilotSupportShip, _payload_name: String) -> void:
+func _on_post_death_support_payload_collected(support_ship: PilotSupportShip, payload_name: String) -> void:
 	if support_ship == null or not is_instance_valid(support_ship.owner_robot):
 		return
 
-	match_controller.record_support_pickup_collection(support_ship.owner_robot)
+	match_controller.record_support_pickup_collection(support_ship.owner_robot, payload_name)
 
 
 func _on_post_death_support_payload_used(
 	support_ship: PilotSupportShip,
-	_payload_name: String,
+	payload_name: String,
 	_target_robot: RobotBase
 ) -> void:
 	if support_ship == null or not is_instance_valid(support_ship.owner_robot):
 		return
 
-	match_controller.record_support_payload_use(support_ship.owner_robot)
+	match_controller.record_support_payload_use(support_ship.owner_robot, payload_name)
 
 
 func _get_selected_lab_robot() -> RobotBase:

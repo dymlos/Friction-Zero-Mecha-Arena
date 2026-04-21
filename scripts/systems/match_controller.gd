@@ -9,6 +9,13 @@ signal round_started(round_number: int)
 enum MatchMode { FFA, TEAMS }
 enum EliminationCause { VOID, EXPLOSION, UNSTABLE_EXPLOSION }
 
+const SUPPORT_PAYLOAD_LABELS := {
+	"stabilizer": "estabilizador",
+	"surge": "energia",
+	"mobility": "movilidad",
+	"interference": "interferencia",
+}
+
 @export var match_mode: MatchMode = MatchMode.FFA
 @export var match_config: MatchConfig
 @export_range(0.2, 6.0, 0.1) var round_reset_delay := 1.8
@@ -403,22 +410,24 @@ func record_edge_pickup_collection(robot: RobotBase) -> void:
 	_increment_robot_match_stat(robot, "edge_pickups")
 
 
-func record_support_pickup_collection(robot: RobotBase) -> void:
+func record_support_pickup_collection(robot: RobotBase, payload_name: String = "") -> void:
 	if robot == null:
 		return
 	if not _round_active or _round_reset_pending:
 		return
 
 	_increment_robot_match_stat(robot, "support_pickups")
+	_increment_support_payload_stat(robot, payload_name, "support_pickup")
 
 
-func record_support_payload_use(robot: RobotBase) -> void:
+func record_support_payload_use(robot: RobotBase, payload_name: String = "") -> void:
 	if robot == null:
 		return
 	if not _round_active or _round_reset_pending:
 		return
 
 	_increment_robot_match_stat(robot, "support_uses")
+	_increment_support_payload_stat(robot, payload_name, "support_use")
 
 
 func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> String:
@@ -622,10 +631,25 @@ func _build_support_stats_segment(stats: Dictionary) -> String:
 		return ""
 	if support_uses <= 0:
 		return "apoyo %s" % support_pickups
-	if support_uses == 1:
-		return "apoyo %s (1 uso)" % support_pickups
+	var usage_label := _build_plural_segment(support_uses, "uso", "usos")
+	var payload_breakdown := _build_support_payload_breakdown(stats, "support_use")
+	if payload_breakdown.is_empty():
+		return "apoyo %s (%s)" % [support_pickups, usage_label]
 
-	return "apoyo %s (%s usos)" % [support_pickups, support_uses]
+	return "apoyo %s (%s: %s)" % [support_pickups, usage_label, ", ".join(payload_breakdown)]
+
+
+func _build_support_payload_breakdown(stats: Dictionary, stat_prefix: String) -> Array[String]:
+	var segments: Array[String] = []
+	for payload_name in SUPPORT_PAYLOAD_LABELS.keys():
+		var stat_name := "%s_%s" % [stat_prefix, payload_name]
+		var amount := int(stats.get(stat_name, 0))
+		if amount <= 0:
+			continue
+
+		segments.append("%s %s" % [SUPPORT_PAYLOAD_LABELS[payload_name], amount])
+
+	return segments
 
 
 func _build_part_loss_stats_segment(stats: Dictionary) -> String:
@@ -766,7 +790,15 @@ func _ensure_competitor_match_stats(competitor_key: String) -> void:
 		"rescues": 0,
 		"edge_pickups": 0,
 		"support_pickups": 0,
+		"support_pickup_stabilizer": 0,
+		"support_pickup_surge": 0,
+		"support_pickup_mobility": 0,
+		"support_pickup_interference": 0,
 		"support_uses": 0,
+		"support_use_stabilizer": 0,
+		"support_use_surge": 0,
+		"support_use_mobility": 0,
+		"support_use_interference": 0,
 		"parts_lost": 0,
 		"arms_lost": 0,
 		"legs_lost": 0,
@@ -801,6 +833,15 @@ func _increment_competitor_match_stat(competitor_key: String, stat_name: String,
 	var stats := _get_competitor_match_stats(competitor_key)
 	stats[stat_name] = int(stats.get(stat_name, 0)) + amount
 	_competitor_match_stats[competitor_key] = stats
+
+
+func _increment_support_payload_stat(robot: RobotBase, payload_name: String, stat_prefix: String) -> void:
+	if robot == null or payload_name == "":
+		return
+	if not SUPPORT_PAYLOAD_LABELS.has(payload_name):
+		return
+
+	_increment_robot_match_stat(robot, "%s_%s" % [stat_prefix, payload_name])
 
 
 func _record_elimination_stats(robot: RobotBase, cause: EliminationCause) -> void:

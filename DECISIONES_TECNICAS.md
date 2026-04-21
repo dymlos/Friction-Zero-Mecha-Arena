@@ -264,7 +264,7 @@
 
 58. **El soporte post-muerte suma stats dentro del recap existente**
    - `PilotSupportShip` emite eventos de pickup/uso y `Main` los delega a `MatchController`, que agrega `support_pickups` y `support_uses` por competidor dentro de la misma linea `Stats | ...`.
-   - Motivo: el nuevo soporte Teams ya afectaba la ronda pero quedaba invisible en el cierre; registrar `apoyo N (M usos)` preserva legibilidad post-match sin abrir otra UI o duplicar ownership de estado.
+   - Motivo: el nuevo soporte Teams ya afectaba la ronda pero quedaba invisible en el cierre; registrar `apoyo N (M usos: estabilizador 1, energia 1, ...)` preserva legibilidad post-match sin abrir otra UI o duplicar ownership de estado.
 
 58. **El HUD compacto resume el layout activo del borde**
    - `Main` agrega `Borde | ...` a las lineas de ronda usando `ArenaBase.get_active_edge_pickup_layout_summary()`.

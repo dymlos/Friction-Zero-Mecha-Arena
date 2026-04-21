@@ -85,6 +85,31 @@ func _run() -> void:
 	Input.action_release("p2_throw_part")
 	await _wait_frames(2)
 
+	var surge_pickup: Node3D = null
+	for pickup in support_pickups:
+		if not (pickup is Node3D):
+			continue
+		if str((pickup as Node3D).get("payload_name")) == "surge":
+			surge_pickup = pickup as Node3D
+			break
+
+	_assert(
+		surge_pickup != null,
+		"El carril de soporte deberia ofrecer una segunda carga para desglosar stats por payload."
+	)
+	if surge_pickup == null:
+		await _cleanup_main(main)
+		_finish()
+		return
+
+	support_ship.global_position = surge_pickup.global_position
+	await _wait_frames(3)
+
+	Input.action_press("p2_throw_part")
+	await _wait_frames(2)
+	Input.action_release("p2_throw_part")
+	await _wait_frames(2)
+
 	robots[2].fall_into_void()
 	robots[3].fall_into_void()
 	await create_timer(0.05).timeout
@@ -93,16 +118,16 @@ func _run() -> void:
 	_assert(
 		_has_line_containing(
 			match_controller.get_match_result_lines(),
-			"Stats | Equipo 1 | apoyo 1 (1 uso) | bajas 1 (1 vacio)"
+			"Stats | Equipo 1 | apoyo 2 (2 usos: estabilizador 1, energia 1) | bajas 1 (1 vacio)"
 		),
-		"El cierre de partida deberia distinguir pickups/uso de soporte del equipo ganador."
+		"El cierre de partida deberia distinguir pickups y payloads usados por el soporte del equipo ganador."
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_round_recap_panel_lines(),
-			"Stats | Equipo 1 | apoyo 1 (1 uso) | bajas 1 (1 vacio)"
+			"Stats | Equipo 1 | apoyo 2 (2 usos: estabilizador 1, energia 1) | bajas 1 (1 vacio)"
 		),
-		"El recap lateral deberia reutilizar la misma lectura compacta del soporte Teams."
+		"El recap lateral deberia reutilizar el mismo desglose compacto de payloads de soporte."
 	)
 
 	await _cleanup_main(main)
