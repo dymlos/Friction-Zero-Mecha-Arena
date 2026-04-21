@@ -265,6 +265,9 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	var standings_line := _build_ffa_standings_line()
+	if standings_line != "":
+		lines.append(standings_line)
 	if _match_over:
 		lines.append_array(_build_match_stats_lines())
 
@@ -299,6 +302,9 @@ func get_match_result_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	var standings_line := _build_ffa_standings_line()
+	if standings_line != "":
+		lines.append(standings_line)
 	lines.append_array(_build_match_stats_lines())
 
 	if _last_elimination_summary != "":
@@ -672,6 +678,62 @@ func _build_plural_segment(amount: int, singular_label: String, plural_label: St
 
 func _build_compact_elimination_summary(robot: RobotBase, cause: EliminationCause) -> String:
 	return "%s %s" % [robot.display_name, _get_elimination_cause_label(cause)]
+
+
+func _build_ffa_standings_line() -> String:
+	if match_mode != MatchMode.FFA:
+		return ""
+	if _competitor_order.is_empty():
+		return ""
+
+	var ordered_competitors := _competitor_order.duplicate()
+	ordered_competitors.sort_custom(_compare_ffa_competitors_for_standings)
+	var segments: Array[String] = []
+	for index in range(ordered_competitors.size()):
+		var competitor_key := str(ordered_competitors[index])
+		segments.append("%s. %s (%s)" % [
+			index + 1,
+			_get_competitor_label_from_key(competitor_key),
+			int(_competitor_scores.get(competitor_key, 0)),
+		])
+
+	return "Posiciones | %s" % " | ".join(segments)
+
+
+func _compare_ffa_competitors_for_standings(a: String, b: String) -> bool:
+	var score_a := int(_competitor_scores.get(a, 0))
+	var score_b := int(_competitor_scores.get(b, 0))
+	if score_a != score_b:
+		return score_a > score_b
+
+	var finish_rank_a := _get_ffa_round_finish_rank(a)
+	var finish_rank_b := _get_ffa_round_finish_rank(b)
+	if finish_rank_a != finish_rank_b:
+		return finish_rank_a < finish_rank_b
+
+	return _competitor_order.find(a) < _competitor_order.find(b)
+
+
+func _get_ffa_round_finish_rank(competitor_key: String) -> int:
+	if match_mode != MatchMode.FFA:
+		return 999
+	if competitor_key == "":
+		return 999
+
+	for robot in registered_robots:
+		if not is_instance_valid(robot):
+			continue
+		if _get_competitor_key(robot) != competitor_key:
+			continue
+		if not is_robot_eliminated(robot):
+			return 1
+
+		var elimination_order := int(_round_elimination_order_by_robot_id.get(robot.get_instance_id(), 0))
+		if elimination_order > 0:
+			return _competitor_order.size() - elimination_order + 1
+		break
+
+	return _competitor_order.size() + 1
 
 
 func _get_robot_elimination_cause(robot: RobotBase) -> int:
