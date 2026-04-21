@@ -408,24 +408,28 @@
 88. **La interferencia del carril se comunica en el mismo roster de apoyo**
    - Si `PilotSupportShip` intenta cruzar un gate cerrado, entra en una ventana corta `interferido`; el glow vira a naranja y `get_status_summary()` agrega esa palabra al mismo estado compacto `apoyo ...`.
 
-89. **La nave post-muerte suma un beacon diegético en vez de otra capa de HUD**
+89. **El timing de cada gate se comunica sobre la propia compuerta**
+   - `SupportLaneGate` ahora expone `get_time_until_state_change()` y `get_transition_progress_ratio()`, y crea un `TimingVisual` runtime cuyo fill se vacia segun la ventana abierta/cerrada real.
+   - Motivo: los `gates` ya explicaban “bloqueado ahora”, pero no “cuanto falta”. Pegar esa lectura al obstaculo evita prueba/error, no suma HUD y reutiliza el mismo ciclo real del gameplay.
+
+90. **La nave post-muerte suma un beacon diegético en vez de otra capa de HUD**
    - `PilotSupportShip` ahora expone `StatusBeacon/RingVisual/PulseVisual` por encima del casco; el aro queda siempre visible con color de identidad y el pulso solo se enciende cuando la nave carga un `payload` o queda `interferida`.
    - Motivo: el slice Teams ya tenia profundidad mecanica, pero dependia demasiado del roster para entenderse en partida. Un beacon chico, ligado al propio actor y reutilizando el mismo acento cromatico refuerza lectura para jugador/espectador sin abrir UI nueva ni volver ruidosa la capa externa.
    - Motivo: preservar la legibilidad de pantalla compartida sin abrir otra UI. El propio carril telegraphia el bloqueo y el roster confirma por que la ayuda se demoro.
 
-90. **La lectura de rescate se mantiene tambien sobre el portador**
+91. **La lectura de rescate se mantiene tambien sobre el portador**
    - `RobotBase` conserva `CarryIndicator` para mostrar que tipo de payload lleva, pero cuando la carga es una `DetachedPart` tambien crea/mantiene `CarryOwnerIndicator`, un aro fino con el color de identidad del dueño original.
    - Motivo: la pieza tirada y el robot dueño ya explicaban urgencia/pertenencia/objetivo, pero al levantar la pieza se perdia la pista de “de quien es”. Duplicar esa pista sobre el portador mantiene claridad en 2v2 y FFA sin sumar otra linea persistente al HUD.
 
-91. **El portador tambien debe insinuar hacia donde devolver la pieza**
+92. **El portador tambien debe insinuar hacia donde devolver la pieza**
    - `RobotBase` ahora suma `CarryReturnIndicator`, una aguja corta junto al marker de carga que se tiñe con el color del dueño original y rota hacia ese robot mientras la `DetachedPart` sigue en mano.
    - Motivo: aun con `CarryOwnerIndicator`, en movimiento rapido seguia faltando una lectura inmediata de “adonde va esto”. Resolverlo dentro del mismo paquete visual del portador mantiene el rescate legible sin abrir HUD ni lineas tether ruidosas entre robots.
 
-92. **El soporte post-muerte selecciona objetivo sobre el mismo input secundario, no por auto-pick opaco**
+93. **El soporte post-muerte selecciona objetivo sobre el mismo input secundario, no por auto-pick opaco**
    - `PilotSupportShip` ahora usa `RobotBase.is_player_support_prev_just_pressed()/next_just_pressed()` para ciclar aliados o rivales validos segun el payload cargado, resume `apoyo <payload> > <objetivo>` en el roster y crea un `SupportTargetIndicator` diegetico sobre el robot apuntado; `interferencia` solo se consume si ese objetivo seleccionado entra en rango.
    - Motivo: la capa externa ya tenia cargas y rutas, pero seguia faltando una decision tactica explicita y legible. Reusar `energy_prev/next` evita abrir otra UI o mas botones, mientras el indicador en mundo aclara adonde va a caer el apoyo sin volver ruidosa la pantalla compartida.
 
-93. **`Interferencia` telegraphia su radio real desde la propia nave**
+94. **`Interferencia` telegraphia su radio real desde la propia nave**
    - `PilotSupportShip` ahora crea `InterferenceRangeIndicator` runtime: un cilindro fino orientado sobre el piso, visible solo cuando el payload cargado es `interference`, escalado con `support_interference_range * 2` y atenuado cuando el objetivo seleccionado aun queda fuera del radio real.
    - Motivo: con solo el `SupportTargetIndicator` atenuado, el gating espacial de `interferencia` seguia siendo facil de perder en pantalla compartida. Un anillo sobrio pegado a la nave explica el alcance real sin agregar otro panel ni ruido persistente cuando la carga no aplica.
 

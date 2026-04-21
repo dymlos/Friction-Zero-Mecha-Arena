@@ -40,10 +40,29 @@ func _run() -> void:
 		gate.has_method("set_forced_blocking_state"),
 		"Los gates del carril deberian poder forzar su estado para validacion headless."
 	)
+	_assert(
+		gate.has_method("get_time_until_state_change"),
+		"Cada gate deberia exponer cuanto falta para abrirse/cerrarse y evitar timing opaco en la nave de apoyo."
+	)
+	_assert(
+		gate.has_method("get_transition_progress_ratio"),
+		"Cada gate deberia exponer un ratio de progreso para sostener un cue diegetico del siguiente cambio."
+	)
 	if gate.has_method("set_support_active"):
 		gate.call("set_support_active", true)
 	if gate.has_method("set_forced_blocking_state"):
 		gate.call("set_forced_blocking_state", true)
+
+	var timing_visual := gate.get_node_or_null("TimingVisual") as MeshInstance3D
+	_assert(
+		timing_visual != null,
+		"El gate deberia sumar un cue diegetico propio para anticipar cuando vuelve a abrir/cerrar."
+	)
+	if timing_visual != null:
+		_assert(
+			timing_visual.visible,
+			"Con soporte activo, el cue de timing del gate deberia quedar visible."
+		)
 
 	var gate_position := (gate as Node3D).global_position
 	var gate_progress := float(arena.call("get_support_lane_progress_near", gate_position))
@@ -62,6 +81,51 @@ func _run() -> void:
 		clear_progress < 0.0,
 		"Si el gate esta abierto, el mismo tramo del carril no deberia marcar bloqueo."
 	)
+
+	if gate.has_method("clear_forced_blocking_state"):
+		gate.call("clear_forced_blocking_state")
+	await process_frame
+	await process_frame
+
+	var time_until_change_before := 0.0
+	if gate.has_method("get_time_until_state_change"):
+		time_until_change_before = float(gate.call("get_time_until_state_change"))
+		_assert(
+			time_until_change_before > 0.0,
+			"El gate activo deberia informar una ventana positiva hasta su siguiente cambio."
+		)
+
+	var progress_ratio_before := -1.0
+	if gate.has_method("get_transition_progress_ratio"):
+		progress_ratio_before = float(gate.call("get_transition_progress_ratio"))
+		_assert(
+			progress_ratio_before >= 0.0 and progress_ratio_before <= 1.0,
+			"El ratio del cue de timing deberia mantenerse normalizado."
+		)
+
+	var timing_scale_before := timing_visual.scale.x if timing_visual != null else 0.0
+	await process_frame
+	await process_frame
+
+	if gate.has_method("get_time_until_state_change"):
+		var time_until_change_after := float(gate.call("get_time_until_state_change"))
+		_assert(
+			time_until_change_after < time_until_change_before,
+			"El tiempo restante del gate deberia decrecer mientras el carril sigue activo."
+		)
+
+	if gate.has_method("get_transition_progress_ratio"):
+		var progress_ratio_after := float(gate.call("get_transition_progress_ratio"))
+		_assert(
+			not is_equal_approx(progress_ratio_after, progress_ratio_before),
+			"El ratio del cue diegetico deberia avanzar con el ciclo real del gate."
+		)
+
+	if timing_visual != null:
+		_assert(
+			not is_equal_approx(timing_visual.scale.x, timing_scale_before),
+			"El cue diegetico deberia actualizar su fill segun el tiempo restante del gate."
+		)
 
 	await _cleanup_arena(arena)
 	_finish()
