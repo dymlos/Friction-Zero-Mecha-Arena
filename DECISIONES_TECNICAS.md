@@ -122,9 +122,9 @@
    - `Main` define `hard_mode_player_slots` y asigna `ControlMode.HARD` o `EASY` durante el bootstrap local.
    - Motivo: volver el soporte Hard realmente testeable en el laboratorio sin introducir todavía menús, perfiles persistentes ni un selector previo a partida.
 
-31. **Roster compacto incluye etiqueta Easy/Hard**
-   - `MatchController` agrega el modo de control al estado textual de cada robot.
-   - Motivo: que la configuracion del laboratorio quede visible para jugadores y para debugging sin sumar HUD pesado.
+31. **Roster compacto incluye modo e hint de control**
+   - `MatchController` agrega el modo de control al estado textual de cada robot y, para jugadores locales, mantiene tambien `robot.get_input_hint()`.
+   - Motivo: que la configuracion real del laboratorio quede visible para jugadores y debugging durante toda la ronda sin sumar HUD pesado ni un selector nuevo.
 
 32. **Control Hard validado con test de impacto dirigido**
    - `robot_hard_control_mode_test.gd` comprueba que el mismo vector de golpe pasa de castigar pierna trasera a castigar un brazo cuando el torso gira en Hard.
@@ -153,6 +153,10 @@
 38. **Leyenda de controles visible desde el arranque**
    - `Main` construye el mensaje inicial del HUD leyendo `robot.get_input_hint()` por slot local.
    - Motivo: que los playtests Easy/Hard no dependan de recordar mappings fuera del juego y dejar explicito cuando un slot Hard sigue necesitando aim por stick derecho.
+
+39. **Politica Hard/local cerrada a favor de claridad**
+   - Se mantiene `WASD + TFGX` como unico camino Hard/local totalmente por teclado; el resto de los perfiles Hard queda explicitamente joypad-first y el roster persiste esa advertencia durante la ronda.
+   - Motivo: evitar nuevos solapes de teclas y UX confusa en teclado compartido hasta tener evidencia de playtests que justifique reabrir mappings o sumar selector runtime.
 
 ## Criterios mantenidos
 

@@ -7,7 +7,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Etapa 0 a 3: base jugable ya integrada en `main.tscn` con arena, camara compartida, empuje, caida al vacio y cierre de ronda simple por ultimo robot/equipo en pie.
 - Bootstrap local mas claro: `main.gd` ahora alinea robots con los spawns del arena blockout, asigna slots de jugador y admite 4 jugadores de teclado/slot por defecto para laboratorio 2v2.
 - Input local separado: `RobotBase` resuelve perfiles de teclado por slot y deja de leer joysticks "de todos" cuando el robot ya usa teclado.
-- Paridad/local Hard mas util: el perfil `WASD` ahora cubre lanzamiento de partes y tambien un camino Hard por teclado (`TFGX` para aim); el estado inicial del HUD deja visibles los controles activos por slot para no depender de memoria externa durante playtests.
+- Paridad/local Hard mas util: el perfil `WASD` ahora cubre lanzamiento de partes y tambien un camino Hard por teclado (`TFGX` para aim); el HUD expone los controles activos por slot al arranque y el roster los mantiene visibles durante la ronda para no depender de memoria externa en playtests.
 - Etapa 2v2: laboratorio 2v2 preparado con 4 robots por escena y `local_player_count=4`, incluyendo equipos por parejas para validar rescate aliado.
 - Validacion 2v2: el loop de rescate/negacion ya tiene cobertura headless en `main.tscn`, incluyendo indicador de carga visible y ventana de `throw_pickup_delay`.
 - Scoreboard minimo: `MatchController` ya registra bajas por vacio o explosion, suma ronda al ultimo contendiente en pie y reinicia todos los robots juntos tras una pausa corta.
@@ -17,7 +17,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Etapa 2 y 3: el ritmo de choque del laboratorio 2P ya fue afinado en `RobotBase` para que los intercambios sean más fluidos sin perder el carácter de choque decisivo.
 - Etapa 5: primer slice funcional implementado. Cada robot ahora puede redistribuir energia hacia una parte foco, alterar de forma real el empuje o la traccion y activar un overdrive corto con recuperacion/cooldown.
 - Etapa 6: soporte base implementado. `RobotBase` ya puede separar torso y chasis con `UpperBodyPivot`, usando esa orientacion para lectura de impactos y ataque en `ControlMode.HARD`; el soporte actual es joypad-first y no reemplaza el loop Easy por defecto.
-- Laboratorio Hard expuesto: `Main` ya puede asignar `ControlMode.HARD` por slot local mediante `hard_mode_player_slots`, y el roster deja visible si cada robot juega en Easy o Hard.
+- Laboratorio Hard expuesto: `Main` ya puede asignar `ControlMode.HARD` por slot local mediante `hard_mode_player_slots`, y el roster deja visible si cada robot juega en Easy o Hard junto al hint real de input.
 - Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
@@ -214,8 +214,8 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - el torso superior ya puede orientarse por separado del chasis usando `UpperBodyPivot`
 - la direccion de combate/impacto modular en Hard ya se lee desde ese torso, no desde el chasis completo
 - el soporte actual sigue siendo mayormente joypad-first, pero el perfil `WASD` ya tiene aim por teclado (`TFGX`) para habilitar al menos un slot Hard jugable sin joystick en laboratorio
-- `Main` ya puede forzar slots concretos a Hard desde `hard_mode_player_slots` y el estado inicial del HUD deja visible el mapping activo por slot
-- sigue pendiente decidir si conviene extender aim por teclado a otros perfiles locales o mantenerlos como soporte Hard solo con joypad
+- `Main` ya puede forzar slots concretos a Hard desde `hard_mode_player_slots`; el HUD deja visible el mapping activo por slot al inicio y el roster lo mantiene visible durante la ronda
+- se decidio mantener el camino Hard por teclado acotado a `WASD + TFGX`; el resto de los slots Hard queda explicitamente joypad-first hasta que playtests reales justifiquen reabrir esa decision o sumar un selector runtime
 
 ## Etapa 7 - Partes desprendidas, recuperacion y cuerpo averiado
 

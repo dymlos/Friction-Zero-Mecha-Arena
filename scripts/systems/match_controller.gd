@@ -214,6 +214,8 @@ func _build_robot_status_line(robot: RobotBase) -> String:
 		state_label,
 		robot.get_active_part_count(),
 	]
+	if robot.is_player_controlled:
+		line += " | %s" % robot.get_input_hint()
 	line += " | %s" % robot.get_energy_state_summary()
 	if robot.is_carrying_part():
 		line += " | carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name())

@@ -36,6 +36,14 @@ func _run() -> void:
 		var roster_text := (roster_label as Label).text
 		_assert(roster_text.contains("Player 1"), "El roster deberia seguir incluyendo al jugador Hard.")
 		_assert(roster_text.contains("Hard"), "El roster deberia hacer visible que un robot usa Control Hard.")
+		_assert(
+			roster_text.contains("WASD + aim TFGX"),
+			"El roster deberia mantener visible el perfil Hard local que ya usa aim por teclado."
+		)
+		_assert(
+			roster_text.contains("IJKL + aim stick derecho"),
+			"El roster deberia dejar explicito cuando un slot Hard local sigue siendo joypad-first para el aim."
+		)
 
 	var status_label := main.get_node_or_null("UI/MatchHud/Root/StatusLabel")
 	_assert(status_label is Label, "El HUD deberia exponer el estado inicial del laboratorio.")

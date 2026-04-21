@@ -21,7 +21,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - el torso superior puede separarse del chasis con `UpperBodyPivot`
   - la orientacion de combate e impactos modulares en Hard usa esa referencia
   - el soporte actual sigue siendo mayormente joypad-first, pero el perfil `WASD` ya tiene aim por teclado (`TFGX`) y accion dedicada de lanzamiento (`C`) para que exista al menos un slot Hard/local totalmente jugable en laboratorio
-  - `Main` puede asignar slots concretos a Hard y el HUD deja visible el mapping activo por slot en el estado inicial
+  - `Main` puede asignar slots concretos a Hard y el HUD deja visible el mapping activo por slot en el estado inicial; el roster mantiene esa referencia durante la ronda
 - partes desprendidas con propietario original, pickup por cercania y retorno parcial
 - transporte de partes que bloquea el ataque prototipo
 - negacion basica de partes si el portador cae al vacio
@@ -59,11 +59,12 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - Se expuso Hard en el laboratorio principal sin meter un menu nuevo:
   - `Main` ahora acepta `hard_mode_player_slots`
   - el bootstrap asigna `ControlMode.HARD` o `EASY` por slot local
-  - el roster agrega la etiqueta `Easy/Hard` por robot para que el setup quede legible durante playtests
+  - el roster agrega la etiqueta `Easy/Hard` por robot y ahora mantiene visible el hint real de input para que el setup quede legible durante playtests
 - Se cerro la brecha mas obvia del input local/Hard:
   - el perfil `WASD` ahora tiene `throw_part` dedicado (`C`) para no dejar a P1 sin negacion manual
   - `RobotBase` crea acciones `aim_*` y usa `TFGX` como aim por teclado en Hard para el slot/local mas simple de laboratorio
-  - `main.gd` resume en el estado inicial del HUD que mapping real esta usando cada slot, para que el playtest no dependa de recordar controles fuera de pantalla
+  - `main.gd` resume en el estado inicial del HUD que mapping real esta usando cada slot, y `MatchController` mantiene ese hint en el roster para que el playtest no dependa de recordar controles fuera de pantalla
+  - se decidio no extender por ahora el aim Hard a otros perfiles de teclado; fuera de `WASD + TFGX`, los slots Hard locales quedan explicitamente joypad-first
 - Se activo la primera presion de endgame que faltaba en mapas:
   - `MatchController` ahora mide tiempo de ronda y expone un factor de contraccion del arena
   - `Main` aplica ese factor sobre `ArenaBase` sin mezclar logica de match y geometria
@@ -115,7 +116,7 @@ Resultado: las doce verificaciones dedicadas pasan y el proyecto sigue iniciando
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
-- El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto sigue dependiendo de joypad si quiere torso independiente real.
+- El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
