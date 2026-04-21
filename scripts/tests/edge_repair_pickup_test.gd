@@ -1,10 +1,12 @@
 extends SceneTree
 
 const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const ARENA_SCENE := preload("res://scenes/arenas/arena_blockout.tscn")
 const PICKUP_SCENE := preload("res://scenes/pickups/edge_repair_pickup.tscn")
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
+const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
 
 var _failed := false
 
@@ -17,6 +19,7 @@ func _run() -> void:
 	await _validate_robot_repair_behavior()
 	await _validate_pickup_cooldown_telegraph()
 	await _validate_main_scene_edge_pickups()
+	await _validate_pickups_follow_arena_contraction()
 	_finish()
 
 
@@ -123,6 +126,67 @@ func _validate_main_scene_edge_pickups() -> void:
 	_assert(pickup_near_edge, "Los pickups nuevos deberian vivir cerca del riesgo de borde, no en el centro limpio.")
 
 	await _cleanup_node(main)
+
+
+func _validate_pickups_follow_arena_contraction() -> void:
+	var arena := ARENA_SCENE.instantiate()
+	root.add_child(arena)
+
+	await process_frame
+	await process_frame
+
+	_assert(arena is ArenaBase, "La escena de arena deberia exponer el contrato base de contraccion.")
+	if not (arena is ArenaBase):
+		await _cleanup_node(arena)
+		return
+
+	var arena_base := arena as ArenaBase
+	var initial_half_size := arena_base.get_safe_play_area_size() * 0.5
+	var pickups := _get_edge_pickups(arena)
+	_assert(pickups.size() >= 2, "La escena de arena deberia mantener pickups de borde durante la contraccion.")
+	if pickups.size() < 2:
+		await _cleanup_node(arena)
+		return
+
+	var initial_abs_x: Array[float] = []
+	for pickup in pickups:
+		var local_position := arena_base.to_local(pickup.global_position)
+		initial_abs_x.append(absf(local_position.x))
+		_assert(
+			absf(local_position.x) >= initial_half_size.x * 0.55,
+			"Antes de la contraccion, los pickups deberian seguir cargados hacia el borde."
+		)
+
+	arena_base.set_play_area_scale(0.5)
+	await process_frame
+
+	var shrunk_half_size := arena_base.get_safe_play_area_size() * 0.5
+	for index in range(pickups.size()):
+		var pickup := pickups[index]
+		var local_position := arena_base.to_local(pickup.global_position)
+		_assert(
+			absf(local_position.x) < initial_abs_x[index],
+			"Los pickups de borde deberian moverse hacia adentro al contraerse el arena."
+		)
+		_assert(
+			arena_base.is_position_inside_play_area(pickup.global_position),
+			"Los pickups de borde deberian seguir dentro del area viva cuando el arena se contrae."
+		)
+		_assert(
+			absf(local_position.x) >= shrunk_half_size.x * 0.45,
+			"Los pickups de borde deberian seguir cerca del nuevo borde util, no migrar al centro."
+		)
+
+	await _cleanup_node(arena)
+
+
+func _get_edge_pickups(root_node: Node) -> Array[EdgeRepairPickup]:
+	var pickups: Array[EdgeRepairPickup] = []
+	for child in root_node.find_children("*", "Node3D", true, false):
+		if child is EdgeRepairPickup:
+			pickups.append(child as EdgeRepairPickup)
+
+	return pickups
 
 
 func _cleanup_node(node: Node) -> void:

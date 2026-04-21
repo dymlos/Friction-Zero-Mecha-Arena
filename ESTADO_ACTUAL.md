@@ -32,7 +32,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - cierre de ronda simple: el ultimo robot/equipo en pie suma una ronda y todos los robots vuelven juntos tras un delay corto
 - cierre de match simple: el laboratorio juega a `first-to-3`; cuando un equipo alcanza el objetivo, el HUD anuncia al ganador de la partida y el match se reinicia limpio tras una pausa corta
 - presion final de arena: el piso y sus edge markers se contraen de forma progresiva segun el tiempo de ronda, y el HUD agrega una linea corta cuando empieza el cierre
-- incentivo real de borde: el arena blockout ahora tiene pickups de reparacion instantanea en los flancos; curan la parte activa mas dañada y obligan a exponerse cerca del vacio para estabilizarse
+- incentivo real de borde: el arena blockout ahora tiene pickups de reparacion instantanea en los flancos; curan la parte activa mas dañada, obligan a exponerse cerca del vacio para estabilizarse y siguen el borde vivo cuando la arena se contrae
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
 - HUD minimo con estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia y si un robot transporta una parte
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
@@ -82,6 +82,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - `arena_blockout.tscn` suma dos bloques estaticos simples bajo `CoverBlocks`, uno por flanco
   - `ArenaBase` ahora cachea su posicion original y los desplaza con la misma escala del area segura
   - el objetivo es reforzar “duelo estable pero riesgoso” en bordes sin llenar el centro de obstaculos ni dejar cover fuera de fase cuando empieza la contraccion
+- Se corrigio el contrato espacial de los pickups de borde:
+  - `ArenaBase` ahora tambien cachea la posicion local original de los `edge_repair_pickups`
+  - cuando la arena se contrae, pickups y coberturas usan la misma escala X/Z y siguen dentro del area viva
+  - se agrego coverage dedicado para asegurar que el pickup se mueve hacia adentro pero sigue cargado al nuevo borde, en vez de quedarse flotando fuera del duelo de endgame
 - Se hizo explicito el bootstrap local del prototipo: `main.gd` ahora asigna slots, spawns y deja cuatro jugadores activos por defecto.
 - Se separo ownership de input local con perfiles de teclado por jugador y fallback de joystick por slot, evitando que varios robots lean el mismo dispositivo.
 - Se agrego un HUD compacto de ronda:
@@ -142,7 +146,7 @@ Resultado: las quince verificaciones dedicadas pasan y el proyecto sigue inician
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
 - El nuevo incentivo de borde sigue siendo deliberadamente minimo: solo existen pickups de reparacion fijos; todavia faltan variacion semialeatoria y otros tipos de item universal.
-- La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos ligados a los pickups; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
+- La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.

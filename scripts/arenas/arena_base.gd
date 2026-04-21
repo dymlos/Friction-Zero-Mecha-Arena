@@ -19,12 +19,15 @@ var _platform_shape: BoxShape3D = null
 var _platform_mesh: BoxMesh = null
 var _cover_block_nodes: Array[Node3D] = []
 var _cover_block_original_positions: Dictionary = {}
+var _edge_pickup_nodes: Array[Node3D] = []
+var _edge_pickup_original_local_positions: Dictionary = {}
 
 
 func _ready() -> void:
 	_current_play_area_size = safe_play_area_size
 	_prepare_runtime_resources()
 	_cache_cover_block_positions()
+	_cache_edge_pickup_positions()
 	_update_play_area_visuals()
 
 
@@ -90,6 +93,22 @@ func _cache_cover_block_positions() -> void:
 		_cover_block_original_positions[cover_block.get_instance_id()] = cover_block.position
 
 
+func _cache_edge_pickup_positions() -> void:
+	_edge_pickup_nodes.clear()
+	_edge_pickup_original_local_positions.clear()
+
+	for node in get_tree().get_nodes_in_group("edge_repair_pickups"):
+		if not (node is Node3D):
+			continue
+
+		var pickup := node as Node3D
+		if not is_ancestor_of(pickup):
+			continue
+
+		_edge_pickup_nodes.append(pickup)
+		_edge_pickup_original_local_positions[pickup.get_instance_id()] = to_local(pickup.global_position)
+
+
 func _update_play_area_visuals() -> void:
 	var current_size := get_safe_play_area_size()
 	if _platform_shape != null:
@@ -106,6 +125,7 @@ func _update_play_area_visuals() -> void:
 	west_edge.transform = Transform3D(Basis().scaled(Vector3(0.14, 1.0, current_size.y)), Vector3(-half_width, edge_height, 0.0))
 	east_edge.transform = Transform3D(Basis().scaled(Vector3(0.14, 1.0, current_size.y)), Vector3(half_width, edge_height, 0.0))
 	_update_cover_block_positions(current_size)
+	_update_edge_pickup_positions(current_size)
 
 
 func _update_cover_block_positions(current_size: Vector2) -> void:
@@ -124,3 +144,22 @@ func _update_cover_block_positions(current_size: Vector2) -> void:
 
 		var position := original_position as Vector3
 		cover_block.position = Vector3(position.x * width_ratio, position.y, position.z * depth_ratio)
+
+
+func _update_edge_pickup_positions(current_size: Vector2) -> void:
+	if _edge_pickup_nodes.is_empty():
+		return
+
+	var width_ratio := current_size.x / maxf(safe_play_area_size.x, 0.01)
+	var depth_ratio := current_size.y / maxf(safe_play_area_size.y, 0.01)
+	for pickup in _edge_pickup_nodes:
+		if not is_instance_valid(pickup):
+			continue
+
+		var original_position: Variant = _edge_pickup_original_local_positions.get(pickup.get_instance_id(), to_local(pickup.global_position))
+		if not (original_position is Vector3):
+			continue
+
+		var local_position := original_position as Vector3
+		var scaled_local_position := Vector3(local_position.x * width_ratio, local_position.y, local_position.z * depth_ratio)
+		pickup.global_position = to_global(scaled_local_position)
