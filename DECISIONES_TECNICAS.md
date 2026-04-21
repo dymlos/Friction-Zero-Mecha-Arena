@@ -333,9 +333,13 @@
    - `Main` ahora reserva `SupportRoot`, crea una `PilotSupportShip` cuando `record_robot_elimination()` deja a un aliado vivo en `Teams` y la limpia en cada `round_started`; `FFA` comparte la estructura base de escena pero no activa ese flujo.
    - Motivo: empezar a diferenciar Team vs Team sin romper la claridad del laboratorio libre ni abrir una segunda capa de reglas en el modo que todavia depende mas de supervivencia/oportunismo que de rescate coordinado.
 
-82. **La primera ayuda post-muerte es `estabilizador`, no interferencia ofensiva**
-   - `PilotSupportShip` se mantiene en un carril externo derivado de `ArenaBase.get_support_lane_spawn_position_near()`, recoge `PilotSupportPickup` ocultos hasta que exista soporte activo y, al gastar `throw_part`, repara la parte activa mas dañada del aliado vivo; el roster solo agrega `apoyo` / `apoyo estabilizador`.
-   - Motivo: Team vs Team necesitaba una primera accion util para el eliminado, pero empezar con daño externo o crowd-control sobre rivales habria aumentado mucho el riesgo de ruido visual y de “me gano un muerto”. Reusar `repair_most_damaged_part()` da comeback y rescate sin competir con el choque principal.
+82. **La capa post-muerte arranca con ayudas pro-aliado, no interferencia ofensiva**
+   - `PilotSupportShip` se mantiene en un carril externo derivado de `ArenaBase.get_support_lane_spawn_position_near()`, recoge `PilotSupportPickup` ocultos hasta que exista soporte activo y, al gastar `throw_part`, puede entregar `estabilizador` o `energia` al aliado vivo; el roster solo agrega `apoyo` / `apoyo estabilizador` / `apoyo energia`.
+   - Motivo: Team vs Team necesitaba una primera accion util para el eliminado, pero empezar con daño externo o crowd-control sobre rivales habria aumentado mucho el riesgo de ruido visual y de “me gano un muerto”. Reusar hooks ya existentes del aliado mantiene comeback y rescate sin competir con el choque principal.
+
+83. **La segunda ayuda post-muerte reutiliza `energy surge`, no un boost nuevo**
+   - Los pickups laterales del carril externo ahora pueden cargar `energia`; al gastarla, `PilotSupportShip` llama a `RobotBase.apply_energy_surge()` sobre el aliado vivo y hereda la misma lectura compacta (`energia`) que ya existe para el pickup de borde.
+   - Motivo: sumar una segunda decision real al soporte de `Teams` sin abrir otra regla de buffs, otro VFX o una logica nueva de targeting; `energy surge` ya existe, es tactica, y deja claro que la nave sigue reforzando al aliado en vez de disputar el choque ella misma.
 
 ## Criterios mantenidos
 

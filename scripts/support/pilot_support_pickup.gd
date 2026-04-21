@@ -2,6 +2,11 @@ extends Node3D
 class_name PilotSupportPickup
 
 const PAYLOAD_STABILIZER := "stabilizer"
+const PAYLOAD_SURGE := "surge"
+const PAYLOAD_LABELS := {
+	PAYLOAD_STABILIZER: "estabilizador",
+	PAYLOAD_SURGE: "energia",
+}
 
 @export var pickup_radius := 0.85
 @export var payload_name := PAYLOAD_STABILIZER
@@ -46,12 +51,39 @@ func try_collect(ship: Node) -> bool:
 
 
 func _refresh_visual_state() -> void:
+	_apply_payload_colors()
 	var should_show := _support_active and not _collected
 	visible = should_show
 	if pedestal_visual != null:
 		pedestal_visual.visible = should_show
 	if core_visual != null:
 		core_visual.visible = should_show
+
+
+func _apply_payload_colors() -> void:
+	var accent_color := _get_payload_accent_color()
+	if pedestal_visual != null:
+		var pedestal_material := pedestal_visual.material_override as StandardMaterial3D
+		if pedestal_material != null:
+			pedestal_material.albedo_color = accent_color.darkened(0.48)
+			pedestal_material.emission_enabled = false
+			pedestal_material.roughness = 0.55
+
+	if core_visual != null:
+		var core_material := core_visual.material_override as StandardMaterial3D
+		if core_material != null:
+			core_material.albedo_color = accent_color
+			core_material.emission_enabled = true
+			core_material.emission = accent_color
+			core_material.emission_energy_multiplier = 1.45
+			core_material.roughness = 0.2
+
+
+func _get_payload_accent_color() -> Color:
+	if payload_name == PAYLOAD_SURGE:
+		return Color(0.22, 0.84, 0.96, 1.0)
+
+	return Color(0.96, 0.78, 0.22, 1.0)
 
 
 func _duplicate_runtime_material(visual: MeshInstance3D) -> void:

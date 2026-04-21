@@ -9,6 +9,7 @@ signal state_changed(support_ship: PilotSupportShip)
 
 @export var move_speed := 8.5
 @export_range(0.05, 0.5, 0.01) var support_repair_ratio := 0.22
+@export_range(0.2, 3.0, 0.1) var support_energy_surge_duration := 1.6
 
 var owner_robot: RobotBase = null
 var allied_robot: RobotBase = null
@@ -52,10 +53,7 @@ func get_status_summary() -> String:
 
 
 func get_support_payload_label() -> String:
-	if _support_payload_name != "":
-		return "estabilizador"
-
-	return ""
+	return str(PilotSupportPickup.PAYLOAD_LABELS.get(_support_payload_name, ""))
 
 
 func has_support_payload() -> bool:
@@ -73,16 +71,20 @@ func store_support_payload(payload_name: String) -> bool:
 
 
 func use_support_payload() -> bool:
-	if _support_payload_name != PilotSupportPickup.PAYLOAD_STABILIZER:
-		return false
-
 	var target_robot := _resolve_support_target()
 	if target_robot == null:
 		return false
 
-	var repaired_part := target_robot.repair_most_damaged_part(target_robot.max_part_health * support_repair_ratio)
-	if repaired_part == "":
-		return false
+	match _support_payload_name:
+		PilotSupportPickup.PAYLOAD_STABILIZER:
+			var repaired_part := target_robot.repair_most_damaged_part(target_robot.max_part_health * support_repair_ratio)
+			if repaired_part == "":
+				return false
+		PilotSupportPickup.PAYLOAD_SURGE:
+			if not target_robot.apply_energy_surge(support_energy_surge_duration):
+				return false
+		_:
+			return false
 
 	_support_payload_name = ""
 	_refresh_visuals()
@@ -160,11 +162,19 @@ func _refresh_visuals() -> void:
 	var hull_color := identity_color.darkened(0.32)
 	var glow_color := identity_color
 	if has_support_payload():
-		hull_color = hull_color.lerp(Color(1.0, 0.8, 0.28, 1.0), 0.4)
-		glow_color = glow_color.lerp(Color(1.0, 0.85, 0.3, 1.0), 0.55)
+		var payload_color := _get_support_payload_color()
+		hull_color = hull_color.lerp(payload_color.darkened(0.18), 0.42)
+		glow_color = glow_color.lerp(payload_color, 0.68)
 
 	_apply_color_to_visual(hull_visual, hull_color, false)
 	_apply_color_to_visual(glow_visual, glow_color, true)
+
+
+func _get_support_payload_color() -> Color:
+	if _support_payload_name == PilotSupportPickup.PAYLOAD_SURGE:
+		return Color(0.22, 0.84, 0.96, 1.0)
+
+	return Color(0.98, 0.8, 0.28, 1.0)
 
 
 func _apply_color_to_visual(visual: MeshInstance3D, color: Color, enable_emission: bool) -> void:

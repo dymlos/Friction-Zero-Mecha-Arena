@@ -111,6 +111,41 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 				"Tras usar la carga, el roster deberia limpiar el estado de apoyo pendiente."
 			)
 
+			var support_surge_pickup: Node3D = null
+			for pickup in support_pickups:
+				if not (pickup is Node3D):
+					continue
+				if str((pickup as Node3D).get("payload_name")) == "surge":
+					support_surge_pickup = pickup as Node3D
+					break
+
+			_assert(
+				support_surge_pickup != null,
+				"El carril externo deberia ofrecer al menos un segundo payload liviano de apoyo."
+			)
+			if support_surge_pickup != null:
+				support_ship.global_position = support_surge_pickup.global_position
+				await _wait_frames(3)
+
+				_assert(
+					roster_label.text.contains("energia"),
+					"El roster deberia distinguir cuando la nave lleva una carga de energia."
+				)
+
+				Input.action_press("p2_throw_part")
+				await _wait_frames(2)
+				Input.action_release("p2_throw_part")
+				await _wait_frames(2)
+
+				_assert(
+					robots[0].is_energy_surge_active(),
+					"La nueva carga de apoyo deberia reforzar la energia del aliado vivo."
+				)
+				_assert(
+					not roster_label.text.contains("apoyo energia"),
+					"Tras gastar la carga de energia, el roster deberia limpiar el payload pendiente."
+				)
+
 	if roster_label != null:
 		_assert(
 			roster_label.text.contains("apoyo"),
