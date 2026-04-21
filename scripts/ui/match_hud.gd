@@ -7,11 +7,15 @@ class_name MatchHud
 @onready var recap_panel: Control = %RecapPanel
 @onready var recap_title_label: Label = %RecapTitleLabel
 @onready var recap_label: Label = %RecapLabel
+@onready var match_result_panel: Control = %MatchResultPanel
+@onready var match_result_title_label: Label = %MatchResultTitleLabel
+@onready var match_result_label: Label = %MatchResultLabel
 
 
 func _ready() -> void:
 	show_status("Friction Zero: prototipo base")
 	show_recap("", [])
+	show_match_result("", [])
 
 
 func show_status(message: String) -> void:
@@ -37,3 +41,15 @@ func show_recap(title: String, lines: Array[String]) -> void:
 
 	recap_title_label.text = title
 	recap_label.text = "\n".join(lines)
+
+
+func show_match_result(title: String, lines: Array[String]) -> void:
+	var should_show := title != "" and not lines.is_empty()
+	match_result_panel.visible = should_show
+	if not should_show:
+		match_result_title_label.text = ""
+		match_result_label.text = ""
+		return
+
+	match_result_title_label.text = title
+	match_result_label.text = "\n".join(lines)

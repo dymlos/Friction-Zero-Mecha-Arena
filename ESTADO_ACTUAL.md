@@ -68,12 +68,19 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - recap de cierre visible solo fuera del combate:
   - `MatchController` ahora expone un recap estructurado (`Decision`, `Marcador` y estado final por robot) para la ronda o partida cerrada
   - `MatchHud` lo dibuja en un `RecapPanel` lateral oculto durante la ronda activa, de modo que la pelea sigue limpia y el detalle aparece solo cuando ya importa entender por que se perdio
+- cierre de partida reforzado sin salir del laboratorio:
+  - cuando el match termina, `MatchHud` ahora suma un `MatchResultPanel` centrado con `Partida cerrada`, ganador, marcador final y `Reinicio | F5 ahora o Xs`
+  - `Main` permite reiniciar el laboratorio de inmediato con `F5` solo durante `_match_over`, manteniendo el recap lateral como detalle secundario en vez de abrir otra escena de post-partida
+- timers de reinicio/respawn ahora son propios y cancelables:
+  - `MatchController` usa un `TransitionTimer` interno para reset de ronda y reinicio de match, en vez de `SceneTreeTimer` efimeros
+  - `RobotBase` usa un `RespawnTimer` propio para vacio/cuerpo inutilizado, de modo que un reinicio manual o cambio de laboratorio no deja callbacks stale ni leaks
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
 - indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
 - lectura diegética de daño modular: cada extremidad ya puede mostrar `Smoke` cuando está dañada y `Spark` cuando entra en estado crítico; ambos marcadores viven sobre la pieza, no en el HUD, y desaparecen al repararla o perderla.
 - validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
 - validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda, scoreboard y ahora tambien un resumen compacto del orden de bajas.
+- validacion automatizada del cierre de partida reforzado: `match_completion_test.gd` ahora cubre tambien el panel final + linea `Reinicio | F5...`, y `match_manual_restart_test.gd` verifica reinicio manual inmediato con score limpio sobre `main.tscn`.
 - validacion automatizada FFA: `ffa_mode_bootstrap_test.gd`, `ffa_lab_scene_test.gd` y `ffa_round_resolution_test.gd` comprueban que el laboratorio libre no hereda alianzas falsas del setup 2v2, mantiene el marcador individual y resuelve una ronda completa con ganador por robot
 - validacion automatizada de explosion inestable: `robot_unstable_explosion_test.gd` compara la variante base contra la version nacida en `Overdrive`, y `match_unstable_explosion_readability_test.gd` verifica su lectura compacta en `main.tscn`
 

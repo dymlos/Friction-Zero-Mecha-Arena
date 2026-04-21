@@ -34,6 +34,13 @@ var _round_status_line := ""
 var _round_elapsed_seconds := 0.0
 var _hud_detail_mode_override := -1
 var _round_lifecycle_token := 0
+var _match_restart_deadline_msec := 0
+var _transition_timer: Timer = null
+var _pending_transition := ""
+
+
+func _ready() -> void:
+	_ensure_transition_timer()
 
 
 func register_robot(robot: RobotBase) -> void:
@@ -64,6 +71,7 @@ func _process(delta: float) -> void:
 
 func start_match() -> void:
 	_round_lifecycle_token += 1
+	_cancel_pending_transition()
 	_round_number = 1
 	_round_active = true
 	_round_reset_pending = false
@@ -82,6 +90,7 @@ func start_match() -> void:
 			_register_competitor(robot)
 
 	_round_elapsed_seconds = 0.0
+	_match_restart_deadline_msec = 0
 	_round_status_line = "Ronda %s en juego" % _round_number
 	round_started.emit(_round_number)
 
@@ -146,6 +155,9 @@ func get_round_state_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	var restart_prompt_line := get_match_restart_prompt_line()
+	if restart_prompt_line != "":
+		lines.append(restart_prompt_line)
 	var recap_line := get_round_recap_line()
 	if recap_line != "":
 		lines.append(recap_line)
@@ -256,7 +268,67 @@ func get_round_recap_panel_lines() -> Array[String]:
 
 		lines.append(_build_robot_recap_panel_line(robot))
 
+	var restart_prompt_line := get_match_restart_prompt_line()
+	if restart_prompt_line != "":
+		lines.append(restart_prompt_line)
+
 	return lines
+
+
+func get_match_result_title() -> String:
+	if not _match_over:
+		return ""
+
+	return "Partida cerrada"
+
+
+func get_match_result_lines() -> Array[String]:
+	if not _match_over:
+		return []
+
+	var lines: Array[String] = []
+	if _round_status_line != "":
+		lines.append(_round_status_line)
+
+	var score_line := _build_score_summary_line()
+	if score_line != "":
+		lines.append(score_line)
+
+	if _last_elimination_summary != "":
+		lines.append("Cierre | %s" % _last_elimination_summary)
+
+	var restart_prompt_line := get_match_restart_prompt_line()
+	if restart_prompt_line != "":
+		lines.append(restart_prompt_line)
+
+	return lines
+
+
+func get_match_restart_time_left() -> float:
+	if not _match_over:
+		return 0.0
+	if _match_restart_deadline_msec <= 0:
+		return 0.0
+
+	var remaining_msec: int = maxi(_match_restart_deadline_msec - Time.get_ticks_msec(), 0)
+	return float(remaining_msec) / 1000.0
+
+
+func get_match_restart_prompt_line() -> String:
+	if not _match_over:
+		return ""
+
+	return "Reinicio | F5 ahora o %.1fs" % snappedf(get_match_restart_time_left(), 0.1)
+
+
+func request_match_restart() -> bool:
+	if not _match_over:
+		return false
+
+	_round_lifecycle_token += 1
+	_cancel_pending_transition()
+	_restart_match()
+	return true
 
 
 func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> String:
@@ -488,6 +560,7 @@ func _finish_round_draw() -> void:
 
 func _finish_match_with_winner(winner_key: String, winner_score: int) -> void:
 	_match_over = true
+	_match_restart_deadline_msec = Time.get_ticks_msec() + int(round(match_restart_delay * 1000.0))
 	_round_status_line = "%s gana la partida %s-%s" % [
 		_get_competitor_label_from_key(winner_key),
 		winner_score,
@@ -497,25 +570,15 @@ func _finish_match_with_winner(winner_key: String, winner_score: int) -> void:
 
 
 func _schedule_round_reset() -> void:
-	var token := _round_lifecycle_token
-	await get_tree().create_timer(round_reset_delay).timeout
-	if not is_inside_tree():
-		return
-	if token != _round_lifecycle_token:
-		return
-
-	_reset_round()
+	_ensure_transition_timer()
+	_pending_transition = "round_reset"
+	_transition_timer.start(round_reset_delay)
 
 
 func _schedule_match_restart() -> void:
-	var token := _round_lifecycle_token
-	await get_tree().create_timer(match_restart_delay).timeout
-	if not is_inside_tree():
-		return
-	if token != _round_lifecycle_token:
-		return
-
-	_restart_match()
+	_ensure_transition_timer()
+	_pending_transition = "match_restart"
+	_transition_timer.start(match_restart_delay)
 
 
 func _reset_round() -> void:
@@ -533,6 +596,7 @@ func _reset_round() -> void:
 	_round_active = true
 	_round_reset_pending = false
 	_round_elapsed_seconds = 0.0
+	_match_restart_deadline_msec = 0
 	_round_status_line = "Ronda %s en juego" % _round_number
 	round_started.emit(_round_number)
 
@@ -544,7 +608,34 @@ func _restart_match() -> void:
 
 		robot.reset_to_spawn()
 
+	_match_restart_deadline_msec = 0
 	start_match()
+
+
+func _ensure_transition_timer() -> void:
+	if is_instance_valid(_transition_timer):
+		return
+
+	_transition_timer = Timer.new()
+	_transition_timer.name = "TransitionTimer"
+	_transition_timer.one_shot = true
+	add_child(_transition_timer)
+	_transition_timer.timeout.connect(_on_transition_timer_timeout)
+
+
+func _cancel_pending_transition() -> void:
+	_pending_transition = ""
+	if is_instance_valid(_transition_timer):
+		_transition_timer.stop()
+
+
+func _on_transition_timer_timeout() -> void:
+	var pending_transition := _pending_transition
+	_pending_transition = ""
+	if pending_transition == "round_reset":
+		_reset_round()
+	elif pending_transition == "match_restart":
+		_restart_match()
 
 
 func _build_score_summary_line() -> String:

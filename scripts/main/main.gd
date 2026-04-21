@@ -21,6 +21,7 @@ const HUD_DETAIL_TOGGLE_KEY := KEY_F1
 const LAB_SELECTOR_SLOT_KEY := KEY_F2
 const LAB_SELECTOR_ARCHETYPE_KEY := KEY_F3
 const LAB_SELECTOR_CONTROL_KEY := KEY_F4
+const MATCH_RESTART_KEY := KEY_F5
 const DEFAULT_LAB_ARCHETYPES := [
 	ARIETE_ARCHETYPE,
 	GRUA_ARCHETYPE,
@@ -72,6 +73,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	var key_event := event as InputEventKey
 	if not key_event.pressed or key_event.echo:
+		return
+	if key_event.keycode == MATCH_RESTART_KEY and match_controller.request_match_restart():
+		ui.show_status(_build_hud_toggle_status())
+		_refresh_hud()
+		get_viewport().set_input_as_handled()
 		return
 	if key_event.keycode != HUD_DETAIL_TOGGLE_KEY:
 		if key_event.keycode == LAB_SELECTOR_SLOT_KEY:
@@ -274,6 +280,10 @@ func _refresh_hud() -> void:
 	ui.show_recap(
 		match_controller.get_round_recap_panel_title(),
 		match_controller.get_round_recap_panel_lines()
+	)
+	ui.show_match_result(
+		match_controller.get_match_result_title(),
+		match_controller.get_match_result_lines()
 	)
 
 

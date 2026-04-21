@@ -22,13 +22,19 @@ func _run() -> void:
 	var recap_panel := main.get_node_or_null("UI/MatchHud/Root/RecapPanel") as Control
 	var recap_title_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapTitleLabel") as Label
 	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapLabel") as Label
+	var match_result_panel := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel") as Control
+	var match_result_title_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultTitleLabel") as Label
+	var match_result_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultLabel") as Label
 	var robots := _get_scene_robots(main)
 	_assert(match_controller != null, "La escena principal deberia instanciar MatchController.")
 	_assert(recap_panel != null, "El HUD deberia exponer un panel de recap para cierres de match.")
 	_assert(recap_title_label != null, "El recap deberia exponer un titulo legible.")
 	_assert(recap_label != null, "El recap deberia exponer un bloque de detalle legible.")
+	_assert(match_result_panel != null, "El HUD deberia exponer un panel dedicado al resultado final del match.")
+	_assert(match_result_title_label != null, "El resultado final deberia tener un titulo prominente.")
+	_assert(match_result_label != null, "El resultado final deberia detallar marcador y reinicio.")
 	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para el laboratorio 2v2.")
-	if match_controller == null or recap_panel == null or recap_title_label == null or recap_label == null or robots.size() < 4:
+	if match_controller == null or recap_panel == null or recap_title_label == null or recap_label == null or match_result_panel == null or match_result_title_label == null or match_result_label == null or robots.size() < 4:
 		await _cleanup_main(main)
 		_finish()
 		return
@@ -92,10 +98,27 @@ func _run() -> void:
 		recap_label.text.contains("Player 3 | baja 1 | vacio"),
 		"El recap final deberia seguir explicando las bajas que cerraron la partida."
 	)
+	_assert(match_result_panel.visible, "Al cerrar la partida deberia aparecer una presentacion dedicada del resultado final.")
+	_assert(
+		match_result_title_label.text.contains("Partida cerrada"),
+		"El panel final deberia diferenciarse claramente del recap lateral."
+	)
+	_assert(
+		match_result_label.text.contains("Equipo 1 gana la partida 2-0"),
+		"El panel final deberia reiterar el ganador del match."
+	)
+	_assert(
+		match_result_label.text.contains("Reinicio | F5"),
+		"El panel final deberia dejar visible la accion de reinicio inmediato."
+	)
 	_assert(match_controller.get_team_score(1) == 2, "El score final del ganador deberia conservar la segunda ronda.")
 	_assert(
 		_has_target_score_line(match_controller.get_round_state_lines(), 2),
 		"El HUD deberia informar el objetivo de rondas del match."
+	)
+	_assert(
+		_has_line_prefix(match_controller.get_round_state_lines(), "Reinicio | F5"),
+		"El bloque principal del HUD deberia dejar visible que el match puede reiniciarse desde el laboratorio."
 	)
 
 	await create_timer(match_controller.match_restart_delay + 0.2).timeout
@@ -114,6 +137,7 @@ func _run() -> void:
 	_assert(robots[2].visible, "Los robots eliminados deberian volver para el match siguiente.")
 	_assert(robots[3].visible, "El reinicio de match deberia restaurar a todo el equipo derrotado.")
 	_assert(not recap_panel.visible, "Tras reiniciar el match el recap anterior deberia ocultarse.")
+	_assert(not match_result_panel.visible, "Tras reiniciar el match el panel de resultado final deberia ocultarse.")
 
 	await create_timer(0.4).timeout
 	await _cleanup_main(main)
@@ -128,6 +152,14 @@ func _eliminate_team_two(robots: Array[RobotBase]) -> void:
 func _has_target_score_line(lines: Array[String], target_score: int) -> bool:
 	for line in lines:
 		if line.contains("Primero a %s" % target_score):
+			return true
+
+	return false
+
+
+func _has_line_prefix(lines: Array[String], prefix: String) -> bool:
+	for line in lines:
+		if line.begins_with(prefix):
 			return true
 
 	return false

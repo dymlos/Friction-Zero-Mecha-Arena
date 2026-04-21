@@ -291,6 +291,14 @@
    - `MatchController` ahora deriva un recap estructurado (`Decision`, `Marcador` y un estado final por robot con `sigue en pie` o `baja N | causa`) a partir de la misma telemetria de eliminacion ya existente, y `MatchHud` lo muestra en un `RecapPanel` lateral oculto durante la ronda activa.
    - Motivo: reforzar el “como perdi” y el cierre de match sin abrir otra escena/post-partida prematura ni sumar texto que tape el combate mientras la ronda sigue viva.
 
+73. **El cierre final de match usa una capa dedicada, pero sigue dentro del HUD actual**
+   - Cuando `_match_over` es verdadero, `MatchController` expone `Partida cerrada`, marcador final y `Reinicio | F5 ahora o Xs`; `MatchHud` lo renderiza en un `MatchResultPanel` centrado mientras el `RecapPanel` lateral conserva el detalle por robot.
+   - Motivo: dar peso a la victoria/derrota y volver legible el reinicio del laboratorio sin abrir una escena post-partida separada ni perder la trazabilidad de “quien cayo y por que”.
+
+74. **Los resets diferidos ya no dependen de `SceneTreeTimer` sueltos**
+   - `MatchController` ahora usa un `TransitionTimer` propio y `RobotBase` un `RespawnTimer` propio; ambos se pueden detener cuando `start_match()`, `reset_to_spawn()` o el reinicio manual invalidan la espera anterior.
+   - Motivo: evitar callbacks stale, fugas en tests y reinicios dobles cuando el laboratorio cambia loadout o reinicia la partida antes de que venza una espera anterior.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

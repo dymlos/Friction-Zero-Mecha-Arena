@@ -88,3 +88,40 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.878431, 0.913725, 0.941176, 1)
 autowrap_mode = 2
 text = ""
+
+[node name="MatchResultPanel" type="PanelContainer" parent="Root"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+offset_left = 232.0
+offset_top = 78.0
+offset_right = 804.0
+offset_bottom = 232.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_recap")
+
+[node name="Margin" type="MarginContainer" parent="Root/MatchResultPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="MatchResultVBox" type="VBoxContainer" parent="Root/MatchResultPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MatchResultTitleLabel" type="Label" parent="Root/MatchResultPanel/Margin/MatchResultVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.988235, 0.878431, 0.521569, 1)
+horizontal_alignment = 1
+text = ""
+
+[node name="MatchResultLabel" type="Label" parent="Root/MatchResultPanel/Margin/MatchResultVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92549, 0.94902, 0.968627, 1)
+horizontal_alignment = 1
+autowrap_mode = 2
+text = ""

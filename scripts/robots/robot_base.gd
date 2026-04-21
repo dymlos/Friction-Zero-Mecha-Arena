@@ -277,6 +277,7 @@ var _is_disabled := false
 var _held_for_round_reset := false
 var _starting_collision_layer := 1
 var _starting_collision_mask := 1
+var _respawn_timer: Timer = null
 var _was_joypad_attack_pressed := false
 var _was_joypad_energy_prev_pressed := false
 var _was_joypad_energy_next_pressed := false
@@ -744,6 +745,7 @@ func _ready() -> void:
 	_spawn_transform = global_transform
 	_starting_collision_layer = collision_layer
 	_starting_collision_mask = collision_mask
+	_ensure_respawn_timer()
 	add_to_group("robots")
 	_cache_archetype_base_values()
 	_apply_archetype_config()
@@ -1018,6 +1020,7 @@ func hold_for_round_reset() -> void:
 	if _held_for_round_reset:
 		return
 
+	_cancel_respawn_timer()
 	_held_for_round_reset = true
 	_is_respawning = true
 	_attack_cooldown_remaining = 0.0
@@ -1116,6 +1119,7 @@ func fall_into_void() -> void:
 	if _is_respawning:
 		return
 
+	_cancel_respawn_timer()
 	_is_respawning = true
 	_clear_active_control_beacon()
 	_clear_control_zone_suppression()
@@ -1126,14 +1130,11 @@ func fall_into_void() -> void:
 	collision_layer = 0
 	collision_mask = 0
 	set_physics_process(false)
-
-	await get_tree().create_timer(0.75).timeout
-	if _held_for_round_reset:
-		return
-	reset_to_spawn()
+	_schedule_respawn(0.75)
 
 
 func reset_to_spawn() -> void:
+	_cancel_respawn_timer()
 	_cleanup_owned_detached_parts()
 	global_transform = _spawn_transform
 	velocity = Vector3.ZERO
@@ -2511,13 +2512,38 @@ func _apply_disabled_explosion() -> void:
 
 
 func _start_disabled_respawn() -> void:
+	_cancel_respawn_timer()
 	_is_respawning = true
 	_exit_disabled_state()
 	visible = false
 	collision_layer = 0
 	collision_mask = 0
 	set_physics_process(false)
-	await get_tree().create_timer(0.9).timeout
+	_schedule_respawn(0.9)
+
+
+func _ensure_respawn_timer() -> void:
+	if is_instance_valid(_respawn_timer):
+		return
+
+	_respawn_timer = Timer.new()
+	_respawn_timer.name = "RespawnTimer"
+	_respawn_timer.one_shot = true
+	add_child(_respawn_timer)
+	_respawn_timer.timeout.connect(_on_respawn_timer_timeout)
+
+
+func _schedule_respawn(delay_seconds: float) -> void:
+	_ensure_respawn_timer()
+	_respawn_timer.start(delay_seconds)
+
+
+func _cancel_respawn_timer() -> void:
+	if is_instance_valid(_respawn_timer):
+		_respawn_timer.stop()
+
+
+func _on_respawn_timer_timeout() -> void:
 	if _held_for_round_reset:
 		return
 	reset_to_spawn()
