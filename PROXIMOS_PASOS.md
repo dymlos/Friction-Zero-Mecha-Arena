@@ -18,12 +18,13 @@
 2. **Validar el nuevo roster de arquetipos**
    - usar `F2/F3/F4` para recorrer cruces reales entre `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` en `main.tscn` y `main_ffa.tscn` sin editar escenas entre partidas, validando tambien si el nuevo `LabSelectionIndicator` evita errores de slot en pantalla compartida.
    - correr sesiones reales con `Ariete`, `Grua`, `Cizalla` y `Patin` en `main.tscn`, y con `Aguja` + `Ancla` en `main_ffa.tscn`, para decidir si la mezcla actual de pasivas + primeras skills propias ya produce identidades claras.
-   - medir si las pasivas/skills actuales se entienden por playtest sin otra capa de UI: `Ariete` aguantando empuje, `Grua` estabilizando rescates y usando `Iman`, `Cizalla` rematando partes tocadas y `Patin` explotando mejor los pickups de impulso.
+   - medir si las pasivas/skills actuales se entienden por playtest sin otra capa de UI: `Ariete` activando `Embestida` para comprometer choques, `Grua` estabilizando rescates y usando `Iman`, `Cizalla` rematando partes tocadas y `Patin` explotando mejor los pickups de impulso.
+   - calibrar si `Embestida` necesita un impulso inicial muy chico o si la ventana actual de drive/impacto/estabilidad ya alcanza para sentirse inmediata sin robar protagonismo al melee base.
    - medir si `Iman` realmente abre rescates/negaciones a media distancia o si el rango actual se siente demasiado corto, tramposo o poco legible cuando hay varias piezas sueltas.
    - medir si `Aguja` realmente introduce poke/skillshot legible ahora que `Pulso` ya tiene lectura diegetica sobre `CoreLight`, o si aun hace falta ajustar color/intensidad/ritmo del pulso para cámara compartida.
    - si se retocan `pulse_charge_spawn_distance`, velocidad o lifetime de `Pulso`, conservar la cobertura headless que hoy evita que el proyectil nazca solapado con su robot origen.
    - medir si `Ancla` realmente corta rutas/duelos con `Baliza` o si la supresion actual se siente demasiado sutil para justificar el rol de Control/Zona.
-   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Iman/Pulso/Baliza x/y` + estado `zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad + `ArchetypeAccent` por rol) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
+   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Embestida/Iman/Pulso/Baliza x/y` + estados `embestida/zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad + `ArchetypeAccent` por rol) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
    - decidir si el selector runtime actual ya alcanza como flujo de laboratorio o si el siguiente paso debe ser persistencia/presets por escena, mas claridad visual o reforzar con otra skill/regla al arquetipo que siga borroso.
 
 3. **Validar el nuevo HUD dual y la nueva lectura de daño modular**

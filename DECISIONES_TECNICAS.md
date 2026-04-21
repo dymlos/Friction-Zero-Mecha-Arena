@@ -82,6 +82,14 @@
    - `_build_robot_recap_panel_line(robot)` ahora tambien agrega `N/4 partes` y, cuando corresponde, `sin brazo/pierna ...` usando el estado modular real de `RobotBase`.
    - Motivo: la causa de baja por si sola no explicaba en que estado quedo cada robot; sumar el snapshot modular final refuerza el “como perdi” y el “como sobrevivi” reutilizando el mismo contrato de recap/resultado, sin otra UI ni otra telemetria.
 
+86. **`Ariete` resuelve su skill propia como una ventana de buff corta, no con otra escena**
+   - `RobotArchetypeConfig` suma `CoreSkillType.RAM_BOOST` y cuatro hooks simples (`duration`, `drive`, `arm_power`, `received_impulse`); `RobotBase.use_core_skill()` lo traduce a `Embestida`, una ventana corta que amplifica movimiento/impacto/estabilidad reutilizando multiplicadores ya existentes.
+   - Motivo: el hueco mas claro del roster era que `Ariete` seguia leyendo solo como tuning pasivo. Reusar seams de drive/push/impulse refuerza la fantasia de choque pesado, mantiene el proyecto legible para Godot principiante y evita abrir proyectiles, otra escena o una capa nueva de HUD.
+
+87. **La lectura activa de `Embestida` vive en cuerpo + roster**
+   - Mientras `is_ram_skill_active()` dura, `RobotBase._refresh_core_visuals()` calienta el core hacia naranja y `MatchController._build_robot_status_line()` agrega `embestida` al roster compacto, conservando aparte `skill Embestida x/y` como estado de cargas.
+   - Motivo: el buff necesitaba verse en pantalla compartida, pero no justificaba otro widget; repetir el mismo patron de “estado temporal corto dentro del roster existente + refuerzo diegetico en el robot” mantiene claridad sin inflar la UI.
+
 16. **Ajuste de ritmo de duelo via parámetros exportados**
    - Se prefirió reajustar el duelo 2P ajustando `RobotBase` en lugar de agregar una mecánica nueva.
    - Motivo: el equilibrio de inercia, alcance/impulso y daño de choque define la sensación principal del prototipo sin comprometer la simplicidad técnica existente.

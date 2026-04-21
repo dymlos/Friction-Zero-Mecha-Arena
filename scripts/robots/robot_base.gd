@@ -371,6 +371,7 @@ var _energy_surge_part_name := ""
 var _energy_surge_remaining := 0.0
 var _mobility_boost_remaining := 0.0
 var _stability_boost_remaining := 0.0
+var _ram_skill_remaining := 0.0
 var _stability_received_impulse_state_multiplier := 1.0
 var _core_skill_charges := 0
 var _core_skill_recharge_remaining := 0.0
@@ -559,11 +560,12 @@ func get_effective_leg_drive_multiplier() -> float:
 		* _get_leg_energy_multiplier()
 		* _get_mobility_pickup_drive_multiplier()
 		* _get_control_zone_drive_multiplier()
+		* _get_ram_skill_drive_multiplier()
 	)
 
 
 func get_effective_arm_power_multiplier() -> float:
-	return _get_arm_health_multiplier() * _get_arm_energy_multiplier()
+	return _get_arm_health_multiplier() * _get_arm_energy_multiplier() * _get_ram_skill_arm_power_multiplier()
 
 
 func get_received_impulse_multiplier() -> float:
@@ -571,7 +573,11 @@ func get_received_impulse_multiplier() -> float:
 	if archetype_config != null:
 		archetype_multiplier = maxf(archetype_config.received_impulse_multiplier, 0.1)
 
-	return archetype_multiplier * _get_stability_received_impulse_multiplier()
+	return (
+		archetype_multiplier
+		* _get_stability_received_impulse_multiplier()
+		* _get_ram_skill_received_impulse_multiplier()
+	)
 
 
 func get_recent_elimination_source() -> RobotBase:
@@ -632,6 +638,14 @@ func is_stability_boost_active() -> bool:
 
 func get_stability_boost_time_left() -> float:
 	return maxf(_stability_boost_remaining, 0.0)
+
+
+func is_ram_skill_active() -> bool:
+	return _ram_skill_remaining > 0.0
+
+
+func get_ram_skill_time_left() -> float:
+	return maxf(_ram_skill_remaining, 0.0)
 
 
 func get_control_zone_suppression_time_left() -> float:
@@ -769,6 +783,8 @@ func use_core_skill() -> bool:
 			used = _spawn_control_beacon()
 		RobotArchetypeConfig.CoreSkillType.RECOVERY_GRAB:
 			used = _use_recovery_grab()
+		RobotArchetypeConfig.CoreSkillType.RAM_BOOST:
+			used = _use_ram_boost()
 		_:
 			used = false
 
@@ -896,6 +912,19 @@ func apply_mobility_boost(duration: float) -> bool:
 	var previous_remaining := _mobility_boost_remaining
 	_mobility_boost_remaining = maxf(_mobility_boost_remaining, duration)
 	if _mobility_boost_remaining > previous_remaining:
+		_refresh_visual_state()
+
+	return true
+
+
+func _use_ram_boost() -> bool:
+	var duration := _get_core_skill_active_duration()
+	if duration <= 0.0:
+		return false
+
+	var previous_remaining := _ram_skill_remaining
+	_ram_skill_remaining = maxf(_ram_skill_remaining, duration)
+	if _ram_skill_remaining > previous_remaining:
 		_refresh_visual_state()
 
 	return true
@@ -1106,6 +1135,7 @@ func reset_modular_state() -> void:
 	_energy_surge_remaining = 0.0
 	_mobility_boost_remaining = 0.0
 	_stability_boost_remaining = 0.0
+	_ram_skill_remaining = 0.0
 	_stability_received_impulse_state_multiplier = 1.0
 	_reset_core_skill_state()
 	_clear_control_zone_suppression()
@@ -1849,6 +1879,11 @@ func _update_temporary_boosts(delta: float) -> void:
 			_stability_received_impulse_state_multiplier = 1.0
 			visuals_dirty = true
 
+	if _ram_skill_remaining > 0.0:
+		_ram_skill_remaining = maxf(_ram_skill_remaining - delta, 0.0)
+		if _ram_skill_remaining == 0.0:
+			visuals_dirty = true
+
 	if visuals_dirty:
 		_refresh_visual_state()
 
@@ -2153,6 +2188,40 @@ func _get_core_skill_damage_multiplier() -> float:
 		return 1.0
 
 	return maxf(archetype_config.core_skill_damage_multiplier, 0.1)
+
+
+func _get_core_skill_active_duration() -> float:
+	if archetype_config == null:
+		return 0.0
+
+	return maxf(archetype_config.core_skill_active_duration, 0.0)
+
+
+func _get_ram_skill_drive_multiplier() -> float:
+	if not is_ram_skill_active():
+		return 1.0
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.core_skill_drive_multiplier, 1.0)
+
+
+func _get_ram_skill_arm_power_multiplier() -> float:
+	if not is_ram_skill_active():
+		return 1.0
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.core_skill_arm_power_multiplier, 1.0)
+
+
+func _get_ram_skill_received_impulse_multiplier() -> float:
+	if not is_ram_skill_active():
+		return 1.0
+	if archetype_config == null:
+		return 1.0
+
+	return clampf(archetype_config.core_skill_received_impulse_multiplier, 0.2, 1.0)
 
 
 func _get_energy_visual_blend() -> float:
@@ -3336,12 +3405,15 @@ func _refresh_core_visuals() -> void:
 		var energy_surge_blend := 0.22 if is_energy_surge_active() else 0.0
 		var mobility_color := Color(0.2, 0.92, 0.78, 1.0)
 		var mobility_blend := 0.42 if is_mobility_boost_active() else 0.0
+		var ram_color := Color(1.0, 0.56, 0.18, 1.0)
+		var ram_blend := 0.48 if is_ram_skill_active() else 0.0
 		var core_skill_color := Color(0.22, 0.88, 1.0, 1.0)
 		var core_skill_blend := _get_core_skill_visual_blend(visual_node)
 		material.albedo_color = base_albedo.lerp(Color(0.09, 0.08, 0.08, 1.0), damage_blend + disabled_blend)
 		material.albedo_color = material.albedo_color.lerp(energy_color, energy_blend * 0.18)
 		material.albedo_color = material.albedo_color.lerp(Color(0.96, 0.97, 1.0, 1.0), energy_surge_blend * 0.12)
 		material.albedo_color = material.albedo_color.lerp(mobility_color, mobility_blend * 0.12)
+		material.albedo_color = material.albedo_color.lerp(ram_color, ram_blend * 0.18)
 		material.albedo_color = material.albedo_color.lerp(core_skill_color, core_skill_blend * 0.1)
 		material.albedo_color = material.albedo_color.lerp(Color(1.0, 0.62, 0.18, 1.0), unstable_blend * 0.18)
 		if material.emission_enabled:
@@ -3350,6 +3422,7 @@ func _refresh_core_visuals() -> void:
 			material.emission = material.emission.lerp(energy_color, energy_blend)
 			material.emission = material.emission.lerp(Color(0.96, 0.97, 1.0, 1.0), energy_surge_blend)
 			material.emission = material.emission.lerp(mobility_color, mobility_blend)
+			material.emission = material.emission.lerp(ram_color, ram_blend)
 			material.emission = material.emission.lerp(core_skill_color, core_skill_blend)
 			material.emission = material.emission.lerp(Color(1.0, 0.66, 0.18, 1.0), unstable_blend)
 			material.emission_energy_multiplier = maxf(
@@ -3359,6 +3432,7 @@ func _refresh_core_visuals() -> void:
 				+ energy_blend * 0.75
 				+ energy_surge_blend * 0.55
 				+ mobility_blend * 0.7
+				+ ram_blend * 0.8
 				+ unstable_blend * 0.8
 			)
 

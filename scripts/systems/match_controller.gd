@@ -539,6 +539,8 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		segments.append("impulso")
 	if robot.is_stability_boost_active():
 		segments.append("estabilidad")
+	if robot.is_ram_skill_active():
+		segments.append("embestida")
 	if robot.is_control_zone_suppressed():
 		segments.append("zona")
 	if robot.has_carried_item():
