@@ -229,6 +229,7 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export_range(0.2, 1.0, 0.01) var control_zone_drive_multiplier := 0.72
 @export_range(0.2, 1.0, 0.01) var control_zone_control_multiplier := 0.64
 @export_range(0.05, 0.4, 0.01) var control_zone_refresh_window := 0.16
+@export var recovery_skill_pickup_range := 3.0
 
 @export_group("Prototype Combat")
 @export var passive_push_strength := 4.0
@@ -595,6 +596,8 @@ func use_core_skill() -> bool:
 			used = _spawn_core_skill_pulse()
 		RobotArchetypeConfig.CoreSkillType.CONTROL_BEACON:
 			used = _spawn_control_beacon()
+		RobotArchetypeConfig.CoreSkillType.RECOVERY_GRAB:
+			used = _use_recovery_grab()
 		_:
 			used = false
 
@@ -1288,6 +1291,14 @@ func _spawn_control_beacon() -> bool:
 	return true
 
 
+func _use_recovery_grab() -> bool:
+	var detached_part := _find_recovery_skill_target()
+	if detached_part == null:
+		return false
+
+	return detached_part.try_pick_up(self)
+
+
 func _spawn_pulse_bolt(projectile_speed: float, lifetime: float, push_impulse: float, damage: float) -> bool:
 	var scene_instance := PULSE_BOLT_SCENE.instantiate()
 	if not (scene_instance is PulseBolt):
@@ -1471,6 +1482,48 @@ func _find_nearby_detached_part() -> DetachedPart:
 		nearest_distance = distance
 
 	return nearest_part
+
+
+func _find_recovery_skill_target() -> DetachedPart:
+	var best_part: DetachedPart = null
+	var best_priority := 99
+	var nearest_distance := recovery_skill_pickup_range
+
+	for node in get_tree().get_nodes_in_group("detached_parts"):
+		if not (node is DetachedPart):
+			continue
+
+		var detached_part := node as DetachedPart
+		if detached_part.is_carried() or not detached_part.is_pickup_ready():
+			continue
+
+		var distance := global_position.distance_to(detached_part.global_position)
+		if distance > recovery_skill_pickup_range:
+			continue
+
+		var priority := _get_recovery_skill_priority(detached_part)
+		if priority > best_priority:
+			continue
+		if priority == best_priority and distance >= nearest_distance:
+			continue
+
+		best_part = detached_part
+		best_priority = priority
+		nearest_distance = distance
+
+	return best_part
+
+
+func _get_recovery_skill_priority(detached_part: DetachedPart) -> int:
+	var owner_node := detached_part.get_original_robot()
+	if owner_node == self:
+		return 0
+	if owner_node is RobotBase and is_ally_of(owner_node as RobotBase):
+		return 1
+	if owner_node is RobotBase:
+		return 2
+
+	return 3
 
 
 func _update_energy_state(delta: float) -> void:

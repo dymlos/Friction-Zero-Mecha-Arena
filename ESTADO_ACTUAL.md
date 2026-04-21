@@ -36,9 +36,9 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
 - escenario base 2v2 en `main.tscn` con dos equipos (pares por `team_id`) y 4 slots locales activos para validar rescate aliado y handoff en campo.
 - laboratorio FFA dedicado en `scenes/main/main_ffa.tscn`, reutilizando la misma arena/shared screen pero con `match_mode=FFA` y bootstrap que neutraliza las alianzas del layout 2v2 para que cada robot compita por su cuenta; ese mismo laboratorio ahora reemplaza los slots de `Grua` y `Cizalla` por `Aguja` y `Ancla` para probar poke + control/zona sin romper el 2v2 base
-- primera capa de identidad de arquetipos apoyada sobre sistemas ya existentes, mas dos skills propias en FFA:
+- primera capa de identidad de arquetipos apoyada sobre sistemas ya existentes, mas tres skills propias repartidas entre 2v2 y FFA:
   - `Ariete`: mas vida/empuje y tambien mas resistencia al impulso externo para validar pusher/tank
-  - `Grua`: mejor retorno de partes y ahora estabiliza otra pieza dañada al completar un rescate para validar asistencia/recuperacion
+  - `Grua`: mejor retorno de partes, estabiliza otra pieza dañada al completar un rescate y ahora convierte `throw_part` en `Iman` cuando no lleva carga, capturando piezas listas a distancia media para validar asistencia/recuperacion activa
   - `Cizalla`: mas daño/pressure modular y bonus extra contra piezas ya tocadas para validar dismantle
   - `Patin`: mas velocidad/menos damping y ventanas de impulso mas largas para validar movilidad/reposition
   - `Aguja`: convierte la accion `throw_part` en `Pulso` cuando no lleva una parte, con 2 cargas recargables y el mismo `PulseBolt` repulsor como base para validar poke/skillshot limpio
@@ -51,6 +51,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - segundo incentivo de borde: el mismo arena ahora suma pickups de movilidad en norte/sur; activan una ventana corta de traccion/control reforzados, exponen al robot en bordes sin cobertura y siguen el borde vivo cuando la arena se contrae
 - tercer incentivo de borde: el mismo arena ahora suma pickups de energia en diagonales; cortan la recuperacion posterior al overdrive, refuerzan temporalmente el par energetico seleccionado y tambien siguen el borde vivo cuando la arena se contrae
 - primer item de una sola carga en mano: el mismo arena ahora suma pickups de pulso en las diagonales restantes; cargan un `pulso` visible en el robot, comparten slot con las partes transportadas y convierten el siguiente ataque en un disparo repulsor corto
+- skill propia de recuperacion: `RobotBase` ahora tambien puede resolver `Iman` desde `throw_part`; `Grua` captura la parte desprendida lista mas prioritaria dentro de `recovery_skill_pickup_range`, reusa el mismo slot de carga y deja `skill Iman x/y` visible en el roster del laboratorio 2v2
 - primera skill propia por cargas: `RobotBase` ahora puede leer `core_skill_type/label/cargas/recarga` desde `RobotArchetypeConfig`; `Aguja` usa `Pulso` sobre la accion de utilidad cuando no lleva una parte, gasta una carga, recarga en segundo plano y deja `skill Pulso x/y` visible en el roster
 - segunda skill propia por zona: `RobotBase` ahora tambien puede desplegar `Baliza` desde `throw_part`; `Ancla` deja una sola `ControlBeacon` activa por robot, aplica supresion temporal de drive/control y reutiliza el mismo roster compacto para mostrar `skill Baliza x/y` y el estado `zona`
 - rotacion semialeatoria controlada de borde: esos ocho pedestales ya no quedan todos activos a la vez; `ArenaBase` usa un perfil `Equipos` de dos pares espejados por ronda y un perfil `FFA` de tres tipos activos por ronda para subir el oportunismo sin volver al borde completo
@@ -97,10 +98,11 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - existe un recurso nuevo `RobotArchetypeConfig` con multiplicadores simples de movimiento, aguante, empuje, daño y rescate
   - `RobotBase` ahora puede exportar un `archetype_config`, aplicarlo al arrancar y exponer `get_archetype_label()` / `get_roster_display_name()` para HUD/tests
   - `main.tscn` asigna `Ariete`, `Grua`, `Cizalla` y `Patin` a los cuatro slots del laboratorio base; `main_ffa.tscn` reutiliza esa base pero ya puede sobrescribir slots concretos del roster
-- Se abrió la primera skill propia por arquetipo sin romper ese laboratorio 2v2:
+- Se abrió una primera tanda de skills propias sin romper el laboratorio 2v2:
   - `RobotArchetypeConfig` ahora tambien puede declarar `core_skill_type`, `core_skill_label`, `core_skill_max_charges`, `core_skill_recharge_seconds` y multiplicadores del proyectil
   - `RobotBase` expone `has_core_skill()`, `use_core_skill()` y `get_core_skill_status_summary()`, y reaprovecha `throw_part` cuando el robot no carga una pieza para no abrir botones nuevos
-  - `Aguja` vive en `data/config/robots/aguja_archetype.tres` y se expone primero en `main_ffa.tscn`, de modo que el laboratorio libre gane poke/skillshot mientras `main.tscn` conserva `Grua` para rescate aliado
+  - `Grua` vive en `data/config/robots/grua_archetype.tres` y usa `Iman`, una captura magnetica de piezas listas que prioriza propias/aliadas y refuerza el rescate aliado del laboratorio 2v2 sin abrir otra escena o inventario
+  - `Aguja` vive en `data/config/robots/aguja_archetype.tres` y se expone primero en `main_ffa.tscn`, de modo que el laboratorio libre gane poke/skillshot mientras `main.tscn` conserva `Grua` como rol de rescate activo
   - `robot_core_skill_test.gd` cubre recurso, gasto/recarga de cargas, empuje/daño del disparo y lectura del roster FFA
 - Se completó el sexto arquetipo documentado sin abrir otro sistema de habilidades:
   - `Ancla` vive en `data/config/robots/ancla_archetype.tres` y usa `Baliza`, una `ControlBeacon` persistente corta que ralentiza drive/control rivales dentro del area
@@ -299,8 +301,8 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - El nuevo sistema de items sigue siendo deliberadamente simple: hoy existen reparacion instantanea, impulso corto, recarga breve y un solo item de carga (`pulse_charge`); la semialeatoriedad actual ya diferencia `Equipos` (2 pares) y `FFA` (3 tipos), pero todavia no hay inventario completo, pesos finos por modo/mapa ni variedad real de utilities.
 - El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
 - Los nuevos arquetipos siguen siendo una capa deliberadamente liviana:
-  - hoy combinan tuning + pasivas chicas, y `Aguja/Ancla` abren las dos primeras skills propias; todavia no hay selección runtime ni una segunda capa mas profunda de reglas por arquetipo
-  - si `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` siguen sintiéndose demasiado parecidos en playtest, el siguiente paso debera ser selector de laboratorio u otra regla visible por rol, no solo más multiplicadores
+  - hoy combinan tuning + pasivas chicas, y `Grua/Aguja/Ancla` abren la primera tanda real de skills propias; todavia no hay selección runtime ni una segunda capa mas profunda de reglas por arquetipo
+  - si `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` siguen sintiéndose demasiado parecidos en playtest, el siguiente paso debera reforzar lectura/rango/ritmo de esas skills o sumar otra regla visible por rol, no solo más multiplicadores
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - La explosion inestable ya conecta overdrive con la ruta de destruccion total, pero todavia falta playtestear si sus multiplicadores vuelven especial esa apuesta sin convertirla en el cierre dominante del match.

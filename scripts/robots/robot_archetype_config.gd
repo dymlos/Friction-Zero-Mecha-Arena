@@ -1,7 +1,7 @@
 extends Resource
 class_name RobotArchetypeConfig
 
-enum CoreSkillType { NONE, PULSE_SHOT, CONTROL_BEACON }
+enum CoreSkillType { NONE, PULSE_SHOT, CONTROL_BEACON, RECOVERY_GRAB }
 
 @export var archetype_label := ""
 

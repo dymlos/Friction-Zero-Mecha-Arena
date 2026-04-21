@@ -21,6 +21,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Incentivo universal de movilidad: el mismo arena ahora suma pickups de impulso en norte/sur; activan una ventana corta de traccion/control reforzados, se leen con glow turquesa sobre el robot y se recolocan con la misma logica de borde vivo para no convertirse en “premios muertos” durante la contraccion.
 - Incentivo universal de energia: el arena ahora suma pickups de recarga en diagonales; cortan la recuperacion post-overdrive, refuerzan por una ventana corta el par energetico seleccionado y reutilizan el mismo contrato de pedestal/cooldown visible + seguimiento del borde vivo.
 - Primer item de una carga en mano: el arena ahora suma pickups de pulso en las diagonales restantes; guardan una carga visible en el robot, comparten slot con las partes cargadas y convierten el siguiente ataque en un disparo repulsor corto y legible.
+- Skill propia de rescate en 2v2: `Grua` ahora usa `Iman`, una captura magnetica de partes listas dentro de un rango medio que prioriza piezas propias/aliadas, reutiliza el mismo slot de carga y deja `skill Iman x/y` visible en el roster sin abrir otra UI.
 - Primera skill propia por arquetipo: `Aguja` ya reutiliza `PulseBolt` como `Pulso` con 2 cargas recargables, activadas desde la accion de utilidad (`throw_part`) cuando no lleva una parte; el roster la deja visible como `skill Pulso x/y`.
 - Sexto arquetipo base integrado: `Ancla` ya expone `Baliza`, una skill propia de Control/Zona que despliega una sola baliza activa por robot, ralentiza rivales dentro del area y deja el estado `zona` visible en el roster sin abrir otra UI.
 - Rotacion semialeatoria controlada de edge pickups: el laboratorio ya no deja los cuatro incentivos activos a la vez; `ArenaBase` ahora usa perfiles por modo, manteniendo en `Equipos` un mazo seedado de cuatro cruces (`repair/energy` x `mobility/pulse`) con solo dos pares espejados por ronda, mientras `FFA` usa layouts `3-de-4` para dejar tres tipos activos sin volver al borde completo.
@@ -36,7 +37,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
 - Rescate modular mas legible: cada parte desprendida ahora muestra un disco diegetico sobre el suelo que se achica segun su `cleanup_time`, haciendo visible la ventana de recuperacion sin abrir otra banda de HUD.
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun; la variante nacida desde `Overdrive` queda marcada como explosion `inestable`.
-- Etapa 8: ya existe una mezcla mas honesta entre pasivas y primeras skills propias. `RobotArchetypeConfig` sigue reutilizando hooks legibles para `Ariete`, `Grua`, `Cizalla` y `Patin`, y ahora tambien puede declarar `core_skill_type/label/cargas/recarga`; `Aguja` abre el arquetipo Poke/Skillshot con `Pulso` recargable y `Ancla` suma Control/Zona con `Baliza` persistente dentro del laboratorio FFA sin duplicar la escena del robot.
+- Etapa 8: ya existe una mezcla mas honesta entre pasivas y primeras skills propias. `RobotArchetypeConfig` sigue reutilizando hooks legibles para `Ariete`, `Grua`, `Cizalla` y `Patin`, y ahora tambien puede declarar `core_skill_type/label/cargas/recarga`; `Grua` suma `Iman` como captura de recuperacion en el laboratorio 2v2, `Aguja` abre el arquetipo Poke/Skillshot con `Pulso` recargable y `Ancla` suma Control/Zona con `Baliza` persistente dentro del laboratorio FFA sin duplicar la escena del robot.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, marcadores de humo/chispa por parte dañada, poses flojas por extremidad castigada, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
 - HUD dual base: `MatchConfig` ya deja alternar entre un modo `explicito` (mantiene `Modo`, `Objetivo`, hints de control, `4/4 partes` y `Eq` siempre visibles) y un modo `contextual` que oculta esa informacion estable y solo vuelve a exponer daño, foco energetico, buffs, items y cargas cuando realmente importan.
 - Toggle runtime del HUD listo: `Main` ya puede ciclar ese mismo HUD dual con `F1` durante playtests locales usando un override de sesion en `MatchController`, sin mutar el `MatchConfig` compartido ni alterar el default de escenas nuevas.
@@ -313,7 +314,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 **Estado actual del prototipo:**
 - el laboratorio 4P ya arranca con cuatro identidades legibles construidas sobre tuning existente + pasivas chicas:
   - `Ariete`: mas aguante/empuje y tambien mas resistencia al impulso externo
-  - `Grua`: mejor rescate/retorno de partes y ahora estabiliza otra pieza dañada cuando completa un retorno
+  - `Grua`: mejor rescate/retorno de partes, estabiliza otra pieza dañada cuando completa un retorno y ahora usa `Iman` para capturar una parte lista fuera del pickup normal sin sumar otro boton
   - `Cizalla`: mas daño directo/modular y bonus adicional contra piezas ya tocadas
   - `Patin`: mas velocidad/derrape y ventanas de impulso mas largas al tomar pickups de movilidad
 - el laboratorio FFA ya abre un quinto sabor sin tocar el 2v2 base:
@@ -321,8 +322,8 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - el laboratorio FFA ya abre un sexto sabor sin tocar el 2v2 base:
   - `Ancla`: usa `Baliza` para desplegar una sola zona persistente por robot, ralentiza drive/control de rivales dentro del area y deja `zona` visible en el roster cuando alguien queda atrapado
 - `RobotArchetypeConfig` deja esos presets en recursos `.tres`, y `RobotBase` los aplica antes de resetear salud/energia o al resolver `apply_impulse`, retornos, daño modular y boosts temporales para mantener el setup editable por un principiante sin duplicar escenas
-- el roster compacto ya usa `Player X / <Arquetipo>` y ahora tambien puede sumar `skill Pulso x/y` o `skill Baliza x/y`, mientras el marcador FFA sigue agregando `[<Arquetipo>]` sin romper la UI actual
-- pendiente: decidir via playtest si la combinacion actual (pasivas para `Ariete/Grua/Cizalla/Patin` + skills propias de `Aguja/Ancla`) ya alcanza o si la siguiente diferenciacion debe venir por selector runtime, mas reglas visibles por arquetipo o una economia de ammo mas expresiva
+- el roster compacto ya usa `Player X / <Arquetipo>` y ahora tambien puede sumar `skill Iman/Pulso/Baliza x/y`, mientras el marcador FFA sigue agregando `[<Arquetipo>]` sin romper la UI actual
+- pendiente: decidir via playtest si la combinacion actual (pasivas para `Ariete/Cizalla/Patin` + skill/soporte de `Grua` + skills propias de `Aguja/Ancla`) ya alcanza o si la siguiente diferenciacion debe venir por selector runtime, mas reglas visibles por arquetipo o una economia de ammo mas expresiva
 
 ## Etapa 9 - Items, skills universales y economia de recursos
 

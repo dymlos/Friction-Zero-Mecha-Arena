@@ -103,6 +103,10 @@ func get_cleanup_progress_ratio() -> float:
 	return clampf(get_cleanup_time_left() / cleanup_time, 0.0, 1.0)
 
 
+func is_pickup_ready() -> bool:
+	return _is_pickup_ready()
+
+
 func try_pick_up(robot: Node) -> bool:
 	if not _is_pickup_ready():
 		return false

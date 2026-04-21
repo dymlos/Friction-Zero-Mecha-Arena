@@ -17,3 +17,7 @@ collision_damage_scale_multiplier = 0.94
 detached_part_pickup_range_multiplier = 1.18
 carried_part_return_range_multiplier = 1.28
 return_support_repair_ratio = 0.14
+core_skill_type = 3
+core_skill_label = "Iman"
+core_skill_max_charges = 1
+core_skill_recharge_seconds = 4.2

@@ -312,6 +312,10 @@
    - `RobotBase` ahora cachea la transform base de cada mesh modular y, cuando la vida baja del umbral de lectura, aplica offsets/rotaciones pequeñas a brazos y piernas (`caido` para brazos, `arrastrando` para piernas) antes de volver a la pose original al reparar o desprender.
    - Motivo: los docs piden desgaste y piezas flojas visibles sobre el propio robot; resolverlo en la pose de las mallas ya existentes refuerza claridad sin otro HUD, sin partículas nuevas y sin volver la escena difícil de mantener.
 
+78. **`Grua` refuerza rescate/negacion con un agarre magnetico, no con otro sistema**
+   - `RobotArchetypeConfig` ahora soporta `RECOVERY_GRAB`; `grua_archetype.tres` lo expone como `Iman`, `DetachedPart` publica `is_pickup_ready()` y `RobotBase` usa `recovery_skill_pickup_range` para buscar la pieza lista mas conveniente, priorizando propias/aliadas sobre enemigas antes de reaprovechar `try_pick_up(self)`.
+   - Motivo: Team vs Team necesitaba una herramienta activa de asistencia/recuperacion, pero el prototipo ya tenia un loop claro de carga/retorno/negacion. Capturar una pieza lista a media distancia fortalece el rol de `Grua`, respeta `pickup_delay/throw_pickup_delay`, sigue bloqueada por el mismo slot de carga y tambien deja una utilidad viable en FFA para negar piezas enemigas.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
