@@ -118,19 +118,31 @@
    - El aim independiente se toma del stick derecho; si no existe input dedicado, el torso conserva/alinea orientacion sin romper el robot.
    - Motivo: sumar la estructura base con el menor ruido posible en el laboratorio actual, que sigue muy apoyado en teclado compartido y Easy mode.
 
-30. **Control Hard validado con test de impacto dirigido**
+30. **Exposicion de Hard por slot en `Main`**
+   - `Main` define `hard_mode_player_slots` y asigna `ControlMode.HARD` o `EASY` durante el bootstrap local.
+   - Motivo: volver el soporte Hard realmente testeable en el laboratorio sin introducir todavía menús, perfiles persistentes ni un selector previo a partida.
+
+31. **Roster compacto incluye etiqueta Easy/Hard**
+   - `MatchController` agrega el modo de control al estado textual de cada robot.
+   - Motivo: que la configuracion del laboratorio quede visible para jugadores y para debugging sin sumar HUD pesado.
+
+32. **Control Hard validado con test de impacto dirigido**
    - `robot_hard_control_mode_test.gd` comprueba que el mismo vector de golpe pasa de castigar pierna trasera a castigar un brazo cuando el torso gira en Hard.
    - Motivo: cubrir el contrato importante del slice sin depender de input real ni de una escena de match completa.
 
-31. **Contraccion del arena como presion fisica real**
+33. **Bootstrap Hard validado en la escena principal**
+   - `hard_mode_bootstrap_test.gd` usa `main.tscn` para verificar asignacion por slot y visibilidad del modo en el roster.
+   - Motivo: el valor del slice esta en exponer el soporte dentro del laboratorio real; probar solo el robot aislado no cubria ese wiring.
+
+34. **Contraccion del arena como presion fisica real**
    - `MatchController` calcula un factor de cierre segun `round_time_seconds` y `ArenaBase` reduce el tamano real del piso/edge markers.
    - Motivo: cumplir la presion de endgame documentada sin agregar dano abstracto ni hazards nuevos que ensucien la lectura.
 
-32. **`Main` solo cablea presion entre match y arena**
+35. **`Main` solo cablea presion entre match y arena**
    - La escena principal pregunta el factor al `MatchController` y se lo aplica al `ArenaBase`; no resuelve timers ni geometria por si misma.
    - Motivo: mantener responsabilidades claras y el proyecto legible para iteraciones futuras.
 
-33. **Timer de ronda base reducido a 60 segundos**
+36. **Timer de ronda base reducido a 60 segundos**
    - La configuracion por defecto deja de usar 180s para que la contraccion aparezca en sesiones reales de laboratorio.
    - Motivo: un sistema de presion que casi nunca se activa no aporta feedback util al prototipo.
 

@@ -8,8 +8,8 @@
    - ajustar si hace falta radio de retorno, cleanup y ritmo de choque con un aliado en escena, sin reabrir spam accidental.
 
 2. **Convertir el soporte Hard en una opcion realmente jugable**
-   - decidir como exponer `ControlMode.HARD` en laboratorio sin romper el setup local actual.
    - evaluar si hace falta mapping de teclado dedicado o si Hard debe seguir siendo joypad-first en esta etapa.
+   - decidir si `hard_mode_player_slots` alcanza como configuracion de laboratorio o si conviene un selector runtime por jugador.
    - playtestear si la nueva lectura torso/chasis mejora el combate o si todavia se siente demasiado sutil para pantalla compartida.
 
 3. **Pulir el cierre de match que ya existe**

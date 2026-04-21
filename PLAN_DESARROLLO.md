@@ -16,6 +16,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Etapa 2 y 3: el ritmo de choque del laboratorio 2P ya fue afinado en `RobotBase` para que los intercambios sean más fluidos sin perder el carácter de choque decisivo.
 - Etapa 5: primer slice funcional implementado. Cada robot ahora puede redistribuir energia hacia una parte foco, alterar de forma real el empuje o la traccion y activar un overdrive corto con recuperacion/cooldown.
 - Etapa 6: soporte base implementado. `RobotBase` ya puede separar torso y chasis con `UpperBodyPivot`, usando esa orientacion para lectura de impactos y ataque en `ControlMode.HARD`; el soporte actual es joypad-first y no reemplaza el loop Easy por defecto.
+- Laboratorio Hard expuesto: `Main` ya puede asignar `ControlMode.HARD` por slot local mediante `hard_mode_player_slots`, y el roster deja visible si cada robot juega en Easy o Hard.
 - Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
@@ -212,7 +213,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - el torso superior ya puede orientarse por separado del chasis usando `UpperBodyPivot`
 - la direccion de combate/impacto modular en Hard ya se lee desde ese torso, no desde el chasis completo
 - el soporte actual esta pensado para joypad con stick derecho; si no hay aim input dedicado, el torso conserva/alinea orientacion sin romper el control base
-- pendiente: exponer mejor el modo en laboratorio, decidir si necesita mapping de teclado propio y playtestear si aporta profundidad sin volver opaco el juego
+- el laboratorio principal ya puede forzar slots concretos a Hard desde `Main`, pero sigue pendiente decidir si necesita mapping de teclado propio y playtestear si aporta profundidad sin volver opaco el juego
 
 ## Etapa 7 - Partes desprendidas, recuperacion y cuerpo averiado
 
