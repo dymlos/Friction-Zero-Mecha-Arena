@@ -23,6 +23,7 @@ var _round_active := false
 var _round_reset_pending := false
 var _match_over := false
 var _round_eliminated_robot_ids: Dictionary = {}
+var _round_elimination_recap_entries: Array[String] = []
 var _competitor_scores: Dictionary = {}
 var _competitor_labels: Dictionary = {}
 var _competitor_order: Array[String] = []
@@ -63,6 +64,7 @@ func start_match() -> void:
 	_round_reset_pending = false
 	_match_over = false
 	_round_eliminated_robot_ids.clear()
+	_round_elimination_recap_entries.clear()
 	_last_elimination_summary = ""
 	_competitor_scores.clear()
 	_competitor_labels.clear()
@@ -109,6 +111,9 @@ func get_round_state_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	var recap_line := get_round_recap_line()
+	if recap_line != "":
+		lines.append(recap_line)
 	if _last_elimination_summary != "":
 		lines.append("Ultima baja | %s" % _last_elimination_summary)
 	if is_space_reduction_active():
@@ -181,6 +186,15 @@ func is_robot_eliminated(robot: RobotBase) -> bool:
 	return _round_eliminated_robot_ids.has(robot.get_instance_id())
 
 
+func get_round_recap_line() -> String:
+	if _round_active:
+		return ""
+	if _round_elimination_recap_entries.is_empty():
+		return ""
+
+	return "Resumen | %s" % " -> ".join(_round_elimination_recap_entries)
+
+
 func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> String:
 	if robot == null:
 		return ""
@@ -192,6 +206,7 @@ func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> Stri
 		return ""
 
 	_round_eliminated_robot_ids[robot_id] = cause
+	_round_elimination_recap_entries.append(_build_compact_elimination_summary(robot, cause))
 	_last_elimination_summary = _build_elimination_summary(robot, cause)
 	robot.hold_for_round_reset()
 
@@ -301,6 +316,10 @@ func _build_elimination_summary(robot: RobotBase, cause: EliminationCause) -> St
 	return "%s %s" % [robot.display_name, cause_label]
 
 
+func _build_compact_elimination_summary(robot: RobotBase, cause: EliminationCause) -> String:
+	return "%s %s" % [robot.display_name, _get_elimination_cause_label(cause)]
+
+
 func _get_robot_elimination_cause(robot: RobotBase) -> int:
 	if robot == null:
 		return -1
@@ -408,6 +427,7 @@ func _reset_round() -> void:
 		robot.reset_to_spawn()
 
 	_round_eliminated_robot_ids.clear()
+	_round_elimination_recap_entries.clear()
 	_last_elimination_summary = ""
 	_round_number += 1
 	_round_active = true

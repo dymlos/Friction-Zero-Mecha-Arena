@@ -238,6 +238,10 @@
    - Si `RobotBase` pierde su ultima parte mientras `Overdrive` sigue activo, el cuerpo inutilizado conserva una bandera `inestable`; esa variante escala `radio/empuje/daño`, calienta mas el core del robot y `Main/MatchController` la exponen como `inestable` / `explosion inestable` en HUD y resumenes.
    - Motivo: cerrar la apuesta riesgo/recompensa del overdrive con una consecuencia espacial rara pero legible, reutilizando el loop de cuerpo inutilizado ya existente en vez de abrir otro hazard o una regla aparte.
 
+60. **El cierre de ronda se resume en la misma banda textual del HUD**
+   - `MatchController` ahora guarda el orden de bajas de la ronda y solo lo expone como `Resumen | ...` cuando la ronda ya termino; al iniciar la siguiente, ese recap se limpia.
+   - Motivo: reforzar la explicacion de “como termino esta ronda” sin abrir otra capa de post-ronda, sin esconder el combate activo bajo texto extra y reutilizando el contrato compacto ya establecido en `get_round_state_lines()`.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

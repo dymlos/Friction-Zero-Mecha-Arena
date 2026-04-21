@@ -46,17 +46,22 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - si la baja vino desde `Overdrive`, el mismo roster marca `inestable` antes de explotar
   - robots fuera conservan causa corta (`vacio`, `explosion` o `explosion inestable`)
   - el bloque superior recuerda la ultima baja con `Ultima baja | ...`
+  - cuando la ronda ya cerro, el mismo bloque superior conserva `Resumen | ...` con el orden de bajas hasta el siguiente reset
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
 - indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
 - lectura diegética de daño modular: cada extremidad ya puede mostrar `Smoke` cuando está dañada y `Spark` cuando entra en estado crítico; ambos marcadores viven sobre la pieza, no en el HUD, y desaparecen al repararla o perderla.
 - validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
-- validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda y scoreboard.
+- validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda, scoreboard y ahora tambien un resumen compacto del orden de bajas.
 - validacion automatizada FFA: `ffa_mode_bootstrap_test.gd`, `ffa_lab_scene_test.gd` y `ffa_round_resolution_test.gd` comprueban que el laboratorio libre no hereda alianzas falsas del setup 2v2, mantiene el marcador individual y resuelve una ronda completa con ganador por robot
 - validacion automatizada de explosion inestable: `robot_unstable_explosion_test.gd` compara la variante base contra la version nacida en `Overdrive`, y `match_unstable_explosion_readability_test.gd` verifica su lectura compacta en `main.tscn`
 
 ## Lo completado en esta iteracion
 
+- Se agrego un resumen compacto del cierre de ronda sobre el mismo HUD:
+  - `MatchController` ahora conserva `Resumen | ...` con el orden de bajas solo cuando la ronda ya termino, sin ensuciar el estado activo del combate
+  - el dato se limpia al iniciar la siguiente ronda para no arrastrar contexto stale
+  - `match_round_recap_test.gd` cubre la presencia del resumen durante el reset y su limpieza al volver a `Ronda N en juego`
 - Se cerro la ruta de alto riesgo del overdrive sin agregar un sistema nuevo:
   - `RobotBase` ahora recuerda si el cuerpo inutilizado nacio con `Overdrive` activo y, en ese caso, escala `radio/empuje/daño` de la explosion diferida
   - la propia lectura del robot se calienta visualmente durante esa cuenta regresiva para que el estado sea visible aun sin mirar solo el texto
@@ -199,6 +204,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/local_multiplayer_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_completion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_elimination_readability_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_round_recap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_unstable_explosion_readability_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_input_ownership_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/two_vs_two_carry_validation_test.gd`
@@ -226,7 +232,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats, replay ni explicación explícita de por qué perdió cada jugador.
-- La nueva lectura de bajas mejora la explicación inmediata de la derrota, pero todavía falta validar en playtest si ese contrato compacto alcanza o si la versión final necesita un resumen/post-partida más explícito.
+- La nueva lectura de bajas ya suma `Resumen | ...` al cierre de ronda, pero todavía falta validar en playtest si ese contrato compacto alcanza o si la versión final necesita un panel/resumen post-ronda o post-partida más explícito.
 - Se agregó el primer pickup universal de movilidad:
   - existe una escena nueva `edge_mobility_pickup.tscn` con pedestal persistente y cooldown visible
   - al tocarla, `RobotBase` activa una ventana breve de movilidad reforzada (`traccion + control`) sin tocar el sistema de energía ni agregar UI pesada
