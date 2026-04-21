@@ -52,6 +52,87 @@ func _run() -> void:
 	_assert(not robot.is_overdrive_cooling_down(), "El cooldown de overdrive deberia terminar tras el tiempo configurado.")
 	_assert(robot.activate_overdrive(), "El overdrive deberia volver a estar disponible al terminar el cooldown.")
 
+	var energy_readability_root := robot.get_node_or_null("EnergyReadability") as Node3D
+	_assert(
+		energy_readability_root != null,
+		"El robot deberia montar un root runtime para leer redistribucion de energia sobre el propio cuerpo."
+	)
+
+	var left_arm_indicator := robot.get_node_or_null("UpperBodyPivot/LeftArm/EnergyFocusIndicator") as MeshInstance3D
+	var right_arm_indicator := robot.get_node_or_null("UpperBodyPivot/RightArm/EnergyFocusIndicator") as MeshInstance3D
+	var left_leg_indicator := robot.get_node_or_null("ModularParts/LeftLeg/EnergyFocusIndicator") as MeshInstance3D
+	var right_leg_indicator := robot.get_node_or_null("ModularParts/RightLeg/EnergyFocusIndicator") as MeshInstance3D
+	_assert(left_arm_indicator != null, "El brazo izquierdo deberia exponer un indicador de energia diegetico.")
+	_assert(right_arm_indicator != null, "El brazo derecho deberia exponer un indicador de energia diegetico.")
+	_assert(left_leg_indicator != null, "La pierna izquierda deberia exponer un indicador de energia diegetico.")
+	_assert(right_leg_indicator != null, "La pierna derecha deberia exponer un indicador de energia diegetico.")
+	if (
+		energy_readability_root == null
+		or left_arm_indicator == null
+		or right_arm_indicator == null
+		or left_leg_indicator == null
+		or right_leg_indicator == null
+	):
+		robot.queue_free()
+		_finish()
+		return
+
+	robot.reset_modular_state()
+	await process_frame
+
+	_assert(
+		not left_arm_indicator.visible and not right_arm_indicator.visible and not left_leg_indicator.visible and not right_leg_indicator.visible,
+		"Con energia balanceada no deberian quedar marcadores persistentes en las extremidades."
+	)
+
+	robot.energy_shift_cooldown = 0.0
+	_assert(robot.set_energy_focus("left_leg"), "La prueba de lectura necesita poder enfocar energia en una pierna.")
+	await process_frame
+
+	_assert(left_leg_indicator.visible, "La pierna enfocada deberia marcarse en el propio cuerpo.")
+	_assert(right_leg_indicator.visible, "La pareja de la pierna enfocada tambien deberia quedar marcada.")
+	_assert(
+		not left_arm_indicator.visible and not right_arm_indicator.visible,
+		"Al enfocar piernas, los brazos no deberian competir con la lectura principal."
+	)
+	var left_leg_material := left_leg_indicator.material_override as StandardMaterial3D
+	var right_leg_material := right_leg_indicator.material_override as StandardMaterial3D
+	_assert(left_leg_material != null, "El indicador de la pierna enfocada deberia poder reforzar emision y color.")
+	_assert(right_leg_material != null, "La pareja energetica tambien deberia poder reforzar su lectura.")
+	if left_leg_material != null and right_leg_material != null:
+		_assert(
+			left_leg_material.emission_energy_multiplier > right_leg_material.emission_energy_multiplier,
+			"La extremidad exacta del foco deberia leerse con mas intensidad que su pareja."
+		)
+
+	robot.overdrive_duration = 0.25
+	robot.overdrive_cooldown = 0.4
+	robot.overdrive_recovery_duration = 0.2
+	robot.energy_shift_cooldown = 0.0
+	_assert(robot.set_energy_focus("right_arm"), "La prueba de overdrive necesita cambiar el foco a un brazo.")
+	_assert(robot.activate_overdrive(), "La prueba de lectura necesita activar overdrive en el brazo derecho.")
+	await process_frame
+
+	_assert(right_arm_indicator.visible, "El brazo en overdrive deberia seguir marcado sobre el cuerpo.")
+	_assert(left_arm_indicator.visible, "La pareja del brazo en overdrive deberia conservar contexto de energia.")
+	_assert(
+		not left_leg_indicator.visible and not right_leg_indicator.visible,
+		"Durante overdrive de brazos, las piernas no deberian competir con esa lectura."
+	)
+	var right_arm_material := right_arm_indicator.material_override as StandardMaterial3D
+	var left_arm_material := left_arm_indicator.material_override as StandardMaterial3D
+	_assert(right_arm_material != null, "El brazo en overdrive deberia exponer material para lectura caliente.")
+	_assert(left_arm_material != null, "La pareja del brazo tambien deberia exponer material propio.")
+	if right_arm_material != null and left_arm_material != null:
+		_assert(
+			right_arm_material.emission.r > right_arm_material.emission.b,
+			"El overdrive de brazos deberia empujar la lectura hacia un color mas caliente."
+		)
+		_assert(
+			right_arm_material.emission_energy_multiplier > left_arm_material.emission_energy_multiplier,
+			"El brazo exacto en overdrive deberia destacar sobre su pareja."
+		)
+
 	robot.queue_free()
 
 	_finish()

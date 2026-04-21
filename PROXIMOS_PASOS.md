@@ -69,7 +69,7 @@
 
 9. **Pulir la energia ahora que ya es jugable**
   - decidir si el foco debe seguir compartido por todos o si algun arquetipo necesita un preset/base distinto mas adelante
-  - ligar mejor la lectura diegetica del foco/overdrive con materiales o VFX sobrios
+  - playtestear si los nuevos `EnergyFocusIndicator` sobre brazos/piernas alcanzan para leer foco/overdrive en pantalla compartida o si todavia hace falta ajustar tamano/contraste/ritmo antes de sumar VFX mas ricos
   - revisar valores de multiplicadores, duracion y recuperacion contra sensacion real en partida
   - medir si `energy_pickup_pair_multiplier` y `surge_duration` hacen que la recarga de borde valga la pena sin comerse la identidad del overdrive
   - medir si `unstable_disabled_explosion_radius_multiplier`, `unstable_disabled_explosion_impulse_multiplier` y `unstable_disabled_explosion_damage_multiplier` vuelven especial la sobrecarga sin transformar el overdrive en una ruta dominante de remate

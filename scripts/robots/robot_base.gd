@@ -284,6 +284,11 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var lab_selection_indicator_height := 0.04
 @export_range(0.0, 0.2, 0.01) var lab_selection_indicator_pulse_amount := 0.08
 @export_range(1.0, 10.0, 0.5) var lab_selection_indicator_pulse_speed := 4.0
+@export_group("Prototype Energy Readability")
+@export_range(0.02, 0.2, 0.01) var energy_focus_indicator_thickness := 0.05
+@export_range(0.05, 0.4, 0.01) var energy_focus_indicator_length := 0.18
+@export_range(0.0, 0.2, 0.01) var energy_focus_indicator_pulse_amount := 0.1
+@export_range(1.0, 12.0, 0.5) var energy_focus_indicator_pulse_speed := 5.0
 @export_group("Prototype Damage Readability")
 @export_range(0.4, 1.0, 0.05) var damage_feedback_threshold := 0.8
 @export_range(0.1, 0.8, 0.05) var critical_damage_feedback_threshold := 0.45
@@ -346,6 +351,9 @@ var _recovery_target_indicator: MeshInstance3D = null
 var _recovery_target_indicator_animation_time := 0.0
 var _lab_selection_indicator: MeshInstance3D = null
 var _lab_selection_indicator_animation_time := 0.0
+var _energy_readability_root: Node3D = null
+var _energy_focus_indicator_nodes: Dictionary = {}
+var _energy_focus_indicator_animation_time := 0.0
 var _disabled_warning_indicator: MeshInstance3D = null
 var _disabled_warning_indicator_animation_time := 0.0
 var _recoverable_detached_part_ids: Dictionary = {}
@@ -977,6 +985,7 @@ func _ready() -> void:
 	_setup_carry_indicator()
 	_setup_recovery_target_indicator()
 	_setup_lab_selection_indicator()
+	_setup_energy_focus_indicators()
 	_setup_disabled_warning_indicator()
 	disabled_explosion_timer.wait_time = disabled_explosion_delay
 	_reset_control_pose()
@@ -1061,6 +1070,7 @@ func _process(delta: float) -> void:
 	_refresh_recovery_target_indicator()
 	_update_recovery_target_indicator_animation(delta)
 	_update_lab_selection_indicator(delta)
+	_update_energy_focus_indicator_animation(delta)
 	_update_disabled_warning_indicator(delta)
 	_update_core_skill_readiness_visuals(delta)
 
@@ -2411,6 +2421,7 @@ func _refresh_visual_state() -> void:
 	_refresh_carry_return_indicator()
 	_refresh_recovery_target_indicator()
 	_refresh_lab_selection_indicator()
+	_refresh_energy_focus_indicators()
 	_refresh_disabled_warning_indicator()
 	for part_name in BODY_PARTS:
 		_refresh_part_visual_state(part_name)
@@ -2604,6 +2615,42 @@ func _setup_lab_selection_indicator() -> void:
 	add_child(_lab_selection_indicator)
 
 
+func _setup_energy_focus_indicators() -> void:
+	_energy_focus_indicator_nodes.clear()
+	if _energy_readability_root == null:
+		_energy_readability_root = Node3D.new()
+		_energy_readability_root.name = "EnergyReadability"
+		add_child(_energy_readability_root)
+
+	for part_name in BODY_PARTS:
+		var anchor := _get_energy_indicator_anchor(part_name)
+		if anchor == null:
+			continue
+
+		var indicator_mesh := BoxMesh.new()
+		indicator_mesh.size = _get_energy_indicator_size(part_name)
+
+		var indicator_material := StandardMaterial3D.new()
+		indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		indicator_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		indicator_material.no_depth_test = true
+		indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+		indicator_material.albedo_color = Color(0.98, 0.68, 0.2, 0.72)
+		indicator_material.emission_enabled = true
+		indicator_material.emission = Color(1.0, 0.72, 0.24, 1.0)
+		indicator_material.emission_energy_multiplier = 1.2
+
+		var indicator := MeshInstance3D.new()
+		indicator.name = "EnergyFocusIndicator"
+		indicator.mesh = indicator_mesh
+		indicator.material_override = indicator_material
+		indicator.position = _get_energy_indicator_local_offset(part_name)
+		indicator.rotation = _get_energy_indicator_local_rotation(part_name)
+		indicator.visible = false
+		anchor.add_child(indicator)
+		_energy_focus_indicator_nodes[part_name] = indicator
+
+
 func _setup_disabled_warning_indicator() -> void:
 	var indicator_mesh := CylinderMesh.new()
 	indicator_mesh.top_radius = 1.0
@@ -2675,6 +2722,37 @@ func _refresh_lab_selection_indicator() -> void:
 	indicator_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.28)
 	indicator_material.emission = cue_color
 	indicator_material.emission_energy_multiplier = 0.95
+
+
+func _refresh_energy_focus_indicators() -> void:
+	var active_part_name := _get_energy_readability_part_name()
+	var active_pair: Array = ENERGY_LIMB_PAIRS.get(active_part_name, [])
+	var active_color := _get_energy_readability_color(active_part_name)
+	var show_any := active_part_name != "" and not _is_respawning
+	for part_name in BODY_PARTS:
+		var indicator := _energy_focus_indicator_nodes.get(part_name) as MeshInstance3D
+		if indicator == null:
+			continue
+
+		var should_show := (
+			show_any
+			and active_pair.has(part_name)
+			and get_part_health(part_name) > 0.0
+		)
+		indicator.visible = should_show
+		if not should_show:
+			indicator.scale = Vector3.ONE
+			continue
+
+		var material := indicator.material_override as StandardMaterial3D
+		if material == null:
+			continue
+
+		var focus_strength := _get_energy_indicator_focus_strength(part_name, active_part_name)
+		var alpha := 0.34 + focus_strength * 0.34
+		material.albedo_color = Color(active_color.r, active_color.g, active_color.b, alpha)
+		material.emission = active_color
+		material.emission_energy_multiplier = 0.9 + focus_strength * 1.65
 
 
 func _refresh_disabled_warning_indicator() -> void:
@@ -2851,6 +2929,38 @@ func _update_lab_selection_indicator(delta: float) -> void:
 	indicator_material.emission_energy_multiplier = 0.95 + wave * 0.45
 
 
+func _update_energy_focus_indicator_animation(delta: float) -> void:
+	var active_part_name := _get_energy_readability_part_name()
+	if active_part_name == "":
+		_energy_focus_indicator_animation_time = 0.0
+		for indicator in _energy_focus_indicator_nodes.values():
+			if indicator is MeshInstance3D:
+				(indicator as MeshInstance3D).scale = Vector3.ONE
+		return
+
+	_energy_focus_indicator_animation_time += delta
+	var wave := (sin(_energy_focus_indicator_animation_time * energy_focus_indicator_pulse_speed) + 1.0) * 0.5
+	for part_name in BODY_PARTS:
+		var indicator := _energy_focus_indicator_nodes.get(part_name) as MeshInstance3D
+		if indicator == null or not indicator.visible:
+			continue
+
+		var focus_strength := _get_energy_indicator_focus_strength(part_name, active_part_name)
+		var pulse_strength := 1.0 + (wave - 0.5) * energy_focus_indicator_pulse_amount * 2.0 * focus_strength
+		indicator.scale = Vector3(1.0, pulse_strength, 1.0 + (pulse_strength - 1.0) * 0.4)
+		indicator.position = _get_energy_indicator_local_offset(part_name) + Vector3(0.0, wave * 0.012 * focus_strength, 0.0)
+
+		var material := indicator.material_override as StandardMaterial3D
+		if material == null:
+			continue
+
+		material.emission_energy_multiplier = (
+			0.9
+			+ focus_strength * 1.65
+			+ wave * 0.35 * focus_strength
+		)
+
+
 func _update_disabled_warning_indicator(delta: float) -> void:
 	if _disabled_warning_indicator == null:
 		return
@@ -2897,6 +3007,88 @@ func _get_carried_part_owner() -> RobotBase:
 		return owner_node as RobotBase
 
 	return null
+
+
+func _get_energy_readability_part_name() -> String:
+	if _selected_energy_part_name == "":
+		return ""
+	if is_overdrive_active() and _overdrive_part_name != "":
+		return _overdrive_part_name
+	if _overdrive_recovery_remaining > 0.0 and _overdrive_part_name != "":
+		return _overdrive_part_name
+	if is_energy_surge_active() and _energy_surge_part_name != "":
+		return _energy_surge_part_name
+	if _is_energy_balanced():
+		return ""
+	return _selected_energy_part_name
+
+
+func _get_energy_readability_color(part_name: String) -> Color:
+	var base_color := _get_energy_focus_color()
+	if part_name.contains("leg"):
+		base_color = Color(0.22, 0.82, 1.0, 1.0)
+	else:
+		base_color = Color(1.0, 0.66, 0.18, 1.0)
+	if is_overdrive_active() and part_name == _overdrive_part_name:
+		return base_color.lerp(Color(1.0, 0.3, 0.12, 1.0), 0.65)
+	if _overdrive_recovery_remaining > 0.0 and part_name == _overdrive_part_name:
+		return base_color.lerp(Color(1.0, 0.88, 0.42, 1.0), 0.35)
+	if is_energy_surge_active() and part_name == _energy_surge_part_name:
+		return base_color.lerp(Color(0.95, 0.98, 1.0, 1.0), 0.25)
+	return base_color
+
+
+func _get_energy_indicator_focus_strength(part_name: String, active_part_name: String) -> float:
+	if part_name == active_part_name:
+		if is_overdrive_active():
+			return 1.35
+		if _overdrive_recovery_remaining > 0.0:
+			return 1.0
+		return 1.15
+	if is_overdrive_active():
+		return 0.78
+	if _overdrive_recovery_remaining > 0.0:
+		return 0.72
+	return 0.68
+
+
+func _get_energy_indicator_anchor(part_name: String) -> MeshInstance3D:
+	var visuals: Array[MeshInstance3D] = _part_visual_nodes.get(part_name, [])
+	if visuals.is_empty():
+		return null
+	return visuals[0]
+
+
+func _get_energy_indicator_size(part_name: String) -> Vector3:
+	if part_name.contains("arm"):
+		return Vector3(
+			maxf(energy_focus_indicator_thickness, 0.01),
+			maxf(energy_focus_indicator_thickness * 0.9, 0.01),
+			maxf(energy_focus_indicator_length, 0.01)
+		)
+	return Vector3(
+		maxf(energy_focus_indicator_thickness * 1.1, 0.01),
+		maxf(energy_focus_indicator_thickness * 0.9, 0.01),
+		maxf(energy_focus_indicator_length * 0.82, 0.01)
+	)
+
+
+func _get_energy_indicator_local_offset(part_name: String) -> Vector3:
+	if part_name == "left_arm":
+		return Vector3(0.0, 0.18, -0.12)
+	if part_name == "right_arm":
+		return Vector3(0.0, 0.18, -0.12)
+	if part_name == "left_leg":
+		return Vector3(0.0, 0.2, 0.1)
+	if part_name == "right_leg":
+		return Vector3(0.0, 0.2, 0.1)
+	return Vector3.ZERO
+
+
+func _get_energy_indicator_local_rotation(part_name: String) -> Vector3:
+	if part_name.contains("arm"):
+		return Vector3(deg_to_rad(12.0), 0.0, 0.0)
+	return Vector3(deg_to_rad(-12.0), 0.0, 0.0)
 
 
 func _clear_carried_item() -> void:

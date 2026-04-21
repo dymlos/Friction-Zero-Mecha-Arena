@@ -474,6 +474,10 @@
    - `PilotSupportPickup` ahora crea `PayloadAccentVisual` runtime con material propio y una firma sobria por carga: cilindro vertical para `estabilizador`, barra horizontal para `energia`, barra inclinada para `movilidad` y esfera compacta para `interferencia`.
    - Motivo: en pantalla compartida el respawn/pedestal ya explicaban “aca hay pickup”, pero el tipo seguia dependiendo demasiado del color. Separar la silueta mantiene la lectura diegetica del carril para jugador eliminado y espectador sin abrir otro HUD ni texto flotante.
 
+98. **La redistribución de energía se comunica sobre las extremidades activas**
+   - `RobotBase` ahora crea `EnergyReadability` runtime y monta `EnergyFocusIndicator` sobre brazos y piernas; solo la pareja activa se muestra, la parte exacta del foco destaca más y `Overdrive` empuja esa lectura hacia un color más caliente.
+   - Motivo: la energía ya alteraba movilidad/empuje y se resumía en el roster, pero faltaba ownership espacial para leer rápido “qué parte está potenciada” en pantalla compartida. Resolverlo sobre el propio cuerpo conserva claridad y evita otra capa fija de HUD.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
