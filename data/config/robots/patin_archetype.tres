@@ -16,3 +16,4 @@ attack_damage_multiplier = 0.92
 collision_damage_scale_multiplier = 0.9
 detached_part_pickup_range_multiplier = 1.05
 carried_part_return_range_multiplier = 0.98
+mobility_boost_duration_multiplier = 1.35

@@ -421,6 +421,34 @@ func get_effective_arm_power_multiplier() -> float:
 	return _get_arm_health_multiplier() * _get_arm_energy_multiplier()
 
 
+func get_received_impulse_multiplier() -> float:
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.received_impulse_multiplier, 0.1)
+
+
+func get_damaged_part_bonus_damage_multiplier() -> float:
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.damaged_part_bonus_damage_multiplier, 1.0)
+
+
+func get_return_support_repair_ratio() -> float:
+	if archetype_config == null:
+		return 0.0
+
+	return maxf(archetype_config.return_support_repair_ratio, 0.0)
+
+
+func get_mobility_boost_duration_multiplier() -> float:
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.mobility_boost_duration_multiplier, 1.0)
+
+
 func is_overdrive_active() -> bool:
 	return _overdrive_duration_remaining > 0.0
 
@@ -499,6 +527,7 @@ func apply_mobility_boost(duration: float) -> bool:
 	if _is_respawning or _is_disabled:
 		return false
 
+	duration *= get_mobility_boost_duration_multiplier()
 	var previous_remaining := _mobility_boost_remaining
 	_mobility_boost_remaining = maxf(_mobility_boost_remaining, duration)
 	if _mobility_boost_remaining > previous_remaining:
@@ -739,6 +768,35 @@ func repair_most_damaged_part(repair_amount: float) -> String:
 	return target_part
 
 
+func repair_most_damaged_part_excluding(excluded_part_name: String, repair_amount: float) -> String:
+	if repair_amount <= 0.0:
+		return ""
+
+	var target_part := ""
+	var lowest_health_ratio := 1.01
+	for part_name in BODY_PARTS:
+		if part_name == excluded_part_name:
+			continue
+
+		var current_health := get_part_health(part_name)
+		if current_health <= 0.0 or current_health >= max_part_health:
+			continue
+
+		var health_ratio := get_part_health_ratio(part_name)
+		if health_ratio >= lowest_health_ratio:
+			continue
+
+		lowest_health_ratio = health_ratio
+		target_part = part_name
+
+	if target_part == "":
+		return repair_most_damaged_part(repair_amount)
+	if not repair_part(target_part, repair_amount):
+		return ""
+
+	return target_part
+
+
 func restore_part(part_name: String, restored_health: float, restored_by: RobotBase = self) -> bool:
 	if not BODY_PARTS.has(part_name):
 		return false
@@ -751,6 +809,12 @@ func restore_part(part_name: String, restored_health: float, restored_by: RobotB
 	_part_flash_strength[part_name] = 1.0
 	if _is_disabled and not is_fully_disabled():
 		_exit_disabled_state()
+
+	var support_repair_amount := 0.0
+	if is_instance_valid(restored_by):
+		support_repair_amount = max_part_health * restored_by.get_return_support_repair_ratio()
+	if support_repair_amount > 0.0:
+		repair_most_damaged_part_excluding(part_name, support_repair_amount)
 
 	_refresh_visual_state()
 	part_restored.emit(self, part_name, restored_by)
@@ -810,34 +874,60 @@ func is_fully_disabled() -> bool:
 
 func apply_impulse(impulse: Vector3) -> void:
 	impulse.y = 0.0
-	external_impulse += impulse
+	external_impulse += impulse * get_received_impulse_multiplier()
 
 
 func receive_collision_hit(impact_direction: Vector3, damage_amount: float) -> void:
+	receive_collision_hit_from_robot(impact_direction, damage_amount)
+
+
+func receive_collision_hit_from_robot(
+	impact_direction: Vector3,
+	damage_amount: float,
+	source_robot: RobotBase = null
+) -> void:
 	if damage_amount <= 0.0 or is_fully_disabled():
 		return
 
 	var hit_part := _select_part_from_world_direction(impact_direction)
-	apply_damage_to_part(hit_part, damage_amount, impact_direction)
+	apply_damage_to_part(hit_part, damage_amount, impact_direction, source_robot)
 
 
 func receive_attack_hit(impact_direction: Vector3, damage_amount: float) -> void:
+	receive_attack_hit_from_robot(impact_direction, damage_amount)
+
+
+func receive_attack_hit_from_robot(
+	impact_direction: Vector3,
+	damage_amount: float,
+	source_robot: RobotBase = null
+) -> void:
 	if damage_amount <= 0.0 or is_fully_disabled():
 		return
 
 	var hit_part := _select_part_from_world_direction(impact_direction)
-	apply_damage_to_part(hit_part, damage_amount, impact_direction)
+	apply_damage_to_part(hit_part, damage_amount, impact_direction, source_robot)
 
 
-func apply_damage_to_part(part_name: String, damage_amount: float, impact_direction: Vector3 = Vector3.ZERO) -> void:
+func apply_damage_to_part(
+	part_name: String,
+	damage_amount: float,
+	impact_direction: Vector3 = Vector3.ZERO,
+	source_robot: RobotBase = null
+) -> void:
 	if not BODY_PARTS.has(part_name):
 		return
 	if damage_amount <= 0.0:
 		return
-	if get_part_health(part_name) <= 0.0:
+	var current_health := get_part_health(part_name)
+	if current_health <= 0.0:
 		return
 
-	part_health[part_name] = maxf(get_part_health(part_name) - damage_amount, 0.0)
+	var effective_damage := damage_amount
+	if is_instance_valid(source_robot) and current_health < max_part_health:
+		effective_damage *= source_robot.get_damaged_part_bonus_damage_multiplier()
+
+	part_health[part_name] = maxf(current_health - effective_damage, 0.0)
 	_part_flash_strength[part_name] = 1.0
 
 	if is_zero_approx(get_part_health(part_name)):
@@ -957,7 +1047,7 @@ func _update_prototype_attack() -> void:
 			continue
 
 		other.apply_impulse(direction_to_other * attack_impulse_strength * arm_power)
-		other.receive_attack_hit(direction_to_other, attack_damage * arm_power)
+		other.receive_attack_hit_from_robot(direction_to_other, attack_damage * arm_power, self)
 
 
 func _spawn_pulse_charge() -> bool:
@@ -1020,7 +1110,7 @@ func _try_apply_collision_damage(other_robot: RobotBase, push_direction: Vector3
 		return
 
 	_mark_collision_damage_cooldown(other_robot)
-	other_robot.receive_collision_hit(push_direction, damage_amount)
+	other_robot.receive_collision_hit_from_robot(push_direction, damage_amount, self)
 
 
 func _is_collision_damage_ready(other_robot: RobotBase) -> bool:

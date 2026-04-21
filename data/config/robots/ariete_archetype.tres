@@ -16,3 +16,4 @@ attack_damage_multiplier = 0.98
 collision_damage_scale_multiplier = 1.05
 detached_part_pickup_range_multiplier = 0.92
 carried_part_return_range_multiplier = 0.92
+received_impulse_multiplier = 0.78

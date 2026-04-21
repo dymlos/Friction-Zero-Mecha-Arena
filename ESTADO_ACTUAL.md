@@ -31,12 +31,12 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
 - escenario base 2v2 en `main.tscn` con dos equipos (pares por `team_id`) y 4 slots locales activos para validar rescate aliado y handoff en campo.
 - laboratorio FFA dedicado en `scenes/main/main_ffa.tscn`, reutilizando la misma arena/shared screen pero con `match_mode=FFA` y bootstrap que neutraliza las alianzas del layout 2v2 para que cada robot compita por su cuenta
-- primer roster de arquetipos apoyado solo en sistemas ya existentes:
-  - `Ariete`: mas vida y empuje para validar pusher/tank
-  - `Grua`: mejor retorno de partes para validar asistencia/recuperacion
-  - `Cizalla`: mas daño/pressure modular para validar dismantle
-  - `Patin`: mas velocidad y menos damping para validar movilidad/reposition
-  - `RobotArchetypeConfig` vive en recursos `.tres`, `RobotBase` lo aplica al arrancar y el HUD reutiliza el roster/marcador actual para exponer esa identidad sin abrir otra UI
+- primera capa de identidad de arquetipos apoyada sobre sistemas ya existentes:
+  - `Ariete`: mas vida/empuje y tambien mas resistencia al impulso externo para validar pusher/tank
+  - `Grua`: mejor retorno de partes y ahora estabiliza otra pieza dañada al completar un rescate para validar asistencia/recuperacion
+  - `Cizalla`: mas daño/pressure modular y bonus extra contra piezas ya tocadas para validar dismantle
+  - `Patin`: mas velocidad/menos damping y ventanas de impulso mas largas para validar movilidad/reposition
+  - `RobotArchetypeConfig` vive en recursos `.tres`, `RobotBase` lo aplica al arrancar y tambien lo consulta al resolver `apply_impulse`, retornos, daño modular y boosts temporales, sin abrir otra UI
 - cierre de ronda simple: el ultimo robot/equipo en pie suma una ronda y todos los robots vuelven juntos tras un delay corto
 - cierre de match simple: el laboratorio juega a `first-to-3`; cuando un equipo alcanza el objetivo, el HUD anuncia al ganador de la partida y el match se reinicia limpio tras una pausa corta
 - presion final de arena: el piso y sus edge markers se contraen de forma progresiva segun el tiempo de ronda, y el HUD agrega una linea corta cuando empieza el cierre
@@ -76,6 +76,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - existe un recurso nuevo `RobotArchetypeConfig` con multiplicadores simples de movimiento, aguante, empuje, daño y rescate
   - `RobotBase` ahora puede exportar un `archetype_config`, aplicarlo al arrancar y exponer `get_archetype_label()` / `get_roster_display_name()` para HUD/tests
   - `main.tscn` asigna `Ariete`, `Grua`, `Cizalla` y `Patin` a los cuatro slots del laboratorio base; `main_ffa.tscn` hereda el mismo roster
+- Se profundizó esa identidad del roster sin abrir skills activas ni escenas nuevas:
+  - `RobotArchetypeConfig` ahora tambien define hooks livianos de pasiva (`received_impulse_multiplier`, `return_support_repair_ratio`, `damaged_part_bonus_damage_multiplier`, `mobility_boost_duration_multiplier`)
+  - `RobotBase` los consume en `apply_impulse`, `restore_part`, `receive_attack_hit_from_robot` / `receive_collision_hit_from_robot` y `apply_mobility_boost`, reutilizando sistemas ya legibles en el laboratorio
+  - `robot_archetype_passive_test.gd` cubre que `Ariete`, `Grua`, `Cizalla` y `Patin` ya no dependen solo de multiplicadores base para diferenciarse
 - Se hizo visible esa identidad de roster sin tocar la capa de UI:
   - el roster compacto ahora muestra `Player X / <Arquetipo>`
   - el marcador FFA conserva `Player X` pero agrega `[<Arquetipo>]` para que score y round flow sigan legibles sin romper los textos de eliminación ya existentes
@@ -231,6 +235,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_damage_feedback_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_energy_management_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_archetype_roster_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_archetype_passive_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/local_multiplayer_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_completion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_elimination_readability_test.gd`
@@ -252,9 +257,9 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
 - El nuevo sistema de items sigue siendo deliberadamente simple: hoy existen reparacion instantanea, impulso corto, recarga breve y un solo item de carga (`pulse_charge`); la semialeatoriedad actual ya diferencia `Equipos` (2 pares) y `FFA` (3 tipos), pero todavia no hay inventario completo, pesos finos por modo/mapa ni variedad real de utilities.
 - El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
-- Los nuevos arquetipos son deliberadamente una primera pasada de tuning:
-  - hoy no hay selección runtime ni skills exclusivas por robot
-  - si `Ariete`, `Grua`, `Cizalla` y `Patin` siguen sintiéndose demasiado parecidos en playtest, el siguiente paso deberá ser una regla/skill corta por arquetipo, no solo más multiplicadores
+- Los nuevos arquetipos siguen siendo una capa deliberadamente liviana:
+  - hoy combinan tuning + pasivas chicas, pero todavia no hay selección runtime ni skills activas exclusivas por robot
+  - si `Ariete`, `Grua`, `Cizalla` y `Patin` siguen sintiéndose demasiado parecidos en playtest, el siguiente paso debera ser una regla/skill mas visible para el arquetipo que siga borroso, no solo mas multiplicadores
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - La explosion inestable ya conecta overdrive con la ruta de destruccion total, pero todavia falta playtestear si sus multiplicadores vuelven especial esa apuesta sin convertirla en el cierre dominante del match.

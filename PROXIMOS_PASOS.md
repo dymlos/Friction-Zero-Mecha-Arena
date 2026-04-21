@@ -3,9 +3,10 @@
 ## Siguiente iteracion recomendada
 
 1. **Validar el nuevo roster de arquetipos**
-   - correr sesiones reales con `Ariete`, `Grua`, `Cizalla` y `Patin` para decidir si el tuning actual ya produce identidades claras o si hace falta una regla/skill breve por arquetipo.
+   - correr sesiones reales con `Ariete`, `Grua`, `Cizalla` y `Patin` para decidir si la nueva combinacion de tuning + pasivas chicas ya produce identidades claras o si algun arquetipo todavia necesita una regla/skill mas visible.
+   - medir si las pasivas actuales se entienden por playtest sin otra capa de UI: `Ariete` aguantando empuje, `Grua` estabilizando rescates, `Cizalla` rematando partes tocadas y `Patin` explotando mejor los pickups de impulso.
    - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA) alcanza como legibilidad de laboratorio o si conviene compactarlo mas.
-   - decidir si el siguiente paso del roster debe ser selector runtime, pasivas chicas o simplemente mas ajuste de multiplicadores por modo/mapa.
+   - decidir si el siguiente paso del roster debe ser selector runtime, una skill/regla puntual para el arquetipo mas borroso o simplemente mas ajuste de multiplicadores por modo/mapa.
 
 2. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
    - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` usando tambien el toggle `F1` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.

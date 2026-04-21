@@ -67,7 +67,7 @@ func _on_body_entered(body: Node) -> void:
 	if body is RobotBase:
 		var robot := body as RobotBase
 		robot.apply_impulse(_travel_direction * impact_impulse)
-		robot.receive_attack_hit(_travel_direction, damage_amount)
+		robot.receive_attack_hit_from_robot(_travel_direction, damage_amount, _source_robot)
 		queue_free()
 		return
 

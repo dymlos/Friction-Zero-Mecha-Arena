@@ -21,3 +21,9 @@ class_name RobotArchetypeConfig
 @export_group("Recovery")
 @export_range(0.6, 1.6, 0.01) var detached_part_pickup_range_multiplier := 1.0
 @export_range(0.6, 1.6, 0.01) var carried_part_return_range_multiplier := 1.0
+
+@export_group("Identity Hooks")
+@export_range(0.4, 1.2, 0.01) var received_impulse_multiplier := 1.0
+@export_range(1.0, 1.8, 0.01) var damaged_part_bonus_damage_multiplier := 1.0
+@export_range(0.0, 0.5, 0.01) var return_support_repair_ratio := 0.0
+@export_range(1.0, 2.0, 0.01) var mobility_boost_duration_multiplier := 1.0

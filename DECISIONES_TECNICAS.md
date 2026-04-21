@@ -254,6 +254,11 @@
    - `MatchController` conserva `MatchConfig.hud_detail_mode` como default de arranque, pero permite ciclar una sobreescritura de sesion; `Main` expone ese cambio con `F1` para playtests locales.
    - Motivo: comparar `explicito/contextual` dentro del mismo laboratorio sin ensuciar escenas nuevas ni mutar el `.tres` compartido entre instancias/tests.
 
+64. **La segunda capa de arquetipos reutiliza hooks ya existentes**
+   - `RobotArchetypeConfig` ahora agrega pasivas chicas sin escenas ni botones nuevos: `Ariete` baja el impulso externo recibido, `Grua` estabiliza otra pieza dañada al devolver una parte, `Cizalla` castiga mas una pieza ya tocada y `Patin` estira la duracion de los boosts de movilidad.
+   - `RobotBase` las resuelve dentro de `apply_impulse`, `restore_part`, `receive_attack_hit_from_robot` / `receive_collision_hit_from_robot` y `apply_mobility_boost`, mientras `PulseBolt` tambien pasa el atacante para no romper la identidad de `Cizalla` fuera del melee.
+   - Motivo: profundizar la identidad del roster sin abrir todavia skills activas, UI nueva ni ramas de codigo por robot; se apoya en sistemas que ya eran jugables y legibles en el laboratorio actual.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
