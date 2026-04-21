@@ -178,6 +178,10 @@
    - `ArenaBase` ahora cachea la posicion local original de los nodos del grupo `edge_repair_pickups` y los reubica con la misma escala X/Z que el area segura.
    - Motivo: si el pickup quedaba fijo mientras la arena se cerraba, el incentivo de borde se salia del espacio jugable y rompia el duelo riesgo/recompensa del endgame.
 
+45. **Bootstrap FFA con layout radial en `Main`, no con markers duplicados**
+   - Cuando `MatchController` arranca en `FFA`, `Main` ya no consume los `SpawnPlayerX` cardinales del arena blockout; genera un set radial/diagonal mirando al centro mediante `ffa_spawn_radius` y `ffa_spawn_angle_offset_degrees`.
+   - Motivo: separar la identidad espacial del free-for-all del laboratorio 2v2 sin duplicar la escena de arena ni abrir otra capa de config/map loading prematura.
+
 45. **FFA expuesto como escena heredada del laboratorio principal**
    - `scenes/main/main_ffa.tscn` hereda `main.tscn`, fija `MatchMode.FFA` y reutiliza la misma arena, HUD y bootstrap local.
    - Motivo: volver FFA una opcion testeable ya mismo sin duplicar escenas grandes ni abrir una segunda rama de codigo para el laboratorio.

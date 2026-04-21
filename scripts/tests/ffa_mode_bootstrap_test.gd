@@ -43,6 +43,7 @@ func _run() -> void:
 		not robots[2].is_ally_of(robots[3]),
 		"En FFA Player 3 y Player 4 tambien deberian competir por separado."
 	)
+	_assert(_uses_distinct_ffa_spawn_layout(robots), "El bootstrap FFA sobre `main.tscn` tambien deberia reemplazar el layout cardinal 2v2 por spawns diagonales.")
 
 	for robot in robots:
 		robot.set_physics_process(false)
@@ -108,6 +109,24 @@ func _find_line_with_prefix(lines: Array[String], prefix: String) -> String:
 			return line
 
 	return ""
+
+
+func _uses_distinct_ffa_spawn_layout(robots: Array[RobotBase]) -> bool:
+	if robots.size() < 4:
+		return false
+
+	var seen_quadrants := {}
+	for robot in robots:
+		var planar_position := Vector2(robot.global_position.x, robot.global_position.z)
+		if planar_position.length() < 3.5:
+			return false
+		if absf(planar_position.x) < 1.0 or absf(planar_position.y) < 1.0:
+			return false
+
+		var quadrant_key := "%s:%s" % [signi(planar_position.x), signi(planar_position.y)]
+		seen_quadrants[quadrant_key] = true
+
+	return seen_quadrants.size() == 4
 
 
 func _assert(condition: bool, message: String) -> void:

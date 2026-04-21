@@ -35,6 +35,8 @@ func _run() -> void:
 	_assert(match_controller.match_mode == MatchController.MatchMode.FFA, "La escena dedicada deberia bootear en FFA.")
 	_assert(not robots[0].is_ally_of(robots[1]), "La escena FFA no deberia conservar alianzas entre Player 1 y Player 2.")
 	_assert(not robots[2].is_ally_of(robots[3]), "La escena FFA no deberia conservar alianzas entre Player 3 y Player 4.")
+	_assert(_uses_distinct_ffa_spawn_layout(robots), "La escena FFA deberia usar spawns diagonales propios, no las lineas cardinales del laboratorio 2v2.")
+	_assert(_all_robots_face_center(robots), "Los spawns FFA deberian mirar hacia el centro para abrir tanteo y third-party desde el arranque.")
 
 	var round_lines := match_controller.get_round_state_lines()
 	var score_line := _find_line_with_prefix(round_lines, "Marcador |")
@@ -69,6 +71,38 @@ func _find_line_with_prefix(lines: Array[String], prefix: String) -> String:
 			return line
 
 	return ""
+
+
+func _uses_distinct_ffa_spawn_layout(robots: Array[RobotBase]) -> bool:
+	if robots.size() < 4:
+		return false
+
+	var seen_quadrants := {}
+	for robot in robots:
+		var planar_position := Vector2(robot.global_position.x, robot.global_position.z)
+		if planar_position.length() < 3.5:
+			return false
+		if absf(planar_position.x) < 1.0 or absf(planar_position.y) < 1.0:
+			return false
+
+		var quadrant_key := "%s:%s" % [signi(planar_position.x), signi(planar_position.y)]
+		seen_quadrants[quadrant_key] = true
+
+	return seen_quadrants.size() == 4
+
+
+func _all_robots_face_center(robots: Array[RobotBase]) -> bool:
+	for robot in robots:
+		var planar_position := Vector2(robot.global_position.x, robot.global_position.z)
+		if planar_position.length() < 0.1:
+			return false
+
+		var forward := Vector2(-robot.global_basis.z.x, -robot.global_basis.z.z).normalized()
+		var to_center := (-planar_position).normalized()
+		if forward.dot(to_center) < 0.9:
+			return false
+
+	return true
 
 
 func _assert(condition: bool, message: String) -> void:

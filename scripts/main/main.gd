@@ -39,6 +39,9 @@ const DEFAULT_LAB_ARCHETYPES := [
 @export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
 @export var lab_runtime_selector_enabled := true
 @export var lab_runtime_archetypes: Array[RobotArchetypeConfig] = []
+@export_group("FFA Bootstrap")
+@export_range(2.5, 12.0, 0.1) var ffa_spawn_radius := 5.6
+@export_range(0.0, 180.0, 1.0) var ffa_spawn_angle_offset_degrees := 45.0
 
 @onready var arena_root: Node3D = $ArenaRoot
 @onready var robot_root: Node3D = $RobotRoot
@@ -186,7 +189,7 @@ func _register_existing_robots() -> void:
 func _configure_playable_prototype() -> void:
 	var robots := _get_scene_robots()
 	_apply_match_mode_bootstrap(robots)
-	var spawn_points := _get_arena_spawn_points()
+	var spawn_transforms := _get_bootstrap_spawn_transforms(robots.size())
 	var local_player_count: int = min(match_controller.get_local_player_count(), robots.size())
 
 	for index in range(robots.size()):
@@ -195,10 +198,10 @@ func _configure_playable_prototype() -> void:
 		robot.is_player_controlled = index < local_player_count
 		robot.control_mode = _resolve_control_mode_for_slot(robot.player_index)
 		_assign_default_local_inputs(robot, index)
-		if index < spawn_points.size():
-			var spawn_point: Marker3D = spawn_points[index]
-			robot.global_position = spawn_point.global_position
-			robot.global_basis = spawn_point.global_basis
+		if index < spawn_transforms.size():
+			var spawn_transform := spawn_transforms[index]
+			robot.global_position = spawn_transform.origin
+			robot.global_basis = spawn_transform.basis
 		robot.capture_spawn_transform()
 		if robot.is_player_controlled:
 			robot.refresh_input_setup()
@@ -257,6 +260,45 @@ func _get_arena_spawn_points() -> Array[Marker3D]:
 		return _arena.get_spawn_points()
 
 	return []
+
+
+func _get_bootstrap_spawn_transforms(robot_count: int) -> Array[Transform3D]:
+	if match_controller != null and match_controller.match_mode == MatchController.MatchMode.FFA:
+		return _build_ffa_spawn_transforms(robot_count)
+
+	var spawn_transforms: Array[Transform3D] = []
+	for spawn_point in _get_arena_spawn_points():
+		spawn_transforms.append(spawn_point.global_transform)
+
+	return spawn_transforms
+
+
+func _build_ffa_spawn_transforms(robot_count: int) -> Array[Transform3D]:
+	var spawn_transforms: Array[Transform3D] = []
+	if robot_count <= 0:
+		return spawn_transforms
+
+	var spawn_height := _get_default_spawn_height()
+	var angle_offset_radians := deg_to_rad(ffa_spawn_angle_offset_degrees)
+	for index in range(robot_count):
+		var angle := angle_offset_radians + (TAU * float(index) / float(robot_count))
+		var planar_position := Vector2(cos(angle), sin(angle)) * ffa_spawn_radius
+		var spawn_position := Vector3(planar_position.x, spawn_height, planar_position.y)
+		var facing_direction := Vector3(-planar_position.x, 0.0, -planar_position.y).normalized()
+		var spawn_basis := Basis.IDENTITY
+		if facing_direction.length_squared() > 0.0001:
+			spawn_basis = Basis.looking_at(facing_direction, Vector3.UP)
+		spawn_transforms.append(Transform3D(spawn_basis, spawn_position))
+
+	return spawn_transforms
+
+
+func _get_default_spawn_height() -> float:
+	var spawn_points := _get_arena_spawn_points()
+	if not spawn_points.is_empty():
+		return spawn_points[0].global_position.y
+
+	return 0.8
 
 
 func _get_active_arena() -> ArenaBase:

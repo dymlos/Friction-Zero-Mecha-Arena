@@ -43,6 +43,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - la nave ahora suma un `StatusBeacon` diegetico sobre el casco; mantiene un aro visible en idle y enciende un pulso/acento al cargar `payload` o quedar `interferida`, reforzando la lectura del carril sin HUD nuevo
   - `FFA` mantiene la misma estructura base pero nunca instancia naves ni activa esos pickups, para no contaminar su identidad de supervivencia/oportunismo
 - laboratorio FFA dedicado en `scenes/main/main_ffa.tscn`, reutilizando la misma arena/shared screen pero con `match_mode=FFA` y bootstrap que neutraliza las alianzas del layout 2v2 para que cada robot compita por su cuenta; ese mismo laboratorio ahora reemplaza los slots de `Grua` y `Cizalla` por `Aguja` y `Ancla` para probar poke + control/zona sin romper el 2v2 base
+- el bootstrap FFA ya tambien diferencia el espacio inicial: en cuanto `match_mode=FFA`, `Main` genera spawns diagonales sobre un radio comun y hace mirar a cada robot hacia el centro, evitando que el laboratorio libre herede las lineas cardinales del 2v2
 - primera capa de identidad de arquetipos apoyada sobre sistemas ya existentes, mas tres skills propias repartidas entre 2v2 y FFA:
   - `Ariete`: mas vida/empuje y tambien mas resistencia al impulso externo para validar pusher/tank
   - `Grua`: mejor retorno de partes, estabiliza otra pieza dañada al completar un rescate y ahora convierte `throw_part` en `Iman` cuando no lleva carga, capturando piezas listas a distancia media para validar asistencia/recuperacion activa

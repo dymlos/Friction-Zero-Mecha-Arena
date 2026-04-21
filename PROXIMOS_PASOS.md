@@ -42,7 +42,7 @@
    - playtestear si la nueva lectura torso/chasis mejora el combate o si todavia se siente demasiado sutil para pantalla compartida.
 
 6. **Validar la identidad del nuevo laboratorio FFA**
-   - correr sesiones reales en `scenes/main/main_ffa.tscn` para comprobar si el mismo layout 4P ya genera supervivencia, oportunismo y third-party legibles ahora que el roster libre incluye a `Aguja` y `Ancla`.
+   - correr sesiones reales en `scenes/main/main_ffa.tscn` para comprobar si el nuevo spawn radial/diagonal 4P ya genera supervivencia, oportunismo y third-party legibles ahora que el roster libre incluye a `Aguja` y `Ancla`.
    - medir si el rescate/negacion sigue siendo entendible cuando nadie tiene aliados y decidir si FFA necesita valores o spawns propios, no solo otra bandera de match.
    - revisar si `Baliza` vuelve algunas diagonales/coberturas demasiado seguras o si realmente empuja rotacion y lectura espacial.
    - revisar si el marcador first-to-3 y la contraccion actual producen buen ritmo en FFA o si ese modo necesita objetivo/duracion distintos.
