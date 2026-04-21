@@ -17,27 +17,32 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - transporte de partes que bloquea el ataque prototipo
 - negacion basica de partes si el portador cae al vacio
 - robot inutilizado al perder las cuatro partes, empujable y con explosion diferida antes del respawn
+- bootstrap local que deja dos robots humanos activos por defecto desde `main.tscn`
+- perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
+- HUD minimo con roster compacto para leer estado de robots y si alguno transporta una parte
 
 ## Lo completado en esta iteracion
 
-- Se agrego recuperacion modular basica con propietario, retorno parcial y bloqueo de ataque al cargar una parte.
-- Se implemento negacion basica de partes mediante caida al vacio del portador.
-- Se agrego explosion diferida para robots inutilizados, con danio/empuje radial y respawn posterior.
-- Se sumaron verificaciones headless especificas para retorno de partes y explosion del cuerpo averiado.
+- Se hizo explicito el bootstrap local del prototipo: `main.gd` ahora asigna slots, spawns y deja dos jugadores activos por defecto.
+- Se separo ownership de input local con perfiles de teclado por jugador y fallback de joystick por slot, evitando que varios robots lean el mismo dispositivo.
+- Se agrego un roster compacto en HUD para leer rapido quien sigue activo, cuantas partes conserva y si transporta una parte recuperable.
+- Se sumaron verificaciones headless para el bootstrap multijugador y la separacion de input, manteniendo ademas las pruebas previas del loop modular.
 
 ## Validacion realizada
 
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_part_return_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_explosion_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/local_multiplayer_bootstrap_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_input_ownership_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 30`
 
-Resultado: los dos loops nuevos pasan en verificaciones dedicadas y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: las cuatro verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
 - Todavia no hay torso independiente Hard.
 - La energia existe como dato y multiplicador futuro, pero no hay redistribucion jugable ni UI asociada.
-- La escena principal todavia no demuestra rescates cooperativos reales porque solo un robot esta controlado por jugador.
-- Aun no hay feedback visual dedicado para "parte cargada" mas alla del propio mesh transportado y el mensaje breve de HUD.
+- La escena principal ya permite duelo 1v1 humano real, pero todavia no demuestra rescates cooperativos reales porque no existe una configuracion 2v2 o aliado activo en vivo.
+- El roster mejora la lectura del estado modular, pero sigue siendo un HUD textual de depuracion; aun no existe feedback diegetico fuerte para "parte cargada".
 - No existe accion de lanzamiento manual para negar partes: la negacion actual solo se resuelve llevando el portador al vacio.

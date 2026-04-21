@@ -3,8 +3,8 @@
 ## Siguiente iteracion recomendada
 
 1. **Hacer visible y testeable el rescate/negacion**
-   - habilitar una configuracion de 2 jugadores activos o 2v2 simple
-   - mostrar mejor cuando alguien carga una parte
+   - mantener el bootstrap 2P y sumar una configuracion 2v2 simple o aliado activo
+   - probar handoff real de partes entre aliados, no solo autoretorno
    - ajustar pickup delay, radio de retorno y cleanup segun sensacion
 
 2. **Dar un primer uso real a la energia**
@@ -13,7 +13,7 @@
    - feedback minimo no invasivo
 
 3. **Mejorar validacion jugable**
-   - escena o configuracion de prueba para dos jugadores activos
+   - escena o configuracion de prueba para dos jugadores activos y al menos un rescate aliado
    - ajuste fino de valores de aceleracion, damping, empuje y danio
 
 4. **Preparar soporte Hard sin convertirlo en requisito**

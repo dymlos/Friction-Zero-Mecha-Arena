@@ -2,6 +2,7 @@ extends Resource
 class_name MatchConfig
 
 @export_range(2, 8) var max_players := 4
+@export_range(1, 4) var local_player_count := 2
 @export var round_time_seconds := 180
 @export var allow_team_mode := true
 @export var progressive_space_reduction := true

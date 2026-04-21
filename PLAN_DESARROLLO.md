@@ -5,11 +5,13 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 ## Checkpoint actual - 2026-04-21
 
 - Etapa 0 a 3: base jugable ya integrada en `main.tscn` con arena, camara compartida, empuje, caida al vacio y respawn de prototipo.
+- Bootstrap local mas claro: `main.gd` ahora alinea robots con los spawns del arena blockout, asigna slots de jugador y deja 2 jugadores humanos activos por defecto.
+- Input local separado: `RobotBase` resuelve perfiles de teclado por slot y deja de leer joysticks "de todos" cuando el robot ya usa teclado.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
 - Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y luego respawnea para mantener el match jugable.
-- Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas y mensajes breves de HUD.
-- Pendiente prioritario: probar este loop nuevo en situaciones mas reales de 2+ jugadores activos y conectar la energia redistribuida con decisiones visibles.
+- Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, mensajes breves y un roster compacto por robot para leer estado/carga de partes sin HUD pesado.
+- Pendiente prioritario: convertir el baseline 2P en un escenario real de rescate aliado (2v2 simple o configuracion equivalente) y conectar la energia redistribuida con decisiones visibles.
 
 ## Principios de orden
 

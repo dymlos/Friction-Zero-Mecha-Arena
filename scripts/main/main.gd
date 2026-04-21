@@ -5,6 +5,7 @@ const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchHud = preload("res://scripts/ui/match_hud.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
+const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 
 @onready var arena_root: Node3D = $ArenaRoot
 @onready var robot_root: Node3D = $RobotRoot
@@ -16,9 +17,15 @@ const DetachedPart = preload("res://scripts/robots/detached_part.gd")
 func _ready() -> void:
 	# Esta escena solo conecta piezas grandes: arena, robots, UI y sistemas.
 	# La logica concreta vive en scripts mas chicos para que el proyecto crezca ordenado.
+	_configure_playable_prototype()
 	_register_existing_robots()
 	_report_startup_structure()
 	ui.show_status("Friction Zero: %s robots en arena" % match_controller.registered_robots.size())
+	_refresh_hud()
+
+
+func _process(_delta: float) -> void:
+	_refresh_hud()
 
 
 func _register_existing_robots() -> void:
@@ -33,6 +40,63 @@ func _register_existing_robots() -> void:
 			child.part_restored.connect(_on_robot_part_restored)
 			child.robot_disabled.connect(_on_robot_disabled)
 			child.robot_exploded.connect(_on_robot_exploded)
+
+
+func _configure_playable_prototype() -> void:
+	var robots := _get_scene_robots()
+	var spawn_points := _get_arena_spawn_points()
+	var local_player_count: int = min(match_controller.get_local_player_count(), robots.size())
+
+	for index in range(robots.size()):
+		var robot: RobotBase = robots[index]
+		robot.player_index = index + 1
+		robot.is_player_controlled = index < local_player_count
+		_assign_default_local_inputs(robot, index)
+		if index < spawn_points.size():
+			var spawn_point: Marker3D = spawn_points[index]
+			robot.global_position = spawn_point.global_position
+			robot.global_basis = spawn_point.global_basis
+		robot.capture_spawn_transform()
+		if robot.is_player_controlled:
+			robot.refresh_input_setup()
+
+
+func _assign_default_local_inputs(robot: RobotBase, index: int) -> void:
+	if not robot.is_player_controlled:
+		return
+
+	if index == 0:
+		robot.keyboard_profile = RobotBase.KeyboardProfile.WASD_SPACE
+		robot.joypad_device = -1
+		return
+
+	if index == 1:
+		robot.keyboard_profile = RobotBase.KeyboardProfile.ARROWS_ENTER
+		robot.joypad_device = -1
+		return
+
+	robot.keyboard_profile = RobotBase.KeyboardProfile.NONE
+
+
+func _get_scene_robots() -> Array[RobotBase]:
+	var robots: Array[RobotBase] = []
+	for child in robot_root.get_children():
+		if child is RobotBase:
+			robots.append(child as RobotBase)
+
+	return robots
+
+
+func _get_arena_spawn_points() -> Array[Marker3D]:
+	for child in arena_root.get_children():
+		if child is ArenaBase:
+			return (child as ArenaBase).get_spawn_points()
+
+	return []
+
+
+func _refresh_hud() -> void:
+	ui.show_roster(match_controller.get_robot_status_lines())
 
 
 func _report_startup_structure() -> void:

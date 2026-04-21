@@ -12,6 +12,7 @@ signal part_restored(robot: RobotBase, part_name: String, restored_by: RobotBase
 signal robot_exploded(robot: RobotBase)
 
 enum ControlMode { EASY, HARD }
+enum KeyboardProfile { NONE, WASD_SPACE, ARROWS_ENTER }
 
 const DETACHED_PART_SCENE := preload("res://scenes/robots/detached_part.tscn")
 
@@ -45,12 +46,30 @@ const CORE_VISUAL_PATHS := [
 	"RightCoreLight",
 ]
 
-const KEYBOARD_INPUT_BINDINGS := {
-	"move_left": [KEY_A, KEY_LEFT],
-	"move_right": [KEY_D, KEY_RIGHT],
-	"move_forward": [KEY_W, KEY_UP],
-	"move_back": [KEY_S, KEY_DOWN],
-	"attack": [KEY_SPACE],
+const INPUT_ACTION_SUFFIXES := [
+	"move_left",
+	"move_right",
+	"move_forward",
+	"move_back",
+	"attack",
+]
+
+const KEYBOARD_PROFILE_BINDINGS := {
+	KeyboardProfile.NONE: {},
+	KeyboardProfile.WASD_SPACE: {
+		"move_left": [KEY_A],
+		"move_right": [KEY_D],
+		"move_forward": [KEY_W],
+		"move_back": [KEY_S],
+		"attack": [KEY_SPACE],
+	},
+	KeyboardProfile.ARROWS_ENTER: {
+		"move_left": [KEY_LEFT],
+		"move_right": [KEY_RIGHT],
+		"move_forward": [KEY_UP],
+		"move_back": [KEY_DOWN],
+		"attack": [KEY_ENTER],
+	},
 }
 
 @export var robot_id := 0
@@ -64,6 +83,7 @@ const KEYBOARD_INPUT_BINDINGS := {
 @export_group("Prototype Controls")
 @export var is_player_controlled := false
 @export_range(1, 8) var player_index := 1
+@export var keyboard_profile: KeyboardProfile = KeyboardProfile.WASD_SPACE
 @export var joypad_device := -1
 @export_range(0.0, 0.8, 0.05) var joystick_deadzone := 0.25
 
@@ -129,11 +149,39 @@ func get_team_identity() -> int:
 	return get_instance_id()
 
 
+func uses_keyboard_input() -> bool:
+	return keyboard_profile != KeyboardProfile.NONE
+
+
 func is_ally_of(other_robot: RobotBase) -> bool:
 	if other_robot == null:
 		return false
 
 	return get_team_identity() == other_robot.get_team_identity()
+
+
+func is_disabled_state() -> bool:
+	return _is_disabled
+
+
+func is_carrying_part() -> bool:
+	return is_instance_valid(_carried_part)
+
+
+func get_carried_part_name() -> String:
+	if not is_instance_valid(_carried_part):
+		return ""
+
+	return _carried_part.part_name
+
+
+func get_active_part_count() -> int:
+	var active_parts := 0
+	for part_name in BODY_PARTS:
+		if get_part_health(part_name) > 0.0:
+			active_parts += 1
+
+	return active_parts
 
 
 func _ready() -> void:
@@ -146,8 +194,7 @@ func _ready() -> void:
 	disabled_explosion_timer.wait_time = disabled_explosion_delay
 	reset_modular_state()
 	if is_player_controlled:
-		_ensure_default_input_actions()
-		_report_joypad_status()
+		refresh_input_setup()
 
 
 func _physics_process(delta: float) -> void:
@@ -194,6 +241,18 @@ func set_part_energy(part_name: String, value: float) -> void:
 		return
 
 	part_energy[part_name] = maxf(value, 0.0)
+
+
+func capture_spawn_transform() -> void:
+	_spawn_transform = global_transform
+
+
+func refresh_input_setup() -> void:
+	if not is_player_controlled:
+		return
+
+	_ensure_default_input_actions()
+	_report_joypad_status()
 
 
 func get_restored_part_health_amount() -> float:
@@ -747,17 +806,26 @@ func _player_action_name(action_suffix: String) -> StringName:
 
 
 func _ensure_default_input_actions() -> void:
-	for action_suffix in KEYBOARD_INPUT_BINDINGS:
+	var bindings: Dictionary = KEYBOARD_PROFILE_BINDINGS.get(keyboard_profile, {})
+	for action_suffix in INPUT_ACTION_SUFFIXES:
 		var action_name := _player_action_name(action_suffix)
 		if not InputMap.has_action(action_name):
 			InputMap.add_action(action_name, joystick_deadzone)
 		else:
 			InputMap.action_set_deadzone(action_name, joystick_deadzone)
 
-		for keycode in KEYBOARD_INPUT_BINDINGS[action_suffix]:
-			var event := InputEventKey.new()
-			event.physical_keycode = keycode
-			_add_input_event_if_missing(action_name, event)
+		_replace_action_key_events(action_name, bindings.get(action_suffix, []))
+
+
+func _replace_action_key_events(action_name: StringName, keycodes: Array) -> void:
+	for event in InputMap.action_get_events(action_name):
+		if event is InputEventKey:
+			InputMap.action_erase_event(action_name, event)
+
+	for keycode in keycodes:
+		var input_event := InputEventKey.new()
+		input_event.physical_keycode = int(keycode)
+		_add_input_event_if_missing(action_name, input_event)
 
 
 func _add_input_event_if_missing(action_name: StringName, event: InputEvent) -> void:
@@ -808,8 +876,12 @@ func _get_joypad_devices_to_read() -> Array[int]:
 			devices.append(joypad_device)
 		return devices
 
-	for device in connected_devices:
-		devices.append(int(device))
+	if uses_keyboard_input():
+		return devices
+
+	var fallback_device := player_index - 1
+	if fallback_device >= 0 and connected_devices.has(fallback_device):
+		devices.append(fallback_device)
 
 	return devices
 
@@ -903,6 +975,10 @@ func _start_disabled_respawn() -> void:
 
 
 func _report_joypad_status() -> void:
+	if uses_keyboard_input() and joypad_device < 0:
+		print("%s: perfil local por teclado activo." % display_name)
+		return
+
 	var connected_devices := Input.get_connected_joypads()
 	if connected_devices.is_empty():
 		print("%s: no hay joystick conectado; queda teclado como fallback." % display_name)

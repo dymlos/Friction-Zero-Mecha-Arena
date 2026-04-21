@@ -30,6 +30,18 @@
    - Se agregaron `scripts/tests/robot_part_return_test.gd` y `scripts/tests/robot_disabled_explosion_test.gd`.
    - Motivo: verificar el loop modular nuevo con algo mas fuerte que un simple arranque del proyecto, sin introducir una infraestructura de tests mas pesada de la necesaria.
 
+8. **Bootstrap local desde `main` en vez de confiar en la escena armada a mano**
+   - `main.gd` ahora asigna spawns y slots locales a los robots ya presentes en la escena.
+   - Motivo: deja el prototipo mas facil de entender y evita escenas "correctas por casualidad" cuando se suman mas jugadores o se cambian spawns.
+
+9. **Ownership de input por slot, no por dispositivo global**
+   - Cada `RobotBase` usa un perfil de teclado concreto o un joystick resuelto por slot/dispositivo explicito.
+   - Motivo: elimina el problema de varios robots leyendo las mismas teclas o todos los joysticks a la vez, que hacia engañosa cualquier prueba local de combate.
+
+10. **HUD de roster compacto en vez de barra pesada**
+   - El HUD nuevo solo lista estado, partes activas y carga de parte por robot.
+   - Motivo: mejora la lectura del loop modular y del rescate sin romper la prioridad del proyecto por claridad y pantalla compartida limpia.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
