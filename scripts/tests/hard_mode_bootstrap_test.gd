@@ -42,7 +42,7 @@ func _run() -> void:
 	if status_label is Label:
 		var status_text := (status_label as Label).text
 		_assert(
-			status_text.contains("TFGH"),
+			status_text.contains("TFGX"),
 			"El estado inicial deberia dejar visible el aim por teclado para el slot Hard del laboratorio."
 		)
 

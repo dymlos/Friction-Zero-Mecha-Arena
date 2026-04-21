@@ -8,7 +8,7 @@
    - ajustar si hace falta radio de retorno, cleanup y ritmo de choque con un aliado en escena, sin reabrir spam accidental.
 
 2. **Convertir el soporte Hard en una opcion realmente jugable**
-   - playtestear si `WASD + TFGH` alcanza como camino Hard/local de laboratorio o si sigue resultando demasiado exigente/confuso para pantalla compartida.
+   - playtestear si `WASD + TFGX` alcanza como camino Hard/local de laboratorio o si sigue resultando demasiado exigente/confuso para pantalla compartida.
    - decidir si `hard_mode_player_slots` alcanza como configuracion de laboratorio o si conviene un selector runtime por jugador.
    - resolver si vale la pena extender aim por teclado a otro perfil local o si conviene dejar el resto de los slots Hard explicitamente joypad-first.
    - revisar si la leyenda inicial del HUD alcanza o si hace falta una referencia mas persistente/compacta de controles activos.

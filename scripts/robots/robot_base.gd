@@ -78,7 +78,7 @@ const KEYBOARD_PROFILE_LABELS := {
 }
 
 const KEYBOARD_PROFILE_HARD_AIM_LABELS := {
-	KeyboardProfile.WASD_SPACE: "TFGH",
+	KeyboardProfile.WASD_SPACE: "TFGX",
 }
 
 const ENERGY_LIMB_PAIRS := {
@@ -96,9 +96,9 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"move_forward": [KEY_W],
 		"move_back": [KEY_S],
 		"aim_left": [KEY_F],
-		"aim_right": [KEY_H],
+		"aim_right": [KEY_G],
 		"aim_forward": [KEY_T],
-		"aim_back": [KEY_G],
+		"aim_back": [KEY_X],
 		"attack": [KEY_SPACE],
 		"energy_prev": [KEY_Q],
 		"energy_next": [KEY_E],

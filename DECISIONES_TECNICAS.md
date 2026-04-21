@@ -147,7 +147,7 @@
    - Motivo: un sistema de presion que casi nunca se activa no aporta feedback util al prototipo.
 
 37. **Camino Hard por teclado acotado al perfil `WASD`**
-   - `RobotBase` ahora crea acciones `aim_left/right/forward/back` y el perfil `WASD_SPACE` las resuelve con `TFGH`; ademas suma `throw_part` en `C`.
+   - `RobotBase` ahora crea acciones `aim_left/right/forward/back` y el perfil `WASD_SPACE` las resuelve con `TFGX`; ademas suma `throw_part` en `C`.
    - Motivo: cerrar la brecha mas evidente del laboratorio local con el minimo cambio posible, sin intentar resolver de golpe un esquema Hard perfecto para 4 teclados compartidos.
 
 38. **Leyenda de controles visible desde el arranque**

@@ -20,7 +20,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - soporte base de control Hard
   - el torso superior puede separarse del chasis con `UpperBodyPivot`
   - la orientacion de combate e impactos modulares en Hard usa esa referencia
-  - el soporte actual sigue siendo mayormente joypad-first, pero el perfil `WASD` ya tiene aim por teclado (`TFGH`) y accion dedicada de lanzamiento (`C`) para que exista al menos un slot Hard/local totalmente jugable en laboratorio
+  - el soporte actual sigue siendo mayormente joypad-first, pero el perfil `WASD` ya tiene aim por teclado (`TFGX`) y accion dedicada de lanzamiento (`C`) para que exista al menos un slot Hard/local totalmente jugable en laboratorio
   - `Main` puede asignar slots concretos a Hard y el HUD deja visible el mapping activo por slot en el estado inicial
 - partes desprendidas con propietario original, pickup por cercania y retorno parcial
 - transporte de partes que bloquea el ataque prototipo
@@ -62,7 +62,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - el roster agrega la etiqueta `Easy/Hard` por robot para que el setup quede legible durante playtests
 - Se cerro la brecha mas obvia del input local/Hard:
   - el perfil `WASD` ahora tiene `throw_part` dedicado (`C`) para no dejar a P1 sin negacion manual
-  - `RobotBase` crea acciones `aim_*` y usa `TFGH` como aim por teclado en Hard para el slot/local mas simple de laboratorio
+  - `RobotBase` crea acciones `aim_*` y usa `TFGX` como aim por teclado en Hard para el slot/local mas simple de laboratorio
   - `main.gd` resume en el estado inicial del HUD que mapping real esta usando cada slot, para que el playtest no dependa de recordar controles fuera de pantalla
 - Se activo la primera presion de endgame que faltaba en mapas:
   - `MatchController` ahora mide tiempo de ronda y expone un factor de contraccion del arena
