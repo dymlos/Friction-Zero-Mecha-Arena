@@ -17,6 +17,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - foco en piernas mejora traccion/control y debilita brazos
   - foco en brazos mejora empuje/embestida y debilita movilidad
   - overdrive breve con recuperacion y cooldown no spameable
+- si un robot pierde su ultima parte con `Overdrive` activo, su explosion diferida pasa a una variante inestable con mayor radio/empuje/daño
 - soporte base de control Hard
   - el torso superior puede separarse del chasis con `UpperBodyPivot`
   - la orientacion de combate e impactos modulares en Hard usa esa referencia
@@ -42,7 +43,8 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia, buffs temporales y si un robot transporta una parte; ahora tambien resume `Borde | ...` con los tipos activos de pickup de la ronda
 - lectura de eliminacion compacta en el mismo HUD:
   - robots inutilizados muestran cuenta atras breve de explosion en el roster
-  - robots fuera conservan causa corta (`vacio` o `explosion`)
+  - si la baja vino desde `Overdrive`, el mismo roster marca `inestable` antes de explotar
+  - robots fuera conservan causa corta (`vacio`, `explosion` o `explosion inestable`)
   - el bloque superior recuerda la ultima baja con `Ultima baja | ...`
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
@@ -51,9 +53,19 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
 - validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda y scoreboard.
 - validacion automatizada FFA: `ffa_mode_bootstrap_test.gd`, `ffa_lab_scene_test.gd` y `ffa_round_resolution_test.gd` comprueban que el laboratorio libre no hereda alianzas falsas del setup 2v2, mantiene el marcador individual y resuelve una ronda completa con ganador por robot
+- validacion automatizada de explosion inestable: `robot_unstable_explosion_test.gd` compara la variante base contra la version nacida en `Overdrive`, y `match_unstable_explosion_readability_test.gd` verifica su lectura compacta en `main.tscn`
 
 ## Lo completado en esta iteracion
 
+- Se cerro la ruta de alto riesgo del overdrive sin agregar un sistema nuevo:
+  - `RobotBase` ahora recuerda si el cuerpo inutilizado nacio con `Overdrive` activo y, en ese caso, escala `radio/empuje/daño` de la explosion diferida
+  - la propia lectura del robot se calienta visualmente durante esa cuenta regresiva para que el estado sea visible aun sin mirar solo el texto
+- Se integró esa variante al flujo real de match:
+  - `Main` ya distingue `explosion` vs `explosion inestable` al registrar la baja
+  - `MatchController` refleja `inestable` mientras el casco espera explotar y conserva la causa corta correcta en roster + `Ultima baja`
+- Se cubrio la nueva ruta con tests dedicados:
+  - `robot_unstable_explosion_test.gd` comprueba que la version inestable supera a la explosion base a igual distancia
+  - `match_unstable_explosion_readability_test.gd` verifica la lectura compacta completa sobre `main.tscn`
 - Se diferenció la rotación de pickups de borde por modo y se volvió visible en el HUD existente:
   - `ArenaBase` ahora conserva `Equipos` con dos pares espejados por ronda, pero en `FFA` rota layouts `3-de-4` para dejar seis pickups activos / tres tipos por ronda
   - `Main` configura ese perfil según `MatchController.match_mode` antes de arrancar el match y agrega `Borde | ...` al bloque compacto de estado
@@ -181,11 +193,13 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_round_resolution_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_part_return_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_explosion_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_unstable_explosion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_damage_feedback_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_energy_management_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/local_multiplayer_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_completion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_elimination_readability_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_unstable_explosion_readability_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_input_ownership_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/two_vs_two_carry_validation_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_round_resolution_test.gd`
@@ -204,6 +218,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
+- La explosion inestable ya conecta overdrive con la ruta de destruccion total, pero todavia falta playtestear si sus multiplicadores vuelven especial esa apuesta sin convertirla en el cierre dominante del match.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
 - El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay cuatro tipos de pickup, con `Equipos` usando dos pares y `FFA` tres tipos activos por ronda; todavia faltan pesos finos por modo/mapa, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.

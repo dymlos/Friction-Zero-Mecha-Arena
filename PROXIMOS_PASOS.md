@@ -24,10 +24,10 @@
    - revisar si el marcador first-to-3 y la contraccion actual producen buen ritmo en FFA o si ese modo necesita objetivo/duracion distintos.
 
 5. **Pulir el cierre de match que ya existe**
-   - playtestear si `rounds_to_win=3` y `match_restart_delay` dejan leer bien la victoria o si el resultado pasa demasiado rápido.
-   - decidir si el reinicio automático debe seguir siendo la solución del laboratorio o si conviene pasar a una espera corta con confirmación/manual restart más adelante.
-   - definir si ring-out y destruccion total siguen puntuando igual o si alguno merece bonus/feedback diferencial.
-   - medir si `Ultima baja | ...` + `Fuera | vacio/explosion` + `Inutilizado | explota` ya explican suficientemente bien la derrota inmediata o si la siguiente capa debe ser un resumen corto de post-ronda.
+  - playtestear si `rounds_to_win=3` y `match_restart_delay` dejan leer bien la victoria o si el resultado pasa demasiado rápido.
+  - decidir si el reinicio automático debe seguir siendo la solución del laboratorio o si conviene pasar a una espera corta con confirmación/manual restart más adelante.
+  - definir si ring-out y destruccion total siguen puntuando igual o si alguno merece bonus/feedback diferencial.
+  - medir si `Ultima baja | ...` + `Fuera | vacio/explosion/explosion inestable` + `Inutilizado | explota/inestable` ya explican suficientemente bien la derrota inmediata o si la siguiente capa debe ser un resumen corto de post-ronda.
 
 6. **Afinar la nueva presion de arena**
    - playtestear si el inicio del cierre (`space_reduction_start_ratio`) llega demasiado tarde o demasiado pronto.
@@ -35,10 +35,11 @@
    - decidir si conviene sumar feedback visual sobrio extra en el piso, no solo en edge markers + HUD.
 
 7. **Pulir la energia ahora que ya es jugable**
-   - decidir si el foco debe quedar en presets por arquetipo o en redistribucion libre mas adelante
-   - ligar mejor la lectura diegetica del foco/overdrive con materiales o VFX sobrios
-   - revisar valores de multiplicadores, duracion y recuperacion contra sensacion real en partida
-   - medir si `energy_pickup_pair_multiplier` y `surge_duration` hacen que la recarga de borde valga la pena sin comerse la identidad del overdrive
+  - decidir si el foco debe quedar en presets por arquetipo o en redistribucion libre mas adelante
+  - ligar mejor la lectura diegetica del foco/overdrive con materiales o VFX sobrios
+  - revisar valores de multiplicadores, duracion y recuperacion contra sensacion real en partida
+  - medir si `energy_pickup_pair_multiplier` y `surge_duration` hacen que la recarga de borde valga la pena sin comerse la identidad del overdrive
+  - medir si `unstable_disabled_explosion_radius_multiplier`, `unstable_disabled_explosion_impulse_multiplier` y `unstable_disabled_explosion_damage_multiplier` vuelven especial la sobrecarga sin transformar el overdrive en una ruta dominante de remate
 
 8. **Mejorar validacion jugable**
    - sumar una escena/configuración de prueba pensada para reproducir rescates, negaciones y cierres de ronda/contraccion más rápido que en el match completo
