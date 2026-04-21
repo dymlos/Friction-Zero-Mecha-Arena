@@ -19,14 +19,20 @@ var arena: ArenaBase = null
 var _support_payload_name := ""
 var _lane_progress := 0.0
 var _gate_disruption_time_left := 0.0
+var _status_pulse_phase := 0.0
 
 @onready var hull_visual: MeshInstance3D = $HullVisual
 @onready var glow_visual: MeshInstance3D = $GlowVisual
+@onready var status_beacon: Node3D = $StatusBeacon
+@onready var status_ring_visual: MeshInstance3D = $StatusBeacon/RingVisual
+@onready var status_pulse_visual: MeshInstance3D = $StatusBeacon/PulseVisual
 
 
 func _ready() -> void:
 	_duplicate_runtime_material(hull_visual)
 	_duplicate_runtime_material(glow_visual)
+	_duplicate_runtime_material(status_ring_visual)
+	_duplicate_runtime_material(status_pulse_visual)
 	_refresh_visuals()
 
 
@@ -114,6 +120,7 @@ func _physics_process(delta: float) -> void:
 	var was_gate_disrupted := is_gate_disrupted()
 	_gate_disruption_time_left = maxf(_gate_disruption_time_left - delta, 0.0)
 	_update_movement(delta)
+	_update_status_beacon(delta)
 	_try_collect_support_pickup()
 	if owner_robot.is_player_support_action_just_pressed():
 		use_support_payload()
@@ -206,6 +213,7 @@ func _refresh_visuals() -> void:
 
 	_apply_color_to_visual(hull_visual, hull_color, false)
 	_apply_color_to_visual(glow_visual, glow_color, true)
+	_apply_status_beacon_visuals(glow_color)
 
 
 func _get_support_payload_color() -> Color:
@@ -230,6 +238,44 @@ func _apply_color_to_visual(visual: MeshInstance3D, color: Color, enable_emissio
 	if enable_emission:
 		material.emission = color
 		material.emission_energy_multiplier = 1.35
+
+
+func _apply_status_beacon_visuals(accent_color: Color) -> void:
+	if status_ring_visual != null:
+		status_ring_visual.visible = true
+		var ring_material := status_ring_visual.material_override as StandardMaterial3D
+		if ring_material != null:
+			ring_material.albedo_color = accent_color.lightened(0.08)
+			ring_material.emission_enabled = true
+			ring_material.emission = accent_color
+			ring_material.emission_energy_multiplier = 1.15
+
+	if status_pulse_visual != null:
+		var highlight_visible := has_support_payload() or is_gate_disrupted()
+		status_pulse_visual.visible = highlight_visible
+		var pulse_material := status_pulse_visual.material_override as StandardMaterial3D
+		if pulse_material != null:
+			pulse_material.albedo_color = accent_color.lightened(0.18)
+			pulse_material.emission_enabled = true
+			pulse_material.emission = accent_color.lightened(0.12)
+			pulse_material.emission_energy_multiplier = 1.55 if highlight_visible else 0.0
+
+
+func _update_status_beacon(delta: float) -> void:
+	if status_beacon == null:
+		return
+
+	_status_pulse_phase = wrapf(_status_pulse_phase + delta * 5.4, 0.0, TAU)
+	status_beacon.rotation.y = _status_pulse_phase * 0.35
+	if status_pulse_visual == null:
+		return
+
+	if not status_pulse_visual.visible:
+		status_pulse_visual.scale = Vector3.ONE * 0.72
+		return
+
+	var pulse_scale := 0.72 + sin(_status_pulse_phase) * 0.12
+	status_pulse_visual.scale = Vector3.ONE * pulse_scale
 
 
 func _duplicate_runtime_material(visual: MeshInstance3D) -> void:

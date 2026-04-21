@@ -6,7 +6,7 @@
    - correr sesiones reales en `main.tscn` dejando caer a un jugador temprano para medir si la `PilotSupportShip` suma involucramiento sin tapar el combate principal.
    - medir si el nuevo loop perimetral + `gates` temporales ya se entiende con la camara compartida o si necesita mas variedad de rutas/obstaculos suaves para que la nave gane profundidad sin irse de foco.
    - medir si la terna `estabilizador + energia + movilidad` ya cubre comeback, rescate y reposicionamiento sin necesitar todavia interferencia ofensiva.
-   - revisar si el roster `apoyo` / `apoyo interferido` / `apoyo estabilizador` / `apoyo energia` / `apoyo movilidad` ya alcanza como telemetria o si la nave necesita una pista diegética adicional para espectador casual.
+   - revisar si la combinacion `roster + StatusBeacon` ya alcanza como telemetria o si la nave todavia necesita otra pista diegética para espectador casual.
    - calibrar si `support_energy_surge_duration` y `support_mobility_boost_duration` vuelven valiosas la segunda y tercera ayuda sin solaparse demasiado con los pickups de borde vivo.
    - confirmar por playtest que `FFA` realmente queda limpio y que compartir la escena base no introduce confusion por elementos post-muerte ocultos.
 

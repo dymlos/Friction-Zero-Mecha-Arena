@@ -48,17 +48,33 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
 	_assert(roster_label != null, "El HUD deberia seguir exponiendo el roster compacto.")
 	var support_ship := support_root.get_child(0) as Node3D
+	var status_ring_visual: MeshInstance3D = null
+	var status_pulse_visual: MeshInstance3D = null
+	var idle_ring_color := Color.WHITE
 	_assert(support_ship != null, "La nave de apoyo deberia existir como Node3D en escena.")
 	if support_ship != null:
 		var hull_visual := support_ship.get_node_or_null("HullVisual") as MeshInstance3D
 		var glow_visual := support_ship.get_node_or_null("GlowVisual") as MeshInstance3D
+		var status_beacon := support_ship.get_node_or_null("StatusBeacon") as Node3D
+		status_ring_visual = support_ship.get_node_or_null("StatusBeacon/RingVisual") as MeshInstance3D
+		status_pulse_visual = support_ship.get_node_or_null("StatusBeacon/PulseVisual") as MeshInstance3D
 		_assert(hull_visual != null, "La nave deberia exponer un casco visible.")
 		_assert(glow_visual != null, "La nave deberia exponer un glow visible.")
+		_assert(status_beacon != null, "La nave deberia exponer un beacon diegetico para leer su estado en mundo.")
+		_assert(status_ring_visual != null, "El beacon diegetico deberia incluir un aro base legible.")
+		_assert(status_pulse_visual != null, "El beacon diegetico deberia incluir un pulso/acento para cargas o interferencia.")
 		if hull_visual != null and glow_visual != null:
 			_assert(
 				hull_visual.material_override != glow_visual.material_override,
 				"Casco y glow deberian usar materiales independientes para no pisarse el color/emision."
 			)
+		if status_beacon != null:
+			_assert(
+				status_beacon.position.y > 0.2,
+				"El beacon diegetico deberia vivir por encima de la nave para no perderse contra el carril."
+			)
+		if status_ring_visual != null and status_ring_visual.material_override is StandardMaterial3D:
+			idle_ring_color = (status_ring_visual.material_override as StandardMaterial3D).albedo_color
 	if support_ship != null:
 		var start_position := support_ship.global_position
 		Input.action_press("p2_move_right")
@@ -98,6 +114,17 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 				roster_label.text.contains("estabilizador"),
 				"El roster deberia mostrar cuando la nave lleva una carga de apoyo."
 			)
+			if status_ring_visual != null and status_ring_visual.material_override is StandardMaterial3D:
+				var loaded_ring_color := (status_ring_visual.material_override as StandardMaterial3D).albedo_color
+				_assert(
+					not loaded_ring_color.is_equal_approx(idle_ring_color),
+					"El beacon diegetico deberia cambiar cuando la nave lleva una carga."
+				)
+			if status_pulse_visual != null:
+				_assert(
+					status_pulse_visual.visible,
+					"El acento del beacon deberia hacerse visible cuando la nave lleva una carga."
+				)
 
 			Input.action_press("p2_throw_part")
 			await _wait_frames(2)
@@ -232,6 +259,17 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					roster_label.text.contains("interferido"),
 					"El roster deberia avisar cuando la nave queda interferida por un gate cerrado."
 				)
+				if status_ring_visual != null and status_ring_visual.material_override is StandardMaterial3D:
+					var disrupted_ring_color := (status_ring_visual.material_override as StandardMaterial3D).albedo_color
+					_assert(
+						not disrupted_ring_color.is_equal_approx(idle_ring_color),
+						"El beacon diegetico deberia cambiar tambien cuando la nave queda interferida."
+					)
+				if status_pulse_visual != null:
+					_assert(
+						status_pulse_visual.visible,
+						"El pulso del beacon deberia ayudar a leer la interferencia del carril."
+					)
 
 				if north_gate.has_method("set_forced_blocking_state"):
 					north_gate.call("set_forced_blocking_state", false)

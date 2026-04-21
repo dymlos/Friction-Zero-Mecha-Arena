@@ -355,6 +355,10 @@
 
 87. **La interferencia del carril se comunica en el mismo roster de apoyo**
    - Si `PilotSupportShip` intenta cruzar un gate cerrado, entra en una ventana corta `interferido`; el glow vira a naranja y `get_status_summary()` agrega esa palabra al mismo estado compacto `apoyo ...`.
+
+88. **La nave post-muerte suma un beacon diegético en vez de otra capa de HUD**
+   - `PilotSupportShip` ahora expone `StatusBeacon/RingVisual/PulseVisual` por encima del casco; el aro queda siempre visible con color de identidad y el pulso solo se enciende cuando la nave carga un `payload` o queda `interferida`.
+   - Motivo: el slice Teams ya tenia profundidad mecanica, pero dependia demasiado del roster para entenderse en partida. Un beacon chico, ligado al propio actor y reutilizando el mismo acento cromatico refuerza lectura para jugador/espectador sin abrir UI nueva ni volver ruidosa la capa externa.
    - Motivo: preservar la legibilidad de pantalla compartida sin abrir otra UI. El propio carril telegraphia el bloqueo y el roster confirma por que la ayuda se demoro.
 
 ## Criterios mantenidos
