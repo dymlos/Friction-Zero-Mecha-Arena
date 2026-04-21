@@ -218,6 +218,10 @@
    - `EdgeEnergyPickup` activa una recarga breve sobre el par energetico seleccionado y reaparece tras cooldown, reutilizando el mismo contrato visible de pedestal + nucleo que reparacion e impulso.
    - Motivo: completar el trio minimo de incentivos prioritarios del documento (`reparacion`, `movilidad`, `energia`) sin abrir todavia inventario, rareza ni items de una sola carga.
 
+52. **Pickups del soporte Teams con respawn corto y cue local**
+   - `PilotSupportPickup` ya no desaparece por toda la ronda al primer uso: entra en cooldown corto, deja el pedestal visible, apaga el nucleo y muestra `RespawnVisual` hasta volver.
+   - Motivo: el carril post-muerte necesita seguir ofreciendo timing/routing despues de una primera pasada y tambien escalar mejor a futuros equipos mas grandes, sin abrir HUD nuevo ni una economia separada de soporte.
+
 52. **La recarga de energia estabiliza, no reemplaza el overdrive**
    - Al recoger energia, `RobotBase` corta la recuperacion post-overdrive, reaplica el foco actual y suma una ventana corta de rendimiento extra sobre ese mismo par; no reactiva overdrive ni elimina todo el cooldown restante.
    - Motivo: volver valioso el pickup de energia sin volverlo spam ni borrar la identidad de riesgo/recompensa del overdrive.

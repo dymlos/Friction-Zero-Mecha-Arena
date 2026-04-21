@@ -14,12 +14,20 @@ const PAYLOAD_LABELS := {
 
 @export var pickup_radius := 0.85
 @export var payload_name := PAYLOAD_STABILIZER
+@export_range(0.5, 8.0, 0.1) var respawn_delay := 3.0
+@export_group("Respawn Readability")
+@export_range(0.4, 1.8, 0.05) var respawn_visual_width := 0.7
+@export_range(0.04, 0.24, 0.01) var respawn_visual_height := 0.07
+@export_range(0.04, 0.24, 0.01) var respawn_visual_depth := 0.07
+@export_range(0.0, 0.5, 0.01) var respawn_visual_vertical_offset := 0.28
 
 var _support_active := false
 var _collected := false
+var _respawn_time_left := 0.0
 
 @onready var core_visual: MeshInstance3D = $CoreVisual
 @onready var pedestal_visual: MeshInstance3D = $PedestalVisual
+var _respawn_visual: MeshInstance3D = null
 
 
 func _ready() -> void:
@@ -27,6 +35,8 @@ func _ready() -> void:
 	add_to_group("support_lane_nodes")
 	_duplicate_runtime_material(pedestal_visual)
 	_duplicate_runtime_material(core_visual)
+	_ensure_respawn_visual()
+	_duplicate_runtime_material(_respawn_visual)
 	_refresh_visual_state()
 
 
@@ -35,8 +45,19 @@ func set_support_active(is_active: bool) -> void:
 	_refresh_visual_state()
 
 
+func _process(delta: float) -> void:
+	if not _support_active or not _collected:
+		return
+
+	_respawn_time_left = maxf(_respawn_time_left - maxf(delta, 0.0), 0.0)
+	if _respawn_time_left <= 0.0:
+		_collected = false
+	_refresh_visual_state()
+
+
 func reset_pickup() -> void:
 	_collected = false
+	_respawn_time_left = 0.0
 	_refresh_visual_state()
 
 
@@ -51,18 +72,55 @@ func try_collect(ship: Node) -> bool:
 		return false
 
 	_collected = true
+	_respawn_time_left = maxf(respawn_delay, 0.0)
 	_refresh_visual_state()
 	return true
 
 
+func get_time_until_respawn() -> float:
+	if not _collected:
+		return 0.0
+
+	return maxf(_respawn_time_left, 0.0)
+
+
+func get_respawn_progress_ratio() -> float:
+	if not _collected:
+		return 1.0
+
+	var duration := maxf(respawn_delay, 0.001)
+	return clampf(1.0 - (get_time_until_respawn() / duration), 0.0, 1.0)
+
+
 func _refresh_visual_state() -> void:
 	_apply_payload_colors()
-	var should_show := _support_active and not _collected
+	var should_show := _support_active
 	visible = should_show
 	if pedestal_visual != null:
 		pedestal_visual.visible = should_show
 	if core_visual != null:
-		core_visual.visible = should_show
+		core_visual.visible = should_show and not _collected
+	if _respawn_visual != null:
+		_respawn_visual.visible = should_show and _collected
+		if _respawn_visual.visible:
+			var respawn_ratio := get_respawn_progress_ratio()
+			var respawn_width := maxf(respawn_visual_width, 0.2)
+			_respawn_visual.scale = Vector3(maxf(respawn_ratio, 0.08), 1.0, 1.0)
+			_respawn_visual.position = Vector3(
+				-(respawn_width * (1.0 - respawn_ratio)) * 0.5,
+				respawn_visual_vertical_offset,
+				0.0
+			)
+			var respawn_material := _respawn_visual.material_override as StandardMaterial3D
+			if respawn_material != null:
+				var accent_color := _get_payload_accent_color().lightened(0.08)
+				accent_color.a = 0.75
+				respawn_material.albedo_color = accent_color
+				respawn_material.emission_enabled = true
+				respawn_material.emission = accent_color
+				respawn_material.emission_energy_multiplier = 0.55
+				respawn_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+				respawn_material.roughness = 0.18
 
 
 func _apply_payload_colors() -> void:
@@ -82,6 +140,31 @@ func _apply_payload_colors() -> void:
 			core_material.emission = accent_color
 			core_material.emission_energy_multiplier = 1.45
 			core_material.roughness = 0.2
+
+
+func _ensure_respawn_visual() -> void:
+	if get_node_or_null("RespawnVisual") != null:
+		_respawn_visual = get_node("RespawnVisual") as MeshInstance3D
+		return
+
+	var respawn_visual := MeshInstance3D.new()
+	respawn_visual.name = "RespawnVisual"
+	var respawn_mesh := BoxMesh.new()
+	respawn_mesh.size = Vector3(
+		maxf(respawn_visual_width, 0.2),
+		maxf(respawn_visual_height, 0.04),
+		maxf(respawn_visual_depth, 0.04)
+	)
+	respawn_visual.mesh = respawn_mesh
+	respawn_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	respawn_visual.position = Vector3(0.0, respawn_visual_vertical_offset, 0.0)
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.emission_enabled = true
+	respawn_visual.material_override = material
+	add_child(respawn_visual)
+	_respawn_visual = respawn_visual
 
 
 func _get_payload_accent_color() -> Color:

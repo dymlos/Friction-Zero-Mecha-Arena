@@ -8,6 +8,7 @@
    - medir si la mezcla `estabilizador + energia + movilidad + interferencia` sigue sintiendose discreta y si la nueva seleccion manual de objetivo recompensa realmente acercarse al borde en vez de spamearse por seguridad.
    - revisar si la combinacion `roster + StatusBeacon + SupportTargetIndicator + InterferenceRangeIndicator` ya alcanza como telemetria o si la nave todavia necesita otra pista diegética para espectador casual.
    - medir si la nueva pista `usa ... | objetivo ...` del roster, el anillo de rango de `interferencia` y el fill de timing sobre los `gates` alcanzan para descubrir rapido el soporte post-muerte o si aun hace falta otra pista diegetica mas fuerte para espectador/jugador eliminado.
+   - medir si el nuevo respawn corto de `PilotSupportPickup` mantiene al carril interesante sin volverlo demasiado generoso, y ajustar `respawn_delay` si una sola nave puede encadenar ayudas sin costo espacial real.
    - calibrar si `support_energy_surge_duration`, `support_mobility_boost_duration`, `support_interference_duration` y `support_interference_range` vuelven valiosas las cuatro cargas sin solaparse demasiado con los pickups de borde vivo o con `Baliza`.
    - confirmar por playtest que `FFA` realmente queda limpio y que compartir la escena base no introduce confusion por elementos post-muerte ocultos.
 
