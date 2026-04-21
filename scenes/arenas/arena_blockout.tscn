@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/arenas/arena_base.gd" id="1_arena"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/edge_repair_pickup.tscn" id="2_pickup"]
@@ -44,6 +44,17 @@ size = Vector3(0.9, 0.9, 2.6)
 [sub_resource type="StandardMaterial3D" id="Material_cover"]
 albedo_color = Color(0.17, 0.19, 0.22, 1)
 roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_pressure_band"]
+size = Vector3(1, 0.03, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_pressure_band"]
+transparency = 1
+albedo_color = Color(0.96, 0.47, 0.16, 0.18)
+emission_enabled = true
+emission = Color(0.96, 0.38, 0.08, 1)
+emission_energy_multiplier = 0.35
+roughness = 0.82
 
 [node name="ArenaBlockout" type="Node3D"]
 script = ExtResource("1_arena")
@@ -117,6 +128,32 @@ shape = SubResource("BoxShape_cover")
 [node name="CoverVisual" type="MeshInstance3D" parent="CoverBlocks/EastCover"]
 mesh = SubResource("BoxMesh_cover")
 material_override = SubResource("Material_cover")
+
+[node name="PressureTelegraph" type="Node3D" parent="."]
+
+[node name="NorthBand" type="MeshInstance3D" parent="PressureTelegraph"]
+visible = false
+transform = Transform3D(8, 0, 0, 0, 1, 0, 0, 0, 1.2, 0, 0.32, -6.8)
+mesh = SubResource("BoxMesh_pressure_band")
+material_override = SubResource("Material_pressure_band")
+
+[node name="SouthBand" type="MeshInstance3D" parent="PressureTelegraph"]
+visible = false
+transform = Transform3D(8, 0, 0, 0, 1, 0, 0, 0, 1.2, 0, 0.32, 6.8)
+mesh = SubResource("BoxMesh_pressure_band")
+material_override = SubResource("Material_pressure_band")
+
+[node name="WestBand" type="MeshInstance3D" parent="PressureTelegraph"]
+visible = false
+transform = Transform3D(1.2, 0, 0, 0, 1, 0, 0, 0, 5.2, -10.2, 0.32, 0)
+mesh = SubResource("BoxMesh_pressure_band")
+material_override = SubResource("Material_pressure_band")
+
+[node name="EastBand" type="MeshInstance3D" parent="PressureTelegraph"]
+visible = false
+transform = Transform3D(1.2, 0, 0, 0, 1, 0, 0, 0, 5.2, 10.2, 0.32, 0)
+mesh = SubResource("BoxMesh_pressure_band")
+material_override = SubResource("Material_pressure_band")
 
 [node name="WestRepairPickup" parent="." instance=ExtResource("2_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.4, 0.3, -2.4)

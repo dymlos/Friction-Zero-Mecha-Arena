@@ -38,6 +38,9 @@ const EDGE_PICKUP_LAYOUTS_BY_PROFILE := {
 @export var lethal_edge_margin := 2.0
 @export var edge_pickup_layout_seed := 11
 @export_range(0.5, 6.0, 0.1) var support_lane_margin := 2.2
+@export_range(0.4, 3.0, 0.1) var pressure_band_thickness := 1.4
+@export_range(0.0, 2.5, 0.1) var pressure_band_inset := 0.7
+@export_range(0.4, 1.0, 0.05) var pressure_band_length_ratio := 0.82
 
 @onready var platform_collision_shape: CollisionShape3D = $Platform/CollisionShape3D
 @onready var platform_visual: MeshInstance3D = $Platform/PlatformVisual
@@ -47,6 +50,11 @@ const EDGE_PICKUP_LAYOUTS_BY_PROFILE := {
 @onready var west_edge: MeshInstance3D = $EdgeMarkers/WestEdge
 @onready var east_edge: MeshInstance3D = $EdgeMarkers/EastEdge
 @onready var cover_blocks_root: Node3D = $CoverBlocks
+@onready var pressure_telegraph_root: Node3D = $PressureTelegraph
+@onready var north_pressure_band: MeshInstance3D = $PressureTelegraph/NorthBand
+@onready var south_pressure_band: MeshInstance3D = $PressureTelegraph/SouthBand
+@onready var west_pressure_band: MeshInstance3D = $PressureTelegraph/WestBand
+@onready var east_pressure_band: MeshInstance3D = $PressureTelegraph/EastBand
 
 var _current_play_area_size := Vector2.ZERO
 var _platform_shape: BoxShape3D = null
@@ -60,6 +68,7 @@ var _support_lane_original_local_positions: Dictionary = {}
 var _edge_pickup_layout_cycle: Array[PackedStringArray] = []
 var _edge_pickup_allowed_ids := PackedStringArray(DEFAULT_EDGE_PICKUP_ALLOWED_IDS)
 var _active_edge_pickup_layout := PackedStringArray()
+var _pressure_band_materials: Array[StandardMaterial3D] = []
 
 
 func _ready() -> void:
@@ -331,6 +340,24 @@ func _prepare_runtime_resources() -> void:
 		_platform_mesh = (platform_visual.mesh as BoxMesh).duplicate()
 		platform_visual.mesh = _platform_mesh
 
+	_prepare_pressure_telegraph_materials()
+
+
+func _prepare_pressure_telegraph_materials() -> void:
+	_pressure_band_materials.clear()
+	for band in [
+		north_pressure_band,
+		south_pressure_band,
+		west_pressure_band,
+		east_pressure_band,
+	]:
+		if band == null:
+			continue
+		if band.material_override is StandardMaterial3D:
+			var duplicated_material := (band.material_override as StandardMaterial3D).duplicate()
+			band.material_override = duplicated_material
+			_pressure_band_materials.append(duplicated_material)
+
 
 func _cache_cover_block_positions() -> void:
 	_cover_block_nodes.clear()
@@ -434,9 +461,73 @@ func _update_play_area_visuals() -> void:
 	south_edge.transform = Transform3D(Basis().scaled(Vector3(current_size.x, 1.0, 0.14)), Vector3(0.0, edge_height, half_depth))
 	west_edge.transform = Transform3D(Basis().scaled(Vector3(0.14, 1.0, current_size.y)), Vector3(-half_width, edge_height, 0.0))
 	east_edge.transform = Transform3D(Basis().scaled(Vector3(0.14, 1.0, current_size.y)), Vector3(half_width, edge_height, 0.0))
+	_update_pressure_telegraph(current_size)
 	_update_cover_block_positions(current_size)
 	_update_edge_pickup_positions(current_size)
 	_update_support_lane_node_positions(current_size)
+
+
+func _update_pressure_telegraph(current_size: Vector2) -> void:
+	if pressure_telegraph_root == null:
+		return
+
+	var shrink_strength := _get_pressure_telegraph_strength(current_size)
+	var telegraph_visible := shrink_strength > 0.001
+	pressure_telegraph_root.visible = telegraph_visible
+	for band in [
+		north_pressure_band,
+		south_pressure_band,
+		west_pressure_band,
+		east_pressure_band,
+	]:
+		if band != null:
+			band.visible = telegraph_visible
+
+	if not telegraph_visible:
+		return
+
+	var half_width := current_size.x * 0.5
+	var half_depth := current_size.y * 0.5
+	var inset := minf(pressure_band_inset, maxf(minf(half_width, half_depth) - pressure_band_thickness * 0.5, 0.0))
+	var horizontal_length := maxf(current_size.x * pressure_band_length_ratio, pressure_band_thickness)
+	var vertical_length := maxf(current_size.y * pressure_band_length_ratio, pressure_band_thickness)
+	var band_height := 0.32
+	north_pressure_band.transform = Transform3D(
+		Basis().scaled(Vector3(horizontal_length, 1.0, pressure_band_thickness)),
+		Vector3(0.0, band_height, -half_depth + inset)
+	)
+	south_pressure_band.transform = Transform3D(
+		Basis().scaled(Vector3(horizontal_length, 1.0, pressure_band_thickness)),
+		Vector3(0.0, band_height, half_depth - inset)
+	)
+	west_pressure_band.transform = Transform3D(
+		Basis().scaled(Vector3(pressure_band_thickness, 1.0, vertical_length)),
+		Vector3(-half_width + inset, band_height, 0.0)
+	)
+	east_pressure_band.transform = Transform3D(
+		Basis().scaled(Vector3(pressure_band_thickness, 1.0, vertical_length)),
+		Vector3(half_width - inset, band_height, 0.0)
+	)
+	_update_pressure_telegraph_materials(shrink_strength)
+
+
+func _update_pressure_telegraph_materials(shrink_strength: float) -> void:
+	var alpha := lerpf(0.1, 0.28, shrink_strength)
+	var emission_energy := lerpf(0.2, 0.9, shrink_strength)
+	for material in _pressure_band_materials:
+		if material == null:
+			continue
+
+		var next_color := material.albedo_color
+		next_color.a = alpha
+		material.albedo_color = next_color
+		material.emission_energy_multiplier = emission_energy
+
+
+func _get_pressure_telegraph_strength(current_size: Vector2) -> float:
+	var width_ratio := current_size.x / maxf(safe_play_area_size.x, 0.01)
+	var depth_ratio := current_size.y / maxf(safe_play_area_size.y, 0.01)
+	return clampf(1.0 - minf(width_ratio, depth_ratio), 0.0, 1.0)
 
 
 func _update_cover_block_positions(current_size: Vector2) -> void:

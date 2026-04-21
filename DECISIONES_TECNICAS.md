@@ -238,6 +238,10 @@
    - Si `RobotBase` pierde su ultima parte mientras `Overdrive` sigue activo, el cuerpo inutilizado conserva una bandera `inestable`; esa variante escala `radio/empuje/daño`, calienta mas el core del robot y `Main/MatchController` la exponen como `inestable` / `explosion inestable` en HUD y resumenes.
    - Motivo: cerrar la apuesta riesgo/recompensa del overdrive con una consecuencia espacial rara pero legible, reutilizando el loop de cuerpo inutilizado ya existente en vez de abrir otro hazard o una regla aparte.
 
+60. **La contraccion del arena se telegraphia desde el propio piso**
+   - `ArenaBase` ahora enciende cuatro bandas sobrias junto al borde vivo solo cuando el area segura baja de escala 1.0, y ajusta posicion/intensidad con la misma geometria runtime que usa para piso, markers y pickups.
+   - Motivo: reforzar la presion de endgame en mundo, sin otra capa de HUD, sin dano abstracto y sin ensuciar el centro del mapa.
+
 60. **La explosion diferida se telegraphia en mundo con el mismo radio real**
    - `RobotBase` ahora crea `DisabledWarningIndicator`, un anillo pegado al piso que solo aparece mientras el cuerpo sigue inutilizado; usa `disabled_explosion_radius` como escala base y reaplica el multiplicador `inestable` cuando corresponde.
    - Motivo: el roster ya avisaba que el casco iba a explotar, pero faltaba mostrar sobre la arena la amenaza espacial real para sostener claridad en pantalla compartida sin otra UI.

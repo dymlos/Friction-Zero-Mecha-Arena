@@ -19,6 +19,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Cierre de match base: el laboratorio ya juega a first-to-3 por defecto; cuando un equipo alcanza el objetivo, `MatchController` anuncia ganador de partida, congela la ronda y reinicia el match completo tras una pausa corta.
 - Resumen compacto de cierre: cuando la ronda termina, `MatchController` conserva `Resumen | ...` con el orden real de bajas hasta que arranca la siguiente, reforzando el “como perdi” sin abrir una pantalla de post-ronda aparte.
 - Presion de endgame: el `arena_blockout` ahora reduce progresivamente su tamano durante la ronda, empujando el cierre hacia el centro sin agregar hazards extra.
+- Telegraph diegetico de cierre: esa misma contraccion ahora deja cuatro bandas sobrias sobre el piso, pegadas al borde vivo y visibles solo mientras la arena se achica, para anunciar la presion espacial sin cargar mas el HUD ni ensuciar el centro.
 - Bordes con incentivo real: el laboratorio ahora suma pickups de reparacion instantanea en los flancos del arena; curan la parte activa mas dañada sin revivir piezas perdidas, fuerzan a exponerse cerca del vacio y ahora se recolocan con la misma escala del area segura para no quedar fuera del borde vivo durante la contraccion.
 - Incentivo universal de movilidad: el mismo arena ahora suma pickups de impulso en norte/sur; activan una ventana corta de traccion/control reforzados, se leen con glow turquesa sobre el robot y se recolocan con la misma logica de borde vivo para no convertirse en “premios muertos” durante la contraccion.
 - Incentivo universal de energia: el arena ahora suma pickups de recarga en diagonales; cortan la recuperacion post-overdrive, refuerzan por una ventana corta el par energetico seleccionado y reutilizan el mismo contrato de pedestal/cooldown visible + seguimiento del borde vivo.
@@ -166,6 +167,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - el HUD minimo ya muestra ronda y marcador, sin sumar barras pesadas
 - en modo explicito, el HUD tambien deja visible el objetivo del match (`Primero a X`) y el loop ya cierra la partida al alcanzarlo
 - el arena ahora se contrae progresivamente en el tramo final de la ronda y vuelve a escala completa al reset
+- el piso ahora acompaña esa contraccion con bandas sobrias sobre los cuatro bordes vivos; se apagan fuera del cierre y se reescalan con el area segura para mantener el centro limpio
 - el arena blockout ahora ofrece ocho pedestales de borde, pero solo activa dos pares espejados por ronda mediante una rotacion semialeatoria controlada entre reparacion, movilidad, energia y pulso
 - pendiente: decidir si el reinicio automatico debe seguir conviviendo con `F5` como fallback del laboratorio o si conviene migrar a un cierre manual-only mas adelante, y si la puntuacion debe distinguir vacio vs destruccion
 

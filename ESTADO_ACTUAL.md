@@ -54,6 +54,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - cierre de ronda simple: el ultimo robot/equipo en pie suma una ronda y todos los robots vuelven juntos tras un delay corto
 - cierre de match simple: el laboratorio juega a `first-to-3`; cuando un equipo alcanza el objetivo, el HUD anuncia al ganador de la partida y el match se reinicia limpio tras una pausa corta
 - presion final de arena: el piso y sus edge markers se contraen de forma progresiva segun el tiempo de ronda, y el HUD agrega una linea corta cuando empieza el cierre
+- lectura de presion reforzada: el `arena_blockout` ahora suma cuatro bandas sobrias sobre el piso, pegadas al borde vivo y visibles solo durante la contraccion para anunciar el cierre sin sumar otra capa de HUD
 - incentivo real de borde: el arena blockout ahora tiene pickups de reparacion instantanea en los flancos; curan la parte activa mas dañada, obligan a exponerse cerca del vacio para estabilizarse y siguen el borde vivo cuando la arena se contrae
 - segundo incentivo de borde: el mismo arena ahora suma pickups de movilidad en norte/sur; activan una ventana corta de traccion/control reforzados, exponen al robot en bordes sin cobertura y siguen el borde vivo cuando la arena se contrae
 - tercer incentivo de borde: el mismo arena ahora suma pickups de energia en diagonales; cortan la recuperacion posterior al overdrive, refuerzan temporalmente el par energetico seleccionado y tambien siguen el borde vivo cuando la arena se contrae
@@ -222,6 +223,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - `MatchController` ahora mide tiempo de ronda y expone un factor de contraccion del arena
   - `Main` aplica ese factor sobre `ArenaBase` sin mezclar logica de match y geometria
   - el `arena_blockout` reduce piso util y edge markers reales, y vuelve a tamano completo al reset de ronda
+  - el propio `ArenaBase` ahora enciende cuatro bandas sobrias sobre el piso mientras el borde vivo se achica, reutilizando la misma geometria runtime y apagandolas al volver a escala completa
   - `default_match_config.tres` baja la ronda base a 60 segundos para que la contraccion aparezca en playtests normales
 - Se agrego el primer incentivo real de borde:
   - `EdgeRepairPickup` aparece en los flancos del `arena_blockout` como pickup universal simple y visible

@@ -56,7 +56,7 @@
 8. **Afinar la nueva presion de arena**
    - playtestear si el inicio del cierre (`space_reduction_start_ratio`) llega demasiado tarde o demasiado pronto.
    - revisar si el minimo de contraccion deja espacio suficiente para un cierre legible en 2v2 y FFA.
-   - decidir si conviene sumar feedback visual sobrio extra en el piso, no solo en edge markers + HUD.
+   - medir si las nuevas bandas de piso alcanzan para anunciar la contraccion en camara compartida o si su contraste/inset todavia necesita ajuste fino.
 
 9. **Pulir la energia ahora que ya es jugable**
   - decidir si el foco debe seguir compartido por todos o si algun arquetipo necesita un preset/base distinto mas adelante
