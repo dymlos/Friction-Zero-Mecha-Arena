@@ -236,6 +236,16 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					enemy_robot.has_method("is_control_zone_suppressed"),
 					"La interferencia ligera deberia reutilizar el contrato de supresion legible ya expuesto por RobotBase."
 				)
+				Input.action_press("p2_throw_part")
+				await _wait_frames(2)
+				Input.action_release("p2_throw_part")
+				await _wait_frames(2)
+
+				_assert(
+					roster_label.text.contains("interferencia"),
+					"Si no hay un rival cerca del carril, la carga de interferencia deberia seguir disponible."
+				)
+
 				enemy_robot.global_position = support_ship.global_position + Vector3(2.0, 0.35, 0.0)
 				enemy_robot.velocity = Vector3.ZERO
 				await _wait_physics_frames(2)
