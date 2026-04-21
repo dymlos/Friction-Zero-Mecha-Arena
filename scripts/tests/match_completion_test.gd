@@ -117,16 +117,16 @@ func _run() -> void:
 		"El panel final deberia reiterar el ganador del match."
 	)
 	_assert(
-		match_result_label.text.contains("Stats | Equipo 1 | rescates 1 | borde 1 | bajas 0"),
-		"El panel final deberia resumir rescates, borde y bajas sufridas del equipo ganador."
+		match_result_label.text.contains("Stats | Equipo 1 | rescates 1 | borde 1 | partes perdidas 1 (1 brazo) | bajas 0"),
+		"El panel final deberia resumir rescates, borde, desgaste modular y bajas sufridas del equipo ganador."
 	)
 	_assert(
 		match_result_label.text.contains("Stats | Equipo 2 | bajas 4 (4 vacio)"),
 		"El panel final deberia distinguir la causa acumulada de las bajas del rival a lo largo del match."
 	)
 	_assert(
-		recap_label.text.contains("Stats | Equipo 1 | rescates 1 | borde 1 | bajas 0"),
-		"El recap lateral deberia compartir la misma telemetria simple del cierre de match."
+		recap_label.text.contains("Stats | Equipo 1 | rescates 1 | borde 1 | partes perdidas 1 (1 brazo) | bajas 0"),
+		"El recap lateral deberia compartir la misma telemetria simple del cierre de match, incluyendo desgaste modular."
 	)
 	_assert(
 		match_result_label.text.contains("Reinicio | F5"),

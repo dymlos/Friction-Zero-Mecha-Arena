@@ -419,6 +419,7 @@ func _on_robot_respawned(robot: RobotBase) -> void:
 
 
 func _on_robot_part_destroyed(robot: RobotBase, part_name: String, _detached_part: DetachedPart) -> void:
+	match_controller.record_part_loss(robot, part_name)
 	ui.show_status("%s perdio %s" % [robot.display_name, RobotBase.get_part_display_name(part_name)])
 
 

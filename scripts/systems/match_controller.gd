@@ -347,6 +347,22 @@ func record_part_restoration(restored_robot: RobotBase, restored_by: RobotBase) 
 	_increment_robot_match_stat(restored_by, "rescues")
 
 
+func record_part_loss(robot: RobotBase, part_name: String) -> void:
+	if robot == null:
+		return
+	if not _round_active or _round_reset_pending:
+		return
+	if not RobotBase.BODY_PARTS.has(part_name):
+		return
+
+	_increment_robot_match_stat(robot, "parts_lost")
+	if part_name.contains("arm"):
+		_increment_robot_match_stat(robot, "arms_lost")
+		return
+	if part_name.contains("leg"):
+		_increment_robot_match_stat(robot, "legs_lost")
+
+
 func record_edge_pickup_collection(robot: RobotBase) -> void:
 	if robot == null:
 		return
@@ -535,8 +551,30 @@ func _build_competitor_match_stats_line(competitor_key: String) -> String:
 	var edge_pickups := int(stats.get("edge_pickups", 0))
 	if edge_pickups > 0:
 		segments.append("borde %s" % edge_pickups)
+	var part_loss_segment := _build_part_loss_stats_segment(stats)
+	if part_loss_segment != "":
+		segments.append(part_loss_segment)
 	segments.append(_build_elimination_stats_segment(stats))
 	return "Stats | %s | %s" % [_get_competitor_label_from_key(competitor_key), " | ".join(segments)]
+
+
+func _build_part_loss_stats_segment(stats: Dictionary) -> String:
+	var total_parts_lost := int(stats.get("parts_lost", 0))
+	if total_parts_lost <= 0:
+		return ""
+
+	var breakdown: Array[String] = []
+	var arms_lost := int(stats.get("arms_lost", 0))
+	if arms_lost > 0:
+		breakdown.append(_build_plural_segment(arms_lost, "brazo", "brazos"))
+	var legs_lost := int(stats.get("legs_lost", 0))
+	if legs_lost > 0:
+		breakdown.append(_build_plural_segment(legs_lost, "pierna", "piernas"))
+
+	if breakdown.is_empty():
+		return "partes perdidas %s" % total_parts_lost
+
+	return "partes perdidas %s (%s)" % [total_parts_lost, ", ".join(breakdown)]
 
 
 func _build_elimination_stats_segment(stats: Dictionary) -> String:
@@ -559,6 +597,13 @@ func _build_elimination_stats_segment(stats: Dictionary) -> String:
 		return "bajas %s" % total_eliminations
 
 	return "bajas %s (%s)" % [total_eliminations, ", ".join(breakdown)]
+
+
+func _build_plural_segment(amount: int, singular_label: String, plural_label: String) -> String:
+	if amount == 1:
+		return "1 %s" % singular_label
+
+	return "%s %s" % [amount, plural_label]
 
 
 func _build_compact_elimination_summary(robot: RobotBase, cause: EliminationCause) -> String:
@@ -594,6 +639,9 @@ func _ensure_competitor_match_stats(competitor_key: String) -> void:
 	_competitor_match_stats[competitor_key] = {
 		"rescues": 0,
 		"edge_pickups": 0,
+		"parts_lost": 0,
+		"arms_lost": 0,
+		"legs_lost": 0,
 		"eliminations": 0,
 		"void_eliminations": 0,
 		"explosion_eliminations": 0,
