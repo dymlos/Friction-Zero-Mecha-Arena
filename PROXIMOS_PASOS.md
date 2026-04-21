@@ -16,9 +16,9 @@
    - revisar si el modo contextual realmente limpia sin esconder decisiones tacticas como `Foco`, `item`, `carga`, `impulso`, `energia` o `3/4 partes`.
    - decidir si el toggle runtime actual alcanza para laboratorio o si la siguiente capa necesita persistencia/preset mas visible por modo, ademas del `MatchConfig`.
    - medir si `RecapPanel` lateral + `MatchResultPanel` centrado + `Stats | ...` explican suficientemente bien `Decision + Marcador + baja N | causa` sin necesitar otra escena/post-ronda.
-   - playtestear si `damage_feedback_threshold` y `critical_damage_feedback_threshold` se leen bien con cuatro robots y arena en contracción.
+   - playtestear si `damage_feedback_threshold`, `critical_damage_feedback_threshold` y la nueva pose floja de brazos/piernas se leen bien con cuatro robots y arena en contracción.
    - decidir si el feedback geométrico actual ya alcanza o si conviene migrarlo a humo/chispas más ricos sin ensuciar pantalla compartida.
-   - ajustar posición/escala de marcadores antes de sumar más VFX o UI.
+   - ajustar posición/escala de marcadores y amplitud de la pose de desgaste antes de sumar más VFX o UI.
 
 3. **Hacer visible y testeable el rescate/negacion**
    - usar el coverage headless 2v2 actual como red de seguridad mientras se hacen sesiones reales con la contraccion de arena ya activa.

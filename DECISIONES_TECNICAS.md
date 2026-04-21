@@ -308,6 +308,10 @@
    - `DetachedPart` ahora crea un `RecoveryIndicator` runtime `top_level`, expone `get_cleanup_time_left()/get_cleanup_progress_ratio()` y emite `recovery_lost` con `timeout` o `void` cuando la recuperacion ya no es posible.
    - Motivo: Team vs Team necesitaba volver mas legible la urgencia del rescate sin cargar el roster/HUD con otra linea persistente; un telegraph diegetico sobre la propia pieza conserva claridad, funciona tambien en FFA y deja un hook chico para futuras lecturas compactas si hicieran falta.
 
+77. **La lectura de “pieza floja” vive en la pose modular existente**
+   - `RobotBase` ahora cachea la transform base de cada mesh modular y, cuando la vida baja del umbral de lectura, aplica offsets/rotaciones pequeñas a brazos y piernas (`caido` para brazos, `arrastrando` para piernas) antes de volver a la pose original al reparar o desprender.
+   - Motivo: los docs piden desgaste y piezas flojas visibles sobre el propio robot; resolverlo en la pose de las mallas ya existentes refuerza claridad sin otro HUD, sin partículas nuevas y sin volver la escena difícil de mantener.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

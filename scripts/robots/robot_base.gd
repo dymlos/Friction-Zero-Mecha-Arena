@@ -254,6 +254,12 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export_range(0.4, 1.0, 0.05) var damage_feedback_threshold := 0.8
 @export_range(0.1, 0.8, 0.05) var critical_damage_feedback_threshold := 0.45
 @export var damage_feedback_height := 0.24
+@export_range(0.0, 0.2, 0.01) var damaged_part_pose_drop := 0.08
+@export_range(0.0, 0.15, 0.01) var damaged_arm_pose_side_offset := 0.05
+@export_range(0.0, 0.15, 0.01) var damaged_leg_pose_back_offset := 0.08
+@export_range(0.0, 20.0, 0.5) var damaged_arm_pose_roll_degrees := 12.0
+@export_range(0.0, 20.0, 0.5) var damaged_leg_pose_pitch_degrees := 10.0
+@export_range(0.0, 15.0, 0.5) var damaged_part_pose_splay_degrees := 6.0
 @export var disabled_explosion_delay := 1.6
 @export var disabled_explosion_radius := 3.6
 @export var disabled_explosion_impulse := 12.0
@@ -287,6 +293,7 @@ var _part_visual_nodes: Dictionary = {}
 var _part_flash_strength: Dictionary = {}
 var _core_visual_nodes: Array[MeshInstance3D] = []
 var _material_base_values: Dictionary = {}
+var _part_visual_base_transforms: Dictionary = {}
 var _damage_feedback_nodes: Dictionary = {}
 var _collision_damage_ready_at: Dictionary = {}
 var _carried_part: DetachedPart = null
@@ -750,6 +757,7 @@ func _ready() -> void:
 	_cache_archetype_base_values()
 	_apply_archetype_config()
 	_cache_visual_references()
+	_cache_part_visual_base_transforms()
 	_prepare_visual_materials()
 	_setup_damage_feedback_nodes()
 	_setup_carry_indicator()
@@ -1887,6 +1895,15 @@ func _cache_visual_references() -> void:
 			_core_visual_nodes.append(node as MeshInstance3D)
 
 
+func _cache_part_visual_base_transforms() -> void:
+	_part_visual_base_transforms.clear()
+	for part_name in BODY_PARTS:
+		for visual_node in _part_visual_nodes.get(part_name, []):
+			if visual_node is MeshInstance3D:
+				var mesh_instance := visual_node as MeshInstance3D
+				_part_visual_base_transforms[_material_key(mesh_instance)] = mesh_instance.transform
+
+
 func _prepare_visual_materials() -> void:
 	_material_base_values.clear()
 	for part_name in BODY_PARTS:
@@ -2075,6 +2092,7 @@ func _refresh_part_visual_state(part_name: String) -> void:
 	var should_be_visible := health_ratio > 0.0
 
 	for visual_node in visuals:
+		_apply_damaged_part_pose(visual_node, part_name, health_ratio if should_be_visible else 1.0)
 		visual_node.visible = should_be_visible
 		if should_be_visible:
 			_apply_material_damage_tint(visual_node, health_ratio, flash_strength)
@@ -2134,6 +2152,58 @@ func _refresh_part_damage_feedback(part_name: String) -> void:
 		spark_material.albedo_color = spark_color
 		spark_material.emission = spark_color
 		spark_material.emission_energy_multiplier = 1.6 + critical_severity * 2.0
+
+
+func _apply_damaged_part_pose(mesh_instance: MeshInstance3D, part_name: String, health_ratio: float) -> void:
+	if mesh_instance == null:
+		return
+
+	var transform_key := _material_key(mesh_instance)
+	var base_transform: Transform3D = _part_visual_base_transforms.get(transform_key, mesh_instance.transform)
+	var damage_severity := _get_damaged_part_pose_severity(health_ratio)
+	if damage_severity <= 0.0:
+		mesh_instance.transform = base_transform
+		return
+
+	var side_sign := -1.0 if part_name.begins_with("left") else 1.0
+	var pose_basis := Basis.IDENTITY
+	var pose_offset := Vector3(0.0, -damaged_part_pose_drop * damage_severity, 0.0)
+	if part_name.contains("arm"):
+		pose_offset.x += damaged_arm_pose_side_offset * damage_severity * side_sign
+		pose_basis = pose_basis.rotated(
+			Vector3.FORWARD,
+			deg_to_rad(damaged_arm_pose_roll_degrees * damage_severity * -side_sign)
+		)
+		pose_basis = pose_basis.rotated(
+			Vector3.RIGHT,
+			deg_to_rad(damaged_part_pose_splay_degrees * damage_severity)
+		)
+	else:
+		pose_offset.z += damaged_leg_pose_back_offset * damage_severity
+		pose_basis = pose_basis.rotated(
+			Vector3.RIGHT,
+			deg_to_rad(damaged_leg_pose_pitch_degrees * damage_severity)
+		)
+		pose_basis = pose_basis.rotated(
+			Vector3.FORWARD,
+			deg_to_rad(damaged_part_pose_splay_degrees * damage_severity * -side_sign)
+		)
+
+	var damaged_transform := base_transform
+	damaged_transform.origin = base_transform.origin + pose_offset
+	damaged_transform.basis = base_transform.basis * pose_basis
+	mesh_instance.transform = damaged_transform
+
+
+func _get_damaged_part_pose_severity(health_ratio: float) -> float:
+	if health_ratio <= 0.0:
+		return 0.0
+
+	var threshold := maxf(damage_feedback_threshold, 0.01)
+	if health_ratio >= threshold:
+		return 0.0
+
+	return 1.0 - clampf(health_ratio / threshold, 0.0, 1.0)
 
 
 func _refresh_core_visuals() -> void:

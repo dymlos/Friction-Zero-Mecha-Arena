@@ -79,7 +79,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
 - indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
-- lectura diegética de daño modular: cada extremidad ya puede mostrar `Smoke` cuando está dañada y `Spark` cuando entra en estado crítico; ambos marcadores viven sobre la pieza, no en el HUD, y desaparecen al repararla o perderla.
+- lectura diegética de daño modular: cada extremidad ya puede mostrar `Smoke` cuando está dañada y `Spark` cuando entra en estado crítico; además, brazos y piernas dañados aflojan su propia pose (`caen` o `arrastran`) para reforzar “pieza floja” sobre el robot mismo. Todo vive sobre la pieza, no en el HUD, y desaparece al repararla o perderla.
 - lectura diegética de ventana de rescate: las partes desprendidas ahora también usan un disco plano sobre el piso que reduce su escala y calienta su color conforme se consume la recuperación posible.
 - validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
 - validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda, scoreboard y ahora tambien un resumen compacto del orden de bajas.
@@ -234,11 +234,16 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - `pickup_delay` y `throw_pickup_delay` en `DetachedPart` para evitar recuperaciones instantáneas tras negación.
 - Se reforzó la lectura de daño modular sobre el propio robot:
   - `RobotBase` genera marcadores runtime por parte (`DamageFeedback/Smoke` y `DamageFeedback/Spark`) sin depender de assets nuevos ni HUD adicional
+  - el mismo `RobotBase` ahora cachea la pose base de cada mesh modular y aplica una pose de desgaste simple a brazos/piernas dañados, haciendo visible “pieza floja” con el mismo contrato de reset al reparar o desprender
   - el feedback entra recién cuando la pieza sale del estado sano, escala a señal crítica con poca vida y se limpia al reparar o desprender la parte
 - Se sumó `robot_damage_feedback_test.gd` para cubrir ese contrato de legibilidad:
   - humo visible con daño moderado
   - chispa visible en estado crítico
   - limpieza correcta al reparar o destruir la pieza
+- Se sumó `robot_part_wear_pose_test.gd` para cubrir la nueva pose de desgaste:
+  - brazo dañado cae sin contaminar el brazo sano
+  - pierna dañada arrastra tambien su thruster
+  - reparar devuelve la pose original
 - Se agrego un test dedicado `two_vs_two_carry_validation_test.gd` sobre la escena principal 2v2 y se corrigio `robot_part_return_test.gd` para respetar el `pickup_delay` real.
 - Se corrigio una advertencia de tipado en `_refresh_carry_indicator_color()` que rompía la compilación headless al tratarse como error.
 - Se endurecio la salida de los tests headless actuales: ahora conservan estado de fallo y terminan con codigo distinto de cero cuando una asercion falla.
@@ -305,7 +310,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La nueva lectura de rescate tambien sigue siendo deliberadamente minima: el disco sobre la pieza hace visible la urgencia sin sumar HUD, pero falta validar por playtest si alcanza con cuatro robots y arena contrayendose.
 - El HUD dual ya existe y ahora puede alternarse en runtime con `F1` sobre un override local; sigue pendiente decidir por playtest que modo conviene dejar por defecto en `Equipos` y `FFA`, y si hace falta persistencia/preset por modo ademas del toggle de laboratorio.
-- La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
+- La nueva lectura de daño es deliberadamente simple: combina marcadores geométricos sobrios (`Smoke`/`Spark`) con poses flojas por extremidad, no partículas finales ni VFX de producción. Falta playtestear si alcanza o si conviene enriquecer humo/chispas sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya no es solo “ganador + reinicio”: ahora suma stats simples por competidor (`rescates`, `borde`, `bajas` por causa) dentro del mismo HUD; sigue faltando decidir por playtest si esa telemetria ya basta o si la version final pide otra capa de post-partida.
 - La nueva lectura de bajas ya suma `Resumen | ...`, `RecapPanel`, `MatchResultPanel` y ahora `Stats | ...`; todavía falta validar en playtest si ese contrato ya alcanza o si la versión final necesita una pantalla/post-partida más fuerte o un replay corto.
