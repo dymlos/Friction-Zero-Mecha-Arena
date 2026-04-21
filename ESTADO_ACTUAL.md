@@ -17,6 +17,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - foco en piernas mejora traccion/control y debilita brazos
   - foco en brazos mejora empuje/embestida y debilita movilidad
   - overdrive breve con recuperacion y cooldown no spameable
+- soporte base de control Hard
+  - el torso superior puede separarse del chasis con `UpperBodyPivot`
+  - la orientacion de combate e impactos modulares en Hard usa esa referencia
+  - el soporte actual es joypad-first; sin input de aim dedicado el robot no rompe el loop Easy actual
 - partes desprendidas con propietario original, pickup por cercania y retorno parcial
 - transporte de partes que bloquea el ataque prototipo
 - negacion basica de partes si el portador cae al vacio
@@ -46,6 +50,11 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - `MatchController` corta la partida cuando un competidor alcanza ese objetivo
   - el estado visible cambia de "gana la ronda" a "gana la partida X-Y"
   - el laboratorio espera una pausa corta y reinicia el match completo para mantener la escena jugable sin intervención extra
+- Se agrego la primera base real de Control Hard:
+  - `robot_base.tscn` ahora separa torso/cabina en `UpperBodyPivot`
+  - `RobotBase` mantiene un heading de combate propio para Hard
+  - ataques, fallback de empuje y lectura de parte impactada pueden usar el torso independiente
+  - se agrego un test robot-level para asegurar que el mismo impacto cambia de pierna a brazo cuando el torso gira
 - Se activo la primera presion de endgame que faltaba en mapas:
   - `MatchController` ahora mide tiempo de ronda y expone un factor de contraccion del arena
   - `Main` aplica ese factor sobre `ArenaBase` sin mezclar logica de match y geometria
@@ -87,14 +96,15 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/two_vs_two_carry_validation_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_round_resolution_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/progressive_space_reduction_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_hard_control_mode_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 30`
 
-Resultado: las nueve verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: las diez verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
-- Todavia no hay torso independiente Hard.
+- El soporte Hard ya existe, pero sigue siendo una primera base: no hay seleccion visible de modo por jugador ni mapping dedicado de teclado para aim independiente en partidas locales.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.

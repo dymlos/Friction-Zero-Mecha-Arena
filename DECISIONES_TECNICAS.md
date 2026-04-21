@@ -102,15 +102,35 @@
    - `match_completion_test.gd` también usa `main.tscn` para verificar objetivo first-to-X, anuncio de ganador y reinicio limpio del match.
    - Motivo: la victoria de match depende del mismo wiring real entre `Main`, `MatchController`, HUD, timers y robots eliminados; un mock aislado dejaría fuera el lifecycle crítico.
 
-26. **Contraccion del arena como presion fisica real**
+26. **Control Hard como capa separada del loop Easy**
+   - `RobotBase` mantiene `ControlMode.EASY` como default y solo activa torso independiente cuando el robot entra en `ControlMode.HARD`.
+   - Motivo: preservar la accesibilidad del prototipo base y evitar que la profundidad tecnica invada el loop principal antes de probarla.
+
+27. **Torso independiente via `UpperBodyPivot`**
+   - El torso/cabina rota sobre un pivot visual propio, sin cambiar automaticamente la orientacion del chasis.
+   - Motivo: obtener lectura visual real del modo Hard y una base clara para futuras mejoras sin rearmar toda la escena del robot.
+
+28. **Orientacion de combate reutilizada para ataque y daño modular**
+   - En Hard, ataques, fallback de empuje y seleccion de parte impactada leen la direccion del torso en vez del `basis` completo del robot.
+   - Motivo: que el modo Hard no sea solo cosmetico y que la fantasia de “torso apunta / chasis patina” empiece a afectar el combate real.
+
+29. **Soporte Hard actual prioriza joypad**
+   - El aim independiente se toma del stick derecho; si no existe input dedicado, el torso conserva/alinea orientacion sin romper el robot.
+   - Motivo: sumar la estructura base con el menor ruido posible en el laboratorio actual, que sigue muy apoyado en teclado compartido y Easy mode.
+
+30. **Control Hard validado con test de impacto dirigido**
+   - `robot_hard_control_mode_test.gd` comprueba que el mismo vector de golpe pasa de castigar pierna trasera a castigar un brazo cuando el torso gira en Hard.
+   - Motivo: cubrir el contrato importante del slice sin depender de input real ni de una escena de match completa.
+
+31. **Contraccion del arena como presion fisica real**
    - `MatchController` calcula un factor de cierre segun `round_time_seconds` y `ArenaBase` reduce el tamano real del piso/edge markers.
    - Motivo: cumplir la presion de endgame documentada sin agregar dano abstracto ni hazards nuevos que ensucien la lectura.
 
-27. **`Main` solo cablea presion entre match y arena**
+32. **`Main` solo cablea presion entre match y arena**
    - La escena principal pregunta el factor al `MatchController` y se lo aplica al `ArenaBase`; no resuelve timers ni geometria por si misma.
    - Motivo: mantener responsabilidades claras y el proyecto legible para iteraciones futuras.
 
-28. **Timer de ronda base reducido a 60 segundos**
+33. **Timer de ronda base reducido a 60 segundos**
    - La configuracion por defecto deja de usar 180s para que la contraccion aparezca en sesiones reales de laboratorio.
    - Motivo: un sistema de presion que casi nunca se activa no aporta feedback util al prototipo.
 
