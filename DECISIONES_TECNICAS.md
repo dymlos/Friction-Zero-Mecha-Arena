@@ -258,6 +258,10 @@
    - `ArenaBase` ahora enciende cuatro bandas sobrias junto al borde vivo solo cuando el area segura baja de escala 1.0, y ajusta posicion/intensidad con la misma geometria runtime que usa para piso, markers y pickups.
    - Motivo: reforzar la presion de endgame en mundo, sin otra capa de HUD, sin dano abstracto y sin ensuciar el centro del mapa.
 
+61. **La nave post-muerte enseña sus controles desde el roster existente**
+   - `PilotSupportShip.get_status_summary()` ahora agrega `usa ... | objetivo ...` usando un helper de `RobotBase` derivado del perfil real del jugador eliminado.
+   - Motivo: el soporte Teams ya tenia objetivo manual y payloads tacticos, pero esa capa era demasiado facil de perder en laboratorio compartido si dependia solo de memoria externa; reforzarla en el roster compacto conserva claridad sin abrir otra UI.
+
 60. **La explosion diferida se telegraphia en mundo con el mismo radio real**
    - `RobotBase` ahora crea `DisabledWarningIndicator`, un anillo pegado al piso que solo aparece mientras el cuerpo sigue inutilizado; usa `disabled_explosion_radius` como escala base y reaplica el multiplicador `inestable` cuando corresponde.
    - Motivo: el roster ya avisaba que el casco iba a explotar, pero faltaba mostrar sobre la arena la amenaza espacial real para sostener claridad en pantalla compartida sin otra UI.

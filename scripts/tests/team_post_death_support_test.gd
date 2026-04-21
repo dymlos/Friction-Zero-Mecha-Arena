@@ -47,6 +47,15 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 	)
 	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
 	_assert(roster_label != null, "El HUD deberia seguir exponiendo el roster compacto.")
+	if roster_label != null:
+		_assert(
+			roster_label.text.contains("usa /"),
+			"El roster deberia recordar con que tecla usa su carga la nave de apoyo del jugador eliminado."
+		)
+		_assert(
+			roster_label.text.contains("objetivo ,/."),
+			"El roster deberia recordar como ciclar objetivos mientras la nave de apoyo sigue activa."
+		)
 	var support_ship := support_root.get_child(0) as Node3D
 	var status_ring_visual: MeshInstance3D = null
 	var status_pulse_visual: MeshInstance3D = null

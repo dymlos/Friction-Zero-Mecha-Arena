@@ -73,6 +73,8 @@ func belongs_to_owner(robot: RobotBase) -> bool:
 
 func get_status_summary() -> String:
 	var summary := "apoyo"
+	if is_instance_valid(owner_robot):
+		summary += " %s" % owner_robot.get_support_input_hint()
 	if is_gate_disrupted():
 		summary += " interferido"
 	var payload_label := get_support_payload_label()

@@ -756,6 +756,23 @@ func get_input_hint() -> String:
 	return "joy slot %s" % max(player_index - 1, 0)
 
 
+func get_support_input_hint() -> String:
+	if uses_keyboard_input():
+		match keyboard_profile:
+			KeyboardProfile.WASD_SPACE:
+				return "usa C | objetivo Q/E"
+			KeyboardProfile.ARROWS_ENTER:
+				return "usa / | objetivo ,/."
+			KeyboardProfile.NUMPAD:
+				return "usa KP+ | objetivo KP1/KP3"
+			KeyboardProfile.IJKL:
+				return "usa N | objetivo Y/H"
+			_:
+				return "usa apoyo | objetivo previo/siguiente"
+
+	return "usa X | objetivo LB/RB"
+
+
 func get_player_move_input_vector() -> Vector2:
 	return _get_move_input_vector()
 
