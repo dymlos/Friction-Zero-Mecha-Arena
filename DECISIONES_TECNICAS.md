@@ -279,6 +279,14 @@
    - `MatchController.get_robot_status_lines()` agrega `zona` cuando `RobotBase` esta bajo supresion de `Baliza`, y `robot_control_skill_test.gd` valida recurso, despliegue, reemplazo y presencia en roster FFA.
    - Motivo: hacer visible el nuevo estado tactico sin abrir otra capa de HUD ni obligar al jugador a interpretar solo el mesh de la baliza.
 
+70. **El selector runtime vive en `Main`, no en otra escena de menu**
+   - `Main` ahora mantiene un slot de laboratorio seleccionado, cicla arquetipos con `F3`, alterna `Easy/Hard` con `F4` y deja la referencia persistente en `Lab | ...` dentro del mismo HUD compacto.
+   - Motivo: volver realmente testeables los seis arquetipos y el soporte Hard sin abrir otro flujo de UI, sin duplicar escenas y sin bloquear la iteracion con un pre-match menu prematuro.
+
+71. **Reaplicar arquetipos en runtime restaura primero la base del robot**
+   - `RobotBase` cachea sus valores base, restaura esos campos antes de volver a aplicar `RobotArchetypeConfig` y luego `Main` reinicia todo el match con `start_match()`.
+   - Motivo: evitar stacking accidental de multiplicadores, mantener sincronizados roster/marcador FFA y permitir que el selector runtime cambie loadouts varias veces en la misma sesion sin drift de stats ni timers stale.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

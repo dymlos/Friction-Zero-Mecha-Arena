@@ -3,12 +3,13 @@
 ## Siguiente iteracion recomendada
 
 1. **Validar el nuevo roster de arquetipos**
+   - usar `F2/F3/F4` para recorrer cruces reales entre `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` en `main.tscn` y `main_ffa.tscn` sin editar escenas entre partidas.
    - correr sesiones reales con `Ariete`, `Grua`, `Cizalla` y `Patin` en `main.tscn`, y con `Aguja` + `Ancla` en `main_ffa.tscn`, para decidir si la mezcla actual de pasivas + primeras skills propias ya produce identidades claras.
    - medir si las pasivas actuales se entienden por playtest sin otra capa de UI: `Ariete` aguantando empuje, `Grua` estabilizando rescates, `Cizalla` rematando partes tocadas y `Patin` explotando mejor los pickups de impulso.
    - medir si `Aguja` realmente introduce poke/skillshot legible o si `Pulso` todavia se siente demasiado parecido al item universal del borde.
    - medir si `Ancla` realmente corta rutas/duelos con `Baliza` o si la supresion actual se siente demasiado sutil para justificar el rol de Control/Zona.
    - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Pulso/Baliza x/y` + estado `zona`) alcanza como legibilidad de laboratorio o si conviene compactarlo mas.
-   - decidir si el siguiente paso del roster debe ser selector runtime o reforzar con otra skill/regla al arquetipo que siga borroso.
+   - decidir si el selector runtime actual ya alcanza como flujo de laboratorio o si el siguiente paso debe ser persistencia/presets por escena, mas claridad visual o reforzar con otra skill/regla al arquetipo que siga borroso.
 
 2. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
    - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` usando tambien el toggle `F1` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.
@@ -25,7 +26,7 @@
 
 4. **Convertir el soporte Hard en una opcion realmente jugable**
    - playtestear si `WASD + TFGX` alcanza como unico camino Hard/local de teclado o si la sesion real justifica reabrir esa decision.
-   - medir si `hard_mode_player_slots` + roster persistente alcanzan como claridad de laboratorio o si aparece una necesidad real de selector runtime por jugador.
+   - medir si `F4` sobre el selector runtime + roster persistente alcanzan como claridad de laboratorio o si aparece una necesidad real de un flujo pre-match/persistente por jugador.
    - revisar si la referencia persistente de controles activos ya alcanza o si sigue faltando una ayuda mas compacta para pantalla compartida.
    - playtestear si la nueva lectura torso/chasis mejora el combate o si todavia se siente demasiado sutil para pantalla compartida.
 

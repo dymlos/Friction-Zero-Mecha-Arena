@@ -23,6 +23,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - la orientacion de combate e impactos modulares en Hard usa esa referencia
   - el soporte actual sigue siendo mayormente joypad-first, pero el perfil `WASD` ya tiene aim por teclado (`TFGX`) y accion dedicada de lanzamiento (`C`) para que exista al menos un slot Hard/local totalmente jugable en laboratorio
   - `Main` puede asignar slots concretos a Hard y el HUD deja visible el mapping activo por slot en el estado inicial; el roster mantiene esa referencia durante la ronda
+- selector runtime de laboratorio para comparar loadouts sin editar escenas
+  - `Main` ahora deja ciclar slot/arquetipo/modo con `F2/F3/F4`, reinicia el match completo tras cada cambio y mantiene sincronizados roster, marcador FFA y la linea persistente `Lab | ...`
+  - `RobotBase` ya puede reaplicar un `RobotArchetypeConfig` en runtime recuperando primero sus valores base, para que el cambio de arquetipo no acumule multiplicadores stale
+  - `MatchController.start_match()` ahora invalida resets/restarts pendientes antes de recomenzar, evitando que el selector runtime deje timers viejos disparando sobre el laboratorio nuevo
 - partes desprendidas con propietario original, pickup por cercania y retorno parcial
 - transporte de partes que bloquea el ataque prototipo
 - negacion basica de partes si el portador cae al vacio
@@ -252,6 +256,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_archetype_passive_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_control_skill_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_core_skill_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/lab_runtime_selector_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/local_multiplayer_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_completion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_elimination_readability_test.gd`

@@ -32,6 +32,7 @@ var _last_elimination_summary := ""
 var _round_status_line := ""
 var _round_elapsed_seconds := 0.0
 var _hud_detail_mode_override := -1
+var _round_lifecycle_token := 0
 
 
 func register_robot(robot: RobotBase) -> void:
@@ -61,6 +62,7 @@ func _process(delta: float) -> void:
 
 
 func start_match() -> void:
+	_round_lifecycle_token += 1
 	_round_number = 1
 	_round_active = true
 	_round_reset_pending = false
@@ -445,16 +447,22 @@ func _finish_match_with_winner(winner_key: String, winner_score: int) -> void:
 
 
 func _schedule_round_reset() -> void:
+	var token := _round_lifecycle_token
 	await get_tree().create_timer(round_reset_delay).timeout
 	if not is_inside_tree():
+		return
+	if token != _round_lifecycle_token:
 		return
 
 	_reset_round()
 
 
 func _schedule_match_restart() -> void:
+	var token := _round_lifecycle_token
 	await get_tree().create_timer(match_restart_delay).timeout
 	if not is_inside_tree():
+		return
+	if token != _round_lifecycle_token:
 		return
 
 	_restart_match()

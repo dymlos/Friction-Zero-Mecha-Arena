@@ -100,6 +100,20 @@ const ENERGY_LIMB_PAIRS := {
 	"right_leg": ["left_leg", "right_leg"],
 }
 
+const ARCHETYPE_BASE_FIELDS := [
+	"max_move_speed",
+	"move_acceleration",
+	"glide_damping",
+	"max_part_health",
+	"restored_part_health_ratio",
+	"passive_push_strength",
+	"attack_impulse_strength",
+	"attack_damage",
+	"collision_damage_scale",
+	"detached_part_pickup_range",
+	"carried_part_return_range",
+]
+
 const KEYBOARD_PROFILE_BINDINGS := {
 	KeyboardProfile.NONE: {},
 	KeyboardProfile.WASD_SPACE: {
@@ -297,6 +311,7 @@ var _control_zone_control_state_multiplier := 1.0
 var _active_control_beacon: Node = null
 var _disabled_explosion_is_unstable := false
 var _last_disabled_explosion_was_unstable := false
+var _archetype_base_values: Dictionary = {}
 
 @onready var disabled_explosion_timer: Timer = $DisabledExplosionTimer
 @onready var upper_body_pivot: Node3D = $UpperBodyPivot
@@ -608,6 +623,20 @@ func get_input_hint() -> String:
 	return "joy slot %s" % max(player_index - 1, 0)
 
 
+func apply_runtime_loadout(
+	next_archetype_config: RobotArchetypeConfig,
+	next_control_mode: ControlMode
+) -> void:
+	archetype_config = next_archetype_config
+	control_mode = next_control_mode
+	_restore_archetype_base_values()
+	_apply_archetype_config()
+	disabled_explosion_timer.wait_time = disabled_explosion_delay
+	reset_modular_state()
+	if is_player_controlled:
+		refresh_input_setup()
+
+
 func set_energy_focus(part_name: String) -> bool:
 	if not BODY_PARTS.has(part_name):
 		return false
@@ -716,6 +745,7 @@ func _ready() -> void:
 	_starting_collision_layer = collision_layer
 	_starting_collision_mask = collision_mask
 	add_to_group("robots")
+	_cache_archetype_base_values()
 	_apply_archetype_config()
 	_cache_visual_references()
 	_prepare_visual_materials()
@@ -726,6 +756,23 @@ func _ready() -> void:
 	reset_modular_state()
 	if is_player_controlled:
 		refresh_input_setup()
+
+
+func _cache_archetype_base_values() -> void:
+	if not _archetype_base_values.is_empty():
+		return
+
+	for field_name in ARCHETYPE_BASE_FIELDS:
+		_archetype_base_values[field_name] = get(field_name)
+
+
+func _restore_archetype_base_values() -> void:
+	if _archetype_base_values.is_empty():
+		_cache_archetype_base_values()
+
+	for field_name in ARCHETYPE_BASE_FIELDS:
+		if _archetype_base_values.has(field_name):
+			set(field_name, _archetype_base_values[field_name])
 
 
 func _apply_archetype_config() -> void:

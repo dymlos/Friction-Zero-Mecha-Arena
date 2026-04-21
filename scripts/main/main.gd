@@ -4,15 +4,35 @@ class_name Main
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchHud = preload("res://scripts/ui/match_hud.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
 const EdgeMobilityPickup = preload("res://scripts/pickups/edge_mobility_pickup.gd")
 const EdgeEnergyPickup = preload("res://scripts/pickups/edge_energy_pickup.gd")
 const EdgePulsePickup = preload("res://scripts/pickups/edge_pulse_pickup.gd")
+const ARIETE_ARCHETYPE = preload("res://data/config/robots/ariete_archetype.tres")
+const GRUA_ARCHETYPE = preload("res://data/config/robots/grua_archetype.tres")
+const CIZALLA_ARCHETYPE = preload("res://data/config/robots/cizalla_archetype.tres")
+const PATIN_ARCHETYPE = preload("res://data/config/robots/patin_archetype.tres")
+const AGUJA_ARCHETYPE = preload("res://data/config/robots/aguja_archetype.tres")
+const ANCLA_ARCHETYPE = preload("res://data/config/robots/ancla_archetype.tres")
 const HUD_DETAIL_TOGGLE_KEY := KEY_F1
+const LAB_SELECTOR_SLOT_KEY := KEY_F2
+const LAB_SELECTOR_ARCHETYPE_KEY := KEY_F3
+const LAB_SELECTOR_CONTROL_KEY := KEY_F4
+const DEFAULT_LAB_ARCHETYPES := [
+	ARIETE_ARCHETYPE,
+	GRUA_ARCHETYPE,
+	CIZALLA_ARCHETYPE,
+	PATIN_ARCHETYPE,
+	AGUJA_ARCHETYPE,
+	ANCLA_ARCHETYPE,
+]
 
 @export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
+@export var lab_runtime_selector_enabled := true
+@export var lab_runtime_archetypes: Array[RobotArchetypeConfig] = []
 
 @onready var arena_root: Node3D = $ArenaRoot
 @onready var robot_root: Node3D = $RobotRoot
@@ -21,6 +41,8 @@ const HUD_DETAIL_TOGGLE_KEY := KEY_F1
 @onready var ui: MatchHud = $UI/MatchHud
 
 var _arena: ArenaBase = null
+var _lab_selected_player_slot := 1
+var _applying_lab_selector_reset := false
 
 
 func _ready() -> void:
@@ -52,6 +74,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not key_event.pressed or key_event.echo:
 		return
 	if key_event.keycode != HUD_DETAIL_TOGGLE_KEY:
+		if key_event.keycode == LAB_SELECTOR_SLOT_KEY:
+			cycle_lab_selector_slot()
+			get_viewport().set_input_as_handled()
+		elif key_event.keycode == LAB_SELECTOR_ARCHETYPE_KEY:
+			cycle_selected_lab_archetype()
+			get_viewport().set_input_as_handled()
+		elif key_event.keycode == LAB_SELECTOR_CONTROL_KEY:
+			toggle_selected_lab_control_mode()
+			get_viewport().set_input_as_handled()
 		return
 
 	cycle_hud_detail_mode()
@@ -62,6 +93,67 @@ func cycle_hud_detail_mode() -> void:
 	match_controller.cycle_hud_detail_mode()
 	ui.show_status(_build_hud_toggle_status())
 	_refresh_hud()
+
+
+func cycle_lab_selector_slot() -> void:
+	if not lab_runtime_selector_enabled:
+		return
+
+	var robots := _get_scene_robots()
+	if robots.is_empty():
+		return
+
+	var selected_index := _get_selected_lab_robot_index(robots)
+	selected_index = wrapi(selected_index + 1, 0, robots.size())
+	_lab_selected_player_slot = robots[selected_index].player_index
+	ui.show_status("Lab: %s" % _get_selected_lab_robot_brief())
+	_refresh_hud()
+
+
+func cycle_selected_lab_archetype() -> void:
+	if not lab_runtime_selector_enabled:
+		return
+
+	var robot := _get_selected_lab_robot()
+	if robot == null:
+		return
+
+	var archetype_pool := _get_lab_runtime_archetypes()
+	if archetype_pool.is_empty():
+		return
+
+	var next_index := _get_next_lab_archetype_index(archetype_pool, robot.archetype_config)
+	_apply_lab_runtime_loadout(
+		robot,
+		archetype_pool[next_index],
+		robot.control_mode
+	)
+
+
+func toggle_selected_lab_control_mode() -> void:
+	if not lab_runtime_selector_enabled:
+		return
+
+	var robot := _get_selected_lab_robot()
+	if robot == null:
+		return
+
+	var next_mode := RobotBase.ControlMode.HARD
+	if robot.control_mode == RobotBase.ControlMode.HARD:
+		next_mode = RobotBase.ControlMode.EASY
+
+	_apply_lab_runtime_loadout(robot, robot.archetype_config, next_mode)
+
+
+func get_lab_selector_summary_line() -> String:
+	if not lab_runtime_selector_enabled:
+		return ""
+
+	var robot := _get_selected_lab_robot()
+	if robot == null:
+		return ""
+
+	return "Lab | %s | F2 slot | F3 arquetipo | F4 modo" % _get_lab_robot_brief(robot)
 
 
 func _register_existing_robots() -> void:
@@ -274,6 +366,9 @@ func _build_hud_toggle_status() -> String:
 
 func _build_round_state_lines() -> Array[String]:
 	var lines := match_controller.get_round_state_lines()
+	var lab_selector_line := get_lab_selector_summary_line()
+	if lab_selector_line != "":
+		lines.append(lab_selector_line)
 	if _arena == null:
 		return lines
 
@@ -291,7 +386,7 @@ func _on_robot_fell_into_void(robot: RobotBase) -> void:
 
 
 func _on_robot_respawned(robot: RobotBase) -> void:
-	if match_controller.is_round_reset_pending():
+	if match_controller.is_round_reset_pending() or _applying_lab_selector_reset:
 		return
 
 	ui.show_status("%s volvio al punto de prueba" % robot.display_name)
@@ -365,3 +460,122 @@ func _on_round_started(round_number: int) -> void:
 		return
 
 	_arena.activate_edge_pickup_layout_for_round(round_number)
+
+
+func _get_selected_lab_robot() -> RobotBase:
+	var robots := _get_scene_robots()
+	if robots.is_empty():
+		return null
+
+	var selected_index := _get_selected_lab_robot_index(robots)
+	_lab_selected_player_slot = robots[selected_index].player_index
+	return robots[selected_index]
+
+
+func _get_selected_lab_robot_index(robots: Array[RobotBase]) -> int:
+	for index in range(robots.size()):
+		if robots[index].player_index == _lab_selected_player_slot:
+			return index
+
+	return 0
+
+
+func _get_lab_runtime_archetypes() -> Array[RobotArchetypeConfig]:
+	var source: Array[RobotArchetypeConfig] = []
+	if lab_runtime_archetypes.is_empty():
+		for config in DEFAULT_LAB_ARCHETYPES:
+			if config is RobotArchetypeConfig:
+				source.append(config as RobotArchetypeConfig)
+	else:
+		source = lab_runtime_archetypes
+
+	var result: Array[RobotArchetypeConfig] = []
+	var seen_keys := {}
+	for config in source:
+		if config == null:
+			continue
+
+		var key := config.resource_path
+		if key == "":
+			key = str(config.get_instance_id())
+		if seen_keys.has(key):
+			continue
+
+		seen_keys[key] = true
+		result.append(config)
+
+	return result
+
+
+func _get_next_lab_archetype_index(
+	archetype_pool: Array[RobotArchetypeConfig],
+	current_config: RobotArchetypeConfig
+) -> int:
+	if archetype_pool.is_empty():
+		return 0
+
+	var current_key := ""
+	if current_config != null:
+		current_key = current_config.resource_path
+		if current_key == "":
+			current_key = str(current_config.get_instance_id())
+
+	for index in range(archetype_pool.size()):
+		var config := archetype_pool[index]
+		var config_key := config.resource_path
+		if config_key == "":
+			config_key = str(config.get_instance_id())
+		if config_key == current_key:
+			return wrapi(index + 1, 0, archetype_pool.size())
+
+	return 0
+
+
+func _apply_lab_runtime_loadout(
+	robot: RobotBase,
+	archetype_config: RobotArchetypeConfig,
+	control_mode: RobotBase.ControlMode
+) -> void:
+	if robot == null:
+		return
+
+	_set_lab_slot_control_mode(robot.player_index, control_mode)
+	robot.apply_runtime_loadout(archetype_config, control_mode)
+
+	_applying_lab_selector_reset = true
+	for scene_robot in _get_scene_robots():
+		scene_robot.reset_to_spawn()
+		if scene_robot.is_player_controlled:
+			scene_robot.refresh_input_setup()
+	match_controller.start_match()
+	_applying_lab_selector_reset = false
+
+	ui.show_status("Lab: %s" % _get_selected_lab_robot_brief())
+	_refresh_hud()
+
+
+func _set_lab_slot_control_mode(player_slot: int, control_mode: RobotBase.ControlMode) -> void:
+	var next_slots := PackedInt32Array()
+	for slot in hard_mode_player_slots:
+		if slot != player_slot:
+			next_slots.append(slot)
+
+	if control_mode == RobotBase.ControlMode.HARD:
+		next_slots.append(player_slot)
+
+	hard_mode_player_slots = next_slots
+
+
+func _get_selected_lab_robot_brief() -> String:
+	return _get_lab_robot_brief(_get_selected_lab_robot())
+
+
+func _get_lab_robot_brief(robot: RobotBase) -> String:
+	if robot == null:
+		return "sin slot"
+
+	var archetype_label := robot.get_archetype_label()
+	if archetype_label == "":
+		archetype_label = "Base"
+	var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
+	return "P%s %s %s" % [robot.player_index, archetype_label, mode_label]
