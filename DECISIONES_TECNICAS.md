@@ -166,6 +166,10 @@
    - `RobotBase` expone `repair_most_damaged_part(...)` y solo repara partes que sigan activas; los miembros destruidos siguen dependiendo del loop de partes desprendidas.
    - Motivo: sumar sustain tactico y comeback parcial sin invalidar rescate aliado, negacion enemiga ni el peso de perder una pierna o un brazo.
 
+42. **Legibilidad modular reforzada sobre la propia pieza**
+   - `RobotBase` crea marcadores runtime `DamageFeedback/Smoke` y `DamageFeedback/Spark` sobre cada extremidad, escalando solo cuando esa parte realmente está dañada o crítica.
+   - Motivo: acercar la lectura a “humo/chispas sobre el robot” que piden los docs sin sumar HUD nuevo, assets externos ni un sistema de partículas difícil de mantener en este prototipo.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

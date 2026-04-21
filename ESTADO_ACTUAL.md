@@ -37,6 +37,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
 - indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
+- lectura diegética de daño modular: cada extremidad ya puede mostrar `Smoke` cuando está dañada y `Spark` cuando entra en estado crítico; ambos marcadores viven sobre la pieza, no en el HUD, y desaparecen al repararla o perderla.
 - validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
 - validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda y scoreboard.
 
@@ -91,6 +92,13 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - Se completo el indicador diegetico de parte en mano y se ajustaron timers de captura/negación:
   - indicador orbitante y animado en `RobotBase` para lectura rápida
   - `pickup_delay` y `throw_pickup_delay` en `DetachedPart` para evitar recuperaciones instantáneas tras negación.
+- Se reforzó la lectura de daño modular sobre el propio robot:
+  - `RobotBase` genera marcadores runtime por parte (`DamageFeedback/Smoke` y `DamageFeedback/Spark`) sin depender de assets nuevos ni HUD adicional
+  - el feedback entra recién cuando la pieza sale del estado sano, escala a señal crítica con poca vida y se limpia al reparar o desprender la parte
+- Se sumó `robot_damage_feedback_test.gd` para cubrir ese contrato de legibilidad:
+  - humo visible con daño moderado
+  - chispa visible en estado crítico
+  - limpieza correcta al reparar o destruir la pieza
 - Se agrego un test dedicado `two_vs_two_carry_validation_test.gd` sobre la escena principal 2v2 y se corrigio `robot_part_return_test.gd` para respetar el `pickup_delay` real.
 - Se corrigio una advertencia de tipado en `_refresh_carry_indicator_color()` que rompía la compilación headless al tratarse como error.
 - Se endurecio la salida de los tests headless actuales: ahora conservan estado de fallo y terminan con codigo distinto de cero cuando una asercion falla.
@@ -103,8 +111,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 
 ## Validacion realizada
 
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/edge_repair_pickup_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_part_return_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_explosion_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_damage_feedback_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_energy_management_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/local_multiplayer_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_completion_test.gd`
@@ -117,7 +127,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_hard_control_mode_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 30`
 
-Resultado: las doce verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: las catorce verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
@@ -127,5 +137,6 @@ Resultado: las doce verificaciones dedicadas pasan y el proyecto sigue iniciando
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
 - El nuevo incentivo de borde es deliberadamente minimo: solo existen pickups de reparacion fijos; todavia faltan cobertura blockout dedicada, variacion semialeatoria o otros tipos de item universal.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
+- La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats, replay ni explicación explícita de por qué perdió cada jugador.

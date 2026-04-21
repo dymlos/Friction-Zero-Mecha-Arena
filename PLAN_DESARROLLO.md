@@ -15,15 +15,16 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Presion de endgame: el `arena_blockout` ahora reduce progresivamente su tamano durante la ronda, empujando el cierre hacia el centro sin agregar hazards extra.
 - Bordes con incentivo real: el laboratorio ahora suma pickups de reparacion instantanea en los flancos del arena; curan la parte activa mas dañada sin revivir piezas perdidas y fuerzan a exponerse cerca del vacio.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
+- Legibilidad modular reforzada: las partes dañadas ahora levantan marcadores sobrios sobre el propio robot (`Smoke` en daño relevante, `Spark` en daño critico) y se apagan al reparar o desprender la pieza.
 - Etapa 2 y 3: el ritmo de choque del laboratorio 2P ya fue afinado en `RobotBase` para que los intercambios sean más fluidos sin perder el carácter de choque decisivo.
 - Etapa 5: primer slice funcional implementado. Cada robot ahora puede redistribuir energia hacia una parte foco, alterar de forma real el empuje o la traccion y activar un overdrive corto con recuperacion/cooldown.
 - Etapa 6: soporte base implementado. `RobotBase` ya puede separar torso y chasis con `UpperBodyPivot`, usando esa orientacion para lectura de impactos y ataque en `ControlMode.HARD`; el soporte actual es joypad-first y no reemplaza el loop Easy por defecto.
 - Laboratorio Hard expuesto: `Main` ya puede asignar `ControlMode.HARD` por slot local mediante `hard_mode_player_slots`, y el roster deja visible si cada robot juega en Easy o Hard junto al hint real de input.
 - Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun.
-- Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
+- Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, marcadores de humo/chispa por parte dañada, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
-- Pendiente prioritario: playtestear si el first-to-3 + reinicio automatico deja buen ritmo, si la pausa de victoria alcanza para leer el resultado y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
+- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, y en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
 
 ## Principios de orden
 
