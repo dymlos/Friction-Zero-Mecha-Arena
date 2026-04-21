@@ -44,6 +44,7 @@ func _run() -> void:
 	)
 
 	await create_timer(0.6).timeout
+	await _wait_until_indicator_hidden(stable_indicator, 0.35)
 
 	_assert(not stable_indicator.visible, "Tras explotar y salir de inutilizado, el marcador deberia ocultarse.")
 
@@ -95,6 +96,12 @@ func _cleanup_robot(robot: RobotBase) -> void:
 		parent.remove_child(robot)
 	robot.free()
 	await process_frame
+
+
+func _wait_until_indicator_hidden(indicator: MeshInstance3D, timeout_seconds: float) -> void:
+	var deadline_usec := Time.get_ticks_usec() + int(timeout_seconds * 1000000.0)
+	while is_instance_valid(indicator) and indicator.visible and Time.get_ticks_usec() < deadline_usec:
+		await process_frame
 
 
 func _assert(condition: bool, message: String) -> void:

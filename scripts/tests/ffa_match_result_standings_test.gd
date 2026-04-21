@@ -75,6 +75,22 @@ func _run() -> void:
 		match_result_label.text.contains(expected_standings),
 		"El panel final FFA deberia incluir la linea compacta de posiciones."
 	)
+	_assert(
+		_has_line(match_controller.get_round_recap_panel_lines(), "Desempate | score igual -> mejor cierre de la ronda final"),
+		"El recap FFA deberia explicar el criterio usado cuando varios jugadores cierran con el mismo score."
+	)
+	_assert(
+		_has_line(match_controller.get_match_result_lines(), "Desempate | score igual -> mejor cierre de la ronda final"),
+		"El resultado final FFA deberia repetir el criterio de desempate para que las posiciones empatadas no parezcan arbitrarias."
+	)
+	_assert(
+		recap_label.text.contains("Desempate | score igual -> mejor cierre de la ronda final"),
+		"El recap visible FFA deberia dejar legible el criterio de desempate."
+	)
+	_assert(
+		match_result_label.text.contains("Desempate | score igual -> mejor cierre de la ronda final"),
+		"El panel final FFA deberia dejar legible el criterio de desempate."
+	)
 
 	await _cleanup_main(main)
 	_finish()

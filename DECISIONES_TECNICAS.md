@@ -482,6 +482,10 @@
    - `RobotBase` ahora crea `EnergyReadability` runtime y monta `EnergyFocusIndicator` sobre brazos y piernas; solo la pareja activa se muestra, la parte exacta del foco destaca más y `Overdrive` empuja esa lectura hacia un color más caliente.
    - Motivo: la energía ya alteraba movilidad/empuje y se resumía en el roster, pero faltaba ownership espacial para leer rápido “qué parte está potenciada” en pantalla compartida. Resolverlo sobre el propio cuerpo conserva claridad y evita otra capa fija de HUD.
 
+99. **El cierre FFA explicita el desempate solo cuando hace falta**
+   - `MatchController` agrega `Desempate | score igual -> mejor cierre de la ronda final` junto a `Posiciones | ...` en recap/resultado final, pero solo si detecta al menos dos competidores con el mismo score acumulado.
+   - Motivo: el ranking FFA ya usaba supervivencia de la ronda final como criterio secundario, pero el HUD no lo decía y los empates parecían arbitrarios. Explicitarlo solo en ese caso aclara el cierre sin meter otra pantalla ni ruido permanente.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

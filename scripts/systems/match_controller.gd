@@ -275,6 +275,9 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var standings_line := _build_ffa_standings_line()
 	if standings_line != "":
 		lines.append(standings_line)
+	var tiebreaker_line := _build_ffa_tiebreaker_line()
+	if tiebreaker_line != "":
+		lines.append(tiebreaker_line)
 	if _match_over:
 		lines.append_array(_build_match_stats_lines())
 
@@ -312,6 +315,9 @@ func get_match_result_lines() -> Array[String]:
 	var standings_line := _build_ffa_standings_line()
 	if standings_line != "":
 		lines.append(standings_line)
+	var tiebreaker_line := _build_ffa_tiebreaker_line()
+	if tiebreaker_line != "":
+		lines.append(tiebreaker_line)
 	lines.append_array(_build_match_stats_lines())
 
 	if _last_elimination_summary != "":
@@ -746,6 +752,29 @@ func _build_ffa_standings_line() -> String:
 		])
 
 	return "Posiciones | %s" % " | ".join(segments)
+
+
+func _build_ffa_tiebreaker_line() -> String:
+	if match_mode != MatchMode.FFA:
+		return ""
+	if not _ffa_standings_have_score_tie():
+		return ""
+
+	return "Desempate | score igual -> mejor cierre de la ronda final"
+
+
+func _ffa_standings_have_score_tie() -> bool:
+	if _competitor_order.size() < 2:
+		return false
+
+	var seen_scores := {}
+	for competitor_key in _competitor_order:
+		var score := int(_competitor_scores.get(competitor_key, 0))
+		if seen_scores.has(score):
+			return true
+		seen_scores[score] = true
+
+	return false
 
 
 func _compare_ffa_competitors_for_standings(a: String, b: String) -> bool:
