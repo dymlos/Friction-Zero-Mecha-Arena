@@ -2,6 +2,13 @@
 
 Este plan ordena el desarrollo para validar primero la identidad real del juego: robots industriales que patinan con inercia, chocan con peso, se desarman por partes y obligan a leer el espacio antes de comprometerse. No propone un MVP generico: cada etapa debe dejar una version jugable que preserve la fantasia de "patinar y chocar con precision", aunque todavia falten capas avanzadas.
 
+## Checkpoint actual - 2026-04-21
+
+- Etapa 0 a 3: base jugable ya integrada en `main.tscn` con arena, camara compartida, empuje, caida al vacio y respawn de prototipo.
+- Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
+- Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas y mensajes breves de HUD.
+- Pendiente prioritario: cerrar el loop posterior a la destruccion con partes recuperables, cuerpo inutilizado explosivo y primeros hooks claros de energia redistribuida.
+
 ## Principios de orden
 
 - Primero se valida sensacion fisica: movimiento, derrape, choque y lectura visual.
