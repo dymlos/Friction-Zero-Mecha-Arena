@@ -82,23 +82,35 @@
    - Ring-out y destrucción total cuentan igual: eliminan al robot de la ronda y el último contendiente en pie suma un punto.
    - Motivo: cerrar el sandbox infinito con la menor cantidad de reglas nuevas, sin comprometer todavía el diseño final de puntuación por modo.
 
-21. **Robots eliminados quedan fuera hasta el reset común**
+21. **Cierre de match first-to-X desde `MatchConfig`**
+   - El objetivo de rondas vive en `rounds_to_win`; cuando un competidor lo alcanza, `MatchController` anuncia ganador de partida y detiene la ronda actual.
+   - Motivo: el prototipo necesitaba una condición de victoria real, configurable y fácil de leer sin meter un mode flow más pesado todavía.
+
+22. **Reinicio automático tras victoria de match**
+   - Tras una pausa corta (`match_restart_delay`), el laboratorio reinicia el match completo y vuelve a ronda 1 con score limpio.
+   - Motivo: mantener la escena siempre jugable en playtests locales y evitar volver al estado de sandbox infinito o exigir UI/menu extra en esta etapa.
+
+23. **Robots eliminados quedan fuera hasta el reset común**
    - `RobotBase` ahora puede quedar retenido para el reset de ronda en vez de auto-respawnear inmediatamente tras vacío o explosión.
    - Motivo: preservar lectura del resultado, evitar que una baja decisiva se “deshaga” sola y mantener el cierre de ronda legible.
 
-22. **Cierre de ronda validado sobre la escena real**
+24. **Cierre de ronda validado sobre la escena real**
    - `match_round_resolution_test.gd` usa `main.tscn` para comprobar victorias por vacío y destrucción total, marcador y reset conjunto.
    - Motivo: la lógica de ronda depende de `Main`, `MatchController`, HUD y lifecycle de `RobotBase`; probar piezas aisladas dejaría huecos importantes.
 
-23. **Contraccion del arena como presion fisica real**
+25. **Cierre de match validado con la escena real**
+   - `match_completion_test.gd` también usa `main.tscn` para verificar objetivo first-to-X, anuncio de ganador y reinicio limpio del match.
+   - Motivo: la victoria de match depende del mismo wiring real entre `Main`, `MatchController`, HUD, timers y robots eliminados; un mock aislado dejaría fuera el lifecycle crítico.
+
+26. **Contraccion del arena como presion fisica real**
    - `MatchController` calcula un factor de cierre segun `round_time_seconds` y `ArenaBase` reduce el tamano real del piso/edge markers.
    - Motivo: cumplir la presion de endgame documentada sin agregar dano abstracto ni hazards nuevos que ensucien la lectura.
 
-24. **`Main` solo cablea presion entre match y arena**
+27. **`Main` solo cablea presion entre match y arena**
    - La escena principal pregunta el factor al `MatchController` y se lo aplica al `ArenaBase`; no resuelve timers ni geometria por si misma.
    - Motivo: mantener responsabilidades claras y el proyecto legible para iteraciones futuras.
 
-25. **Timer de ronda base reducido a 60 segundos**
+28. **Timer de ronda base reducido a 60 segundos**
    - La configuracion por defecto deja de usar 180s para que la contraccion aparezca en sesiones reales de laboratorio.
    - Motivo: un sistema de presion que casi nunca se activa no aporta feedback util al prototipo.
 

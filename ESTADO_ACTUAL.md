@@ -25,8 +25,9 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
 - escenario base 2v2 en `main.tscn` con dos equipos (pares por `team_id`) y 4 slots locales activos para validar rescate aliado y handoff en campo.
 - cierre de ronda simple: el ultimo robot/equipo en pie suma una ronda y todos los robots vuelven juntos tras un delay corto
+- cierre de match simple: el laboratorio juega a `first-to-3`; cuando un equipo alcanza el objetivo, el HUD anuncia al ganador de la partida y el match se reinicia limpio tras una pausa corta
 - presion final de arena: el piso y sus edge markers se contraen de forma progresiva segun el tiempo de ronda, y el HUD agrega una linea corta cuando empieza el cierre
-- HUD minimo con estado de ronda + marcador compacto y roster por robot para leer estado, energia y si un robot transporta una parte
+- HUD minimo con estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia y si un robot transporta una parte
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
 - indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
@@ -40,6 +41,11 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - una baja por vacio o por explosion saca al robot de la ronda actual
   - el ganador suma un punto y la escena reinicia todos los robots juntos tras una pausa breve
   - `main.tscn` pasa a usar modo Teams por defecto para el laboratorio 2v2
+- Se completo el cierre de match minimo que faltaba:
+  - `MatchConfig` ahora define `rounds_to_win`
+  - `MatchController` corta la partida cuando un competidor alcanza ese objetivo
+  - el estado visible cambia de "gana la ronda" a "gana la partida X-Y"
+  - el laboratorio espera una pausa corta y reinicia el match completo para mantener la escena jugable sin intervención extra
 - Se activo la primera presion de endgame que faltaba en mapas:
   - `MatchController` ahora mide tiempo de ronda y expone un factor de contraccion del arena
   - `Main` aplica ese factor sobre `ArenaBase` sin mezclar logica de match y geometria
@@ -76,20 +82,21 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_explosion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_energy_management_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/local_multiplayer_bootstrap_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_completion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_input_ownership_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/two_vs_two_carry_validation_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_round_resolution_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/progressive_space_reduction_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 30`
 
-Resultado: las ocho verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: las nueve verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
 - Todavia no hay torso independiente Hard.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
-- La escena principal ya no es sandbox infinito, pero el cierre de match aun no existe: el marcador suma rondas sin umbral final ni pantalla de ganador.
-- Ring-out y destruccion total hoy puntuan igual a nivel de ronda; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
+- Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
+- El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats, replay ni explicación explícita de por qué perdió cada jugador.

@@ -7,10 +7,10 @@
    - medir en partida si `throw_pickup_delay`/`pickup_delay` se sienten justos o demasiado punitivos ahora que perder una ronda sí importa y el espacio se va cerrando.
    - ajustar si hace falta radio de retorno, cleanup y ritmo de choque con un aliado en escena, sin reabrir spam accidental.
 
-2. **Definir cierre de match encima del nuevo cierre de ronda**
-   - decidir si el prototipo debe jugarse a first-to-X rondas, por tiempo o por score acumulado.
+2. **Pulir el cierre de match que ya existe**
+   - playtestear si `rounds_to_win=3` y `match_restart_delay` dejan leer bien la victoria o si el resultado pasa demasiado rápido.
+   - decidir si el reinicio automático debe seguir siendo la solución del laboratorio o si conviene pasar a una espera corta con confirmación/manual restart más adelante.
    - definir si ring-out y destruccion total siguen puntuando igual o si alguno merece bonus/feedback diferencial.
-   - enlazar el HUD minimo con victoria de match, no solo con marcador de ronda.
 
 3. **Afinar la nueva presion de arena**
    - playtestear si el inicio del cierre (`space_reduction_start_ratio`) llega demasiado tarde o demasiado pronto.
@@ -25,7 +25,7 @@
 5. **Mejorar validacion jugable**
    - sumar una escena/configuración de prueba pensada para reproducir rescates, negaciones y cierres de ronda/contraccion más rápido que en el match completo
    - ajuste fino de valores de aceleracion, damping, empuje y danio
-   - medir si el reset corto de ronda deja suficiente tiempo de lectura o si necesita un delay algo mayor
+   - medir si el reset corto de ronda y el reinicio de match dejan suficiente tiempo de lectura o si necesitan delays algo mayores
 
 6. **Preparar soporte Hard sin convertirlo en requisito**
    - torso superior separado

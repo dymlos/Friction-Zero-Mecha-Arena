@@ -10,6 +10,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Etapa 2v2: laboratorio 2v2 preparado con 4 robots por escena y `local_player_count=4`, incluyendo equipos por parejas para validar rescate aliado.
 - Validacion 2v2: el loop de rescate/negacion ya tiene cobertura headless en `main.tscn`, incluyendo indicador de carga visible y ventana de `throw_pickup_delay`.
 - Scoreboard minimo: `MatchController` ya registra bajas por vacio o explosion, suma ronda al ultimo contendiente en pie y reinicia todos los robots juntos tras una pausa corta.
+- Cierre de match base: el laboratorio ya juega a first-to-3 por defecto; cuando un equipo alcanza el objetivo, `MatchController` anuncia ganador de partida, congela la ronda y reinicia el match completo tras una pausa corta.
 - Presion de endgame: el `arena_blockout` ahora reduce progresivamente su tamano durante la ronda, empujando el cierre hacia el centro sin agregar hazards extra.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
 - Etapa 2 y 3: el ritmo de choque del laboratorio 2P ya fue afinado en `RobotBase` para que los intercambios sean más fluidos sin perder el carácter de choque decisivo.
@@ -18,7 +19,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
-- Pendiente prioritario: playtestear rescate/negacion con la nueva contraccion activa, decidir si ring-out y destruccion deben puntuar igual en match largo y preparar un cierre de partida mas alla del marcador infinito.
+- Pendiente prioritario: playtestear si el first-to-3 + reinicio automatico deja buen ritmo, si la pausa de victoria alcanza para leer el resultado y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
 
 ## Principios de orden
 
@@ -129,8 +130,9 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - el vacio ya elimina al robot de la ronda actual
 - el ultimo robot/equipo en pie suma una ronda
 - el HUD minimo ya muestra ronda y marcador, sin sumar barras pesadas
+- el HUD tambien explicita el objetivo del match (`Primero a X`) y el loop ya cierra la partida al alcanzarlo
 - el arena ahora se contrae progresivamente en el tramo final de la ronda y vuelve a escala completa al reset
-- pendiente: definir cierre de match (por ejemplo first-to-X) y si la puntuacion debe distinguir vacio vs destruccion
+- pendiente: decidir si la pausa/reinicio automatico de match debe seguir siendo la solucion final o solo el cierre provisional del laboratorio, y si la puntuacion debe distinguir vacio vs destruccion
 
 ## Etapa 4 - Danio modular por brazos y piernas
 
