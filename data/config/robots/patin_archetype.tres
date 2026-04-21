@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/robots/robot_archetype_config.gd" id="1_config"]
+
+[resource]
+script = ExtResource("1_config")
+archetype_label = "Patin"
+max_move_speed_multiplier = 1.18
+move_acceleration_multiplier = 1.12
+glide_damping_multiplier = 0.84
+max_part_health_multiplier = 0.9
+restored_part_health_ratio_multiplier = 0.95
+passive_push_strength_multiplier = 0.82
+attack_impulse_strength_multiplier = 0.86
+attack_damage_multiplier = 0.92
+collision_damage_scale_multiplier = 0.9
+detached_part_pickup_range_multiplier = 1.05
+carried_part_return_range_multiplier = 0.98

@@ -31,12 +31,13 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Laboratorio Hard expuesto: `Main` ya puede asignar `ControlMode.HARD` por slot local mediante `hard_mode_player_slots`, y el roster deja visible si cada robot juega en Easy o Hard junto al hint real de input.
 - Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun; la variante nacida desde `Overdrive` queda marcada como explosion `inestable`.
+- Etapa 8: primer roster de arquetipos ya integrado sobre los sistemas existentes. `RobotArchetypeConfig` aplica multiplicadores simples y el laboratorio 4P ahora arranca con `Ariete`, `Grua`, `Cizalla` y `Patin`, visibles en roster/marcador sin abrir otra UI ni meter todavía skills exclusivas.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, marcadores de humo/chispa por parte dañada, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
 - HUD dual base: `MatchConfig` ya deja alternar entre un modo `explicito` (mantiene `Modo`, `Objetivo`, hints de control, `4/4 partes` y `Eq` siempre visibles) y un modo `contextual` que oculta esa informacion estable y solo vuelve a exponer daño, foco energetico, buffs, items y cargas cuando realmente importan.
 - Lectura de borde reforzada: el mismo HUD compacto ahora añade `Borde | ...` con los tipos activos de pickup de la ronda para que el layout semialeatorio sea legible en playtests sin abrir otra capa de UI.
 - Lectura de eliminacion reforzada: el roster ahora deja visible `Inutilizado | explota Xs` y tambien `Inutilizado | inestable | explota Xs` cuando la baja viene de overdrive; tras la explosion conserva `Fuera | vacio/explosion/explosion inestable`, el bloque superior mantiene `Ultima baja | ...` y, cuando la ronda ya cerro, añade `Resumen | ...` con el orden de bajas para explicar por que se perdio una pieza clave sin sumar otra capa de UI.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
-- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, si el HUD `explicito/contextual` limpia la pantalla sin esconder decisiones tacticas y cual deberia ser el default en `Equipos` y `FFA`, si la explicacion compacta de bajas (`Ultima baja`, `Resumen | ...`, `Fuera | vacio/explosion/explosion inestable`, `Inutilizado | explota/inestable`) alcanza para explicar derrotas sin HUD extra, si la rotacion semialeatoria controlada de edge pickups vuelve los bordes más tácticos sin transformarlos en zonas seguras permanentes y si el perfil FFA de tres tipos activos por ronda produce supervivencia/oportunismo legibles sin saturar el borde; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo, si la explosion inestable vuelve el overdrive mas tenso sin volverse dominante y si el nuevo conflicto `parte vs item` sigue siendo claro cuando los rounds ya importan de verdad.
+- Pendiente prioritario: playtestear si `Ariete`, `Grua`, `Cizalla` y `Patin` se sienten realmente distintos solo con tuning de stats o si alguno necesita una regla/skill propia antes de seguir ampliando roster; en paralelo medir si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, si el HUD `explicito/contextual` limpia la pantalla sin esconder decisiones tacticas y cual deberia ser el default en `Equipos` y `FFA`, si la explicacion compacta de bajas (`Ultima baja`, `Resumen | ...`, `Fuera | vacio/explosion/explosion inestable`, `Inutilizado | explota/inestable`) alcanza para explicar derrotas sin HUD extra, si la rotacion semialeatoria controlada de edge pickups vuelve los bordes más tácticos sin transformarlos en zonas seguras permanentes y si el perfil FFA de tres tipos activos por ronda produce supervivencia/oportunismo legibles sin saturar el borde; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo, si la explosion inestable vuelve el overdrive mas tenso sin volverse dominante y si el nuevo conflicto `parte vs item` sigue siendo claro cuando los rounds ya importan de verdad.
 
 ## Principios de orden
 
@@ -299,6 +300,16 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - balance prematuro sobre valores que todavia estan cambiando
 
 **Dependencias:** Etapas 1 a 7. Puede empezar con 3 arquetipos si el costo de contenido frena la iteracion.
+
+**Estado actual del prototipo:**
+- el laboratorio 4P ya arranca con cuatro identidades legibles construidas sobre tuning existente:
+  - `Ariete`: mas aguante y empuje, a costa de velocidad
+  - `Grua`: mejor rescate/retorno de partes, con combate mas sobrio
+  - `Cizalla`: mas daño directo/modular para forzar desgaste
+  - `Patin`: mas velocidad y derrape, a costa de pegada
+- `RobotArchetypeConfig` deja esos presets en recursos `.tres`, y `RobotBase` los aplica antes de resetear salud/energia para mantener el setup editable por un principiante sin duplicar escenas
+- el roster compacto ya usa `Player X / <Arquetipo>` y el marcador FFA agrega `[<Arquetipo>]`, de modo que el laboratorio expone identidad de roster sin romper la UI actual
+- pendiente: decidir si la siguiente diferenciacion debe venir por skills propias, reglas pasivas pequeñas o solo mayor tuning por mapa/modo
 
 ## Etapa 9 - Items, skills universales y economia de recursos
 

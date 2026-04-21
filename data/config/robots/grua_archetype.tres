@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/robots/robot_archetype_config.gd" id="1_config"]
+
+[resource]
+script = ExtResource("1_config")
+archetype_label = "Grua"
+max_move_speed_multiplier = 0.97
+move_acceleration_multiplier = 1.04
+glide_damping_multiplier = 1.0
+max_part_health_multiplier = 1.02
+restored_part_health_ratio_multiplier = 1.45
+passive_push_strength_multiplier = 0.9
+attack_impulse_strength_multiplier = 0.92
+attack_damage_multiplier = 0.94
+collision_damage_scale_multiplier = 0.94
+detached_part_pickup_range_multiplier = 1.18
+carried_part_return_range_multiplier = 1.28

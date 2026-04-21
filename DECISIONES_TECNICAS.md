@@ -246,6 +246,10 @@
    - `MatchConfig.hud_detail_mode` alterna entre `EXPLICIT` y `CONTEXTUAL`, `RobotBase` expone `is_energy_balanced()` para que el filtro sepa cuando volver a mostrar energia, y `Main` sigue refrescando el mismo `MatchHud` sin branching adicional de escenas.
    - Motivo: sumar la configuracion pedida por el documento de UI con el menor cambio posible, manteniendo el codigo testeable por headless y sin duplicar layouts.
 
+62. **Primeros arquetipos como recursos de tuning, no como ramas de código separadas**
+   - `RobotArchetypeConfig` encapsula multiplicadores simples y `RobotBase` los aplica al arrancar; el laboratorio usa `Ariete`, `Grua`, `Cizalla` y `Patin` sobre la misma escena base.
+   - Motivo: cerrar la brecha de identidad del roster con el menor costo técnico posible, manteniendo el proyecto entendible para un principiante y dejando la puerta abierta a skills/pasivas propias solo si el tuning no alcanza.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

@@ -26,6 +26,7 @@ var _round_eliminated_robot_ids: Dictionary = {}
 var _round_elimination_recap_entries: Array[String] = []
 var _competitor_scores: Dictionary = {}
 var _competitor_labels: Dictionary = {}
+var _competitor_archetype_labels: Dictionary = {}
 var _competitor_order: Array[String] = []
 var _last_elimination_summary := ""
 var _round_status_line := ""
@@ -68,6 +69,7 @@ func start_match() -> void:
 	_last_elimination_summary = ""
 	_competitor_scores.clear()
 	_competitor_labels.clear()
+	_competitor_archetype_labels.clear()
 	_competitor_order.clear()
 
 	for robot in registered_robots:
@@ -279,7 +281,7 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 	if robot.is_carrying_part():
 		segments.append("carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name()))
 
-	return "%s %s | %s" % [control_label, robot.display_name, " | ".join(segments)]
+	return "%s %s | %s" % [control_label, robot.get_roster_display_name(), " | ".join(segments)]
 
 
 func _register_competitor(robot: RobotBase) -> void:
@@ -294,6 +296,7 @@ func _register_competitor(robot: RobotBase) -> void:
 		_competitor_scores[competitor_key] = 0
 
 	_competitor_labels[competitor_key] = _get_competitor_label(robot)
+	_competitor_archetype_labels[competitor_key] = robot.get_archetype_label()
 
 
 func _get_competitor_key(robot: RobotBase) -> String:
@@ -467,10 +470,14 @@ func _restart_match() -> void:
 func _build_score_summary_line() -> String:
 	var score_parts: Array[String] = []
 	for competitor_key in _competitor_order:
-		score_parts.append("%s %s" % [
-			_get_competitor_label_from_key(competitor_key),
-			int(_competitor_scores.get(competitor_key, 0)),
-		])
+		var competitor_label := _get_competitor_label_from_key(competitor_key)
+		var competitor_score := int(_competitor_scores.get(competitor_key, 0))
+		var archetype_label := str(_competitor_archetype_labels.get(competitor_key, ""))
+		if match_mode == MatchMode.FFA and archetype_label != "":
+			score_parts.append("%s %s [%s]" % [competitor_label, competitor_score, archetype_label])
+			continue
+
+		score_parts.append("%s %s" % [competitor_label, competitor_score])
 
 	return "Marcador | %s" % " | ".join(score_parts)
 

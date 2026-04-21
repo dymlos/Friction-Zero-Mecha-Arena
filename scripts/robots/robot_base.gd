@@ -3,6 +3,7 @@ class_name RobotBase
 
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
 const PulseBolt = preload("res://scripts/projectiles/pulse_bolt.gd")
+const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
 
 signal fell_into_void(robot: RobotBase)
 signal respawned(robot: RobotBase)
@@ -153,6 +154,7 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var robot_id := 0
 @export var display_name := "Prototype Robot"
 @export var team_id := 0
+@export var archetype_config: RobotArchetypeConfig
 @export var control_mode: ControlMode = ControlMode.EASY
 @export var max_part_health := 100.0
 @export var starting_energy_per_part := 25.0
@@ -348,6 +350,21 @@ func get_carried_item_name() -> String:
 
 func get_carried_item_display_name() -> String:
 	return str(CARRIED_ITEM_LABELS.get(_carried_item_name, _carried_item_name))
+
+
+func get_archetype_label() -> String:
+	if archetype_config == null:
+		return ""
+
+	return archetype_config.archetype_label
+
+
+func get_roster_display_name() -> String:
+	var archetype_label := get_archetype_label()
+	if archetype_label == "":
+		return display_name
+
+	return "%s / %s" % [display_name, archetype_label]
 
 
 func get_active_part_count() -> int:
@@ -550,6 +567,7 @@ func _ready() -> void:
 	_starting_collision_layer = collision_layer
 	_starting_collision_mask = collision_mask
 	add_to_group("robots")
+	_apply_archetype_config()
 	_cache_visual_references()
 	_prepare_visual_materials()
 	_setup_damage_feedback_nodes()
@@ -559,6 +577,39 @@ func _ready() -> void:
 	reset_modular_state()
 	if is_player_controlled:
 		refresh_input_setup()
+
+
+func _apply_archetype_config() -> void:
+	if archetype_config == null:
+		return
+
+	max_move_speed = maxf(max_move_speed * archetype_config.max_move_speed_multiplier, 0.1)
+	move_acceleration = maxf(move_acceleration * archetype_config.move_acceleration_multiplier, 0.1)
+	glide_damping = maxf(glide_damping * archetype_config.glide_damping_multiplier, 0.1)
+	max_part_health = maxf(max_part_health * archetype_config.max_part_health_multiplier, 1.0)
+	restored_part_health_ratio = clampf(
+		restored_part_health_ratio * archetype_config.restored_part_health_ratio_multiplier,
+		0.1,
+		1.0
+	)
+	passive_push_strength = maxf(passive_push_strength * archetype_config.passive_push_strength_multiplier, 0.1)
+	attack_impulse_strength = maxf(
+		attack_impulse_strength * archetype_config.attack_impulse_strength_multiplier,
+		0.1
+	)
+	attack_damage = maxf(attack_damage * archetype_config.attack_damage_multiplier, 0.1)
+	collision_damage_scale = maxf(
+		collision_damage_scale * archetype_config.collision_damage_scale_multiplier,
+		0.1
+	)
+	detached_part_pickup_range = maxf(
+		detached_part_pickup_range * archetype_config.detached_part_pickup_range_multiplier,
+		0.1
+	)
+	carried_part_return_range = maxf(
+		carried_part_return_range * archetype_config.carried_part_return_range_multiplier,
+		0.1
+	)
 
 
 func _physics_process(delta: float) -> void:

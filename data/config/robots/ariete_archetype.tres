@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/robots/robot_archetype_config.gd" id="1_config"]
+
+[resource]
+script = ExtResource("1_config")
+archetype_label = "Ariete"
+max_move_speed_multiplier = 0.9
+move_acceleration_multiplier = 0.92
+glide_damping_multiplier = 1.08
+max_part_health_multiplier = 1.18
+restored_part_health_ratio_multiplier = 0.92
+passive_push_strength_multiplier = 1.28
+attack_impulse_strength_multiplier = 1.22
+attack_damage_multiplier = 0.98
+collision_damage_scale_multiplier = 1.05
+detached_part_pickup_range_multiplier = 0.92
+carried_part_return_range_multiplier = 0.92

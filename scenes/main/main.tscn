@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/main/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/arenas/arena_blockout.tscn" id="2_arena"]
@@ -6,6 +6,10 @@
 [ext_resource type="PackedScene" path="res://scenes/systems/match_controller.tscn" id="4_controller"]
 [ext_resource type="PackedScene" path="res://scenes/ui/match_hud.tscn" id="5_hud"]
 [ext_resource type="Script" path="res://scripts/systems/shared_arena_camera.gd" id="6_camera"]
+[ext_resource type="Resource" path="res://data/config/robots/ariete_archetype.tres" id="7_ariete"]
+[ext_resource type="Resource" path="res://data/config/robots/grua_archetype.tres" id="8_grua"]
+[ext_resource type="Resource" path="res://data/config/robots/cizalla_archetype.tres" id="9_cizalla"]
+[ext_resource type="Resource" path="res://data/config/robots/patin_archetype.tres" id="10_patin"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
@@ -21,6 +25,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.8, 0)
 robot_id = 1
 team_id = 1
 display_name = "Player 1"
+archetype_config = ExtResource("7_ariete")
 is_player_controlled = true
 
 [node name="PlayerTwoRobot" parent="RobotRoot" instance=ExtResource("3_robot")]
@@ -29,6 +34,7 @@ robot_id = 2
 display_name = "Player 2"
 is_player_controlled = true
 team_id = 1
+archetype_config = ExtResource("8_grua")
 
 [node name="PlayerThreeRobot" parent="RobotRoot" instance=ExtResource("3_robot")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, -4)
@@ -36,6 +42,7 @@ robot_id = 3
 team_id = 2
 display_name = "Player 3"
 is_player_controlled = true
+archetype_config = ExtResource("9_cizalla")
 
 [node name="PlayerFourRobot" parent="RobotRoot" instance=ExtResource("3_robot")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 4)
@@ -43,6 +50,7 @@ robot_id = 4
 team_id = 2
 display_name = "Player 4"
 is_player_controlled = true
+archetype_config = ExtResource("10_patin")
 
 [node name="Systems" type="Node" parent="."]
 
