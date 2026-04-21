@@ -13,6 +13,8 @@ signal pickup_collected(robot: RobotBase, repaired_part_name: String)
 
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var visuals_root: Node3D = $Visuals
+@onready var base_mesh: MeshInstance3D = $Visuals/Base
+@onready var core_mesh: MeshInstance3D = $Visuals/Core
 @onready var respawn_timer: Timer = $RespawnTimer
 
 var _available := true
@@ -60,8 +62,9 @@ func _set_available_state(is_available: bool) -> void:
 	_available = is_available
 	monitoring = is_available
 	collision_shape.disabled = not is_available
-	visuals_root.visible = is_available
-	if is_available:
-		_animation_time = 0.0
-		visuals_root.position = _base_visual_position
-		visuals_root.rotation = Vector3.ZERO
+	visuals_root.visible = true
+	base_mesh.visible = true
+	core_mesh.visible = is_available
+	_animation_time = 0.0
+	visuals_root.position = _base_visual_position
+	visuals_root.rotation = Vector3.ZERO

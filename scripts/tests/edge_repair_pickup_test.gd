@@ -1,6 +1,7 @@
 extends SceneTree
 
 const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const PICKUP_SCENE := preload("res://scenes/pickups/edge_repair_pickup.tscn")
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
@@ -14,6 +15,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await _validate_robot_repair_behavior()
+	await _validate_pickup_cooldown_telegraph()
 	await _validate_main_scene_edge_pickups()
 	_finish()
 
@@ -48,6 +50,46 @@ func _validate_robot_repair_behavior() -> void:
 		)
 
 	await _cleanup_node(robot)
+
+
+func _validate_pickup_cooldown_telegraph() -> void:
+	var pickup := PICKUP_SCENE.instantiate()
+	var robot := ROBOT_SCENE.instantiate() as RobotBase
+	root.add_child(pickup)
+	root.add_child(robot)
+
+	await process_frame
+	await physics_frame
+
+	robot.apply_damage_to_part("left_arm", 25.0)
+	pickup.call("_on_body_entered", robot)
+
+	var base_mesh := pickup.get_node_or_null("Visuals/Base")
+	var core_mesh := pickup.get_node_or_null("Visuals/Core")
+	_assert(base_mesh is MeshInstance3D, "El pickup de borde deberia conservar una base visual dedicada.")
+	_assert(core_mesh is MeshInstance3D, "El pickup de borde deberia conservar un nucleo visible para la carga activa.")
+	if base_mesh is MeshInstance3D:
+		_assert(
+			(base_mesh as MeshInstance3D).is_visible_in_tree(),
+			"El pedestal del pickup deberia seguir visible durante cooldown para telegraph del borde."
+		)
+	if core_mesh is MeshInstance3D:
+		_assert(
+			not (core_mesh as MeshInstance3D).is_visible_in_tree(),
+			"El nucleo activo deberia apagarse durante cooldown para marcar que la carga no esta disponible."
+		)
+
+	pickup.call("_on_respawn_timer_timeout")
+	await process_frame
+
+	if core_mesh is MeshInstance3D:
+		_assert(
+			(core_mesh as MeshInstance3D).is_visible_in_tree(),
+			"El nucleo del pickup deberia volver a verse cuando la carga reaparece."
+		)
+
+	await _cleanup_node(robot)
+	await _cleanup_node(pickup)
 
 
 func _validate_main_scene_edge_pickups() -> void:

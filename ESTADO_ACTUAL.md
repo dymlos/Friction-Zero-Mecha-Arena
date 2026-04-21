@@ -74,6 +74,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - Se agrego el primer incentivo real de borde:
   - `EdgeRepairPickup` aparece en los flancos del `arena_blockout` como pickup universal simple y visible
   - al tocarlo, el robot repara solo la parte activa mas castigada; no revive partes destruidas ni reemplaza el loop de rescate aliado
+  - durante cooldown, el pedestal sigue visible y solo se apaga el nucleo de carga para que el punto de interes del borde no desaparezca
   - `Main` publica una linea breve en HUD cuando alguien logra estabilizarse en el borde, sin sumar una UI nueva
 - Se hizo explicito el bootstrap local del prototipo: `main.gd` ahora asigna slots, spawns y deja cuatro jugadores activos por defecto.
 - Se separo ownership de input local con perfiles de teclado por jugador y fallback de joystick por slot, evitando que varios robots lean el mismo dispositivo.
