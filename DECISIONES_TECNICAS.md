@@ -170,6 +170,10 @@
    - `RobotBase` crea marcadores runtime `DamageFeedback/Smoke` y `DamageFeedback/Spark` sobre cada extremidad, escalando solo cuando esa parte realmente está dañada o crítica.
    - Motivo: acercar la lectura a “humo/chispas sobre el robot” que piden los docs sin sumar HUD nuevo, assets externos ni un sistema de partículas difícil de mantener en este prototipo.
 
+43. **Cobertura de borde acompasada con la contracción del arena**
+   - `arena_blockout.tscn` suma dos bloques estáticos simples bajo `CoverBlocks`, y `ArenaBase` reubica esas coberturas según el tamaño actual del área segura.
+   - Motivo: validar duelo/cobertura en bordes sin romper la presión de endgame ni dejar geometría desfasada cuando el mapa se achica.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

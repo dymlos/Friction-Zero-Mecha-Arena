@@ -45,5 +45,6 @@
 
 9. **Validar y tensionar el nuevo incentivo de borde**
    - playtestear si `repair_amount` y `respawn_delay` vuelven los flancos realmente tentadores o si la reparacion termina alargando demasiado los duelos.
-   - decidir si el siguiente paso en mapa debe ser sumar cobertura blockout ligera alrededor de esos pickups o introducir un segundo incentivo distinto en otro borde.
+   - medir si las nuevas coberturas blockout generan duelos más tácticos o si empiezan a volver esos flancos demasiado seguros.
+   - decidir si el siguiente paso en mapa debe ser refinar ese layout/cantidad de coberturas o introducir un segundo incentivo distinto en otro borde.
    - mantener el centro limpio y legible, evitando saturar la arena con demasiados objetos.

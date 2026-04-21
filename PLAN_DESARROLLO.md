@@ -14,6 +14,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Cierre de match base: el laboratorio ya juega a first-to-3 por defecto; cuando un equipo alcanza el objetivo, `MatchController` anuncia ganador de partida, congela la ronda y reinicia el match completo tras una pausa corta.
 - Presion de endgame: el `arena_blockout` ahora reduce progresivamente su tamano durante la ronda, empujando el cierre hacia el centro sin agregar hazards extra.
 - Bordes con incentivo real: el laboratorio ahora suma pickups de reparacion instantanea en los flancos del arena; curan la parte activa mas dañada sin revivir piezas perdidas y fuerzan a exponerse cerca del vacio.
+- Cobertura de borde minima: el `arena_blockout` ya suma dos slabs estaticos simples junto a los pickups de reparacion; se desplazan con la contraccion del mapa para mantener duel zones legibles y no dejar geometria “flotando” fuera del area viva.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
 - Legibilidad modular reforzada: las partes dañadas ahora levantan marcadores sobrios sobre el propio robot (`Smoke` en daño relevante, `Spark` en daño critico) y se apagan al reparar o desprender la pieza.
 - Etapa 2 y 3: el ritmo de choque del laboratorio 2P ya fue afinado en `RobotBase` para que los intercambios sean más fluidos sin perder el carácter de choque decisivo.
@@ -24,7 +25,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, marcadores de humo/chispa por parte dañada, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
-- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, y en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
+- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, y si la nueva cobertura de borde vuelve esos flancos más tácticos sin transformarlos en zonas seguras permanentes; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
 
 ## Principios de orden
 
