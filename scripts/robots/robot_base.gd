@@ -1,17 +1,46 @@
 extends CharacterBody3D
 class_name RobotBase
 
+const DetachedPart = preload("res://scripts/robots/detached_part.gd")
+
 signal fell_into_void(robot: RobotBase)
 signal respawned(robot: RobotBase)
 signal prototype_attack_used(robot: RobotBase)
+signal part_destroyed(robot: RobotBase, part_name: String, detached_part: DetachedPart)
+signal robot_disabled(robot: RobotBase)
 
 enum ControlMode { EASY, HARD }
+
+const DETACHED_PART_SCENE := preload("res://scenes/robots/detached_part.tscn")
 
 const BODY_PARTS := [
 	"left_arm",
 	"right_arm",
 	"left_leg",
 	"right_leg",
+]
+
+const BODY_PART_LABELS := {
+	"left_arm": "brazo izquierdo",
+	"right_arm": "brazo derecho",
+	"left_leg": "pierna izquierda",
+	"right_leg": "pierna derecha",
+}
+
+const PART_VISUAL_PATHS := {
+	"left_arm": ["ModularParts/LeftArm"],
+	"right_arm": ["ModularParts/RightArm"],
+	"left_leg": ["ModularParts/LeftLeg", "ModularParts/LeftLegThruster", "ModularParts/LeftThrusterNozzle"],
+	"right_leg": ["ModularParts/RightLeg", "ModularParts/RightLegThruster", "ModularParts/RightThrusterNozzle"],
+}
+
+const CORE_VISUAL_PATHS := [
+	"BodyVisual",
+	"ShouldersVisual",
+	"HeadVisual",
+	"FacingMarker",
+	"LeftCoreLight",
+	"RightCoreLight",
 ]
 
 const KEYBOARD_INPUT_BINDINGS := {
@@ -46,6 +75,11 @@ const KEYBOARD_INPUT_BINDINGS := {
 @export var attack_impulse_strength := 10.0
 @export var attack_range := 2.2
 @export var attack_cooldown := 0.4
+@export var attack_damage := 28.0
+@export var collision_damage_threshold := 4.6
+@export var collision_damage_scale := 6.5
+@export var collision_damage_cooldown := 0.25
+@export var detached_part_launch_speed := 5.2
 
 @export_group("Prototype Void")
 @export var void_fall_y := -6.0
@@ -58,9 +92,19 @@ var _spawn_transform := Transform3D.IDENTITY
 var _planar_velocity := Vector3.ZERO
 var _attack_cooldown_remaining := 0.0
 var _is_respawning := false
+var _is_disabled := false
 var _starting_collision_layer := 1
 var _starting_collision_mask := 1
 var _was_joypad_attack_pressed := false
+var _part_visual_nodes: Dictionary = {}
+var _part_flash_strength: Dictionary = {}
+var _core_visual_nodes: Array[MeshInstance3D] = []
+var _material_base_values: Dictionary = {}
+var _collision_damage_ready_at: Dictionary = {}
+
+
+static func get_part_display_name(part_name: String) -> String:
+	return BODY_PART_LABELS.get(part_name, part_name)
 
 
 func _ready() -> void:
@@ -68,6 +112,8 @@ func _ready() -> void:
 	_starting_collision_layer = collision_layer
 	_starting_collision_mask = collision_mask
 	add_to_group("robots")
+	_cache_visual_references()
+	_prepare_visual_materials()
 	reset_modular_state()
 	if is_player_controlled:
 		_ensure_default_input_actions()
@@ -81,20 +127,33 @@ func _physics_process(delta: float) -> void:
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
 	_update_prototype_movement(delta)
 	_update_prototype_attack()
+	_update_damage_visual_feedback(delta)
 
 	if global_position.y <= void_fall_y:
 		fall_into_void()
 
 
 func reset_modular_state() -> void:
-	# Cada extremidad tiene vida y energia propia. Todavia no aplica movimiento ni combate.
+	_is_disabled = false
+	_part_flash_strength.clear()
+	_collision_damage_ready_at.clear()
 	for part_name in BODY_PARTS:
 		part_health[part_name] = max_part_health
 		part_energy[part_name] = starting_energy_per_part
+		_part_flash_strength[part_name] = 0.0
+
+	_refresh_visual_state()
 
 
 func get_part_health(part_name: String) -> float:
 	return float(part_health.get(part_name, 0.0))
+
+
+func get_part_health_ratio(part_name: String) -> float:
+	if max_part_health <= 0.0:
+		return 0.0
+
+	return clampf(get_part_health(part_name) / max_part_health, 0.0, 1.0)
 
 
 func set_part_energy(part_name: String, value: float) -> void:
@@ -116,6 +175,41 @@ func is_fully_disabled() -> bool:
 func apply_impulse(impulse: Vector3) -> void:
 	impulse.y = 0.0
 	external_impulse += impulse
+
+
+func receive_collision_hit(impact_direction: Vector3, damage_amount: float) -> void:
+	if damage_amount <= 0.0 or is_fully_disabled():
+		return
+
+	var hit_part := _select_part_from_world_direction(impact_direction)
+	apply_damage_to_part(hit_part, damage_amount, impact_direction)
+
+
+func receive_attack_hit(impact_direction: Vector3, damage_amount: float) -> void:
+	if damage_amount <= 0.0 or is_fully_disabled():
+		return
+
+	var hit_part := _select_part_from_world_direction(impact_direction)
+	apply_damage_to_part(hit_part, damage_amount, impact_direction)
+
+
+func apply_damage_to_part(part_name: String, damage_amount: float, impact_direction: Vector3 = Vector3.ZERO) -> void:
+	if not BODY_PARTS.has(part_name):
+		return
+	if damage_amount <= 0.0:
+		return
+	if get_part_health(part_name) <= 0.0:
+		return
+
+	part_health[part_name] = maxf(get_part_health(part_name) - damage_amount, 0.0)
+	_part_flash_strength[part_name] = 1.0
+
+	if is_zero_approx(get_part_health(part_name)):
+		_spawn_detached_part(part_name, impact_direction)
+		if is_fully_disabled():
+			_enter_disabled_state()
+
+	_refresh_visual_state()
 
 
 func fall_into_void() -> void:
@@ -143,6 +237,7 @@ func reset_to_spawn() -> void:
 	collision_layer = _starting_collision_layer
 	collision_mask = _starting_collision_mask
 	_is_respawning = false
+	reset_modular_state()
 	set_physics_process(true)
 	respawned.emit(self)
 
@@ -150,15 +245,18 @@ func reset_to_spawn() -> void:
 func _update_prototype_movement(delta: float) -> void:
 	var input_vector := _get_move_input_vector()
 	var move_direction := Vector3(input_vector.x, 0.0, input_vector.y)
+	var leg_drive_multiplier := _get_leg_drive_multiplier()
+	var leg_control_multiplier := _get_leg_control_multiplier()
 
 	if move_direction.length_squared() > 0.0:
 		var input_strength := clampf(input_vector.length(), 0.0, 1.0)
 		move_direction = move_direction.normalized()
-		var target_velocity := move_direction * max_move_speed * input_strength
-		_planar_velocity = _planar_velocity.move_toward(target_velocity, move_acceleration * delta)
-		_face_direction(move_direction, delta)
+		var target_velocity := move_direction * max_move_speed * leg_drive_multiplier * input_strength
+		_planar_velocity = _planar_velocity.move_toward(target_velocity, move_acceleration * leg_control_multiplier * delta)
+		if not _is_disabled:
+			_face_direction(move_direction, delta * leg_control_multiplier)
 	else:
-		_planar_velocity = _planar_velocity.move_toward(Vector3.ZERO, glide_damping * delta)
+		_planar_velocity = _planar_velocity.move_toward(Vector3.ZERO, glide_damping * leg_control_multiplier * delta)
 
 	external_impulse = external_impulse.move_toward(Vector3.ZERO, glide_damping * 0.75 * delta)
 
@@ -176,7 +274,7 @@ func _update_prototype_movement(delta: float) -> void:
 
 
 func _update_prototype_attack() -> void:
-	if not is_player_controlled:
+	if not is_player_controlled or _is_disabled:
 		return
 
 	if not _is_attack_just_pressed():
@@ -191,7 +289,8 @@ func _update_prototype_attack() -> void:
 	var forward := -global_transform.basis.z
 	forward.y = 0.0
 	forward = forward.normalized()
-	apply_impulse(forward * attack_impulse_strength * 0.25)
+	var arm_power := _get_arm_power_multiplier()
+	apply_impulse(forward * attack_impulse_strength * arm_power * 0.25)
 
 	for node in get_tree().get_nodes_in_group("robots"):
 		if node == self or not (node is RobotBase):
@@ -208,7 +307,8 @@ func _update_prototype_attack() -> void:
 		if forward.dot(direction_to_other) < 0.25:
 			continue
 
-		other.apply_impulse(direction_to_other * attack_impulse_strength)
+		other.apply_impulse(direction_to_other * attack_impulse_strength * arm_power)
+		other.receive_attack_hit(direction_to_other, attack_damage * arm_power)
 
 
 func _apply_passive_collision_pushes() -> void:
@@ -218,16 +318,90 @@ func _apply_passive_collision_pushes() -> void:
 		if not (other is RobotBase):
 			continue
 
-		var push_direction := global_position.direction_to(other.global_position)
+		var other_robot := other as RobotBase
+		var push_direction := global_position.direction_to(other_robot.global_position)
 		push_direction.y = 0.0
 		if push_direction.length_squared() == 0.0:
 			push_direction = -global_transform.basis.z
 
-		(other as RobotBase).apply_impulse(push_direction.normalized() * passive_push_strength)
+		push_direction = push_direction.normalized()
+		other_robot.apply_impulse(push_direction * passive_push_strength * _get_arm_power_multiplier())
+		_try_apply_collision_damage(other_robot, push_direction)
+
+
+func _try_apply_collision_damage(other_robot: RobotBase, push_direction: Vector3) -> void:
+	if _is_disabled:
+		return
+	if not _is_collision_damage_ready(other_robot):
+		return
+
+	var closing_speed := _planar_velocity.dot(push_direction)
+	if closing_speed < collision_damage_threshold:
+		return
+
+	var damage_amount := (closing_speed - collision_damage_threshold) * collision_damage_scale * _get_arm_power_multiplier()
+	if damage_amount <= 0.0:
+		return
+
+	_mark_collision_damage_cooldown(other_robot)
+	other_robot.receive_collision_hit(push_direction, damage_amount)
+
+
+func _is_collision_damage_ready(other_robot: RobotBase) -> bool:
+	var now := Time.get_ticks_msec() / 1000.0
+	return now >= float(_collision_damage_ready_at.get(other_robot.get_instance_id(), 0.0))
+
+
+func _mark_collision_damage_cooldown(other_robot: RobotBase) -> void:
+	var now := Time.get_ticks_msec() / 1000.0
+	_collision_damage_ready_at[other_robot.get_instance_id()] = now + collision_damage_cooldown
+
+
+func _enter_disabled_state() -> void:
+	if _is_disabled:
+		return
+
+	_is_disabled = true
+	_attack_cooldown_remaining = 0.0
+	_planar_velocity = Vector3.ZERO
+	robot_disabled.emit(self)
+
+
+func _spawn_detached_part(part_name: String, impact_direction: Vector3) -> void:
+	var scene_instance := DETACHED_PART_SCENE.instantiate()
+	if not (scene_instance is DetachedPart):
+		return
+
+	var detached_part := scene_instance as DetachedPart
+	var source_visuals: Array[MeshInstance3D] = []
+	for visual_node in _part_visual_nodes.get(part_name, []):
+		if visual_node is MeshInstance3D:
+			source_visuals.append(visual_node as MeshInstance3D)
+	if source_visuals.is_empty():
+		return
+
+	detached_part.global_transform = global_transform
+	var launch_direction := impact_direction
+	if launch_direction.length_squared() == 0.0:
+		launch_direction = -global_transform.basis.z
+
+	launch_direction.y = 0.35
+	launch_direction = launch_direction.normalized()
+	var initial_velocity := _planar_velocity + external_impulse + launch_direction * detached_part_launch_speed
+	detached_part.configure_from_visuals(part_name, source_visuals, initial_velocity)
+
+	var detach_parent := get_parent()
+	if detach_parent == null:
+		detach_parent = get_tree().current_scene
+	if detach_parent == null:
+		return
+
+	detach_parent.add_child(detached_part)
+	part_destroyed.emit(self, part_name, detached_part)
 
 
 func _get_move_input_vector() -> Vector2:
-	if not is_player_controlled:
+	if not is_player_controlled or _is_disabled:
 		return Vector2.ZERO
 
 	var keyboard_vector := Input.get_vector(
@@ -241,6 +415,177 @@ func _get_move_input_vector() -> Vector2:
 		return joypad_vector
 
 	return keyboard_vector
+
+
+func _get_leg_drive_multiplier() -> float:
+	return lerpf(0.22, 1.0, _get_pair_operational_ratio("left_leg", "right_leg"))
+
+
+func _get_leg_control_multiplier() -> float:
+	return lerpf(0.4, 1.0, _get_pair_operational_ratio("left_leg", "right_leg"))
+
+
+func _get_arm_power_multiplier() -> float:
+	if _is_disabled:
+		return 0.0
+
+	return lerpf(0.3, 1.0, _get_pair_operational_ratio("left_arm", "right_arm"))
+
+
+func _get_pair_operational_ratio(part_a: String, part_b: String) -> float:
+	var part_a_ratio := _get_part_operational_ratio(part_a)
+	var part_b_ratio := _get_part_operational_ratio(part_b)
+	return clampf((part_a_ratio + part_b_ratio) * 0.5, 0.0, 1.0)
+
+
+func _get_part_operational_ratio(part_name: String) -> float:
+	var health_ratio := get_part_health_ratio(part_name)
+	var energy_ratio := 1.0
+	if starting_energy_per_part > 0.0:
+		energy_ratio = clampf(float(part_energy.get(part_name, starting_energy_per_part)) / starting_energy_per_part, 0.5, 1.25)
+
+	return clampf(health_ratio * energy_ratio, 0.0, 1.0)
+
+
+func _select_part_from_world_direction(world_direction: Vector3) -> String:
+	var planar_direction := world_direction
+	planar_direction.y = 0.0
+	if planar_direction.length_squared() == 0.0:
+		return "left_leg"
+
+	var local_direction := global_transform.basis.inverse() * planar_direction.normalized()
+	var hits_front_half := local_direction.z <= 0.05
+	var hits_left_side := local_direction.x < 0.0
+	if hits_front_half:
+		return "left_arm" if hits_left_side else "right_arm"
+
+	return "left_leg" if hits_left_side else "right_leg"
+
+
+func _cache_visual_references() -> void:
+	_part_visual_nodes.clear()
+	for part_name in BODY_PARTS:
+		var nodes: Array[MeshInstance3D] = []
+		for relative_path in PART_VISUAL_PATHS.get(part_name, []):
+			var node := get_node_or_null(relative_path)
+			if node is MeshInstance3D:
+				nodes.append(node as MeshInstance3D)
+		_part_visual_nodes[part_name] = nodes
+
+	_core_visual_nodes.clear()
+	for relative_path in CORE_VISUAL_PATHS:
+		var node := get_node_or_null(relative_path)
+		if node is MeshInstance3D:
+			_core_visual_nodes.append(node as MeshInstance3D)
+
+
+func _prepare_visual_materials() -> void:
+	_material_base_values.clear()
+	for part_name in BODY_PARTS:
+		for visual_node in _part_visual_nodes.get(part_name, []):
+			_register_material_base_values(visual_node)
+
+	for visual_node in _core_visual_nodes:
+		_register_material_base_values(visual_node)
+
+
+func _register_material_base_values(mesh_instance: MeshInstance3D) -> void:
+	var material := mesh_instance.material_override
+	if material == null or not (material is StandardMaterial3D):
+		return
+
+	var duplicated_material := (material as StandardMaterial3D).duplicate()
+	mesh_instance.material_override = duplicated_material
+	_material_base_values[_material_key(mesh_instance)] = {
+		"albedo": duplicated_material.albedo_color,
+		"emission": duplicated_material.emission,
+		"emission_energy": duplicated_material.emission_energy_multiplier,
+	}
+
+
+func _refresh_visual_state() -> void:
+	for part_name in BODY_PARTS:
+		_refresh_part_visual_state(part_name)
+
+	_refresh_core_visuals()
+
+
+func _refresh_part_visual_state(part_name: String) -> void:
+	var visuals: Array[MeshInstance3D] = []
+	for visual_node in _part_visual_nodes.get(part_name, []):
+		if visual_node is MeshInstance3D:
+			visuals.append(visual_node as MeshInstance3D)
+	var health_ratio := get_part_health_ratio(part_name)
+	var flash_strength := float(_part_flash_strength.get(part_name, 0.0))
+	var should_be_visible := health_ratio > 0.0
+
+	for visual_node in visuals:
+		visual_node.visible = should_be_visible
+		if should_be_visible:
+			_apply_material_damage_tint(visual_node, health_ratio, flash_strength)
+
+
+func _refresh_core_visuals() -> void:
+	var intact_ratio := 1.0
+	if not BODY_PARTS.is_empty():
+		var alive_parts := 0.0
+		for part_name in BODY_PARTS:
+			alive_parts += get_part_health_ratio(part_name)
+		intact_ratio = alive_parts / BODY_PARTS.size()
+
+	for visual_node in _core_visual_nodes:
+		var material := visual_node.material_override as StandardMaterial3D
+		var base_values: Dictionary = _material_base_values.get(_material_key(visual_node), {})
+		if material == null or base_values.is_empty():
+			continue
+
+		var base_albedo: Color = base_values["albedo"]
+		var base_emission: Color = base_values["emission"]
+		var base_emission_energy: float = float(base_values["emission_energy"])
+		var damage_blend := (1.0 - intact_ratio) * 0.4
+		var disabled_blend := 0.55 if _is_disabled else 0.0
+		material.albedo_color = base_albedo.lerp(Color(0.09, 0.08, 0.08, 1.0), damage_blend + disabled_blend)
+		if material.emission_enabled:
+			var warning_color := Color(1.0, 0.28, 0.12, 1.0)
+			material.emission = base_emission.lerp(warning_color, damage_blend + disabled_blend)
+			material.emission_energy_multiplier = maxf(base_emission_energy, 0.12 + disabled_blend * 0.85)
+
+
+func _apply_material_damage_tint(mesh_instance: MeshInstance3D, health_ratio: float, flash_strength: float) -> void:
+	var material := mesh_instance.material_override as StandardMaterial3D
+	var base_values: Dictionary = _material_base_values.get(_material_key(mesh_instance), {})
+	if material == null or base_values.is_empty():
+		return
+
+	var base_albedo: Color = base_values["albedo"]
+	var base_emission: Color = base_values["emission"]
+	var base_emission_energy: float = float(base_values["emission_energy"])
+	var damage_color := Color(0.32, 0.1, 0.09, 1.0)
+	var flash_color := Color(1.0, 0.45, 0.18, 1.0)
+	var damage_blend := (1.0 - health_ratio) * 0.65
+
+	material.albedo_color = base_albedo.lerp(damage_color, damage_blend).lerp(flash_color, flash_strength * 0.65)
+	if material.emission_enabled:
+		material.emission = base_emission.lerp(flash_color, flash_strength * 0.85)
+		material.emission_energy_multiplier = maxf(base_emission_energy, flash_strength * 0.45)
+
+
+func _update_damage_visual_feedback(delta: float) -> void:
+	var any_flash_updated := false
+	for part_name in BODY_PARTS:
+		var flash_strength := float(_part_flash_strength.get(part_name, 0.0))
+		if flash_strength <= 0.0:
+			continue
+
+		_part_flash_strength[part_name] = maxf(flash_strength - delta * 4.5, 0.0)
+		any_flash_updated = true
+
+	if any_flash_updated:
+		_refresh_visual_state()
+
+
+func _material_key(mesh_instance: MeshInstance3D) -> String:
+	return str(mesh_instance.get_path())
 
 
 func _face_direction(direction: Vector3, delta: float) -> void:

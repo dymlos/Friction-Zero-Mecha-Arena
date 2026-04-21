@@ -1,6 +1,11 @@
 extends Node3D
 class_name Main
 
+const MatchController = preload("res://scripts/systems/match_controller.gd")
+const MatchHud = preload("res://scripts/ui/match_hud.gd")
+const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const DetachedPart = preload("res://scripts/robots/detached_part.gd")
+
 @onready var arena_root: Node3D = $ArenaRoot
 @onready var robot_root: Node3D = $RobotRoot
 @onready var systems: Node = $Systems
@@ -24,6 +29,8 @@ func _register_existing_robots() -> void:
 			match_controller.register_robot(child)
 			child.fell_into_void.connect(_on_robot_fell_into_void)
 			child.respawned.connect(_on_robot_respawned)
+			child.part_destroyed.connect(_on_robot_part_destroyed)
+			child.robot_disabled.connect(_on_robot_disabled)
 
 
 func _report_startup_structure() -> void:
@@ -41,3 +48,11 @@ func _on_robot_fell_into_void(robot: RobotBase) -> void:
 
 func _on_robot_respawned(robot: RobotBase) -> void:
 	ui.show_status("%s volvio al punto de prueba" % robot.display_name)
+
+
+func _on_robot_part_destroyed(robot: RobotBase, part_name: String, _detached_part: DetachedPart) -> void:
+	ui.show_status("%s perdio %s" % [robot.display_name, RobotBase.get_part_display_name(part_name)])
+
+
+func _on_robot_disabled(robot: RobotBase) -> void:
+	ui.show_status("%s quedo inutilizado" % robot.display_name)

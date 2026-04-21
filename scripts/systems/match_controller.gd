@@ -1,6 +1,9 @@
 extends Node
 class_name MatchController
 
+const MatchConfig = preload("res://scripts/systems/match_config.gd")
+const RobotBase = preload("res://scripts/robots/robot_base.gd")
+
 enum MatchMode { FFA, TEAMS }
 
 @export var match_mode: MatchMode = MatchMode.FFA

@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/robots/detached_part.gd" id="1_detached"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_part"]
+friction = 0.9
+bounce = 0.05
+
+[node name="DetachedPart" type="RigidBody3D"]
+script = ExtResource("1_detached")
+mass = 0.8
+physics_material_override = SubResource("PhysicsMaterial_part")
+contact_monitor = true
+max_contacts_reported = 4
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="LifetimeTimer" type="Timer" parent="."]
+one_shot = true
+wait_time = 10.0
+[connection signal="timeout" from="LifetimeTimer" to="." method="_on_lifetime_timer_timeout"]
