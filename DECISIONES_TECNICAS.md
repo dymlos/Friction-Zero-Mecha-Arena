@@ -299,6 +299,11 @@
    - `MatchController` ahora usa un `TransitionTimer` propio y `RobotBase` un `RespawnTimer` propio; ambos se pueden detener cuando `start_match()`, `reset_to_spawn()` o el reinicio manual invalidan la espera anterior.
    - Motivo: evitar callbacks stale, fugas en tests y reinicios dobles cuando el laboratorio cambia loadout o reinicia la partida antes de que venza una espera anterior.
 
+75. **Las stats de post-partida se agregan desde hooks ya existentes**
+   - `Main` reenvia a `MatchController` los eventos ya cableados de rescate (`part_restored`) y pickups de borde (`edge_*_pickup_collected`); `record_robot_elimination()` completa la telemetria con causas finales de baja.
+   - `MatchController` agrega solo durante ronda activa y expone lineas compactas `Stats | Competidor | rescates N | borde N | bajas N (...)` tanto en `RecapPanel` como en `MatchResultPanel`.
+   - Motivo: cumplir el pedido de “stats simples de fin de partida” sin abrir otra escena, sin duplicar estado en `Main` y sin permitir padding accidental durante el tiempo muerto posterior al cierre.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

@@ -93,10 +93,10 @@ text = ""
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
-offset_left = 232.0
-offset_top = 78.0
-offset_right = 804.0
-offset_bottom = 232.0
+offset_left = 214.0
+offset_top = 54.0
+offset_right = 822.0
+offset_bottom = 298.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_recap")
 
 [node name="Margin" type="MarginContainer" parent="Root/MatchResultPanel"]
@@ -119,7 +119,7 @@ text = ""
 
 [node name="MatchResultLabel" type="Label" parent="Root/MatchResultPanel/Margin/MatchResultVBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 88)
+custom_minimum_size = Vector2(0, 164)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.92549, 0.94902, 0.968627, 1)
 horizontal_alignment = 1

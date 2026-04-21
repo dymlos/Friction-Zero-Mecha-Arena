@@ -28,6 +28,7 @@ var _round_elimination_recap_entries: Array[String] = []
 var _competitor_scores: Dictionary = {}
 var _competitor_labels: Dictionary = {}
 var _competitor_archetype_labels: Dictionary = {}
+var _competitor_match_stats: Dictionary = {}
 var _competitor_order: Array[String] = []
 var _last_elimination_summary := ""
 var _round_status_line := ""
@@ -83,6 +84,7 @@ func start_match() -> void:
 	_competitor_scores.clear()
 	_competitor_labels.clear()
 	_competitor_archetype_labels.clear()
+	_competitor_match_stats.clear()
 	_competitor_order.clear()
 
 	for robot in registered_robots:
@@ -261,6 +263,8 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	if _match_over:
+		lines.append_array(_build_match_stats_lines())
 
 	for robot in registered_robots:
 		if not is_instance_valid(robot):
@@ -293,6 +297,7 @@ func get_match_result_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	lines.append_array(_build_match_stats_lines())
 
 	if _last_elimination_summary != "":
 		lines.append("Cierre | %s" % _last_elimination_summary)
@@ -331,6 +336,26 @@ func request_match_restart() -> bool:
 	return true
 
 
+func record_part_restoration(restored_robot: RobotBase, restored_by: RobotBase) -> void:
+	if restored_robot == null or restored_by == null:
+		return
+	if not _round_active or _round_reset_pending:
+		return
+	if restored_by == restored_robot:
+		return
+
+	_increment_robot_match_stat(restored_by, "rescues")
+
+
+func record_edge_pickup_collection(robot: RobotBase) -> void:
+	if robot == null:
+		return
+	if not _round_active or _round_reset_pending:
+		return
+
+	_increment_robot_match_stat(robot, "edge_pickups")
+
+
 func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> String:
 	if robot == null:
 		return ""
@@ -345,6 +370,7 @@ func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> Stri
 	_round_elimination_order_by_robot_id[robot_id] = _round_elimination_order_by_robot_id.size() + 1
 	_round_elimination_recap_entries.append(_build_compact_elimination_summary(robot, cause))
 	_last_elimination_summary = _build_elimination_summary(robot, cause)
+	_record_elimination_stats(robot, cause)
 	robot.hold_for_round_reset()
 
 	var winner_key := _find_last_competitor_standing()
@@ -442,6 +468,7 @@ func _register_competitor(robot: RobotBase) -> void:
 
 	_competitor_labels[competitor_key] = _get_competitor_label(robot)
 	_competitor_archetype_labels[competitor_key] = robot.get_archetype_label()
+	_ensure_competitor_match_stats(competitor_key)
 
 
 func _get_competitor_key(robot: RobotBase) -> String:
@@ -481,6 +508,59 @@ func _build_elimination_summary(robot: RobotBase, cause: EliminationCause) -> St
 	return "%s %s" % [robot.display_name, cause_label]
 
 
+func _build_match_stats_lines() -> Array[String]:
+	if not _match_over:
+		return []
+
+	var lines: Array[String] = []
+	for competitor_key in _competitor_order:
+		var stats_line := _build_competitor_match_stats_line(competitor_key)
+		if stats_line == "":
+			continue
+
+		lines.append(stats_line)
+
+	return lines
+
+
+func _build_competitor_match_stats_line(competitor_key: String) -> String:
+	var stats := _get_competitor_match_stats(competitor_key)
+	if stats.is_empty():
+		return ""
+
+	var segments: Array[String] = []
+	var rescues := int(stats.get("rescues", 0))
+	if rescues > 0:
+		segments.append("rescates %s" % rescues)
+	var edge_pickups := int(stats.get("edge_pickups", 0))
+	if edge_pickups > 0:
+		segments.append("borde %s" % edge_pickups)
+	segments.append(_build_elimination_stats_segment(stats))
+	return "Stats | %s | %s" % [_get_competitor_label_from_key(competitor_key), " | ".join(segments)]
+
+
+func _build_elimination_stats_segment(stats: Dictionary) -> String:
+	var total_eliminations := int(stats.get("eliminations", 0))
+	if total_eliminations <= 0:
+		return "bajas 0"
+
+	var breakdown: Array[String] = []
+	var void_eliminations := int(stats.get("void_eliminations", 0))
+	if void_eliminations > 0:
+		breakdown.append("%s vacio" % void_eliminations)
+	var explosion_eliminations := int(stats.get("explosion_eliminations", 0))
+	if explosion_eliminations > 0:
+		breakdown.append("%s explosion" % explosion_eliminations)
+	var unstable_eliminations := int(stats.get("unstable_explosion_eliminations", 0))
+	if unstable_eliminations > 0:
+		breakdown.append("%s explosion inestable" % unstable_eliminations)
+
+	if breakdown.is_empty():
+		return "bajas %s" % total_eliminations
+
+	return "bajas %s (%s)" % [total_eliminations, ", ".join(breakdown)]
+
+
 func _build_compact_elimination_summary(robot: RobotBase, cause: EliminationCause) -> String:
 	return "%s %s" % [robot.display_name, _get_elimination_cause_label(cause)]
 
@@ -503,6 +583,62 @@ func _get_elimination_cause_label(cause: int) -> String:
 		return "explosion inestable"
 
 	return ""
+
+
+func _ensure_competitor_match_stats(competitor_key: String) -> void:
+	if competitor_key == "":
+		return
+	if _competitor_match_stats.has(competitor_key):
+		return
+
+	_competitor_match_stats[competitor_key] = {
+		"rescues": 0,
+		"edge_pickups": 0,
+		"eliminations": 0,
+		"void_eliminations": 0,
+		"explosion_eliminations": 0,
+		"unstable_explosion_eliminations": 0,
+	}
+
+
+func _get_competitor_match_stats(competitor_key: String) -> Dictionary:
+	_ensure_competitor_match_stats(competitor_key)
+	return _competitor_match_stats.get(competitor_key, {})
+
+
+func _increment_robot_match_stat(robot: RobotBase, stat_name: String, amount: int = 1) -> void:
+	if robot == null or amount <= 0:
+		return
+
+	var competitor_key := _get_competitor_key(robot)
+	if competitor_key == "":
+		return
+
+	_increment_competitor_match_stat(competitor_key, stat_name, amount)
+
+
+func _increment_competitor_match_stat(competitor_key: String, stat_name: String, amount: int = 1) -> void:
+	if competitor_key == "" or amount <= 0:
+		return
+
+	_ensure_competitor_match_stats(competitor_key)
+	var stats := _get_competitor_match_stats(competitor_key)
+	stats[stat_name] = int(stats.get(stat_name, 0)) + amount
+	_competitor_match_stats[competitor_key] = stats
+
+
+func _record_elimination_stats(robot: RobotBase, cause: EliminationCause) -> void:
+	if robot == null:
+		return
+
+	_increment_robot_match_stat(robot, "eliminations")
+	match cause:
+		EliminationCause.VOID:
+			_increment_robot_match_stat(robot, "void_eliminations")
+		EliminationCause.EXPLOSION:
+			_increment_robot_match_stat(robot, "explosion_eliminations")
+		EliminationCause.UNSTABLE_EXPLOSION:
+			_increment_robot_match_stat(robot, "unstable_explosion_eliminations")
 
 
 func _find_last_competitor_standing() -> String:

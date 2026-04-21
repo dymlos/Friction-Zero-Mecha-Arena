@@ -411,6 +411,7 @@ func _on_robot_part_destroyed(robot: RobotBase, part_name: String, _detached_par
 
 
 func _on_robot_part_restored(robot: RobotBase, part_name: String, restored_by: RobotBase) -> void:
+	match_controller.record_part_restoration(robot, restored_by)
 	if restored_by == robot:
 		ui.show_status("%s recupero %s" % [robot.display_name, RobotBase.get_part_display_name(part_name)])
 		return
@@ -438,6 +439,7 @@ func _on_robot_exploded(robot: RobotBase) -> void:
 
 
 func _on_edge_repair_pickup_collected(robot: RobotBase, repaired_part_name: String) -> void:
+	match_controller.record_edge_pickup_collection(robot)
 	ui.show_status("%s estabilizo %s en borde" % [
 		robot.display_name,
 		RobotBase.get_part_display_name(repaired_part_name),
@@ -445,6 +447,7 @@ func _on_edge_repair_pickup_collected(robot: RobotBase, repaired_part_name: Stri
 
 
 func _on_edge_mobility_pickup_collected(robot: RobotBase, boost_duration: float) -> void:
+	match_controller.record_edge_pickup_collection(robot)
 	ui.show_status("%s activo impulso de borde (%.1fs)" % [
 		robot.display_name,
 		boost_duration,
@@ -452,6 +455,7 @@ func _on_edge_mobility_pickup_collected(robot: RobotBase, boost_duration: float)
 
 
 func _on_edge_energy_pickup_collected(robot: RobotBase, surge_duration: float) -> void:
+	match_controller.record_edge_pickup_collection(robot)
 	ui.show_status("%s recargo energia de borde (%.1fs)" % [
 		robot.display_name,
 		surge_duration,
@@ -459,6 +463,7 @@ func _on_edge_energy_pickup_collected(robot: RobotBase, surge_duration: float) -
 
 
 func _on_edge_pulse_pickup_collected(robot: RobotBase, item_name: String) -> void:
+	match_controller.record_edge_pickup_collection(robot)
 	var item_label := robot.get_carried_item_display_name()
 	if item_label == "":
 		item_label = item_name

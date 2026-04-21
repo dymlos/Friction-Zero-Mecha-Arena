@@ -3,6 +3,7 @@ extends SceneTree
 const MAIN_SCENE := preload("res://scenes/main/main.tscn")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
 
 var _failed := false
 
@@ -25,6 +26,7 @@ func _run() -> void:
 	var match_result_panel := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel") as Control
 	var match_result_title_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultTitleLabel") as Label
 	var match_result_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultLabel") as Label
+	var repair_pickup := _get_first_edge_repair_pickup() as EdgeRepairPickup
 	var robots := _get_scene_robots(main)
 	_assert(match_controller != null, "La escena principal deberia instanciar MatchController.")
 	_assert(recap_panel != null, "El HUD deberia exponer un panel de recap para cierres de match.")
@@ -33,8 +35,9 @@ func _run() -> void:
 	_assert(match_result_panel != null, "El HUD deberia exponer un panel dedicado al resultado final del match.")
 	_assert(match_result_title_label != null, "El resultado final deberia tener un titulo prominente.")
 	_assert(match_result_label != null, "El resultado final deberia detallar marcador y reinicio.")
+	_assert(repair_pickup != null, "La escena principal deberia seguir exponiendo al menos un pickup de borde para telemetria.")
 	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para el laboratorio 2v2.")
-	if match_controller == null or recap_panel == null or recap_title_label == null or recap_label == null or match_result_panel == null or match_result_title_label == null or match_result_label == null or robots.size() < 4:
+	if match_controller == null or recap_panel == null or recap_title_label == null or recap_label == null or match_result_panel == null or match_result_title_label == null or match_result_label == null or repair_pickup == null or robots.size() < 4:
 		await _cleanup_main(main)
 		_finish()
 		return
@@ -52,6 +55,12 @@ func _run() -> void:
 
 	for robot in robots:
 		robot.void_fall_y = -100.0
+
+	robots[0].apply_damage_to_part("left_arm", robots[0].max_part_health + 5.0)
+	var restored := robots[0].restore_part_from_return("left_arm", robots[1])
+	_assert(restored, "La prueba deberia poder registrar al menos un rescate antes del cierre del match.")
+	repair_pickup.pickup_collected.emit(robots[1], "left_arm")
+	await process_frame
 
 	_eliminate_team_two(robots)
 	await create_timer(0.05).timeout
@@ -106,6 +115,18 @@ func _run() -> void:
 	_assert(
 		match_result_label.text.contains("Equipo 1 gana la partida 2-0"),
 		"El panel final deberia reiterar el ganador del match."
+	)
+	_assert(
+		match_result_label.text.contains("Stats | Equipo 1 | rescates 1 | borde 1 | bajas 0"),
+		"El panel final deberia resumir rescates, borde y bajas sufridas del equipo ganador."
+	)
+	_assert(
+		match_result_label.text.contains("Stats | Equipo 2 | bajas 4 (4 vacio)"),
+		"El panel final deberia distinguir la causa acumulada de las bajas del rival a lo largo del match."
+	)
+	_assert(
+		recap_label.text.contains("Stats | Equipo 1 | rescates 1 | borde 1 | bajas 0"),
+		"El recap lateral deberia compartir la misma telemetria simple del cierre de match."
 	)
 	_assert(
 		match_result_label.text.contains("Reinicio | F5"),
@@ -173,6 +194,14 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 			robots.append(child as RobotBase)
 
 	return robots
+
+
+func _get_first_edge_repair_pickup() -> EdgeRepairPickup:
+	for node in Engine.get_main_loop().get_nodes_in_group("edge_repair_pickups"):
+		if node is EdgeRepairPickup:
+			return node as EdgeRepairPickup
+
+	return null
 
 
 func _assert(condition: bool, message: String) -> void:

@@ -69,7 +69,8 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - `MatchController` ahora expone un recap estructurado (`Decision`, `Marcador` y estado final por robot) para la ronda o partida cerrada
   - `MatchHud` lo dibuja en un `RecapPanel` lateral oculto durante la ronda activa, de modo que la pelea sigue limpia y el detalle aparece solo cuando ya importa entender por que se perdio
 - cierre de partida reforzado sin salir del laboratorio:
-  - cuando el match termina, `MatchHud` ahora suma un `MatchResultPanel` centrado con `Partida cerrada`, ganador, marcador final y `Reinicio | F5 ahora o Xs`
+  - cuando el match termina, `MatchHud` ahora suma un `MatchResultPanel` centrado con `Partida cerrada`, ganador, marcador final, lineas `Stats | Equipo ...` y `Reinicio | F5 ahora o Xs`
+  - `MatchController` agrega esa telemetria simple por competidor usando los hooks ya existentes de rescate, pickups de borde y causas finales de baja (`vacio`, `explosion`, `explosion inestable`)
   - `Main` permite reiniciar el laboratorio de inmediato con `F5` solo durante `_match_over`, manteniendo el recap lateral como detalle secundario en vez de abrir otra escena de post-partida
 - timers de reinicio/respawn ahora son propios y cancelables:
   - `MatchController` usa un `TransitionTimer` interno para reset de ronda y reinicio de match, en vez de `SceneTreeTimer` efimeros
@@ -80,7 +81,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - lectura diegética de daño modular: cada extremidad ya puede mostrar `Smoke` cuando está dañada y `Spark` cuando entra en estado crítico; ambos marcadores viven sobre la pieza, no en el HUD, y desaparecen al repararla o perderla.
 - validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
 - validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda, scoreboard y ahora tambien un resumen compacto del orden de bajas.
-- validacion automatizada del cierre de partida reforzado: `match_completion_test.gd` ahora cubre tambien el panel final + linea `Reinicio | F5...`, y `match_manual_restart_test.gd` verifica reinicio manual inmediato con score limpio sobre `main.tscn`.
+- validacion automatizada del cierre de partida reforzado: `match_completion_test.gd` ahora cubre tambien el panel final + stats simples + linea `Reinicio | F5...`, y `match_manual_restart_test.gd` verifica reinicio manual inmediato con score limpio sobre `main.tscn`.
 - validacion automatizada FFA: `ffa_mode_bootstrap_test.gd`, `ffa_lab_scene_test.gd` y `ffa_round_resolution_test.gd` comprueban que el laboratorio libre no hereda alianzas falsas del setup 2v2, mantiene el marcador individual y resuelve una ronda completa con ganador por robot
 - validacion automatizada de explosion inestable: `robot_unstable_explosion_test.gd` compara la variante base contra la version nacida en `Overdrive`, y `match_unstable_explosion_readability_test.gd` verifica su lectura compacta en `main.tscn`
 
@@ -302,8 +303,8 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - El HUD dual ya existe y ahora puede alternarse en runtime con `F1` sobre un override local; sigue pendiente decidir por playtest que modo conviene dejar por defecto en `Equipos` y `FFA`, y si hace falta persistencia/preset por modo ademas del toggle de laboratorio.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
-- El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats ni replay; por ahora el reemplazo es un `RecapPanel` corto dentro del mismo HUD.
-- La nueva lectura de bajas ya suma `Resumen | ...` al cierre de ronda y ahora también un `RecapPanel` dedicado entre rondas/partidas; todavía falta validar en playtest si ese contrato ya alcanza o si la versión final necesita una pantalla/post-partida más fuerte.
+- El cierre de match ya no es solo “ganador + reinicio”: ahora suma stats simples por competidor (`rescates`, `borde`, `bajas` por causa) dentro del mismo HUD; sigue faltando decidir por playtest si esa telemetria ya basta o si la version final pide otra capa de post-partida.
+- La nueva lectura de bajas ya suma `Resumen | ...`, `RecapPanel`, `MatchResultPanel` y ahora `Stats | ...`; todavía falta validar en playtest si ese contrato ya alcanza o si la versión final necesita una pantalla/post-partida más fuerte o un replay corto.
 - Se agregó el primer pickup universal de movilidad:
   - existe una escena nueva `edge_mobility_pickup.tscn` con pedestal persistente y cooldown visible
   - al tocarla, `RobotBase` activa una ventana breve de movilidad reforzada (`traccion + control`) sin tocar el sistema de energía ni agregar UI pesada
