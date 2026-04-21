@@ -262,6 +262,12 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var carry_indicator_pulse_speed := 6.5
 @export var carry_indicator_pulse_amount := 0.18
 @export var carry_indicator_rotation_speed := 1.3
+@export_group("Prototype Recovery Target Readability")
+@export var recovery_target_indicator_radius := 0.22
+@export var recovery_target_indicator_base_height := 1.18
+@export var recovery_target_indicator_bob_height := 0.06
+@export var recovery_target_indicator_pulse_speed := 4.8
+@export var recovery_target_indicator_pulse_amount := 0.12
 @export_group("Prototype Damage Readability")
 @export_range(0.4, 1.0, 0.05) var damage_feedback_threshold := 0.8
 @export_range(0.1, 0.8, 0.05) var critical_damage_feedback_threshold := 0.45
@@ -312,6 +318,9 @@ var _carried_part: DetachedPart = null
 var _carried_item_name := ""
 var _carry_indicator: MeshInstance3D = null
 var _carry_indicator_animation_time := 0.0
+var _recovery_target_indicator: MeshInstance3D = null
+var _recovery_target_indicator_animation_time := 0.0
+var _recoverable_detached_part_ids: Dictionary = {}
 var _last_indicator_payload_name := ""
 var _selected_energy_part_name := "left_arm"
 var _energy_shift_cooldown_remaining := 0.0
@@ -411,6 +420,11 @@ func has_carried_item() -> bool:
 
 func get_carried_item_name() -> String:
 	return _carried_item_name
+
+
+func has_recoverable_detached_parts() -> bool:
+	_prune_recoverable_detached_part_ids()
+	return not _recoverable_detached_part_ids.is_empty()
 
 
 func get_carried_item_display_name() -> String:
@@ -784,6 +798,34 @@ func store_carried_item(item_name: String) -> bool:
 	return true
 
 
+func register_recoverable_detached_part(detached_part: DetachedPart) -> void:
+	if detached_part == null:
+		return
+
+	_recoverable_detached_part_ids[detached_part.get_instance_id()] = true
+	_refresh_recovery_target_indicator()
+
+
+func unregister_recoverable_detached_part(detached_part: DetachedPart) -> void:
+	if detached_part == null:
+		return
+
+	_recoverable_detached_part_ids.erase(detached_part.get_instance_id())
+	_refresh_recovery_target_indicator()
+
+
+func _prune_recoverable_detached_part_ids() -> void:
+	var stale_ids: Array[int] = []
+	for detached_part_id in _recoverable_detached_part_ids.keys():
+		var detached_part := instance_from_id(int(detached_part_id))
+		if detached_part is DetachedPart:
+			continue
+		stale_ids.append(int(detached_part_id))
+
+	for detached_part_id in stale_ids:
+		_recoverable_detached_part_ids.erase(detached_part_id)
+
+
 func use_carried_item() -> bool:
 	if not has_carried_item():
 		return false
@@ -821,6 +863,7 @@ func _ready() -> void:
 	_prepare_visual_materials()
 	_setup_damage_feedback_nodes()
 	_setup_carry_indicator()
+	_setup_recovery_target_indicator()
 	disabled_explosion_timer.wait_time = disabled_explosion_delay
 	_reset_control_pose()
 	reset_modular_state()
@@ -899,6 +942,11 @@ func _physics_process(delta: float) -> void:
 		fall_into_void()
 
 
+func _process(delta: float) -> void:
+	_refresh_recovery_target_indicator()
+	_update_recovery_target_indicator_animation(delta)
+
+
 func reset_modular_state() -> void:
 	_is_disabled = false
 	disabled_explosion_timer.stop()
@@ -918,6 +966,7 @@ func reset_modular_state() -> void:
 	_clear_active_control_beacon()
 	_disabled_explosion_is_unstable = false
 	_last_disabled_explosion_was_unstable = false
+	_recoverable_detached_part_ids.clear()
 	_carried_item_name = ""
 	for part_name in BODY_PARTS:
 		part_health[part_name] = max_part_health
@@ -2040,6 +2089,7 @@ func _register_material_base_values(mesh_instance: MeshInstance3D) -> void:
 
 func _refresh_visual_state() -> void:
 	_refresh_carry_indicator()
+	_refresh_recovery_target_indicator()
 	for part_name in BODY_PARTS:
 		_refresh_part_visual_state(part_name)
 
@@ -2126,6 +2176,34 @@ func _setup_carry_indicator() -> void:
 	add_child(_carry_indicator)
 
 
+func _setup_recovery_target_indicator() -> void:
+	var indicator_mesh := CylinderMesh.new()
+	indicator_mesh.top_radius = recovery_target_indicator_radius
+	indicator_mesh.bottom_radius = recovery_target_indicator_radius
+	indicator_mesh.height = 0.04
+	indicator_mesh.radial_segments = 24
+	indicator_mesh.rings = 1
+
+	var identity_color := get_identity_color()
+	var indicator_material := StandardMaterial3D.new()
+	indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	indicator_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	indicator_material.no_depth_test = true
+	indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	indicator_material.albedo_color = Color(identity_color.r, identity_color.g, identity_color.b, 0.8)
+	indicator_material.emission_enabled = true
+	indicator_material.emission = identity_color
+	indicator_material.emission_energy_multiplier = 0.95
+
+	_recovery_target_indicator = MeshInstance3D.new()
+	_recovery_target_indicator.name = "RecoveryTargetIndicator"
+	_recovery_target_indicator.mesh = indicator_mesh
+	_recovery_target_indicator.material_override = indicator_material
+	_recovery_target_indicator.position = Vector3(0.0, recovery_target_indicator_base_height, 0.0)
+	_recovery_target_indicator.visible = false
+	add_child(_recovery_target_indicator)
+
+
 func _refresh_carry_indicator() -> void:
 	if _carry_indicator == null:
 		return
@@ -2141,6 +2219,13 @@ func _refresh_carry_indicator() -> void:
 		_last_indicator_payload_name = payload_name
 
 	_carry_indicator.visible = true
+
+
+func _refresh_recovery_target_indicator() -> void:
+	if _recovery_target_indicator == null:
+		return
+
+	_recovery_target_indicator.visible = has_recoverable_detached_parts() and not _is_respawning
 
 
 func _refresh_carry_indicator_color(part_name: String) -> void:
@@ -2173,6 +2258,24 @@ func _update_carry_indicator_animation(delta: float) -> void:
 	_carry_indicator.scale = Vector3(pulse, 1.0 + pulse * 0.25, pulse)
 	_carry_indicator.position.y = carry_indicator_base_height + wave * carry_indicator_bob_height
 	_carry_indicator.rotation.y = fmod(_carry_indicator.rotation.y + carry_indicator_rotation_speed * delta, TAU)
+
+
+func _update_recovery_target_indicator_animation(delta: float) -> void:
+	if _recovery_target_indicator == null:
+		return
+	if not _recovery_target_indicator.visible:
+		_recovery_target_indicator_animation_time = 0.0
+		_recovery_target_indicator.scale = Vector3.ONE
+		_recovery_target_indicator.rotation = Vector3.ZERO
+		_recovery_target_indicator.position.y = recovery_target_indicator_base_height
+		return
+
+	_recovery_target_indicator_animation_time += delta
+	var wave := (sin(_recovery_target_indicator_animation_time * recovery_target_indicator_pulse_speed) + 1.0) * 0.5
+	var pulse := 1.0 + (wave - 0.5) * recovery_target_indicator_pulse_amount * 2.0
+	_recovery_target_indicator.scale = Vector3(pulse, 1.0, pulse)
+	_recovery_target_indicator.position.y = recovery_target_indicator_base_height + wave * recovery_target_indicator_bob_height
+	_recovery_target_indicator.rotation.y = fmod(_recovery_target_indicator.rotation.y + delta * 0.7, TAU)
 
 
 func _get_indicator_payload_name() -> String:

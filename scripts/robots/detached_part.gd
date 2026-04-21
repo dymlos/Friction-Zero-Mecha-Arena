@@ -47,8 +47,13 @@ func _ready() -> void:
 	_starting_collision_mask = collision_mask
 	_pickup_ready_at = Time.get_ticks_msec() / 1000.0 + pickup_delay
 	_setup_recovery_indicator()
+	_notify_owner_recovery_tracking(true)
 	lifetime_timer.start(cleanup_time)
 	_refresh_recovery_indicator()
+
+
+func _exit_tree() -> void:
+	_notify_owner_recovery_tracking(false)
 
 
 func _physics_process(_delta: float) -> void:
@@ -195,6 +200,7 @@ func try_deliver_to_robot(target_robot: Node, delivered_by: Node = null) -> bool
 	if carrier_robot != null and is_instance_valid(carrier_robot) and carrier_robot.has_method("release_detached_part"):
 		carrier_robot.release_detached_part(self)
 
+	_notify_owner_recovery_tracking(false)
 	queue_free()
 	return true
 
@@ -204,6 +210,7 @@ func deny_to_void() -> void:
 		carrier_robot.release_detached_part(self)
 
 	recovery_lost.emit(self, "void")
+	_notify_owner_recovery_tracking(false)
 	queue_free()
 
 
@@ -214,6 +221,19 @@ func _ensure_runtime_nodes() -> void:
 		visuals_root = get_node_or_null("Visuals")
 	if lifetime_timer == null:
 		lifetime_timer = get_node_or_null("LifetimeTimer")
+
+
+func _notify_owner_recovery_tracking(should_register: bool) -> void:
+	if original_robot == null or not is_instance_valid(original_robot):
+		return
+
+	if should_register:
+		if original_robot.has_method("register_recoverable_detached_part"):
+			original_robot.register_recoverable_detached_part(self)
+		return
+
+	if original_robot.has_method("unregister_recoverable_detached_part"):
+		original_robot.unregister_recoverable_detached_part(self)
 
 
 func _is_pickup_ready() -> bool:
@@ -356,4 +376,5 @@ func _get_owner_identity_color() -> Color:
 
 func _on_lifetime_timer_timeout() -> void:
 	recovery_lost.emit(self, "timeout")
+	_notify_owner_recovery_tracking(false)
 	queue_free()

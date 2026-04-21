@@ -264,19 +264,23 @@
    - `DetachedPart` suma un `OwnershipIndicator` fino que reutiliza ese mismo color sobre la pieza caída, separado del disco de recuperación temporal.
    - Motivo: el laboratorio ya tenía urgencia de rescate (`RecoveryIndicator`) y labels en roster, pero seguía faltando distinguir rápido “quién es quién” y “de quién es esta pieza” en pantalla compartida; reutilizar acentos existentes + un aro mínimo conserva claridad y evita abrir otra capa de UI.
 
-65. **La primera skill propia reutiliza `PulseBolt` y la accion de utilidad ya existente**
+66. **El objetivo de retorno tambien se marca en mundo**
+   - `DetachedPart` ahora registra/desregistra su disponibilidad contra `RobotBase`, y el robot dueño crea un `RecoveryTargetIndicator` runtime sobre el chasis mientras exista al menos una pieza propia recuperable.
+   - Motivo: el disco de urgencia y el aro de pertenencia ya explicaban “esta pieza importa” y “de quién es”, pero seguía faltando leer rápido adónde devolverla en cámara compartida; un marcador chico sobre el robot dueño completa el triángulo pieza-dueno-portador sin abrir otra UI.
+
+67. **La primera skill propia reutiliza `PulseBolt` y la accion de utilidad ya existente**
    - `RobotArchetypeConfig` ahora puede declarar `core_skill_type/label/cargas/recarga`, y `RobotBase` consume esa info para disparar una skill desde `throw_part` cuando no lleva una pieza.
    - Motivo: abrir un primer arquetipo Poke/Skillshot sin sumar botones nuevos, manteniendo la regla importante de que cargar una parte bloquea otras habilidades activas.
 
-66. **`Aguja` se expone primero en FFA, no en el laboratorio 2v2**
+68. **`Aguja` se expone primero en FFA, no en el laboratorio 2v2**
    - `main_ffa.tscn` reemplaza el slot de `Grua` por `Aguja`, mientras `main.tscn` conserva `Ariete/Grua/Cizalla/Patin` para seguir priorizando rescate aliado en equipos.
    - Motivo: FFA gana oportunismo y poke legible sin debilitar el laboratorio 2v2 que hoy valida mejor asistencia/recuperacion.
 
-67. **`Ancla` completa Control/Zona con una baliza persistente corta**
+69. **`Ancla` completa Control/Zona con una baliza persistente corta**
    - `RobotArchetypeConfig.CoreSkillType` ahora tambien puede ser `CONTROL_BEACON`, y `RobotBase` lo resuelve desplegando `ControlBeacon`, una zona breve que ralentiza drive/control de rivales dentro del area.
    - Motivo: cerrar el sexto arquetipo documentado con el cambio mas chico posible, reutilizando la misma accion de utilidad y manteniendo el efecto claramente subordinado al combate de choque.
 
-68. **Solo una baliza activa por robot para proteger la claridad**
+70. **Solo una baliza activa por robot para proteger la claridad**
    - Al redeplegar `Baliza`, `RobotBase` libera la anterior antes de crear la nueva; `main_ffa.tscn` expone `Ancla` en lugar de `Cizalla`, manteniendo el 2v2 base intacto.
    - Motivo: evitar stack de hazards, mantener la lectura limpia en pantalla compartida y abrir el sexto rol principalmente donde FFA gana mas con control y oportunismo.
 
