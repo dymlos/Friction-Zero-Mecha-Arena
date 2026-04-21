@@ -289,6 +289,20 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					support_ship.get_node_or_null("SupportTargetIndicator") != null,
 					"La nave de apoyo deberia mostrar un indicador diegetico sobre el objetivo seleccionado."
 				)
+				var support_target_floor_indicator := support_ship.get_node_or_null("SupportTargetFloorIndicator") as MeshInstance3D
+				_assert(
+					support_target_floor_indicator != null,
+					"La nave de apoyo deberia marcar tambien el objetivo seleccionado a nivel piso para que siga leyendose en pantalla compartida."
+				)
+				if support_target_floor_indicator != null:
+					_assert(
+						support_target_floor_indicator.visible,
+						"La marca de piso deberia activarse mientras exista una carga de apoyo con objetivo valido."
+					)
+					_assert(
+						support_target_floor_indicator.global_position.distance_to(enemy_robot.global_position) < 0.2,
+						"La marca de piso deberia seguir al rival seleccionado, no quedarse pegada a la nave."
+					)
 				if support_ship.has_method("get_selected_target_robot"):
 					_assert(
 						support_ship.call("get_selected_target_robot") == enemy_robot,
@@ -313,6 +327,11 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					roster_label.text.contains(second_enemy_robot.display_name),
 					"Tras ciclar el objetivo, el roster deberia actualizar el rival seleccionado."
 				)
+				if support_target_floor_indicator != null:
+					_assert(
+						support_target_floor_indicator.global_position.distance_to(second_enemy_robot.global_position) < 0.2,
+						"Al ciclar objetivo, la marca de piso deberia moverse junto al nuevo rival seleccionado."
+					)
 
 				Input.action_press("p2_throw_part")
 				await _wait_frames(2)
@@ -337,6 +356,11 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					_assert(
 						not interference_range_indicator.visible,
 						"Tras gastar la carga, el telegraph de rango deberia apagarse otra vez."
+					)
+				if support_target_floor_indicator != null:
+					_assert(
+						not support_target_floor_indicator.visible,
+						"Tras gastar la carga, la marca de piso del objetivo deberia apagarse otra vez."
 					)
 
 		var support_gates := get_nodes_in_group("support_lane_gates")

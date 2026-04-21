@@ -22,6 +22,10 @@ signal state_changed(support_ship: PilotSupportShip)
 @export_range(1.0, 12.0, 0.5) var target_indicator_pulse_speed := 4.8
 @export_range(0.0, 0.3, 0.01) var target_indicator_pulse_amount := 0.18
 @export_range(0.05, 0.5, 0.01) var target_indicator_size := 0.18
+@export_range(-0.2, 0.3, 0.01) var target_floor_indicator_height := 0.04
+@export_range(0.4, 2.0, 0.05) var target_floor_indicator_radius := 0.6
+@export_range(0.01, 0.12, 0.01) var target_floor_indicator_thickness := 0.03
+@export_range(0.0, 0.2, 0.01) var target_floor_indicator_pulse_amount := 0.08
 @export_group("Interference Readability")
 @export_range(-1.0, 0.2, 0.01) var interference_range_indicator_height := -0.5
 @export_range(0.01, 0.12, 0.01) var interference_range_indicator_thickness := 0.03
@@ -49,6 +53,7 @@ func _ready() -> void:
 	_duplicate_runtime_material(status_ring_visual)
 	_duplicate_runtime_material(status_pulse_visual)
 	_ensure_support_target_indicator()
+	_ensure_support_target_floor_indicator()
 	_ensure_interference_range_indicator()
 	_refresh_visuals()
 
@@ -163,6 +168,7 @@ func _physics_process(delta: float) -> void:
 	target_selection_changed = _refresh_target_selection() or target_selection_changed
 	_update_status_beacon(delta)
 	_update_target_indicator(delta)
+	_update_target_floor_indicator()
 	_update_interference_range_indicator()
 	_try_collect_support_pickup()
 	if owner_robot.is_player_support_action_just_pressed():
@@ -413,6 +419,33 @@ func _ensure_support_target_indicator() -> void:
 	add_child(indicator)
 
 
+func _ensure_support_target_floor_indicator() -> void:
+	if get_node_or_null("SupportTargetFloorIndicator") != null:
+		return
+
+	var indicator := MeshInstance3D.new()
+	indicator.name = "SupportTargetFloorIndicator"
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 0.5
+	mesh.bottom_radius = 0.5
+	mesh.height = 1.0
+	mesh.radial_segments = 32
+	mesh.rings = 1
+	indicator.mesh = mesh
+	indicator.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	indicator.rotation_degrees = Vector3(90.0, 0.0, 0.0)
+	indicator.visible = false
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.no_depth_test = true
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.emission_enabled = true
+	material.roughness = 0.2
+	indicator.material_override = material
+	add_child(indicator)
+
+
 func _ensure_interference_range_indicator() -> void:
 	if get_node_or_null("InterferenceRangeIndicator") != null:
 		return
@@ -478,6 +511,44 @@ func _update_target_indicator(delta: float) -> void:
 	material.albedo_color = indicator_color
 	material.emission = indicator_color
 	material.emission_energy_multiplier = emission_boost
+
+
+func _update_target_floor_indicator() -> void:
+	var indicator := get_node_or_null("SupportTargetFloorIndicator") as MeshInstance3D
+	if indicator == null:
+		return
+
+	var target_robot := get_selected_target_robot()
+	if not has_support_payload() or target_robot == null:
+		indicator.visible = false
+		return
+
+	var wave := (sin(_target_indicator_phase) + 1.0) * 0.5
+	var pulse_scale := 1.0 + wave * target_floor_indicator_pulse_amount
+	indicator.visible = true
+	indicator.global_position = target_robot.global_position + Vector3(0.0, target_floor_indicator_height, 0.0)
+	indicator.scale = Vector3(
+		target_floor_indicator_radius * 2.0 * pulse_scale,
+		target_floor_indicator_thickness,
+		target_floor_indicator_radius * 2.0 * pulse_scale
+	)
+
+	var accent_color := _get_support_payload_color()
+	var in_range := _support_payload_name != PilotSupportPickup.PAYLOAD_INTERFERENCE or _is_target_in_interference_range(target_robot)
+	var indicator_color := accent_color.darkened(0.15)
+	var emission_boost := 0.78
+	if in_range:
+		indicator_color = accent_color.lightened(0.08)
+		emission_boost = 1.12
+
+	var material := indicator.material_override as StandardMaterial3D
+	if material == null:
+		return
+
+	indicator_color.a = 0.26 if in_range else 0.12
+	material.albedo_color = indicator_color
+	material.emission = accent_color
+	material.emission_energy_multiplier = emission_boost if in_range else 0.3
 
 
 func _update_interference_range_indicator() -> void:

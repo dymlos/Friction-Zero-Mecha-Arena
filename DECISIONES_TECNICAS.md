@@ -441,6 +441,10 @@
    - `PilotSupportShip` ahora crea `InterferenceRangeIndicator` runtime: un cilindro fino orientado sobre el piso, visible solo cuando el payload cargado es `interference`, escalado con `support_interference_range * 2` y atenuado cuando el objetivo seleccionado aun queda fuera del radio real.
    - Motivo: con solo el `SupportTargetIndicator` atenuado, el gating espacial de `interferencia` seguia siendo facil de perder en pantalla compartida. Un anillo sobrio pegado a la nave explica el alcance real sin agregar otro panel ni ruido persistente cuando la carga no aplica.
 
+95. **El objetivo del soporte queda marcado tambien a nivel piso**
+   - `PilotSupportShip` ahora crea `SupportTargetFloorIndicator` runtime: un anillo fino y top-level que sigue al robot seleccionado, reaprovecha el color del payload y tambien se atenúa cuando `interferencia` sigue fuera de rango.
+   - Motivo: el marcador flotante resolvia “quien” pero no siempre “donde” en caos de pantalla compartida. Una marca sobria pegada al piso mantiene el target legible sin HUD extra ni tether entre nave y robot.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
