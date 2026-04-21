@@ -279,6 +279,11 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var recovery_target_indicator_bob_height := 0.06
 @export var recovery_target_indicator_pulse_speed := 4.8
 @export var recovery_target_indicator_pulse_amount := 0.12
+@export_group("Prototype Lab Readability")
+@export var lab_selection_indicator_radius := 0.88
+@export var lab_selection_indicator_height := 0.04
+@export_range(0.0, 0.2, 0.01) var lab_selection_indicator_pulse_amount := 0.08
+@export_range(1.0, 10.0, 0.5) var lab_selection_indicator_pulse_speed := 4.0
 @export_group("Prototype Damage Readability")
 @export_range(0.4, 1.0, 0.05) var damage_feedback_threshold := 0.8
 @export_range(0.1, 0.8, 0.05) var critical_damage_feedback_threshold := 0.45
@@ -339,6 +344,8 @@ var _carry_return_indicator: MeshInstance3D = null
 var _carry_indicator_animation_time := 0.0
 var _recovery_target_indicator: MeshInstance3D = null
 var _recovery_target_indicator_animation_time := 0.0
+var _lab_selection_indicator: MeshInstance3D = null
+var _lab_selection_indicator_animation_time := 0.0
 var _disabled_warning_indicator: MeshInstance3D = null
 var _disabled_warning_indicator_animation_time := 0.0
 var _recoverable_detached_part_ids: Dictionary = {}
@@ -366,6 +373,7 @@ var _disabled_explosion_is_unstable := false
 var _last_disabled_explosion_was_unstable := false
 var _archetype_base_values: Dictionary = {}
 var _archetype_accent_root: Node3D = null
+var _is_lab_selected := false
 
 @onready var disabled_explosion_timer: Timer = $DisabledExplosionTimer
 @onready var upper_body_pivot: Node3D = $UpperBodyPivot
@@ -476,6 +484,15 @@ func get_roster_display_name() -> String:
 		return display_name
 
 	return "%s / %s" % [display_name, archetype_label]
+
+
+func set_lab_selected(is_selected: bool) -> void:
+	_is_lab_selected = is_selected
+	_refresh_lab_selection_indicator()
+
+
+func is_lab_selected() -> bool:
+	return _is_lab_selected
 
 
 func get_active_part_count() -> int:
@@ -959,6 +976,7 @@ func _ready() -> void:
 	_setup_damage_feedback_nodes()
 	_setup_carry_indicator()
 	_setup_recovery_target_indicator()
+	_setup_lab_selection_indicator()
 	_setup_disabled_warning_indicator()
 	disabled_explosion_timer.wait_time = disabled_explosion_delay
 	_reset_control_pose()
@@ -1042,6 +1060,7 @@ func _process(delta: float) -> void:
 	_refresh_carry_return_indicator()
 	_refresh_recovery_target_indicator()
 	_update_recovery_target_indicator_animation(delta)
+	_update_lab_selection_indicator(delta)
 	_update_disabled_warning_indicator(delta)
 	_update_core_skill_readiness_visuals(delta)
 
@@ -2391,6 +2410,7 @@ func _refresh_visual_state() -> void:
 	_refresh_carry_indicator()
 	_refresh_carry_return_indicator()
 	_refresh_recovery_target_indicator()
+	_refresh_lab_selection_indicator()
 	_refresh_disabled_warning_indicator()
 	for part_name in BODY_PARTS:
 		_refresh_part_visual_state(part_name)
@@ -2557,6 +2577,33 @@ func _setup_recovery_target_indicator() -> void:
 	add_child(_recovery_target_indicator)
 
 
+func _setup_lab_selection_indicator() -> void:
+	var indicator_mesh := CylinderMesh.new()
+	indicator_mesh.top_radius = lab_selection_indicator_radius
+	indicator_mesh.bottom_radius = lab_selection_indicator_radius
+	indicator_mesh.height = 0.035
+	indicator_mesh.radial_segments = 32
+	indicator_mesh.rings = 1
+
+	var indicator_material := StandardMaterial3D.new()
+	indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	indicator_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	indicator_material.no_depth_test = true
+	indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	indicator_material.albedo_color = Color(0.9, 0.96, 1.0, 0.24)
+	indicator_material.emission_enabled = true
+	indicator_material.emission = Color(0.72, 0.92, 1.0, 1.0)
+	indicator_material.emission_energy_multiplier = 0.85
+
+	_lab_selection_indicator = MeshInstance3D.new()
+	_lab_selection_indicator.name = "LabSelectionIndicator"
+	_lab_selection_indicator.mesh = indicator_mesh
+	_lab_selection_indicator.material_override = indicator_material
+	_lab_selection_indicator.position = Vector3(0.0, lab_selection_indicator_height, 0.0)
+	_lab_selection_indicator.visible = false
+	add_child(_lab_selection_indicator)
+
+
 func _setup_disabled_warning_indicator() -> void:
 	var indicator_mesh := CylinderMesh.new()
 	indicator_mesh.top_radius = 1.0
@@ -2607,6 +2654,27 @@ func _refresh_recovery_target_indicator() -> void:
 		return
 
 	_recovery_target_indicator.visible = has_recoverable_detached_parts() and not _is_respawning
+
+
+func _refresh_lab_selection_indicator() -> void:
+	if _lab_selection_indicator == null:
+		return
+
+	var should_show := _is_lab_selected and not _is_respawning
+	_lab_selection_indicator.visible = should_show
+	if not should_show:
+		_lab_selection_indicator.scale = Vector3.ONE
+		_lab_selection_indicator.position.y = lab_selection_indicator_height
+		return
+
+	var indicator_material := _lab_selection_indicator.material_override as StandardMaterial3D
+	if indicator_material == null:
+		return
+
+	var cue_color := get_identity_color().lerp(Color(0.96, 0.98, 1.0, 1.0), 0.45)
+	indicator_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.28)
+	indicator_material.emission = cue_color
+	indicator_material.emission_energy_multiplier = 0.95
 
 
 func _refresh_disabled_warning_indicator() -> void:
@@ -2754,6 +2822,33 @@ func _update_recovery_target_indicator_animation(delta: float) -> void:
 	_recovery_target_indicator.scale = Vector3(pulse, 1.0, pulse)
 	_recovery_target_indicator.position.y = recovery_target_indicator_base_height + wave * recovery_target_indicator_bob_height
 	_recovery_target_indicator.rotation.y = fmod(_recovery_target_indicator.rotation.y + delta * 0.7, TAU)
+
+
+func _update_lab_selection_indicator(delta: float) -> void:
+	if _lab_selection_indicator == null:
+		return
+	if not _lab_selection_indicator.visible:
+		_lab_selection_indicator_animation_time = 0.0
+		_lab_selection_indicator.scale = Vector3.ONE
+		_lab_selection_indicator.rotation = Vector3.ZERO
+		_lab_selection_indicator.position.y = lab_selection_indicator_height
+		return
+
+	_lab_selection_indicator_animation_time += delta
+	var wave := (sin(_lab_selection_indicator_animation_time * lab_selection_indicator_pulse_speed) + 1.0) * 0.5
+	var pulse := 1.0 + (wave - 0.5) * lab_selection_indicator_pulse_amount * 2.0
+	_lab_selection_indicator.scale = Vector3(pulse, 1.0, pulse)
+	_lab_selection_indicator.position.y = lab_selection_indicator_height + wave * 0.02
+	_lab_selection_indicator.rotation.y = fmod(_lab_selection_indicator.rotation.y + delta * 0.55, TAU)
+
+	var indicator_material := _lab_selection_indicator.material_override as StandardMaterial3D
+	if indicator_material == null:
+		return
+
+	var cue_color := get_identity_color().lerp(Color(0.96, 0.98, 1.0, 1.0), 0.45)
+	indicator_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.22 + wave * 0.1)
+	indicator_material.emission = cue_color
+	indicator_material.emission_energy_multiplier = 0.95 + wave * 0.45
 
 
 func _update_disabled_warning_indicator(delta: float) -> void:

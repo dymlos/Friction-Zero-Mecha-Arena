@@ -26,6 +26,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - `Main` puede asignar slots concretos a Hard y el HUD deja visible el mapping activo por slot en el estado inicial; el roster mantiene esa referencia durante la ronda
 - selector runtime de laboratorio para comparar loadouts sin editar escenas
   - `Main` ahora deja ciclar slot/arquetipo/modo con `F2/F3/F4`, reinicia el match completo tras cada cambio y mantiene sincronizados roster, marcador FFA y la linea persistente `Lab | ...`
+  - el slot elegido por ese selector ahora tambien prende `LabSelectionIndicator`, un anillo diegético sobrio a nivel piso sobre el robot activo, para que la referencia no dependa solo del texto del HUD
   - `RobotBase` ya puede reaplicar un `RobotArchetypeConfig` en runtime recuperando primero sus valores base, para que el cambio de arquetipo no acumule multiplicadores stale
   - `MatchController.start_match()` ahora invalida resets/restarts pendientes antes de recomenzar, evitando que el selector runtime deje timers viejos disparando sobre el laboratorio nuevo
 - partes desprendidas con propietario original, pickup por cercania y retorno parcial

@@ -67,6 +67,7 @@ func _ready() -> void:
 	_register_existing_robots()
 	match_controller.start_match()
 	_apply_match_pressure_to_arena()
+	_sync_lab_selector_visuals()
 	_report_startup_structure()
 	ui.show_status(_build_hud_toggle_status())
 	_refresh_hud()
@@ -123,6 +124,7 @@ func cycle_lab_selector_slot() -> void:
 	var selected_index := _get_selected_lab_robot_index(robots)
 	selected_index = wrapi(selected_index + 1, 0, robots.size())
 	_lab_selected_player_slot = robots[selected_index].player_index
+	_sync_lab_selector_visuals()
 	ui.show_status("Lab: %s" % _get_selected_lab_robot_brief())
 	_refresh_hud()
 
@@ -837,6 +839,7 @@ func _apply_lab_runtime_loadout(
 	match_controller.start_match()
 	_applying_lab_selector_reset = false
 
+	_sync_lab_selector_visuals()
 	ui.show_status("Lab: %s" % _get_selected_lab_robot_brief())
 	_refresh_hud()
 
@@ -866,6 +869,16 @@ func _get_lab_robot_brief(robot: RobotBase) -> String:
 		archetype_label = "Base"
 	var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
 	return "P%s %s %s" % [robot.player_index, archetype_label, mode_label]
+
+
+func _sync_lab_selector_visuals() -> void:
+	var robots := _get_scene_robots()
+	if robots.is_empty():
+		return
+
+	var selected_robot := _get_selected_lab_robot()
+	for robot in robots:
+		robot.set_lab_selected(lab_runtime_selector_enabled and robot == selected_robot)
 
 
 func _build_allowed_edge_pickup_ids() -> PackedStringArray:

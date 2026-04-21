@@ -57,6 +57,14 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 	_assert(initial_summary.contains("Ariete"), "El resumen inicial deberia reflejar el arquetipo base del slot 1.")
 	_assert(initial_summary.contains("Easy"), "El selector runtime deberia reflejar el modo de control inicial.")
 	_assert((round_label as Label).text.contains("Lab |"), "El HUD deberia dejar visible el selector runtime en el laboratorio.")
+	_assert(robots[0].has_method("is_lab_selected"), "RobotBase deberia exponer si el selector runtime lo tiene elegido.")
+	if robots[0].has_method("is_lab_selected"):
+		_assert(bool(robots[0].call("is_lab_selected")), "El slot inicial deberia quedar marcado como seleccionado.")
+		_assert(not bool(robots[1].call("is_lab_selected")), "Solo un robot deberia cargar la marca del selector runtime al inicio.")
+	var selection_indicator := robots[0].get_node_or_null("LabSelectionIndicator") as MeshInstance3D
+	_assert(selection_indicator != null, "El robot seleccionado deberia exponer una pista diegetica de selector runtime.")
+	if selection_indicator != null:
+		_assert(selection_indicator.visible, "La pista diegetica del selector runtime deberia arrancar visible sobre el slot elegido.")
 
 	main.call("cycle_selected_lab_archetype")
 	await process_frame
@@ -97,6 +105,13 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 		String(main.call("get_lab_selector_summary_line")).contains("P2"),
 		"El selector runtime deberia poder moverse al siguiente slot."
 	)
+	if robots[0].has_method("is_lab_selected") and robots[1].has_method("is_lab_selected"):
+		_assert(not bool(robots[0].call("is_lab_selected")), "Al cambiar de slot la seleccion anterior deberia apagarse.")
+		_assert(bool(robots[1].call("is_lab_selected")), "El nuevo slot elegido deberia prender su pista runtime.")
+	var second_selection_indicator := robots[1].get_node_or_null("LabSelectionIndicator") as MeshInstance3D
+	_assert(second_selection_indicator != null, "Cada robot del laboratorio deberia poder mostrar la pista runtime.")
+	if second_selection_indicator != null:
+		_assert(second_selection_indicator.visible, "La pista runtime deberia migrar al nuevo slot seleccionado.")
 
 	main.call("cycle_selected_lab_archetype")
 	await process_frame

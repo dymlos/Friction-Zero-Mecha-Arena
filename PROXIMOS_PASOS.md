@@ -16,7 +16,7 @@
    - revisar si la nueva lectura `apoyo N (M usos)` alcanza para explicar el valor real del soporte en el cierre o si conviene desglosar mejor algun payload solo si el playtest demuestra que hoy sigue siendo opaco.
 
 2. **Validar el nuevo roster de arquetipos**
-   - usar `F2/F3/F4` para recorrer cruces reales entre `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` en `main.tscn` y `main_ffa.tscn` sin editar escenas entre partidas.
+   - usar `F2/F3/F4` para recorrer cruces reales entre `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` en `main.tscn` y `main_ffa.tscn` sin editar escenas entre partidas, validando tambien si el nuevo `LabSelectionIndicator` evita errores de slot en pantalla compartida.
    - correr sesiones reales con `Ariete`, `Grua`, `Cizalla` y `Patin` en `main.tscn`, y con `Aguja` + `Ancla` en `main_ffa.tscn`, para decidir si la mezcla actual de pasivas + primeras skills propias ya produce identidades claras.
    - medir si las pasivas/skills actuales se entienden por playtest sin otra capa de UI: `Ariete` aguantando empuje, `Grua` estabilizando rescates y usando `Iman`, `Cizalla` rematando partes tocadas y `Patin` explotando mejor los pickups de impulso.
    - medir si `Iman` realmente abre rescates/negaciones a media distancia o si el rango actual se siente demasiado corto, tramposo o poco legible cuando hay varias piezas sueltas.
@@ -44,7 +44,7 @@
 
 5. **Convertir el soporte Hard en una opcion realmente jugable**
    - playtestear si `WASD + TFGX` alcanza como unico camino Hard/local de teclado o si la sesion real justifica reabrir esa decision.
-   - medir si `F4` sobre el selector runtime + roster persistente alcanzan como claridad de laboratorio o si aparece una necesidad real de un flujo pre-match/persistente por jugador.
+   - medir si `F4` sobre el selector runtime + roster persistente + `LabSelectionIndicator` alcanzan como claridad de laboratorio o si aparece una necesidad real de un flujo pre-match/persistente por jugador.
    - revisar si la referencia persistente de controles activos ya alcanza o si sigue faltando una ayuda mas compacta para pantalla compartida.
    - playtestear si la nueva lectura torso/chasis mejora el combate o si todavia se siente demasiado sutil para pantalla compartida.
 
