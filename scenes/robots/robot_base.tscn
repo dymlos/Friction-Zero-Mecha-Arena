@@ -68,44 +68,46 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0.0)
 mesh = SubResource("BoxMesh_dark_core")
 material_override = SubResource("Material_trim")
 
-[node name="BodyVisual" type="MeshInstance3D" parent="."]
+[node name="UpperBodyPivot" type="Node3D" parent="."]
+
+[node name="BodyVisual" type="MeshInstance3D" parent="UpperBodyPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0.02)
 mesh = SubResource("BoxMesh_torso")
 material_override = SubResource("Material_body")
 
-[node name="ShouldersVisual" type="MeshInstance3D" parent="."]
+[node name="ShouldersVisual" type="MeshInstance3D" parent="UpperBodyPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, -0.18)
 mesh = SubResource("BoxMesh_shoulders")
 material_override = SubResource("Material_body")
 
-[node name="HeadVisual" type="MeshInstance3D" parent="."]
+[node name="HeadVisual" type="MeshInstance3D" parent="UpperBodyPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46, -0.48)
 mesh = SubResource("BoxMesh_head")
 material_override = SubResource("Material_parts")
 
-[node name="FacingMarker" type="MeshInstance3D" parent="."]
+[node name="FacingMarker" type="MeshInstance3D" parent="UpperBodyPivot"]
 transform = Transform3D(0.48, 0, 0, 0, 0.14, 0, 0, 0, 0.22, 0, 0.64, -0.52)
 mesh = SubResource("BoxMesh_head")
 material_override = SubResource("Material_front")
 
-[node name="LeftCoreLight" type="MeshInstance3D" parent="."]
+[node name="LeftCoreLight" type="MeshInstance3D" parent="UpperBodyPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0.48, -0.1)
 mesh = SubResource("BoxMesh_side_detail")
 material_override = SubResource("Material_front")
 
-[node name="RightCoreLight" type="MeshInstance3D" parent="."]
+[node name="RightCoreLight" type="MeshInstance3D" parent="UpperBodyPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.48, -0.1)
 mesh = SubResource("BoxMesh_side_detail")
 material_override = SubResource("Material_front")
 
 [node name="ModularParts" type="Node3D" parent="."]
 
-[node name="LeftArm" type="MeshInstance3D" parent="ModularParts"]
+[node name="LeftArm" type="MeshInstance3D" parent="UpperBodyPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.78, 0.2, -0.02)
 mesh = SubResource("BoxMesh_arm")
 material_override = SubResource("Material_parts")
 
-[node name="RightArm" type="MeshInstance3D" parent="ModularParts"]
+[node name="RightArm" type="MeshInstance3D" parent="UpperBodyPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 0.2, -0.02)
 mesh = SubResource("BoxMesh_arm")
 material_override = SubResource("Material_parts")

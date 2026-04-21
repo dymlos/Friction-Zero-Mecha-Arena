@@ -38,19 +38,19 @@ const CARRY_PART_COLORS := {
 }
 
 const PART_VISUAL_PATHS := {
-	"left_arm": ["ModularParts/LeftArm"],
-	"right_arm": ["ModularParts/RightArm"],
+	"left_arm": ["UpperBodyPivot/LeftArm"],
+	"right_arm": ["UpperBodyPivot/RightArm"],
 	"left_leg": ["ModularParts/LeftLeg", "ModularParts/LeftLegThruster", "ModularParts/LeftThrusterNozzle"],
 	"right_leg": ["ModularParts/RightLeg", "ModularParts/RightLegThruster", "ModularParts/RightThrusterNozzle"],
 }
 
 const CORE_VISUAL_PATHS := [
-	"BodyVisual",
-	"ShouldersVisual",
-	"HeadVisual",
-	"FacingMarker",
-	"LeftCoreLight",
-	"RightCoreLight",
+	"UpperBodyPivot/BodyVisual",
+	"UpperBodyPivot/ShouldersVisual",
+	"UpperBodyPivot/HeadVisual",
+	"UpperBodyPivot/FacingMarker",
+	"UpperBodyPivot/LeftCoreLight",
+	"UpperBodyPivot/RightCoreLight",
 ]
 
 const INPUT_ACTION_SUFFIXES := [
@@ -133,12 +133,14 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var keyboard_profile: KeyboardProfile = KeyboardProfile.WASD_SPACE
 @export var joypad_device := -1
 @export_range(0.0, 0.8, 0.05) var joystick_deadzone := 0.25
+@export_range(0.0, 0.8, 0.05) var hard_aim_deadzone := 0.3
 
 @export_group("Prototype Movement")
 @export var max_move_speed := 7.5
 @export var move_acceleration := 16.5
 @export var glide_damping := 3.1
 @export var turn_speed := 10.0
+@export var torso_turn_speed := 12.0
 @export var gravity := 28.0
 
 @export_group("Prototype Energy")
@@ -218,8 +220,10 @@ var _overdrive_part_name := ""
 var _overdrive_duration_remaining := 0.0
 var _overdrive_recovery_remaining := 0.0
 var _overdrive_cooldown_remaining := 0.0
+var _hard_torso_world_direction := Vector3.FORWARD
 
 @onready var disabled_explosion_timer: Timer = $DisabledExplosionTimer
+@onready var upper_body_pivot: Node3D = $UpperBodyPivot
 
 
 static func get_part_display_name(part_name: String) -> String:
@@ -289,6 +293,20 @@ func get_energy_state_summary() -> String:
 	return "Foco %s" % part_label
 
 
+func get_combat_forward_vector() -> Vector3:
+	return _get_combat_forward_vector()
+
+
+func set_torso_world_direction(world_direction: Vector3) -> void:
+	var planar_direction := world_direction
+	planar_direction.y = 0.0
+	if planar_direction.length_squared() <= 0.0001:
+		return
+
+	_hard_torso_world_direction = planar_direction.normalized()
+	_refresh_upper_body_pose(true)
+
+
 func get_effective_leg_drive_multiplier() -> float:
 	return _get_leg_health_multiplier() * _get_leg_energy_multiplier()
 
@@ -347,6 +365,7 @@ func _ready() -> void:
 	_prepare_visual_materials()
 	_setup_carry_indicator()
 	disabled_explosion_timer.wait_time = disabled_explosion_delay
+	_reset_control_pose()
 	reset_modular_state()
 	if is_player_controlled:
 		refresh_input_setup()
@@ -360,6 +379,7 @@ func _physics_process(delta: float) -> void:
 	_update_energy_state(delta)
 	_update_energy_controls()
 	_update_prototype_movement(delta)
+	_update_control_mode_orientation(delta)
 	_update_detached_part_interactions()
 	_update_prototype_attack()
 	_update_damage_visual_feedback(delta)
@@ -386,6 +406,7 @@ func reset_modular_state() -> void:
 		_part_flash_strength[part_name] = 0.0
 
 	_apply_balanced_energy_distribution()
+	_reset_control_pose()
 	_refresh_visual_state()
 
 
@@ -565,6 +586,7 @@ func reset_to_spawn() -> void:
 	collision_layer = _starting_collision_layer
 	collision_mask = _starting_collision_mask
 	_is_respawning = false
+	_reset_control_pose()
 	reset_modular_state()
 	set_physics_process(true)
 	respawned.emit(self)
@@ -616,9 +638,7 @@ func _update_prototype_attack() -> void:
 	_attack_cooldown_remaining = attack_cooldown
 	prototype_attack_used.emit(self)
 
-	var forward := -global_transform.basis.z
-	forward.y = 0.0
-	forward = forward.normalized()
+	var forward := _get_combat_forward_vector()
 	var arm_power := get_effective_arm_power_multiplier()
 	apply_impulse(forward * attack_impulse_strength * arm_power * 0.25)
 
@@ -652,7 +672,7 @@ func _apply_passive_collision_pushes() -> void:
 		var push_direction := global_position.direction_to(other_robot.global_position)
 		push_direction.y = 0.0
 		if push_direction.length_squared() == 0.0:
-			push_direction = -global_transform.basis.z
+			push_direction = _get_combat_forward_vector()
 
 		push_direction = push_direction.normalized()
 		other_robot.apply_impulse(push_direction * passive_push_strength * get_effective_arm_power_multiplier())
@@ -721,7 +741,7 @@ func _spawn_detached_part(part_name: String, impact_direction: Vector3) -> void:
 
 	var launch_direction := impact_direction
 	if launch_direction.length_squared() == 0.0:
-		launch_direction = -global_transform.basis.z
+		launch_direction = _get_combat_forward_vector()
 
 	launch_direction.y = 0.35
 	launch_direction = launch_direction.normalized()
@@ -855,7 +875,7 @@ func throw_carried_part(throw_direction: Vector2 = Vector2.ZERO, throw_speed: fl
 
 	var world_throw_direction := Vector3(throw_direction.x, 0.0, throw_direction.y)
 	if world_throw_direction.length_squared() <= 0.0001:
-		world_throw_direction = -global_transform.basis.z
+		world_throw_direction = _get_combat_forward_vector()
 
 	var launched := carried_part.throw_from(self, world_throw_direction, throw_speed)
 	if not launched:
@@ -881,6 +901,23 @@ func _get_move_input_vector() -> Vector2:
 		return joypad_vector
 
 	return keyboard_vector
+
+
+func _get_aim_input_vector() -> Vector2:
+	if not is_player_controlled or _is_disabled or control_mode != ControlMode.HARD:
+		return Vector2.ZERO
+
+	var best_vector := Vector2.ZERO
+	for device in _get_joypad_devices_to_read():
+		var raw_vector := Vector2(
+			Input.get_joy_axis(device, JOY_AXIS_RIGHT_X),
+			Input.get_joy_axis(device, JOY_AXIS_RIGHT_Y)
+		)
+		var filtered_vector := _apply_radial_deadzone(raw_vector, hard_aim_deadzone)
+		if filtered_vector.length_squared() > best_vector.length_squared():
+			best_vector = filtered_vector
+
+	return best_vector
 
 
 func _get_leg_health_multiplier() -> float:
@@ -1013,7 +1050,7 @@ func _select_part_from_world_direction(world_direction: Vector3) -> String:
 	if planar_direction.length_squared() == 0.0:
 		return "left_leg"
 
-	var local_direction := global_transform.basis.inverse() * planar_direction.normalized()
+	var local_direction := _get_damage_orientation_basis().inverse() * planar_direction.normalized()
 	var hits_front_half := local_direction.z <= 0.05
 	var hits_left_side := local_direction.x < 0.0
 	if hits_front_half:
@@ -1218,8 +1255,85 @@ func _update_damage_visual_feedback(delta: float) -> void:
 		_refresh_visual_state()
 
 
+func _update_control_mode_orientation(delta: float) -> void:
+	if control_mode != ControlMode.HARD:
+		_refresh_upper_body_pose(true)
+		return
+
+	var aim_vector := _get_aim_input_vector()
+	if aim_vector.length_squared() > 0.0:
+		_hard_torso_world_direction = Vector3(aim_vector.x, 0.0, aim_vector.y).normalized()
+	elif _hard_torso_world_direction.length_squared() <= 0.0001:
+		_hard_torso_world_direction = _get_root_forward_vector()
+
+	_refresh_upper_body_pose(false, delta)
+
+
+func _reset_control_pose() -> void:
+	_hard_torso_world_direction = _get_root_forward_vector()
+	_refresh_upper_body_pose(true)
+
+
+func _refresh_upper_body_pose(snap: bool = false, delta: float = 0.0) -> void:
+	if upper_body_pivot == null:
+		return
+
+	if control_mode != ControlMode.HARD:
+		var easy_transform := upper_body_pivot.transform
+		easy_transform.basis = Basis.IDENTITY
+		upper_body_pivot.transform = easy_transform
+		return
+
+	var target_world_direction := _hard_torso_world_direction
+	target_world_direction.y = 0.0
+	if target_world_direction.length_squared() <= 0.0001:
+		target_world_direction = _get_root_forward_vector()
+
+	var local_target_direction := global_transform.basis.inverse() * target_world_direction.normalized()
+	local_target_direction.y = 0.0
+	if local_target_direction.length_squared() <= 0.0001:
+		return
+
+	var target_basis := Basis.looking_at(local_target_direction.normalized(), Vector3.UP)
+	var new_transform := upper_body_pivot.transform
+	if snap:
+		new_transform.basis = target_basis
+	else:
+		var weight := 1.0 - exp(-torso_turn_speed * maxf(delta, 0.0))
+		new_transform.basis = new_transform.basis.slerp(target_basis, weight).orthonormalized()
+	upper_body_pivot.transform = new_transform
+
+
 func _material_key(mesh_instance: MeshInstance3D) -> String:
 	return str(mesh_instance.get_path())
+
+
+func _get_root_forward_vector() -> Vector3:
+	var forward := -global_transform.basis.z
+	forward.y = 0.0
+	if forward.length_squared() <= 0.0001:
+		return Vector3.FORWARD
+
+	return forward.normalized()
+
+
+func _get_combat_forward_vector() -> Vector3:
+	if control_mode != ControlMode.HARD:
+		return _get_root_forward_vector()
+
+	var forward := _hard_torso_world_direction
+	forward.y = 0.0
+	if forward.length_squared() <= 0.0001:
+		return _get_root_forward_vector()
+
+	return forward.normalized()
+
+
+func _get_damage_orientation_basis() -> Basis:
+	if control_mode == ControlMode.HARD and upper_body_pivot != null:
+		return upper_body_pivot.global_transform.basis
+
+	return global_transform.basis
 
 
 func _face_direction(direction: Vector3, delta: float) -> void:
@@ -1354,12 +1468,12 @@ func _get_joypad_devices_to_read() -> Array[int]:
 	return devices
 
 
-func _apply_radial_deadzone(raw_vector: Vector2) -> Vector2:
+func _apply_radial_deadzone(raw_vector: Vector2, deadzone: float = joystick_deadzone) -> Vector2:
 	var length := raw_vector.length()
-	if length <= joystick_deadzone:
+	if length <= deadzone:
 		return Vector2.ZERO
 
-	var scaled_length := inverse_lerp(joystick_deadzone, 1.0, minf(length, 1.0))
+	var scaled_length := inverse_lerp(deadzone, 1.0, minf(length, 1.0))
 	return raw_vector.normalized() * scaled_length
 
 
