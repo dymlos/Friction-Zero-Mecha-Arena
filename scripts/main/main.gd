@@ -647,6 +647,7 @@ func _clear_post_death_support() -> void:
 
 
 func _sync_post_death_support_state() -> void:
+	_prune_post_death_support_ships()
 	var support_enabled := match_controller.match_mode == MatchController.MatchMode.TEAMS and support_root != null and support_root.get_child_count() > 0
 	for robot in match_controller.registered_robots:
 		if not is_instance_valid(robot):
@@ -669,6 +670,30 @@ func _sync_post_death_support_state() -> void:
 			)
 
 	_set_post_death_support_lane_active(support_enabled)
+
+
+func _prune_post_death_support_ships() -> void:
+	if support_root == null:
+		return
+
+	for child in support_root.get_children():
+		if not (child is PilotSupportShip):
+			continue
+
+		var support_ship := child as PilotSupportShip
+		var owner_robot := support_ship.owner_robot
+		var should_remove := not is_instance_valid(owner_robot)
+		if not should_remove:
+			should_remove = not owner_robot.is_held_for_round_reset()
+		if not should_remove:
+			should_remove = _find_living_support_target(owner_robot) == null
+		if not should_remove:
+			continue
+
+		if is_instance_valid(owner_robot):
+			match_controller.clear_robot_support_state(owner_robot)
+		support_root.remove_child(support_ship)
+		support_ship.queue_free()
 
 
 func _set_post_death_support_lane_active(is_active: bool, reset_pickups: bool = false) -> void:

@@ -445,6 +445,24 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 			roster_label.text.contains("apoyo"),
 			"El roster deberia dejar visible que un jugador eliminado sigue activo como apoyo."
 		)
+	var support_pickup_after_cleanup := support_pickups[0] as Node3D if not support_pickups.is_empty() else null
+	robots[0].fall_into_void()
+	await _wait_frames(4)
+
+	_assert(
+		support_root.get_child_count() == 0,
+		"Si el jugador eliminado ya no tiene ningun aliado vivo, su nave de apoyo deberia desaparecer enseguida."
+	)
+	if roster_label != null:
+		_assert(
+			not roster_label.text.contains("apoyo"),
+			"Sin un aliado vivo al que asistir, el roster no deberia seguir mostrando apoyo activo."
+		)
+	if support_pickup_after_cleanup != null:
+		_assert(
+			not support_pickup_after_cleanup.visible,
+			"Cuando la ultima nave se apaga, el carril post-muerte tambien deberia ocultar sus pickups."
+		)
 
 	await _cleanup_main(main)
 

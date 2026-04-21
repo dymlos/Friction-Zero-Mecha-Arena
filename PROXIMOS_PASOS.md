@@ -10,6 +10,7 @@
    - medir si la nueva pista `usa ... | objetivo ...` del roster, la dupla target alto/piso, el anillo de rango de `interferencia` y el fill de timing sobre los `gates` alcanzan para descubrir rapido el soporte post-muerte o si aun hace falta otra pista diegetica mas fuerte para espectador/jugador eliminado.
    - medir si el nuevo respawn corto de `PilotSupportPickup` mantiene al carril interesante sin volverlo demasiado generoso, y ajustar `respawn_delay` si una sola nave puede encadenar ayudas sin costo espacial real.
    - calibrar si `support_energy_surge_duration`, `support_mobility_boost_duration`, `support_interference_duration` y `support_interference_range` vuelven valiosas las cuatro cargas sin solaparse demasiado con los pickups de borde vivo o con `Baliza`.
+   - confirmar por playtest que apagar la `PilotSupportShip` apenas muere el ultimo aliado se siente correcto y no corta ayudas “merecidas” demasiado pronto en cierres muy ajustados.
    - confirmar por playtest que `FFA` realmente queda limpio y que compartir la escena base no introduce confusion por elementos post-muerte ocultos.
 
 2. **Validar el nuevo roster de arquetipos**

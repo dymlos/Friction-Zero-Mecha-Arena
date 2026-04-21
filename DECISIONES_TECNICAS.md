@@ -218,6 +218,10 @@
    - `EdgeEnergyPickup` activa una recarga breve sobre el par energetico seleccionado y reaparece tras cooldown, reutilizando el mismo contrato visible de pedestal + nucleo que reparacion e impulso.
    - Motivo: completar el trio minimo de incentivos prioritarios del documento (`reparacion`, `movilidad`, `energia`) sin abrir todavia inventario, rareza ni items de una sola carga.
 
+52. **La nave post-muerte vive solo mientras exista un aliado vivo real**
+   - `Main` poda `PilotSupportShip` durante `_sync_post_death_support_state()` cuando su owner deja de tener un aliado vivo o deja de estar retenido para el reset de ronda.
+   - Motivo: el soporte Teams esta pensado como ayuda al equipo superviviente; mantener nave, roster y pickups activos despues de perder el ultimo aliado dejaba un estado stale y confundia la lectura del final de ronda.
+
 52. **Pickups del soporte Teams con respawn corto y cue local**
    - `PilotSupportPickup` ya no desaparece por toda la ronda al primer uso: entra en cooldown corto, deja el pedestal visible, apaga el nucleo y muestra `RespawnVisual` hasta volver.
    - Motivo: el carril post-muerte necesita seguir ofreciendo timing/routing despues de una primera pasada y tambien escalar mejor a futuros equipos mas grandes, sin abrir HUD nuevo ni una economia separada de soporte.
