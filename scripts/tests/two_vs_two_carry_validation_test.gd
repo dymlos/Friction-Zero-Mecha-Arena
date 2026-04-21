@@ -88,6 +88,28 @@ func _run() -> void:
 				owner_indicator_material.emission.is_equal_approx(expected_owner_color),
 				"La marca de dueño deberia reutilizar el color de identidad del robot original."
 			)
+	var carry_return_indicator := ally.get_node_or_null("CarryReturnIndicator")
+	_assert(
+		carry_return_indicator is MeshInstance3D,
+		"El portador deberia exponer una pista diegetica de retorno para leer adonde llevar la pieza."
+	)
+	if carry_return_indicator is MeshInstance3D:
+		await process_frame
+		_assert(
+			(carry_return_indicator as MeshInstance3D).visible,
+			"La pista de retorno deberia verse mientras el aliado transporta una parte ajena."
+		)
+		var return_direction := owner.global_position - ally.global_position
+		return_direction.y = 0.0
+		var indicator_forward := -((carry_return_indicator as MeshInstance3D).global_basis.z)
+		indicator_forward.y = 0.0
+		if return_direction.length_squared() > 0.0 and indicator_forward.length_squared() > 0.0:
+			var expected_direction := return_direction.normalized()
+			var actual_direction := indicator_forward.normalized()
+			_assert(
+				actual_direction.dot(expected_direction) > 0.9,
+				"La pista de retorno deberia apuntar hacia el robot dueño de la pieza."
+			)
 
 	var thrown := ally.throw_carried_part(Vector2.RIGHT, 7.5)
 	_assert(thrown, "El aliado deberia poder lanzar la parte para negar el rescate inmediato.")
@@ -98,6 +120,11 @@ func _run() -> void:
 		_assert(
 			not (carry_owner_indicator as MeshInstance3D).visible,
 			"La marca de dueño deberia ocultarse al soltar la pieza."
+		)
+	if carry_return_indicator is MeshInstance3D:
+		_assert(
+			not (carry_return_indicator as MeshInstance3D).visible,
+			"La pista de retorno deberia ocultarse al soltar la pieza."
 		)
 
 	owner.global_position = detached_part.global_position

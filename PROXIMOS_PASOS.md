@@ -32,7 +32,7 @@
 
 4. **Hacer visible y testeable el rescate/negacion**
    - usar el coverage headless 2v2 actual como red de seguridad mientras se hacen sesiones reales con la contraccion de arena ya activa.
-   - medir si el nuevo combo `disco de recuperacion + aro de pertenencia + RecoveryTargetIndicator + CarryOwnerIndicator` realmente alcanza para leer urgencia/ownership/objetivo de retorno tambien durante el transporte en 2v2 y FFA o si todavia hace falta una pista compacta adicional.
+   - medir si el nuevo combo `disco de recuperacion + aro de pertenencia + RecoveryTargetIndicator + CarryOwnerIndicator + CarryReturnIndicator` realmente alcanza para leer urgencia/ownership/objetivo de retorno tambien durante el transporte en 2v2 y FFA o si todavia hace falta compactar escala/contraste/ritmo de esos cues.
    - medir en partida si `throw_pickup_delay`/`pickup_delay` se sienten justos o demasiado punitivos ahora que perder una ronda sí importa y el espacio se va cerrando.
    - ajustar si hace falta radio de retorno, cleanup y ritmo de choque con un aliado en escena, sin reabrir spam accidental.
 

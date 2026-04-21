@@ -397,6 +397,10 @@
    - `RobotBase` conserva `CarryIndicator` para mostrar que tipo de payload lleva, pero cuando la carga es una `DetachedPart` tambien crea/mantiene `CarryOwnerIndicator`, un aro fino con el color de identidad del dueño original.
    - Motivo: la pieza tirada y el robot dueño ya explicaban urgencia/pertenencia/objetivo, pero al levantar la pieza se perdia la pista de “de quien es”. Duplicar esa pista sobre el portador mantiene claridad en 2v2 y FFA sin sumar otra linea persistente al HUD.
 
+91. **El portador tambien debe insinuar hacia donde devolver la pieza**
+   - `RobotBase` ahora suma `CarryReturnIndicator`, una aguja corta junto al marker de carga que se tiñe con el color del dueño original y rota hacia ese robot mientras la `DetachedPart` sigue en mano.
+   - Motivo: aun con `CarryOwnerIndicator`, en movimiento rapido seguia faltando una lectura inmediata de “adonde va esto”. Resolverlo dentro del mismo paquete visual del portador mantiene el rescate legible sin abrir HUD ni lineas tether ruidosas entre robots.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

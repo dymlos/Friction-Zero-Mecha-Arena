@@ -266,6 +266,10 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var carry_indicator_pulse_speed := 6.5
 @export var carry_indicator_pulse_amount := 0.18
 @export var carry_indicator_rotation_speed := 1.3
+@export var carry_return_indicator_height := 1.06
+@export var carry_return_indicator_offset := 0.34
+@export_range(0.0, 0.3, 0.01) var carry_return_indicator_width := 0.1
+@export_range(0.0, 0.4, 0.01) var carry_return_indicator_length := 0.22
 @export var core_skill_ready_pulse_speed := 4.2
 @export var core_skill_ready_pulse_amount := 0.18
 @export var core_skill_ready_emission_boost := 0.28
@@ -330,6 +334,7 @@ var _carried_part: DetachedPart = null
 var _carried_item_name := ""
 var _carry_indicator: MeshInstance3D = null
 var _carry_owner_indicator: MeshInstance3D = null
+var _carry_return_indicator: MeshInstance3D = null
 var _carry_indicator_animation_time := 0.0
 var _recovery_target_indicator: MeshInstance3D = null
 var _recovery_target_indicator_animation_time := 0.0
@@ -998,6 +1003,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	_refresh_carry_return_indicator()
 	_refresh_recovery_target_indicator()
 	_update_recovery_target_indicator_animation(delta)
 	_update_disabled_warning_indicator(delta)
@@ -2163,6 +2169,7 @@ func _register_material_base_values(mesh_instance: MeshInstance3D) -> void:
 
 func _refresh_visual_state() -> void:
 	_refresh_carry_indicator()
+	_refresh_carry_return_indicator()
 	_refresh_recovery_target_indicator()
 	_refresh_disabled_warning_indicator()
 	for part_name in BODY_PARTS:
@@ -2274,6 +2281,31 @@ func _setup_carry_indicator() -> void:
 	_carry_owner_indicator.position = Vector3(0.0, carry_indicator_base_height - carry_indicator_radius * 0.55, 0.0)
 	_carry_owner_indicator.visible = false
 	add_child(_carry_owner_indicator)
+
+	var return_indicator_mesh := BoxMesh.new()
+	return_indicator_mesh.size = Vector3(
+		maxf(carry_return_indicator_width, 0.01),
+		maxf(carry_indicator_radius * 0.85, 0.01),
+		maxf(carry_return_indicator_length, 0.01)
+	)
+
+	var return_indicator_material := StandardMaterial3D.new()
+	return_indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	return_indicator_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	return_indicator_material.no_depth_test = true
+	return_indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	return_indicator_material.albedo_color = Color(1.0, 1.0, 1.0, 0.7)
+	return_indicator_material.emission_enabled = true
+	return_indicator_material.emission = Color(1.0, 1.0, 1.0, 1.0)
+	return_indicator_material.emission_energy_multiplier = 1.45
+
+	_carry_return_indicator = MeshInstance3D.new()
+	_carry_return_indicator.name = "CarryReturnIndicator"
+	_carry_return_indicator.mesh = return_indicator_mesh
+	_carry_return_indicator.material_override = return_indicator_material
+	_carry_return_indicator.position = Vector3(0.0, carry_return_indicator_height, -carry_return_indicator_offset)
+	_carry_return_indicator.visible = false
+	add_child(_carry_return_indicator)
 
 
 func _setup_recovery_target_indicator() -> void:
@@ -2405,6 +2437,46 @@ func _refresh_carry_owner_indicator() -> void:
 	_carry_owner_indicator.visible = true
 
 
+func _refresh_carry_return_indicator() -> void:
+	if _carry_return_indicator == null:
+		return
+
+	var owner_robot := _get_carried_part_owner()
+	if owner_robot == null or owner_robot == self:
+		_carry_return_indicator.visible = false
+		return
+
+	var world_direction := owner_robot.global_position - global_position
+	world_direction.y = 0.0
+	if world_direction.length_squared() <= 0.0001:
+		_carry_return_indicator.visible = false
+		return
+
+	var owner_material := _carry_return_indicator.material_override as StandardMaterial3D
+	if owner_material != null:
+		var owner_color := owner_robot.get_identity_color()
+		owner_material.albedo_color = Color(owner_color.r, owner_color.g, owner_color.b, 0.72)
+		owner_material.emission = owner_color
+		owner_material.emission_energy_multiplier = 1.45
+
+	var local_direction := global_transform.basis.inverse() * world_direction.normalized()
+	local_direction.y = 0.0
+	if local_direction.length_squared() <= 0.0001:
+		_carry_return_indicator.visible = false
+		return
+
+	var normalized_local_direction := local_direction.normalized()
+	var indicator_transform := _carry_return_indicator.transform
+	indicator_transform.basis = Basis.looking_at(normalized_local_direction, Vector3.UP)
+	_carry_return_indicator.transform = indicator_transform
+	_carry_return_indicator.position = Vector3(
+		normalized_local_direction.x * carry_return_indicator_offset,
+		carry_return_indicator_height,
+		normalized_local_direction.z * carry_return_indicator_offset
+	)
+	_carry_return_indicator.visible = true
+
+
 func _update_carry_indicator_animation(delta: float) -> void:
 	if _carry_indicator == null:
 		return
@@ -2417,6 +2489,8 @@ func _update_carry_indicator_animation(delta: float) -> void:
 			_carry_owner_indicator.scale = Vector3.ONE
 			_carry_owner_indicator.rotation = Vector3.ZERO
 			_carry_owner_indicator.position.y = carry_indicator_base_height - carry_indicator_radius * 0.55
+		if _carry_return_indicator != null:
+			_carry_return_indicator.scale = Vector3.ONE
 		return
 
 	_carry_indicator_animation_time += delta
@@ -2437,6 +2511,10 @@ func _update_carry_indicator_animation(delta: float) -> void:
 			_carry_owner_indicator.rotation.y - carry_indicator_rotation_speed * delta * 0.55,
 			TAU
 		)
+	if _carry_return_indicator != null and _carry_return_indicator.visible:
+		var return_pulse := 1.0 + wave * carry_indicator_pulse_amount * 0.65
+		_carry_return_indicator.scale = Vector3(return_pulse, 1.0, return_pulse)
+		_carry_return_indicator.position.y = carry_return_indicator_height + wave * carry_indicator_bob_height * 0.45
 
 
 func _update_recovery_target_indicator_animation(delta: float) -> void:
