@@ -153,6 +153,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -10.8)
 [node name="SouthSupportPickup" parent="." instance=ExtResource("7_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 10.8)
 
+[node name="NorthSupportMobilityPickup" parent="." instance=ExtResource("7_support_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.4, 0.45, -10.8)
+payload_name = "mobility"
+
+[node name="SouthSupportMobilityPickup" parent="." instance=ExtResource("7_support_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4, 0.45, 10.8)
+payload_name = "mobility"
+
 [node name="WestSupportPickup" parent="." instance=ExtResource("7_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.2, 0.45, 0)
 payload_name = "surge"

@@ -5,9 +5,9 @@
 1. **Validar el nuevo soporte post-muerte de Teams**
    - correr sesiones reales en `main.tscn` dejando caer a un jugador temprano para medir si la `PilotSupportShip` suma involucramiento sin tapar el combate principal.
    - medir si el carril externo actual se ve lo suficiente con la camara compartida o si necesita ruta/obstaculos suaves para que la nave tenga mas decisiones sin irse de foco.
-   - medir si el duo `estabilizador + energia` ya cubre el comeback base o si la siguiente iteracion debe sumar `movilidad`, no otra capa ofensiva, antes de pensar en interferencia enemiga.
-   - revisar si el roster `apoyo` / `apoyo estabilizador` / `apoyo energia` ya alcanza como telemetria o si la nave necesita una pista diegética adicional para espectador casual.
-   - calibrar si `support_energy_surge_duration` vuelve valiosa la segunda ayuda sin solaparse demasiado con el pickup de energia del borde vivo.
+   - medir si la terna `estabilizador + energia + movilidad` ya cubre comeback, rescate y reposicionamiento sin necesitar todavia interferencia ofensiva.
+   - revisar si el roster `apoyo` / `apoyo estabilizador` / `apoyo energia` / `apoyo movilidad` ya alcanza como telemetria o si la nave necesita una pista diegética adicional para espectador casual.
+   - calibrar si `support_energy_surge_duration` y `support_mobility_boost_duration` vuelven valiosas la segunda y tercera ayuda sin solaparse demasiado con los pickups de borde vivo.
    - confirmar por playtest que `FFA` realmente queda limpio y que compartir la escena base no introduce confusion por elementos post-muerte ocultos.
 
 2. **Validar el nuevo roster de arquetipos**

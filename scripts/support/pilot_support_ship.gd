@@ -10,6 +10,7 @@ signal state_changed(support_ship: PilotSupportShip)
 @export var move_speed := 8.5
 @export_range(0.05, 0.5, 0.01) var support_repair_ratio := 0.22
 @export_range(0.2, 3.0, 0.1) var support_energy_surge_duration := 1.6
+@export_range(0.2, 3.0, 0.1) var support_mobility_boost_duration := 1.9
 
 var owner_robot: RobotBase = null
 var allied_robot: RobotBase = null
@@ -82,6 +83,9 @@ func use_support_payload() -> bool:
 				return false
 		PilotSupportPickup.PAYLOAD_SURGE:
 			if not target_robot.apply_energy_surge(support_energy_surge_duration):
+				return false
+		PilotSupportPickup.PAYLOAD_MOBILITY:
+			if not target_robot.apply_mobility_boost(support_mobility_boost_duration):
 				return false
 		_:
 			return false
@@ -173,6 +177,8 @@ func _refresh_visuals() -> void:
 func _get_support_payload_color() -> Color:
 	if _support_payload_name == PilotSupportPickup.PAYLOAD_SURGE:
 		return Color(0.22, 0.84, 0.96, 1.0)
+	if _support_payload_name == PilotSupportPickup.PAYLOAD_MOBILITY:
+		return Color(0.2, 0.9, 0.74, 1.0)
 
 	return Color(0.98, 0.8, 0.28, 1.0)
 

@@ -146,6 +146,41 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					"Tras gastar la carga de energia, el roster deberia limpiar el payload pendiente."
 				)
 
+			var support_mobility_pickup: Node3D = null
+			for pickup in support_pickups:
+				if not (pickup is Node3D):
+					continue
+				if str((pickup as Node3D).get("payload_name")) == "mobility":
+					support_mobility_pickup = pickup as Node3D
+					break
+
+			_assert(
+				support_mobility_pickup != null,
+				"El carril externo deberia ofrecer tambien una ayuda liviana de movilidad."
+			)
+			if support_mobility_pickup != null:
+				support_ship.global_position = support_mobility_pickup.global_position
+				await _wait_frames(3)
+
+				_assert(
+					roster_label.text.contains("movilidad"),
+					"El roster deberia distinguir cuando la nave lleva una carga de movilidad."
+				)
+
+				Input.action_press("p2_throw_part")
+				await _wait_frames(2)
+				Input.action_release("p2_throw_part")
+				await _wait_frames(2)
+
+				_assert(
+					robots[0].is_mobility_boost_active(),
+					"La nueva carga de movilidad deberia reforzar el desplazamiento del aliado vivo."
+				)
+				_assert(
+					not roster_label.text.contains("apoyo movilidad"),
+					"Tras gastar la carga de movilidad, el roster deberia limpiar el payload pendiente."
+				)
+
 	if roster_label != null:
 		_assert(
 			roster_label.text.contains("apoyo"),

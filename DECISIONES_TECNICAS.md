@@ -341,6 +341,10 @@
    - Los pickups laterales del carril externo ahora pueden cargar `energia`; al gastarla, `PilotSupportShip` llama a `RobotBase.apply_energy_surge()` sobre el aliado vivo y hereda la misma lectura compacta (`energia`) que ya existe para el pickup de borde.
    - Motivo: sumar una segunda decision real al soporte de `Teams` sin abrir otra regla de buffs, otro VFX o una logica nueva de targeting; `energy surge` ya existe, es tactica, y deja claro que la nave sigue reforzando al aliado en vez de disputar el choque ella misma.
 
+84. **La tercera ayuda post-muerte reutiliza el boost de movilidad ya existente**
+   - `PilotSupportPickup` ahora tambien soporta `movilidad`; `PilotSupportShip` la consume llamando a `RobotBase.apply_mobility_boost()`, mientras el carril externo suma pickups extra sobre norte/sur y el roster reutiliza la misma lectura compacta `movilidad`/`impulso` que ya existia para los boosts de desplazamiento.
+   - Motivo: la capa post-muerte necesitaba una tercera decision pro-aliado antes de pensar en interferencia enemiga, pero abrir un buff nuevo solo para la nave habria duplicado reglas y telegraph. Reusar el estado de movilidad del robot mantiene el sistema chico, legible y alineado con la fantasia principal de reposicionarse para el siguiente choque.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

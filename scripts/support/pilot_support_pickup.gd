@@ -3,9 +3,11 @@ class_name PilotSupportPickup
 
 const PAYLOAD_STABILIZER := "stabilizer"
 const PAYLOAD_SURGE := "surge"
+const PAYLOAD_MOBILITY := "mobility"
 const PAYLOAD_LABELS := {
 	PAYLOAD_STABILIZER: "estabilizador",
 	PAYLOAD_SURGE: "energia",
+	PAYLOAD_MOBILITY: "movilidad",
 }
 
 @export var pickup_radius := 0.85
@@ -82,6 +84,8 @@ func _apply_payload_colors() -> void:
 func _get_payload_accent_color() -> Color:
 	if payload_name == PAYLOAD_SURGE:
 		return Color(0.22, 0.84, 0.96, 1.0)
+	if payload_name == PAYLOAD_MOBILITY:
+		return Color(0.2, 0.9, 0.74, 1.0)
 
 	return Color(0.96, 0.78, 0.22, 1.0)
 
