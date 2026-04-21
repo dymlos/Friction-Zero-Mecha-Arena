@@ -15,10 +15,26 @@ func _init() -> void:
 
 
 func _run() -> void:
-	await _validate_robot_mobility_boost_behavior()
-	await _validate_pickup_cooldown_telegraph()
 	await _validate_main_scene_mobility_pickups()
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
 	await _validate_pickups_follow_arena_contraction()
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
+	await _validate_robot_mobility_boost_behavior()
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
+	await _validate_pickup_cooldown_telegraph()
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
 	_finish()
 
 
@@ -175,7 +191,16 @@ func _validate_main_scene_mobility_pickups() -> void:
 		)
 
 	await _disable_edge_pickups(main)
-	await _cleanup_node(main)
+	var parent := main.get_parent()
+	if parent != null:
+		parent.remove_child(main)
+	main.free()
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
 
 
 func _validate_pickups_follow_arena_contraction() -> void:
@@ -290,6 +315,12 @@ func _disable_edge_pickups(root_node: Node) -> void:
 
 	await process_frame
 	await physics_frame
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
 
 
 func _cleanup_node(node: Node) -> void:
@@ -318,6 +349,8 @@ func _cleanup_node(node: Node) -> void:
 	node.queue_free()
 	await process_frame
 	await physics_frame
+	await process_frame
+	await physics_frame
 
 
 func _assert(condition: bool, message: String) -> void:
@@ -329,4 +362,16 @@ func _assert(condition: bool, message: String) -> void:
 
 
 func _finish() -> void:
+	call_deferred("_finish_after_cleanup")
+
+
+func _finish_after_cleanup() -> void:
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
 	quit(1 if _failed else 0)
