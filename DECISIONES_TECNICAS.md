@@ -381,6 +381,10 @@
    - Motivo: el slice Teams ya tenia profundidad mecanica, pero dependia demasiado del roster para entenderse en partida. Un beacon chico, ligado al propio actor y reutilizando el mismo acento cromatico refuerza lectura para jugador/espectador sin abrir UI nueva ni volver ruidosa la capa externa.
    - Motivo: preservar la legibilidad de pantalla compartida sin abrir otra UI. El propio carril telegraphia el bloqueo y el roster confirma por que la ayuda se demoro.
 
+89. **La lectura de rescate se mantiene tambien sobre el portador**
+   - `RobotBase` conserva `CarryIndicator` para mostrar que tipo de payload lleva, pero cuando la carga es una `DetachedPart` tambien crea/mantiene `CarryOwnerIndicator`, un aro fino con el color de identidad del dueño original.
+   - Motivo: la pieza tirada y el robot dueño ya explicaban urgencia/pertenencia/objetivo, pero al levantar la pieza se perdia la pista de “de quien es”. Duplicar esa pista sobre el portador mantiene claridad en 2v2 y FFA sin sumar otra linea persistente al HUD.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

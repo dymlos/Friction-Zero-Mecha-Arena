@@ -325,6 +325,7 @@ var _collision_damage_ready_at: Dictionary = {}
 var _carried_part: DetachedPart = null
 var _carried_item_name := ""
 var _carry_indicator: MeshInstance3D = null
+var _carry_owner_indicator: MeshInstance3D = null
 var _carry_indicator_animation_time := 0.0
 var _recovery_target_indicator: MeshInstance3D = null
 var _recovery_target_indicator_animation_time := 0.0
@@ -2192,6 +2193,31 @@ func _setup_carry_indicator() -> void:
 	_carry_indicator.visible = false
 	add_child(_carry_indicator)
 
+	var owner_indicator_mesh := CylinderMesh.new()
+	owner_indicator_mesh.top_radius = carry_indicator_radius * 1.75
+	owner_indicator_mesh.bottom_radius = carry_indicator_radius * 1.75
+	owner_indicator_mesh.height = 0.02
+	owner_indicator_mesh.radial_segments = 20
+	owner_indicator_mesh.rings = 1
+
+	var owner_indicator_material := StandardMaterial3D.new()
+	owner_indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	owner_indicator_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	owner_indicator_material.no_depth_test = true
+	owner_indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	owner_indicator_material.albedo_color = Color(1.0, 1.0, 1.0, 0.75)
+	owner_indicator_material.emission_enabled = true
+	owner_indicator_material.emission = Color(1.0, 1.0, 1.0, 1.0)
+	owner_indicator_material.emission_energy_multiplier = 1.3
+
+	_carry_owner_indicator = MeshInstance3D.new()
+	_carry_owner_indicator.name = "CarryOwnerIndicator"
+	_carry_owner_indicator.mesh = owner_indicator_mesh
+	_carry_owner_indicator.material_override = owner_indicator_material
+	_carry_owner_indicator.position = Vector3(0.0, carry_indicator_base_height - carry_indicator_radius * 0.55, 0.0)
+	_carry_owner_indicator.visible = false
+	add_child(_carry_owner_indicator)
+
 
 func _setup_recovery_target_indicator() -> void:
 	var indicator_mesh := CylinderMesh.new()
@@ -2254,6 +2280,7 @@ func _refresh_carry_indicator() -> void:
 	var payload_name := _get_indicator_payload_name()
 	if payload_name == "":
 		_carry_indicator.visible = false
+		_refresh_carry_owner_indicator()
 		_last_indicator_payload_name = ""
 		return
 
@@ -2262,6 +2289,7 @@ func _refresh_carry_indicator() -> void:
 		_last_indicator_payload_name = payload_name
 
 	_carry_indicator.visible = true
+	_refresh_carry_owner_indicator()
 
 
 func _refresh_recovery_target_indicator() -> void:
@@ -2300,6 +2328,26 @@ func _refresh_carry_indicator_color(part_name: String) -> void:
 	material.emission_energy_multiplier = 2.2
 
 
+func _refresh_carry_owner_indicator() -> void:
+	if _carry_owner_indicator == null:
+		return
+
+	var owner_robot := _get_carried_part_owner()
+	if owner_robot == null:
+		_carry_owner_indicator.visible = false
+		return
+
+	var owner_material := _carry_owner_indicator.material_override as StandardMaterial3D
+	if owner_material == null:
+		return
+
+	var owner_color := owner_robot.get_identity_color()
+	owner_material.albedo_color = Color(owner_color.r, owner_color.g, owner_color.b, 0.8)
+	owner_material.emission = owner_color
+	owner_material.emission_energy_multiplier = 1.3
+	_carry_owner_indicator.visible = true
+
+
 func _update_carry_indicator_animation(delta: float) -> void:
 	if _carry_indicator == null:
 		return
@@ -2308,6 +2356,10 @@ func _update_carry_indicator_animation(delta: float) -> void:
 		_carry_indicator.scale = Vector3.ONE
 		_carry_indicator.rotation = Vector3.ZERO
 		_carry_indicator.position.y = carry_indicator_base_height
+		if _carry_owner_indicator != null:
+			_carry_owner_indicator.scale = Vector3.ONE
+			_carry_owner_indicator.rotation = Vector3.ZERO
+			_carry_owner_indicator.position.y = carry_indicator_base_height - carry_indicator_radius * 0.55
 		return
 
 	_carry_indicator_animation_time += delta
@@ -2316,6 +2368,18 @@ func _update_carry_indicator_animation(delta: float) -> void:
 	_carry_indicator.scale = Vector3(pulse, 1.0 + pulse * 0.25, pulse)
 	_carry_indicator.position.y = carry_indicator_base_height + wave * carry_indicator_bob_height
 	_carry_indicator.rotation.y = fmod(_carry_indicator.rotation.y + carry_indicator_rotation_speed * delta, TAU)
+	if _carry_owner_indicator != null:
+		var owner_pulse := 1.0 + (wave - 0.5) * carry_indicator_pulse_amount
+		_carry_owner_indicator.scale = Vector3(owner_pulse, 1.0, owner_pulse)
+		_carry_owner_indicator.position.y = (
+			carry_indicator_base_height
+			- carry_indicator_radius * 0.55
+			+ wave * carry_indicator_bob_height * 0.35
+		)
+		_carry_owner_indicator.rotation.y = fmod(
+			_carry_owner_indicator.rotation.y - carry_indicator_rotation_speed * delta * 0.55,
+			TAU
+		)
 
 
 func _update_recovery_target_indicator_animation(delta: float) -> void:
@@ -2371,6 +2435,17 @@ func _get_indicator_payload_name() -> String:
 		return get_carried_item_name()
 
 	return ""
+
+
+func _get_carried_part_owner() -> RobotBase:
+	if not is_instance_valid(_carried_part):
+		return null
+
+	var owner_node := _carried_part.get_original_robot()
+	if owner_node is RobotBase:
+		return owner_node as RobotBase
+
+	return null
 
 
 func _clear_carried_item() -> void:

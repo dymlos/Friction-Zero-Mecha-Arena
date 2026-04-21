@@ -67,11 +67,38 @@ func _run() -> void:
 				"El indicador deberia usar el color configurado para left_arm."
 			)
 
+	var carry_owner_indicator := ally.get_node_or_null("CarryOwnerIndicator")
+	_assert(
+		carry_owner_indicator is MeshInstance3D,
+		"El portador deberia exponer un segundo marcador para conservar la identidad del dueño de la pieza."
+	)
+	if carry_owner_indicator is MeshInstance3D:
+		_assert(
+			(carry_owner_indicator as MeshInstance3D).visible,
+			"La marca de dueño deberia verse mientras el aliado transporta la pieza."
+		)
+		var owner_indicator_material := (carry_owner_indicator as MeshInstance3D).material_override as StandardMaterial3D
+		_assert(
+			owner_indicator_material != null,
+			"La marca de dueño deberia tener un material propio para teñirse con la identidad del robot original."
+		)
+		if owner_indicator_material != null:
+			var expected_owner_color := owner.get_identity_color()
+			_assert(
+				owner_indicator_material.emission.is_equal_approx(expected_owner_color),
+				"La marca de dueño deberia reutilizar el color de identidad del robot original."
+			)
+
 	var thrown := ally.throw_carried_part(Vector2.RIGHT, 7.5)
 	_assert(thrown, "El aliado deberia poder lanzar la parte para negar el rescate inmediato.")
 	_assert(not ally.is_carrying_part(), "Tras lanzar la parte, el aliado no deberia seguir marcado como portador.")
 	if ally_indicator is MeshInstance3D:
 		_assert(not (ally_indicator as MeshInstance3D).visible, "El indicador deberia ocultarse al soltar la parte.")
+	if carry_owner_indicator is MeshInstance3D:
+		_assert(
+			not (carry_owner_indicator as MeshInstance3D).visible,
+			"La marca de dueño deberia ocultarse al soltar la pieza."
+		)
 
 	owner.global_position = detached_part.global_position
 	var delivered_too_soon := detached_part.try_deliver_to_robot(owner)
