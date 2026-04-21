@@ -207,6 +207,14 @@ payload_name = "surge"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2, 0.45, 0)
 payload_name = "surge"
 
+[node name="NorthWestSupportInterferencePickup" parent="." instance=ExtResource("7_support_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.2, 0.45, -4.4)
+payload_name = "interference"
+
+[node name="SouthEastSupportInterferencePickup" parent="." instance=ExtResource("7_support_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2, 0.45, 4.4)
+payload_name = "interference"
+
 [node name="NorthSupportGate" parent="." instance=ExtResource("8_support_gate")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.8, 0.45, -10.8)
 

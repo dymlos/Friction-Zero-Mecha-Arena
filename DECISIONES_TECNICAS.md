@@ -357,9 +357,9 @@
    - `Main` ahora reserva `SupportRoot`, crea una `PilotSupportShip` cuando `record_robot_elimination()` deja a un aliado vivo en `Teams` y la limpia en cada `round_started`; `FFA` comparte la estructura base de escena pero no activa ese flujo.
    - Motivo: empezar a diferenciar Team vs Team sin romper la claridad del laboratorio libre ni abrir una segunda capa de reglas en el modo que todavia depende mas de supervivencia/oportunismo que de rescate coordinado.
 
-82. **La capa post-muerte arranca con ayudas pro-aliado, no interferencia ofensiva**
-   - `PilotSupportShip` se mantiene en un carril externo derivado de `ArenaBase.get_support_lane_spawn_position_near()`, recoge `PilotSupportPickup` ocultos hasta que exista soporte activo y, al gastar `throw_part`, puede entregar `estabilizador` o `energia` al aliado vivo; el roster solo agrega `apoyo` / `apoyo estabilizador` / `apoyo energia`.
-   - Motivo: Team vs Team necesitaba una primera accion util para el eliminado, pero empezar con daño externo o crowd-control sobre rivales habria aumentado mucho el riesgo de ruido visual y de “me gano un muerto”. Reusar hooks ya existentes del aliado mantiene comeback y rescate sin competir con el choque principal.
+82. **La capa post-muerte arranca desde apoyo aliado y suma una interferencia de corto alcance**
+   - `PilotSupportShip` se mantiene en un carril externo derivado de `ArenaBase.get_support_lane_spawn_position_near()`, recoge `PilotSupportPickup` ocultos hasta que exista soporte activo y, al gastar `throw_part`, puede entregar `estabilizador`, `energia`, `movilidad` o `interferencia`; el roster agrega `apoyo ...` segun la carga.
+   - Motivo: Team vs Team ya tenia comeback/rescate resuelto con hooks aliados; la siguiente mejora util era una presion tactica acotada, pero sin abrir otra capa de proyectiles ni sacar a la nave de su rol discreto.
 
 83. **La segunda ayuda post-muerte reutiliza `energy surge`, no un boost nuevo**
    - Los pickups laterales del carril externo ahora pueden cargar `energia`; al gastarla, `PilotSupportShip` llama a `RobotBase.apply_energy_surge()` sobre el aliado vivo y hereda la misma lectura compacta (`energia`) que ya existe para el pickup de borde.
@@ -367,25 +367,29 @@
 
 84. **La tercera ayuda post-muerte reutiliza el boost de movilidad ya existente**
    - `PilotSupportPickup` ahora tambien soporta `movilidad`; `PilotSupportShip` la consume llamando a `RobotBase.apply_mobility_boost()`, mientras el carril externo suma pickups extra sobre norte/sur y el roster reutiliza la misma lectura compacta `movilidad`/`impulso` que ya existia para los boosts de desplazamiento.
-   - Motivo: la capa post-muerte necesitaba una tercera decision pro-aliado antes de pensar en interferencia enemiga, pero abrir un buff nuevo solo para la nave habria duplicado reglas y telegraph. Reusar el estado de movilidad del robot mantiene el sistema chico, legible y alineado con la fantasia principal de reposicionarse para el siguiente choque.
+   - Motivo: la capa post-muerte necesitaba una tercera decision pro-aliado antes de abrir presion rival. Reusar el estado de movilidad del robot mantiene el sistema chico, legible y alineado con la fantasia principal de reposicionarse para el siguiente choque.
 
-85. **El carril post-muerte paso a ser un loop continuo, no “lado mas cercano”**
+85. **La interferencia de la nave reutiliza la supresion de `Baliza` y exige proximidad espacial**
+   - `PilotSupportPickup` ahora tambien soporta `interference`; `PilotSupportShip` solo puede gastarla si encuentra al rival vivo mas cercano dentro de `support_interference_range`, aplicandole `RobotBase.apply_control_zone_suppression(...)` con multiplicadores/duracion propios en vez de crear otro estado.
+   - Motivo: la tension correcta era obligar a la nave a asomarse al borde peligroso para molestar una jugada rival, no regalar un hechizo global ni sumar otra telemetria. Reusar `zona` mantiene el HUD compacto y el contrato legible.
+
+86. **El carril post-muerte paso a ser un loop continuo, no “lado mas cercano”**
    - `ArenaBase` ahora expone progreso/tangente/avance del support lane (`get_support_lane_progress_near()`, `get_support_lane_position_from_progress()`, `get_support_lane_tangent_from_progress()`, `advance_support_lane_progress()`), y `PilotSupportShip` guarda `_lane_progress` para moverse sobre ese recorrido continuo en vez de reproyectarse cada frame al borde mas cercano.
    - Motivo: el snap por lado mas cercano dejaba una nave funcional pero con poca sensacion de ruta externa; el loop perimetral mantiene la capa chica, acompaña la contraccion del arena y vuelve legible la decision de rodear esquinas sin meter todavia colisiones ni obstaculos propios.
 
-86. **La primera profundidad extra del carril externo entra como `gates` temporales**
+87. **La primera profundidad extra del carril externo entra como `gates` temporales**
    - `arena_blockout.tscn` ahora suma tres `SupportLaneGate` discretos sobre el loop perimetral; `Main` los activa solo cuando existe soporte post-muerte y `ArenaBase.get_support_lane_blocking_gate_progress()` deja que `PilotSupportShip` detecte si el tramo que intenta recorrer cruza un gate cerrado.
    - Motivo: Team vs Team necesitaba una primera decision de timing/ruta en la capa externa, pero meter colisiones fisicas, hazards ofensivos o pathfinding habria sobrecomplicado demasiado pronto el slice. Un gate binario, pequeño y legible agrega friccion real sin sacar a la nave del rol de apoyo.
 
-87. **La interferencia del carril se comunica en el mismo roster de apoyo**
+88. **La interferencia del carril se comunica en el mismo roster de apoyo**
    - Si `PilotSupportShip` intenta cruzar un gate cerrado, entra en una ventana corta `interferido`; el glow vira a naranja y `get_status_summary()` agrega esa palabra al mismo estado compacto `apoyo ...`.
 
-88. **La nave post-muerte suma un beacon diegético en vez de otra capa de HUD**
+89. **La nave post-muerte suma un beacon diegético en vez de otra capa de HUD**
    - `PilotSupportShip` ahora expone `StatusBeacon/RingVisual/PulseVisual` por encima del casco; el aro queda siempre visible con color de identidad y el pulso solo se enciende cuando la nave carga un `payload` o queda `interferida`.
    - Motivo: el slice Teams ya tenia profundidad mecanica, pero dependia demasiado del roster para entenderse en partida. Un beacon chico, ligado al propio actor y reutilizando el mismo acento cromatico refuerza lectura para jugador/espectador sin abrir UI nueva ni volver ruidosa la capa externa.
    - Motivo: preservar la legibilidad de pantalla compartida sin abrir otra UI. El propio carril telegraphia el bloqueo y el roster confirma por que la ayuda se demoro.
 
-89. **La lectura de rescate se mantiene tambien sobre el portador**
+90. **La lectura de rescate se mantiene tambien sobre el portador**
    - `RobotBase` conserva `CarryIndicator` para mostrar que tipo de payload lleva, pero cuando la carga es una `DetachedPart` tambien crea/mantiene `CarryOwnerIndicator`, un aro fino con el color de identidad del dueño original.
    - Motivo: la pieza tirada y el robot dueño ya explicaban urgencia/pertenencia/objetivo, pero al levantar la pieza se perdia la pista de “de quien es”. Duplicar esa pista sobre el portador mantiene claridad en 2v2 y FFA sin sumar otra linea persistente al HUD.
 

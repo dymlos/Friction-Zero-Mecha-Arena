@@ -11,6 +11,10 @@ signal state_changed(support_ship: PilotSupportShip)
 @export_range(0.05, 0.5, 0.01) var support_repair_ratio := 0.22
 @export_range(0.2, 3.0, 0.1) var support_energy_surge_duration := 1.6
 @export_range(0.2, 3.0, 0.1) var support_mobility_boost_duration := 1.9
+@export_range(0.2, 3.5, 0.1) var support_interference_duration := 1.5
+@export_range(1.0, 5.0, 0.1) var support_interference_range := 2.8
+@export_range(0.2, 1.0, 0.01) var support_interference_drive_multiplier := 0.78
+@export_range(0.2, 1.0, 0.01) var support_interference_control_multiplier := 0.72
 @export_range(0.1, 2.5, 0.1) var gate_disruption_duration := 0.65
 
 var owner_robot: RobotBase = null
@@ -87,20 +91,37 @@ func store_support_payload(payload_name: String) -> bool:
 
 
 func use_support_payload() -> bool:
-	var target_robot := _resolve_support_target()
-	if target_robot == null:
-		return false
+	var target_robot: RobotBase = null
 
 	match _support_payload_name:
 		PilotSupportPickup.PAYLOAD_STABILIZER:
+			target_robot = _resolve_support_target()
+			if target_robot == null:
+				return false
 			var repaired_part := target_robot.repair_most_damaged_part(target_robot.max_part_health * support_repair_ratio)
 			if repaired_part == "":
 				return false
 		PilotSupportPickup.PAYLOAD_SURGE:
+			target_robot = _resolve_support_target()
+			if target_robot == null:
+				return false
 			if not target_robot.apply_energy_surge(support_energy_surge_duration):
 				return false
 		PilotSupportPickup.PAYLOAD_MOBILITY:
+			target_robot = _resolve_support_target()
+			if target_robot == null:
+				return false
 			if not target_robot.apply_mobility_boost(support_mobility_boost_duration):
+				return false
+		PilotSupportPickup.PAYLOAD_INTERFERENCE:
+			target_robot = _resolve_enemy_interference_target()
+			if target_robot == null:
+				return false
+			if not target_robot.apply_control_zone_suppression(
+				support_interference_duration,
+				support_interference_drive_multiplier,
+				support_interference_control_multiplier
+			):
 				return false
 		_:
 			return false
@@ -221,8 +242,42 @@ func _get_support_payload_color() -> Color:
 		return Color(0.22, 0.84, 0.96, 1.0)
 	if _support_payload_name == PilotSupportPickup.PAYLOAD_MOBILITY:
 		return Color(0.2, 0.9, 0.74, 1.0)
+	if _support_payload_name == PilotSupportPickup.PAYLOAD_INTERFERENCE:
+		return Color(0.96, 0.38, 0.3, 1.0)
 
 	return Color(0.98, 0.8, 0.28, 1.0)
+
+
+func _resolve_enemy_interference_target() -> RobotBase:
+	if owner_robot == null:
+		return null
+	if owner_robot.get_parent() == null:
+		return null
+
+	var nearest_enemy: RobotBase = null
+	var nearest_distance := support_interference_range
+	for sibling in owner_robot.get_parent().get_children():
+		if not (sibling is RobotBase):
+			continue
+
+		var enemy_candidate := sibling as RobotBase
+		if enemy_candidate == owner_robot:
+			continue
+		if enemy_candidate.is_held_for_round_reset() or enemy_candidate.is_disabled_state():
+			continue
+		if owner_robot.is_ally_of(enemy_candidate):
+			continue
+
+		var planar_offset := enemy_candidate.global_position - global_position
+		planar_offset.y = 0.0
+		var distance := planar_offset.length()
+		if distance > nearest_distance:
+			continue
+
+		nearest_enemy = enemy_candidate
+		nearest_distance = distance
+
+	return nearest_enemy
 
 
 func _apply_color_to_visual(visual: MeshInstance3D, color: Color, enable_emission: bool) -> void:

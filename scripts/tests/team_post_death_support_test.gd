@@ -210,6 +210,51 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					"Tras gastar la carga de movilidad, el roster deberia limpiar el payload pendiente."
 				)
 
+			var support_interference_pickup: Node3D = null
+			for pickup in support_pickups:
+				if not (pickup is Node3D):
+					continue
+				if str((pickup as Node3D).get("payload_name")) == "interference":
+					support_interference_pickup = pickup as Node3D
+					break
+
+			_assert(
+				support_interference_pickup != null,
+				"El carril externo deberia ofrecer una interferencia ligera para presionar rivales sin abrir otra capa de combate."
+			)
+			if support_interference_pickup != null:
+				support_ship.global_position = support_interference_pickup.global_position
+				await _wait_frames(3)
+
+				_assert(
+					roster_label.text.contains("interferencia"),
+					"El roster deberia distinguir cuando la nave lleva una carga de interferencia."
+				)
+
+				var enemy_robot := robots[2]
+				_assert(
+					enemy_robot.has_method("is_control_zone_suppressed"),
+					"La interferencia ligera deberia reutilizar el contrato de supresion legible ya expuesto por RobotBase."
+				)
+				enemy_robot.global_position = support_ship.global_position + Vector3(2.0, 0.35, 0.0)
+				enemy_robot.velocity = Vector3.ZERO
+				await _wait_physics_frames(2)
+
+				Input.action_press("p2_throw_part")
+				await _wait_frames(2)
+				Input.action_release("p2_throw_part")
+				await _wait_frames(2)
+
+				if enemy_robot.has_method("is_control_zone_suppressed"):
+					_assert(
+						bool(enemy_robot.call("is_control_zone_suppressed")),
+						"La carga de interferencia deberia aplicar una supresion breve al rival cercano al carril."
+					)
+				_assert(
+					not roster_label.text.contains("apoyo interferencia"),
+					"Tras gastar la carga de interferencia, el roster deberia limpiar el payload pendiente."
+				)
+
 		var support_gates := get_nodes_in_group("support_lane_gates")
 		_assert(
 			not support_gates.is_empty(),
