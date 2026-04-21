@@ -77,9 +77,9 @@ func _measure_explosion_case(use_overdrive: bool) -> Dictionary:
 	result["damage_delta"] = starting_total_health - _get_total_part_health(other)
 	result["impulse_delta"] = other.external_impulse.length() - starting_impulse
 
-	owner.queue_free()
-	other.queue_free()
-	await process_frame
+	await create_timer(1.05).timeout
+	await _cleanup_node(owner)
+	await _cleanup_node(other)
 	return result
 
 
@@ -97,6 +97,17 @@ func _assert(condition: bool, message: String) -> void:
 
 	_failed = true
 	push_error(message)
+
+
+func _cleanup_node(node: Node) -> void:
+	if not is_instance_valid(node):
+		return
+
+	var parent := node.get_parent()
+	if parent != null:
+		parent.remove_child(node)
+	node.free()
+	await process_frame
 
 
 func _finish() -> void:

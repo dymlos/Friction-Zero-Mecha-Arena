@@ -69,6 +69,7 @@ func _run() -> void:
 		"El estado de ronda deberia dejar visible la ultima baja por explosion inestable."
 	)
 
+	await create_timer(1.0).timeout
 	await _cleanup_main(main)
 	_finish()
 
