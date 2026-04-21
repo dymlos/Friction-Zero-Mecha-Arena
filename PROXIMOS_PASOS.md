@@ -8,9 +8,9 @@
    - decidir si el siguiente paso del roster debe ser selector runtime, pasivas chicas o simplemente mas ajuste de multiplicadores por modo/mapa.
 
 2. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
-   - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.
+   - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` usando tambien el toggle `F1` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.
    - revisar si el modo contextual realmente limpia sin esconder decisiones tacticas como `Foco`, `item`, `carga`, `impulso`, `energia` o `3/4 partes`.
-   - decidir si alcanza con configurarlo desde `MatchConfig` o si la siguiente capa necesita un toggle runtime / preset mas visible para laboratorio local.
+   - decidir si el toggle runtime actual alcanza para laboratorio o si la siguiente capa necesita persistencia/preset mas visible por modo, ademas del `MatchConfig`.
    - playtestear si `damage_feedback_threshold` y `critical_damage_feedback_threshold` se leen bien con cuatro robots y arena en contracción.
    - decidir si el feedback geométrico actual ya alcanza o si conviene migrarlo a humo/chispas más ricos sin ensuciar pantalla compartida.
    - ajustar posición/escala de marcadores antes de sumar más VFX o UI.

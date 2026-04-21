@@ -250,6 +250,10 @@
    - `RobotArchetypeConfig` encapsula multiplicadores simples y `RobotBase` los aplica al arrancar; el laboratorio usa `Ariete`, `Grua`, `Cizalla` y `Patin` sobre la misma escena base.
    - Motivo: cerrar la brecha de identidad del roster con el menor costo técnico posible, manteniendo el proyecto entendible para un principiante y dejando la puerta abierta a skills/pasivas propias solo si el tuning no alcanza.
 
+63. **El toggle runtime del HUD vive como override local, no en el recurso compartido**
+   - `MatchController` conserva `MatchConfig.hud_detail_mode` como default de arranque, pero permite ciclar una sobreescritura de sesion; `Main` expone ese cambio con `F1` para playtests locales.
+   - Motivo: comparar `explicito/contextual` dentro del mismo laboratorio sin ensuciar escenas nuevas ni mutar el `.tres` compartido entre instancias/tests.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

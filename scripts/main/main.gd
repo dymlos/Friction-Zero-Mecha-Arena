@@ -10,6 +10,7 @@ const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
 const EdgeMobilityPickup = preload("res://scripts/pickups/edge_mobility_pickup.gd")
 const EdgeEnergyPickup = preload("res://scripts/pickups/edge_energy_pickup.gd")
 const EdgePulsePickup = preload("res://scripts/pickups/edge_pulse_pickup.gd")
+const HUD_DETAIL_TOGGLE_KEY := KEY_F1
 
 @export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
 
@@ -34,12 +35,32 @@ func _ready() -> void:
 	match_controller.start_match()
 	_apply_match_pressure_to_arena()
 	_report_startup_structure()
-	ui.show_status(_build_startup_status())
+	ui.show_status(_build_hud_toggle_status())
 	_refresh_hud()
 
 
 func _process(_delta: float) -> void:
 	_apply_match_pressure_to_arena()
+	_refresh_hud()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not (event is InputEventKey):
+		return
+
+	var key_event := event as InputEventKey
+	if not key_event.pressed or key_event.echo:
+		return
+	if key_event.keycode != HUD_DETAIL_TOGGLE_KEY:
+		return
+
+	cycle_hud_detail_mode()
+	get_viewport().set_input_as_handled()
+
+
+func cycle_hud_detail_mode() -> void:
+	match_controller.cycle_hud_detail_mode()
+	ui.show_status(_build_hud_toggle_status())
 	_refresh_hud()
 
 
@@ -241,6 +262,13 @@ func _build_startup_status() -> String:
 	return "Friction Zero: %s robots en arena | %s" % [
 		match_controller.registered_robots.size(),
 		control_summary,
+	]
+
+
+func _build_hud_toggle_status() -> String:
+	return "%s | %s con F1" % [
+		_build_startup_status(),
+		match_controller.get_hud_detail_mode_label(),
 	]
 
 

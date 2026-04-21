@@ -49,6 +49,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - HUD dual base configurable desde `MatchConfig`:
   - modo `explicito`: mantiene `Modo`, `Objetivo`, hints de control, `4/4 partes` y energia `Eq` siempre visibles en la misma UI compacta
   - modo `contextual`: oculta esa informacion estable y solo vuelve a exponer dano, redistribucion, buffs, items/cargas y partes perdidas cuando se vuelven tacticamente relevantes
+  - `Main` ya puede alternar ambos modos en runtime con `F1`, usando un override local de sesion para playtests sin mutar el recurso compartido
   - ambos modos siguen reutilizando el mismo HUD compacto de ronda/roster y tambien resumen `Borde | ...` con los tipos activos de pickup de la ronda
 - lectura de eliminacion compacta en el mismo HUD:
   - robots inutilizados muestran cuenta atras breve de explosion en el roster
@@ -67,6 +68,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 
 ## Lo completado en esta iteracion
 
+- Se volvio realmente testeable el HUD dual dentro del laboratorio:
+  - `MatchController` ahora admite un override local del detalle HUD y mantiene `MatchConfig` como default de arranque, en vez de mutar el recurso compartido
+  - `Main` expone `cycle_hud_detail_mode()` y lo cablea a `F1` para comparar `explicito/contextual` durante una partida real sin salir de la escena
+  - `hud_runtime_toggle_test.gd` cubre el cambio live del HUD y valida que una escena nueva siga arrancando en `EXPLICIT`
 - Se agregó la primera capa reusable de arquetipos sin abrir un sistema nuevo de selección:
   - existe un recurso nuevo `RobotArchetypeConfig` con multiplicadores simples de movimiento, aguante, empuje, daño y rescate
   - `RobotBase` ahora puede exportar un `archetype_config`, aplicarlo al arrancar y exponer `get_archetype_label()` / `get_roster_display_name()` para HUD/tests
@@ -218,6 +223,8 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_mode_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_lab_scene_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_round_resolution_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/hud_detail_mode_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/hud_runtime_toggle_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_part_return_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_explosion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_unstable_explosion_test.gd`
@@ -255,7 +262,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay cuatro tipos de pickup, con `Equipos` usando dos pares y `FFA` tres tipos activos por ronda; todavia faltan pesos finos por modo/mapa, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
-- El HUD dual ya existe, pero hoy se elige por `MatchConfig`; todavia no hay toggle runtime por jugador/sesion ni criterio cerrado sobre que modo conviene dejar por defecto en `Equipos` y `FFA`.
+- El HUD dual ya existe y ahora puede alternarse en runtime con `F1` sobre un override local; sigue pendiente decidir por playtest que modo conviene dejar por defecto en `Equipos` y `FFA`, y si hace falta persistencia/preset por modo ademas del toggle de laboratorio.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats, replay ni explicación explícita de por qué perdió cada jugador.

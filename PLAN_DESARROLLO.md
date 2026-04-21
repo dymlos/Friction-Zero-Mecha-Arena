@@ -34,6 +34,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Etapa 8: primer roster de arquetipos ya integrado sobre los sistemas existentes. `RobotArchetypeConfig` aplica multiplicadores simples y el laboratorio 4P ahora arranca con `Ariete`, `Grua`, `Cizalla` y `Patin`, visibles en roster/marcador sin abrir otra UI ni meter todavía skills exclusivas.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, marcadores de humo/chispa por parte dañada, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
 - HUD dual base: `MatchConfig` ya deja alternar entre un modo `explicito` (mantiene `Modo`, `Objetivo`, hints de control, `4/4 partes` y `Eq` siempre visibles) y un modo `contextual` que oculta esa informacion estable y solo vuelve a exponer daño, foco energetico, buffs, items y cargas cuando realmente importan.
+- Toggle runtime del HUD listo: `Main` ya puede ciclar ese mismo HUD dual con `F1` durante playtests locales usando un override de sesion en `MatchController`, sin mutar el `MatchConfig` compartido ni alterar el default de escenas nuevas.
 - Lectura de borde reforzada: el mismo HUD compacto ahora añade `Borde | ...` con los tipos activos de pickup de la ronda para que el layout semialeatorio sea legible en playtests sin abrir otra capa de UI.
 - Lectura de eliminacion reforzada: el roster ahora deja visible `Inutilizado | explota Xs` y tambien `Inutilizado | inestable | explota Xs` cuando la baja viene de overdrive; tras la explosion conserva `Fuera | vacio/explosion/explosion inestable`, el bloque superior mantiene `Ultima baja | ...` y, cuando la ronda ya cerro, añade `Resumen | ...` con el orden de bajas para explicar por que se perdio una pieza clave sin sumar otra capa de UI.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
@@ -454,7 +455,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 **Estado actual del prototipo:**
 - ya existe un primer slice de HUD dual configurable desde `MatchConfig`, sin duplicar escenas ni abrir otra capa de UI
 - el modo `explicito` deja visibles `Modo`, `Objetivo`, hints de control y estado completo del roster; el modo `contextual` conserva marcador/estado base y solo reexpone dano, energia, buffs, items y cargas cuando cambian
-- sigue pendiente decidir por playtest si alcanza con configurarlo por recurso/escena o si hace falta un toggle runtime mas visible para sesiones locales
+- sigue pendiente decidir por playtest si el toggle runtime actual (`F1`) alcanza para laboratorio o si conviene sumar persistencia/preset por modo ademas del default por recurso
 
 ## Dependencias resumidas
 

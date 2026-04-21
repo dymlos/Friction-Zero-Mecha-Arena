@@ -31,6 +31,7 @@ var _competitor_order: Array[String] = []
 var _last_elimination_summary := ""
 var _round_status_line := ""
 var _round_elapsed_seconds := 0.0
+var _hud_detail_mode_override := -1
 
 
 func register_robot(robot: RobotBase) -> void:
@@ -102,10 +103,25 @@ func get_last_elimination_summary() -> String:
 
 
 func get_hud_detail_mode() -> MatchConfig.HudDetailMode:
+	if _hud_detail_mode_override >= 0:
+		return _hud_detail_mode_override
 	if match_config == null:
 		return MatchConfig.HudDetailMode.EXPLICIT
 
 	return match_config.hud_detail_mode
+
+
+func get_hud_detail_mode_label() -> String:
+	return "HUD contextual" if is_contextual_hud_enabled() else "HUD explicito"
+
+
+func cycle_hud_detail_mode() -> MatchConfig.HudDetailMode:
+	var next_mode := MatchConfig.HudDetailMode.CONTEXTUAL
+	if is_contextual_hud_enabled():
+		next_mode = MatchConfig.HudDetailMode.EXPLICIT
+
+	_hud_detail_mode_override = next_mode
+	return next_mode
 
 
 func is_contextual_hud_enabled() -> bool:
