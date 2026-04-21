@@ -563,15 +563,38 @@ func _build_robot_recap_panel_line(robot: RobotBase) -> String:
 		var source_suffix := _get_elimination_source_suffix(robot)
 		if source_suffix != "":
 			cause_label += source_suffix
-		return "%s | baja %s | %s" % [robot.display_name, elimination_order, cause_label]
+		return "%s | baja %s | %s | %s" % [
+			robot.display_name,
+			elimination_order,
+			cause_label,
+			_build_robot_part_state_summary(robot),
+		]
 
 	if robot.is_disabled_state():
 		var detail := "inutilizado"
 		if robot.is_disabled_explosion_unstable():
 			detail = "inutilizado | inestable"
-		return "%s | %s" % [robot.display_name, detail]
+		return "%s | %s | %s" % [robot.display_name, detail, _build_robot_part_state_summary(robot)]
 
-	return "%s | sigue en pie" % robot.display_name
+	return "%s | sigue en pie | %s" % [robot.display_name, _build_robot_part_state_summary(robot)]
+
+
+func _build_robot_part_state_summary(robot: RobotBase) -> String:
+	if robot == null:
+		return ""
+
+	var segments: Array[String] = ["%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()]]
+	var missing_parts: Array[String] = []
+	for part_name in RobotBase.BODY_PARTS:
+		if robot.get_part_health(part_name) > 0.0:
+			continue
+
+		missing_parts.append(RobotBase.get_part_display_name(part_name))
+
+	if not missing_parts.is_empty():
+		segments.append("sin %s" % ", ".join(missing_parts))
+
+	return " | ".join(segments)
 
 
 func _register_competitor(robot: RobotBase) -> void:

@@ -78,6 +78,10 @@
    - `MatchController.get_match_result_lines()` ahora agrega el mismo `_build_robot_recap_panel_line(robot)` que usa el recap lateral, de modo que `MatchResultPanel` repite `Player X | baja N | causa` o `sigue en pie` sin mantener otra estructura paralela.
    - Motivo: la vista centrada de cierre es la mas visible y antes dependia del recap lateral para responder “como perdi”; reutilizar la misma linea compacta mejora esa explicacion sin abrir UI nueva ni duplicar telemetria.
 
+85. **La condicion final de extremidades vive dentro de la misma linea compacta por robot**
+   - `_build_robot_recap_panel_line(robot)` ahora tambien agrega `N/4 partes` y, cuando corresponde, `sin brazo/pierna ...` usando el estado modular real de `RobotBase`.
+   - Motivo: la causa de baja por si sola no explicaba en que estado quedo cada robot; sumar el snapshot modular final refuerza el “como perdi” y el “como sobrevivi” reutilizando el mismo contrato de recap/resultado, sin otra UI ni otra telemetria.
+
 16. **Ajuste de ritmo de duelo via parámetros exportados**
    - Se prefirió reajustar el duelo 2P ajustando `RobotBase` en lugar de agregar una mecánica nueva.
    - Motivo: el equilibrio de inercia, alcance/impulso y daño de choque define la sensación principal del prototipo sin comprometer la simplicidad técnica existente.
