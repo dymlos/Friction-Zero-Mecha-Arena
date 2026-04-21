@@ -5,4 +5,5 @@
 
 [node name="MatchController" type="Node"]
 script = ExtResource("1_controller")
+match_mode = 1
 match_config = ExtResource("2_config")

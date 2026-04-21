@@ -19,6 +19,7 @@ func _ready() -> void:
 	# La logica concreta vive en scripts mas chicos para que el proyecto crezca ordenado.
 	_configure_playable_prototype()
 	_register_existing_robots()
+	match_controller.start_match()
 	_report_startup_structure()
 	ui.show_status(
 		"Friction Zero: %s robots en arena | controles locales por slot: P1 WASD, P2 flechas, P3 numpad, P4 IJKL"
@@ -109,6 +110,7 @@ func _get_arena_spawn_points() -> Array[Marker3D]:
 
 
 func _refresh_hud() -> void:
+	ui.show_round_state(match_controller.get_round_state_lines())
 	ui.show_roster(match_controller.get_robot_status_lines())
 
 
@@ -122,10 +124,15 @@ func _report_startup_structure() -> void:
 
 
 func _on_robot_fell_into_void(robot: RobotBase) -> void:
-	ui.show_status("%s cayo al vacio. Reinicio de prototipo..." % robot.display_name)
+	var message := match_controller.record_robot_elimination(robot, MatchController.EliminationCause.VOID)
+	if message != "":
+		ui.show_status(message)
 
 
 func _on_robot_respawned(robot: RobotBase) -> void:
+	if match_controller.is_round_reset_pending():
+		return
+
 	ui.show_status("%s volvio al punto de prueba" % robot.display_name)
 
 
@@ -150,4 +157,6 @@ func _on_robot_disabled(robot: RobotBase) -> void:
 
 
 func _on_robot_exploded(robot: RobotBase) -> void:
-	ui.show_status("%s exploto tras quedar inutilizado" % robot.display_name)
+	var message := match_controller.record_robot_elimination(robot, MatchController.EliminationCause.EXPLOSION)
+	if message != "":
+		ui.show_status(message)

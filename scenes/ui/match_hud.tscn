@@ -22,12 +22,22 @@ offset_right = 520.0
 offset_bottom = 48.0
 text = "Friction Zero: prototipo base"
 
+[node name="RoundLabel" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 20.0
+offset_top = 52.0
+offset_right = 560.0
+offset_bottom = 116.0
+theme_override_colors/font_color = Color(0.96, 0.82, 0.4, 1)
+text = ""
+
 [node name="RosterLabel" type="Label" parent="Root"]
 unique_name_in_owner = true
 layout_mode = 1
 offset_left = 20.0
-offset_top = 56.0
+offset_top = 122.0
 offset_right = 620.0
-offset_bottom = 196.0
+offset_bottom = 280.0
 theme_override_colors/font_color = Color(0.88, 0.91, 0.94, 1)
 text = ""

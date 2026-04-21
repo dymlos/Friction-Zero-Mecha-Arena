@@ -39,8 +39,8 @@
    - Motivo: elimina el problema de varios robots leyendo las mismas teclas o todos los joysticks a la vez, que hacia engañosa cualquier prueba local de combate.
 
 10. **HUD de roster compacto en vez de barra pesada**
-   - El HUD nuevo solo lista estado, partes activas y carga de parte por robot.
-   - Motivo: mejora la lectura del loop modular y del rescate sin romper la prioridad del proyecto por claridad y pantalla compartida limpia.
+   - El HUD nuevo lista estado de ronda, marcador compacto y estado/carga por robot, sin barras invasivas.
+   - Motivo: mejora la lectura del loop modular y del cierre de ronda sin romper la prioridad del proyecto por claridad y pantalla compartida limpia.
 
 11. **Redistribucion de energia discreta por foco de parte**
    - Cambiar el foco reasigna energia entre las cuatro partes usando presets simples en vez de sliders o menus.
@@ -77,6 +77,18 @@
 19. **Tests headless con salida confiable**
    - Los scripts de `scripts/tests/` ahora conservan un flag `_failed` y finalizan con `quit(1 if _failed else 0)`.
    - Motivo: evitar falsos verdes en automatización cuando una aserción registra error pero el script llega al `quit()` final.
+
+20. **Scoring de ronda simple y simétrico para el prototipo**
+   - Ring-out y destrucción total cuentan igual: eliminan al robot de la ronda y el último contendiente en pie suma un punto.
+   - Motivo: cerrar el sandbox infinito con la menor cantidad de reglas nuevas, sin comprometer todavía el diseño final de puntuación por modo.
+
+21. **Robots eliminados quedan fuera hasta el reset común**
+   - `RobotBase` ahora puede quedar retenido para el reset de ronda en vez de auto-respawnear inmediatamente tras vacío o explosión.
+   - Motivo: preservar lectura del resultado, evitar que una baja decisiva se “deshaga” sola y mantener el cierre de ronda legible.
+
+22. **Cierre de ronda validado sobre la escena real**
+   - `match_round_resolution_test.gd` usa `main.tscn` para comprobar victorias por vacío y destrucción total, marcador y reset conjunto.
+   - Motivo: la lógica de ronda depende de `Main`, `MatchController`, HUD y lifecycle de `RobotBase`; probar piezas aisladas dejaría huecos importantes.
 
 ## Criterios mantenidos
 

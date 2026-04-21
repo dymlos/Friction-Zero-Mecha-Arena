@@ -195,6 +195,7 @@ var _planar_velocity := Vector3.ZERO
 var _attack_cooldown_remaining := 0.0
 var _is_respawning := false
 var _is_disabled := false
+var _held_for_round_reset := false
 var _starting_collision_layer := 1
 var _starting_collision_mask := 1
 var _was_joypad_attack_pressed := false
@@ -464,6 +465,27 @@ func release_detached_part(detached_part: DetachedPart = null) -> void:
 	_refresh_visual_state()
 
 
+func hold_for_round_reset() -> void:
+	if _held_for_round_reset:
+		return
+
+	_held_for_round_reset = true
+	_is_respawning = true
+	_attack_cooldown_remaining = 0.0
+	_planar_velocity = Vector3.ZERO
+	external_impulse = Vector3.ZERO
+	_deny_carried_part_if_any()
+	_exit_disabled_state()
+	visible = false
+	collision_layer = 0
+	collision_mask = 0
+	set_physics_process(false)
+
+
+func is_held_for_round_reset() -> bool:
+	return _held_for_round_reset
+
+
 func is_fully_disabled() -> bool:
 	for part_name in BODY_PARTS:
 		if get_part_health(part_name) > 0.0:
@@ -525,6 +547,8 @@ func fall_into_void() -> void:
 	set_physics_process(false)
 
 	await get_tree().create_timer(0.75).timeout
+	if _held_for_round_reset:
+		return
 	reset_to_spawn()
 
 
@@ -536,6 +560,7 @@ func reset_to_spawn() -> void:
 	external_impulse = Vector3.ZERO
 	_attack_cooldown_remaining = 0.0
 	_carried_part = null
+	_held_for_round_reset = false
 	visible = true
 	collision_layer = _starting_collision_layer
 	collision_mask = _starting_collision_mask
@@ -1414,6 +1439,8 @@ func _start_disabled_respawn() -> void:
 	collision_mask = 0
 	set_physics_process(false)
 	await get_tree().create_timer(0.9).timeout
+	if _held_for_round_reset:
+		return
 	reset_to_spawn()
 
 

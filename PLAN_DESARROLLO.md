@@ -4,19 +4,20 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-21
 
-- Etapa 0 a 3: base jugable ya integrada en `main.tscn` con arena, camara compartida, empuje, caida al vacio y respawn de prototipo.
+- Etapa 0 a 3: base jugable ya integrada en `main.tscn` con arena, camara compartida, empuje, caida al vacio y cierre de ronda simple por ultimo robot/equipo en pie.
 - Bootstrap local mas claro: `main.gd` ahora alinea robots con los spawns del arena blockout, asigna slots de jugador y admite 4 jugadores de teclado/slot por defecto para laboratorio 2v2.
 - Input local separado: `RobotBase` resuelve perfiles de teclado por slot y deja de leer joysticks "de todos" cuando el robot ya usa teclado.
 - Etapa 2v2: laboratorio 2v2 preparado con 4 robots por escena y `local_player_count=4`, incluyendo equipos por parejas para validar rescate aliado.
 - Validacion 2v2: el loop de rescate/negacion ya tiene cobertura headless en `main.tscn`, incluyendo indicador de carga visible y ventana de `throw_pickup_delay`.
+- Scoreboard minimo: `MatchController` ya registra bajas por vacio o explosion, suma ronda al ultimo contendiente en pie y reinicia todos los robots juntos tras una pausa corta.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
 - Etapa 2 y 3: el ritmo de choque del laboratorio 2P ya fue afinado en `RobotBase` para que los intercambios sean más fluidos sin perder el carácter de choque decisivo.
 - Etapa 5: primer slice funcional implementado. Cada robot ahora puede redistribuir energia hacia una parte foco, alterar de forma real el empuje o la traccion y activar un overdrive corto con recuperacion/cooldown.
 - Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
-- Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y luego respawnea para mantener el match jugable.
-- Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, mensajes breves, foco energetico visible en el core y un roster compacto por robot para leer estado/carga/energia sin HUD pesado.
+- Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun.
+- Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
-- Pendiente prioritario: validar rescate y negación en 2v2 real, ajustar timers de captura/negación y empezar cierre de ronda con condiciones de victoria.
+- Pendiente prioritario: playtestear rescate/negacion con presion real de ronda, decidir si ring-out y destruccion deben puntuar igual en match largo y preparar un cierre de partida mas alla del marcador infinito.
 
 ## Principios de orden
 
@@ -122,6 +123,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - camara que esconda el peligro o saque jugadores de foco
 
 **Dependencias:** Etapas 1 y 2.
+
+**Estado actual del prototipo:**
+- el vacio ya elimina al robot de la ronda actual
+- el ultimo robot/equipo en pie suma una ronda
+- el HUD minimo ya muestra ronda y marcador, sin sumar barras pesadas
+- pendiente: definir cierre de match (por ejemplo first-to-X) y si la puntuacion debe distinguir vacio vs destruccion
 
 ## Etapa 4 - Danio modular por brazos y piernas
 
@@ -229,9 +236,9 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - pickup por cercania sin input extra
 - transporte que bloquea el ataque prototipo
 - negacion basica si el portador cae al vacio o lanza la parte fuera del contexto inmediato
-- cuerpo inutilizado con explosion diferida y respawn posterior
+- cuerpo inutilizado con explosion diferida; si la explosion cierra la ronda, el robot espera el reset comun
 - feedback visual de transporte implementado con indicador diegetico en `RobotBase`
-- pendiente: rescate cooperativo mas visible en sesiones activas y ajuste fino de radio de retorno/timer de negación en 2v2
+- pendiente: rescate cooperativo mas visible en sesiones activas y ajuste fino de radio de retorno/timer de negación en 2v2 con la nueva presión de ronda
 
 ## Etapa 8 - Primeros arquetipos jugables
 
