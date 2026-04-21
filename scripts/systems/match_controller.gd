@@ -288,6 +288,9 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		if robot.is_player_controlled:
 			segments.append(robot.get_input_hint())
 		segments.append(robot.get_energy_state_summary())
+	var core_skill_summary := robot.get_core_skill_status_summary()
+	if core_skill_summary != "":
+		segments.append(core_skill_summary)
 	if robot.is_energy_surge_active():
 		segments.append("energia")
 	if robot.is_mobility_boost_active():

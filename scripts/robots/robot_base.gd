@@ -278,6 +278,8 @@ var _overdrive_cooldown_remaining := 0.0
 var _energy_surge_part_name := ""
 var _energy_surge_remaining := 0.0
 var _mobility_boost_remaining := 0.0
+var _core_skill_charges := 0
+var _core_skill_recharge_remaining := 0.0
 var _hard_torso_world_direction := Vector3.FORWARD
 var _disabled_explosion_is_unstable := false
 var _last_disabled_explosion_was_unstable := false
@@ -465,6 +467,73 @@ func get_mobility_boost_time_left() -> float:
 	return maxf(_mobility_boost_remaining, 0.0)
 
 
+func has_core_skill() -> bool:
+	if archetype_config == null:
+		return false
+
+	return (
+		archetype_config.core_skill_type != RobotArchetypeConfig.CoreSkillType.NONE
+		and get_core_skill_max_charges() > 0
+		and get_core_skill_label() != ""
+	)
+
+
+func get_core_skill_label() -> String:
+	if archetype_config == null:
+		return ""
+
+	return archetype_config.core_skill_label
+
+
+func get_core_skill_charge_count() -> int:
+	return _core_skill_charges
+
+
+func get_core_skill_max_charges() -> int:
+	if archetype_config == null:
+		return 0
+
+	return maxi(archetype_config.core_skill_max_charges, 0)
+
+
+func get_core_skill_status_summary() -> String:
+	if not has_core_skill():
+		return ""
+
+	return "skill %s %s/%s" % [
+		get_core_skill_label(),
+		get_core_skill_charge_count(),
+		get_core_skill_max_charges(),
+	]
+
+
+func use_core_skill() -> bool:
+	if not has_core_skill():
+		return false
+	if _is_respawning or _is_disabled:
+		return false
+	if is_instance_valid(_carried_part):
+		return false
+	if _core_skill_charges <= 0:
+		return false
+
+	var used := false
+	match archetype_config.core_skill_type:
+		RobotArchetypeConfig.CoreSkillType.PULSE_SHOT:
+			used = _spawn_core_skill_pulse()
+		_:
+			used = false
+
+	if not used:
+		return false
+
+	_core_skill_charges = maxi(_core_skill_charges - 1, 0)
+	if _core_skill_charges < get_core_skill_max_charges() and _core_skill_recharge_remaining <= 0.0:
+		_core_skill_recharge_remaining = _get_core_skill_recharge_seconds()
+	_refresh_visual_state()
+	return true
+
+
 func is_energy_surge_active() -> bool:
 	return _energy_surge_remaining > 0.0
 
@@ -648,6 +717,7 @@ func _physics_process(delta: float) -> void:
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
 	_update_energy_state(delta)
 	_update_temporary_boosts(delta)
+	_update_core_skill_state(delta)
 	_update_energy_controls()
 	_update_prototype_movement(delta)
 	_update_control_mode_orientation(delta)
@@ -674,6 +744,7 @@ func reset_modular_state() -> void:
 	_energy_surge_part_name = ""
 	_energy_surge_remaining = 0.0
 	_mobility_boost_remaining = 0.0
+	_reset_core_skill_state()
 	_disabled_explosion_is_unstable = false
 	_last_disabled_explosion_was_unstable = false
 	_carried_item_name = ""
@@ -1051,6 +1122,24 @@ func _update_prototype_attack() -> void:
 
 
 func _spawn_pulse_charge() -> bool:
+	return _spawn_pulse_bolt(
+		pulse_charge_projectile_speed,
+		pulse_charge_projectile_lifetime,
+		pulse_charge_impulse,
+		pulse_charge_damage
+	)
+
+
+func _spawn_core_skill_pulse() -> bool:
+	return _spawn_pulse_bolt(
+		pulse_charge_projectile_speed * _get_core_skill_projectile_speed_multiplier(),
+		pulse_charge_projectile_lifetime * _get_core_skill_projectile_lifetime_multiplier(),
+		pulse_charge_impulse * _get_core_skill_impulse_multiplier(),
+		pulse_charge_damage * _get_core_skill_damage_multiplier()
+	)
+
+
+func _spawn_pulse_bolt(projectile_speed: float, lifetime: float, push_impulse: float, damage: float) -> bool:
 	var scene_instance := PULSE_BOLT_SCENE.instantiate()
 	if not (scene_instance is PulseBolt):
 		return false
@@ -1069,10 +1158,10 @@ func _spawn_pulse_charge() -> bool:
 		self,
 		spawn_position,
 		forward,
-		pulse_charge_projectile_speed,
-		pulse_charge_projectile_lifetime,
-		pulse_charge_impulse,
-		pulse_charge_damage
+		projectile_speed,
+		lifetime,
+		push_impulse,
+		damage
 	)
 	return true
 
@@ -1273,12 +1362,41 @@ func _update_temporary_boosts(delta: float) -> void:
 		_refresh_visual_state()
 
 
+func _update_core_skill_state(delta: float) -> void:
+	if not has_core_skill():
+		_core_skill_charges = 0
+		_core_skill_recharge_remaining = 0.0
+		return
+
+	var max_charges := get_core_skill_max_charges()
+	if _core_skill_charges >= max_charges:
+		_core_skill_charges = max_charges
+		_core_skill_recharge_remaining = 0.0
+		return
+
+	var recharge_seconds := _get_core_skill_recharge_seconds()
+	if recharge_seconds <= 0.0:
+		return
+
+	_core_skill_recharge_remaining = maxf(_core_skill_recharge_remaining - delta, 0.0)
+	if _core_skill_recharge_remaining > 0.0:
+		return
+
+	_core_skill_charges = mini(_core_skill_charges + 1, max_charges)
+	if _core_skill_charges < max_charges:
+		_core_skill_recharge_remaining = recharge_seconds
+	_refresh_visual_state()
+
+
 func _update_energy_controls() -> void:
 	if not is_player_controlled or _is_disabled:
 		return
 
-	if is_instance_valid(_carried_part) and _is_throw_part_just_pressed():
-		throw_carried_part(_get_move_input_vector())
+	if _is_throw_part_just_pressed():
+		if is_instance_valid(_carried_part):
+			throw_carried_part(_get_move_input_vector())
+		else:
+			use_core_skill()
 
 	if _energy_shift_cooldown_remaining <= 0.0:
 		if _is_energy_prev_just_pressed():
@@ -1455,6 +1573,46 @@ func _get_energy_focus_color() -> Color:
 	if _selected_energy_part_name.contains("leg"):
 		return Color(0.2, 0.64, 0.92, 1.0)
 	return Color(0.98, 0.58, 0.14, 1.0)
+
+
+func _reset_core_skill_state() -> void:
+	_core_skill_charges = get_core_skill_max_charges()
+	_core_skill_recharge_remaining = 0.0
+
+
+func _get_core_skill_recharge_seconds() -> float:
+	if archetype_config == null:
+		return 0.0
+
+	return maxf(archetype_config.core_skill_recharge_seconds, 0.0)
+
+
+func _get_core_skill_projectile_speed_multiplier() -> float:
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.core_skill_projectile_speed_multiplier, 0.1)
+
+
+func _get_core_skill_projectile_lifetime_multiplier() -> float:
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.core_skill_projectile_lifetime_multiplier, 0.1)
+
+
+func _get_core_skill_impulse_multiplier() -> float:
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.core_skill_impulse_multiplier, 0.1)
+
+
+func _get_core_skill_damage_multiplier() -> float:
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.core_skill_damage_multiplier, 0.1)
 
 
 func _get_energy_visual_blend() -> float:

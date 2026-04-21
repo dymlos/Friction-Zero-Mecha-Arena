@@ -259,6 +259,14 @@
    - `RobotBase` las resuelve dentro de `apply_impulse`, `restore_part`, `receive_attack_hit_from_robot` / `receive_collision_hit_from_robot` y `apply_mobility_boost`, mientras `PulseBolt` tambien pasa el atacante para no romper la identidad de `Cizalla` fuera del melee.
    - Motivo: profundizar la identidad del roster sin abrir todavia skills activas, UI nueva ni ramas de codigo por robot; se apoya en sistemas que ya eran jugables y legibles en el laboratorio actual.
 
+65. **La primera skill propia reutiliza `PulseBolt` y la accion de utilidad ya existente**
+   - `RobotArchetypeConfig` ahora puede declarar `core_skill_type/label/cargas/recarga`, y `RobotBase` consume esa info para disparar una skill desde `throw_part` cuando no lleva una pieza.
+   - Motivo: abrir un primer arquetipo Poke/Skillshot sin sumar botones nuevos, manteniendo la regla importante de que cargar una parte bloquea otras habilidades activas.
+
+66. **`Aguja` se expone primero en FFA, no en el laboratorio 2v2**
+   - `main_ffa.tscn` reemplaza el slot de `Grua` por `Aguja`, mientras `main.tscn` conserva `Ariete/Grua/Cizalla/Patin` para seguir priorizando rescate aliado en equipos.
+   - Motivo: FFA gana oportunismo y poke legible sin debilitar el laboratorio 2v2 que hoy valida mejor asistencia/recuperacion.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

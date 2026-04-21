@@ -1,6 +1,8 @@
 extends Resource
 class_name RobotArchetypeConfig
 
+enum CoreSkillType { NONE, PULSE_SHOT }
+
 @export var archetype_label := ""
 
 @export_group("Movement")
@@ -27,3 +29,13 @@ class_name RobotArchetypeConfig
 @export_range(1.0, 1.8, 0.01) var damaged_part_bonus_damage_multiplier := 1.0
 @export_range(0.0, 0.5, 0.01) var return_support_repair_ratio := 0.0
 @export_range(1.0, 2.0, 0.01) var mobility_boost_duration_multiplier := 1.0
+
+@export_group("Core Skill")
+@export var core_skill_type: CoreSkillType = CoreSkillType.NONE
+@export var core_skill_label := ""
+@export_range(0, 4, 1) var core_skill_max_charges := 0
+@export_range(0.0, 12.0, 0.1) var core_skill_recharge_seconds := 0.0
+@export_range(0.6, 1.6, 0.01) var core_skill_projectile_speed_multiplier := 1.0
+@export_range(0.6, 1.6, 0.01) var core_skill_projectile_lifetime_multiplier := 1.0
+@export_range(0.6, 1.6, 0.01) var core_skill_impulse_multiplier := 1.0
+@export_range(0.6, 1.6, 0.01) var core_skill_damage_multiplier := 1.0
