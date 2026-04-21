@@ -258,6 +258,14 @@
    - `RobotBase` ahora crea `DisabledWarningIndicator`, un anillo pegado al piso que solo aparece mientras el cuerpo sigue inutilizado; usa `disabled_explosion_radius` como escala base y reaplica el multiplicador `inestable` cuando corresponde.
    - Motivo: el roster ya avisaba que el casco iba a explotar, pero faltaba mostrar sobre la arena la amenaza espacial real para sostener claridad en pantalla compartida sin otra UI.
 
+61. **FFA rapido vive en una escena dedicada, no ajustando el laboratorio libre base**
+   - `scenes/main/main_ffa_validation.tscn`, `arena_ffa_validation.tscn` y `ffa_validation_match_config.tres` encapsulan el setup corto (`first-to-1`, 26s, arena compacta, reinicios breves) sin tocar `main_ffa.tscn`.
+   - Motivo: FFA necesitaba una ruta rapida de iteracion comparable a Teams, pero sin perder el laboratorio libre mas representativo ni ramificar `Main` con flags de debug.
+
+62. **La compacidad FFA se resuelve desde datos de escena, no con logica condicional nueva**
+   - El nuevo laboratorio ajusta `safe_play_area_size`, pickups/coberturas, `round_reset_delay`, `match_restart_delay` y tambien `ffa_spawn_radius`/`ffa_spawn_angle_offset_degrees` directamente en la escena.
+   - Motivo: el primer intento mostro que el bootstrap global de `Main` seguia imponiendo el radio FFA por defecto; fijarlo en la propia escena mantiene el contrato claro y evita ensuciar scripts por un laboratorio especifico.
+
 61. **El cierre de ronda se resume en la misma banda textual del HUD**
    - `MatchController` ahora guarda el orden de bajas de la ronda y solo lo expone como `Resumen | ...` cuando la ronda ya termino; al iniciar la siguiente, ese recap se limpia.
    - Motivo: reforzar la explicacion de “como termino esta ronda” sin abrir otra capa de post-ronda, sin esconder el combate activo bajo texto extra y reutilizando el contrato compacto ya establecido en `get_round_state_lines()`.

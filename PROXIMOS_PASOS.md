@@ -44,7 +44,8 @@
    - playtestear si la nueva lectura torso/chasis mejora el combate o si todavia se siente demasiado sutil para pantalla compartida.
 
 6. **Validar la identidad del nuevo laboratorio FFA**
-   - correr sesiones reales en `scenes/main/main_ffa.tscn` para comprobar si el nuevo spawn radial/diagonal 4P ya genera supervivencia, oportunismo y third-party legibles ahora que el roster libre incluye a `Aguja` y `Ancla`.
+   - correr primero sesiones cortas en `scenes/main/main_ffa_validation.tscn` para calibrar oportunismo, third-party, cierres de ronda y rotacion de borde sin la duracion del laboratorio libre base.
+   - usar despues `scenes/main/main_ffa.tscn` para comprobar si esa lectura compacta sigue sosteniendose en el laboratorio libre mas largo, ahora que el roster incluye a `Aguja` y `Ancla`.
    - medir si el rescate/negacion sigue siendo entendible cuando nadie tiene aliados y decidir si FFA necesita valores o spawns propios, no solo otra bandera de match.
    - revisar si `Baliza` vuelve algunas diagonales/coberturas demasiado seguras o si realmente empuja rotacion y lectura espacial.
    - revisar si el marcador first-to-3 y la contraccion actual producen buen ritmo en FFA o si ese modo necesita objetivo/duracion distintos.
@@ -68,8 +69,8 @@
   - medir si `unstable_disabled_explosion_radius_multiplier`, `unstable_disabled_explosion_impulse_multiplier` y `unstable_disabled_explosion_damage_multiplier` vuelven especial la sobrecarga sin transformar el overdrive en una ruta dominante de remate
 
 10. **Mejorar validacion jugable**
-   - decidir si el nuevo `main_teams_validation.tscn` ya alcanza como flujo rapido o si hace falta un segundo laboratorio igual de corto pero enfocado en FFA/arquetipos.
-   - ajuste fino de valores de aceleracion, damping, empuje y danio usando esa escena corta para iterar mas rapido antes de tocar `main.tscn`.
+   - usar `main_teams_validation.tscn` y `main_ffa_validation.tscn` como rutas rapidas base antes de tocar `main.tscn` o `main_ffa.tscn`.
+   - ajuste fino de valores de aceleracion, damping, empuje y danio usando esas escenas cortas para iterar mas rapido antes de tocar los laboratorios largos.
    - medir si el reset corto de ronda y el reinicio de match dejan suficiente tiempo de lectura o si necesitan delays algo mayores
 
 11. **Profundizar el soporte Hard sin convertirlo en requisito**
