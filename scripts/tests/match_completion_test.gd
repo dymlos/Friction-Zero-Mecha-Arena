@@ -1,0 +1,146 @@
+extends SceneTree
+
+const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const MatchController = preload("res://scripts/systems/match_controller.gd")
+const RobotBase = preload("res://scripts/robots/robot_base.gd")
+
+var _failed := false
+
+
+func _init() -> void:
+	call_deferred("_run")
+
+
+func _run() -> void:
+	var main = MAIN_SCENE.instantiate()
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var match_controller := main.get_node("Systems/MatchController") as MatchController
+	var robots := _get_scene_robots(main)
+	_assert(match_controller != null, "La escena principal deberia instanciar MatchController.")
+	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para el laboratorio 2v2.")
+	if match_controller == null or robots.size() < 4:
+		await _cleanup_main(main)
+		_finish()
+		return
+
+	match_controller.match_mode = MatchController.MatchMode.TEAMS
+	_assert(match_controller.match_config != null, "El controller deberia cargar una MatchConfig base.")
+	if match_controller.match_config == null:
+		await _cleanup_main(main)
+		_finish()
+		return
+
+	match_controller.match_config.rounds_to_win = 2
+	match_controller.round_reset_delay = 0.15
+	match_controller.match_restart_delay = 0.2
+
+	for robot in robots:
+		robot.void_fall_y = -100.0
+
+	_eliminate_team_two(robots)
+	await create_timer(0.05).timeout
+
+	_assert(
+		not match_controller.is_match_over(),
+		"La primera ronda ganada no deberia cerrar el match si el objetivo es 2."
+	)
+	_assert(
+		match_controller.get_round_status_line().contains("gana la ronda"),
+		"Antes de llegar al objetivo el estado visible deberia seguir siendo de ronda ganada."
+	)
+
+	await create_timer(match_controller.round_reset_delay + 0.15).timeout
+
+	_assert(match_controller.is_round_active(), "La segunda ronda deberia arrancar tras el reset normal.")
+	_assert(
+		match_controller.get_round_status_line().contains("Ronda 2"),
+		"Tras la primera victoria el prototipo deberia avanzar a la ronda 2."
+	)
+
+	_eliminate_team_two(robots)
+	await create_timer(0.05).timeout
+
+	_assert(match_controller.is_match_over(), "El match deberia cerrarse al alcanzar el score objetivo.")
+	_assert(
+		not match_controller.is_round_active(),
+		"Cuando el match termina no deberia arrancar otra ronda inmediatamente."
+	)
+	_assert(
+		match_controller.get_round_status_line().contains("gana la partida"),
+		"El estado visible deberia anunciar al ganador del match, no solo de la ronda."
+	)
+	_assert(match_controller.get_team_score(1) == 2, "El score final del ganador deberia conservar la segunda ronda.")
+	_assert(
+		_has_target_score_line(match_controller.get_round_state_lines(), 2),
+		"El HUD deberia informar el objetivo de rondas del match."
+	)
+
+	await create_timer(match_controller.match_restart_delay + 0.2).timeout
+
+	_assert(
+		not match_controller.is_match_over(),
+		"Tras mostrar al ganador, el prototipo deberia reiniciar un match nuevo para seguir siendo jugable."
+	)
+	_assert(match_controller.is_round_active(), "El nuevo match deberia reiniciar una ronda activa.")
+	_assert(
+		match_controller.get_round_status_line().contains("Ronda 1"),
+		"El reinicio completo deberia volver a la ronda 1."
+	)
+	_assert(match_controller.get_team_score(1) == 0, "El score del match nuevo deberia reiniciarse.")
+	_assert(match_controller.get_team_score(2) == 0, "El rival tambien deberia reiniciarse a cero.")
+	_assert(robots[2].visible, "Los robots eliminados deberian volver para el match siguiente.")
+	_assert(robots[3].visible, "El reinicio de match deberia restaurar a todo el equipo derrotado.")
+
+	await create_timer(0.4).timeout
+	await _cleanup_main(main)
+	_finish()
+
+
+func _eliminate_team_two(robots: Array[RobotBase]) -> void:
+	robots[2].fall_into_void()
+	robots[3].fall_into_void()
+
+
+func _has_target_score_line(lines: Array[String], target_score: int) -> bool:
+	for line in lines:
+		if line.contains("Primero a %s" % target_score):
+			return true
+
+	return false
+
+
+func _get_scene_robots(main: Node) -> Array[RobotBase]:
+	var robots: Array[RobotBase] = []
+	var robot_root := main.get_node("RobotRoot")
+	for child in robot_root.get_children():
+		if child is RobotBase:
+			robots.append(child as RobotBase)
+
+	return robots
+
+
+func _assert(condition: bool, message: String) -> void:
+	if condition:
+		return
+
+	_failed = true
+	push_error(message)
+
+
+func _cleanup_main(main: Node) -> void:
+	if not is_instance_valid(main):
+		return
+
+	var parent := main.get_parent()
+	if parent != null:
+		parent.remove_child(main)
+	main.free()
+	await process_frame
+
+
+func _finish() -> void:
+	quit(1 if _failed else 0)

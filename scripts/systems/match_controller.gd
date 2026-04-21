@@ -10,6 +10,7 @@ enum EliminationCause { VOID, EXPLOSION }
 @export var match_mode: MatchMode = MatchMode.FFA
 @export var match_config: MatchConfig
 @export_range(0.2, 6.0, 0.1) var round_reset_delay := 1.8
+@export_range(0.5, 8.0, 0.1) var match_restart_delay := 2.6
 @export_range(0.0, 0.95, 0.05) var space_reduction_start_ratio := 0.55
 @export_range(0.35, 1.0, 0.05) var space_reduction_min_scale := 0.55
 
@@ -18,6 +19,7 @@ var registered_robots: Array[RobotBase] = []
 var _round_number := 1
 var _round_active := false
 var _round_reset_pending := false
+var _match_over := false
 var _round_eliminated_robot_ids: Dictionary = {}
 var _competitor_scores: Dictionary = {}
 var _competitor_labels: Dictionary = {}
@@ -55,7 +57,9 @@ func _process(delta: float) -> void:
 
 func start_match() -> void:
 	_round_number = 1
+	_round_active = true
 	_round_reset_pending = false
+	_match_over = false
 	_round_eliminated_robot_ids.clear()
 	_last_elimination_summary = ""
 	_competitor_scores.clear()
@@ -66,9 +70,12 @@ func start_match() -> void:
 		if is_instance_valid(robot):
 			_register_competitor(robot)
 
-	_round_active = true
 	_round_elapsed_seconds = 0.0
 	_round_status_line = "Ronda %s en juego" % _round_number
+
+
+func is_match_over() -> bool:
+	return _match_over
 
 
 func is_round_active() -> bool:
@@ -94,6 +101,7 @@ func get_team_score(team_id: int) -> int:
 func get_round_state_lines() -> Array[String]:
 	var lines: Array[String] = []
 	lines.append(get_round_status_line())
+	lines.append("Objetivo | Primero a %s" % get_rounds_to_win())
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
@@ -107,6 +115,13 @@ func is_progressive_space_reduction_enabled() -> bool:
 		return false
 
 	return match_config.progressive_space_reduction and float(match_config.round_time_seconds) > 0.0
+
+
+func get_rounds_to_win() -> int:
+	if match_config == null:
+		return 1
+
+	return max(1, match_config.rounds_to_win)
 
 
 func get_current_play_area_scale() -> float:
@@ -287,7 +302,12 @@ func _get_remaining_competitor_keys() -> Array[String]:
 func _finish_round_with_winner(winner_key: String) -> void:
 	_round_active = false
 	_round_reset_pending = true
-	_competitor_scores[winner_key] = int(_competitor_scores.get(winner_key, 0)) + 1
+	var winner_score := int(_competitor_scores.get(winner_key, 0)) + 1
+	_competitor_scores[winner_key] = winner_score
+	if winner_score >= get_rounds_to_win():
+		_finish_match_with_winner(winner_key, winner_score)
+		return
+
 	_round_status_line = "%s gana la ronda %s" % [_get_competitor_label_from_key(winner_key), _round_number]
 	_schedule_round_reset()
 
@@ -299,12 +319,30 @@ func _finish_round_draw() -> void:
 	_schedule_round_reset()
 
 
+func _finish_match_with_winner(winner_key: String, winner_score: int) -> void:
+	_match_over = true
+	_round_status_line = "%s gana la partida %s-%s" % [
+		_get_competitor_label_from_key(winner_key),
+		winner_score,
+		_get_highest_losing_score(winner_key),
+	]
+	_schedule_match_restart()
+
+
 func _schedule_round_reset() -> void:
 	await get_tree().create_timer(round_reset_delay).timeout
 	if not is_inside_tree():
 		return
 
 	_reset_round()
+
+
+func _schedule_match_restart() -> void:
+	await get_tree().create_timer(match_restart_delay).timeout
+	if not is_inside_tree():
+		return
+
+	_restart_match()
 
 
 func _reset_round() -> void:
@@ -323,6 +361,16 @@ func _reset_round() -> void:
 	_round_status_line = "Ronda %s en juego" % _round_number
 
 
+func _restart_match() -> void:
+	for robot in registered_robots:
+		if not is_instance_valid(robot):
+			continue
+
+		robot.reset_to_spawn()
+
+	start_match()
+
+
 func _build_score_summary_line() -> String:
 	var score_parts: Array[String] = []
 	for competitor_key in _competitor_order:
@@ -332,3 +380,14 @@ func _build_score_summary_line() -> String:
 		])
 
 	return "Marcador | %s" % " | ".join(score_parts)
+
+
+func _get_highest_losing_score(winner_key: String) -> int:
+	var highest_score := 0
+	for competitor_key in _competitor_order:
+		if competitor_key == winner_key:
+			continue
+
+		highest_score = max(highest_score, int(_competitor_scores.get(competitor_key, 0)))
+
+	return highest_score
