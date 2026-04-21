@@ -259,6 +259,11 @@
    - `RobotBase` las resuelve dentro de `apply_impulse`, `restore_part`, `receive_attack_hit_from_robot` / `receive_collision_hit_from_robot` y `apply_mobility_boost`, mientras `PulseBolt` tambien pasa el atacante para no romper la identidad de `Cizalla` fuera del melee.
    - Motivo: profundizar la identidad del roster sin abrir todavia skills activas, UI nueva ni ramas de codigo por robot; se apoya en sistemas que ya eran jugables y legibles en el laboratorio actual.
 
+65. **La identidad de jugador/equipo vive primero en el mundo, no en otro HUD**
+   - `RobotBase` ahora expone `get_identity_color()` y reutiliza `FacingMarker` + `Left/RightCoreLight` como acentos ligeros por equipo en `Teams` y por jugador en `FFA`, sin tocar el cuerpo principal ni competir con la lectura de energia/daño.
+   - `DetachedPart` suma un `OwnershipIndicator` fino que reutiliza ese mismo color sobre la pieza caída, separado del disco de recuperación temporal.
+   - Motivo: el laboratorio ya tenía urgencia de rescate (`RecoveryIndicator`) y labels en roster, pero seguía faltando distinguir rápido “quién es quién” y “de quién es esta pieza” en pantalla compartida; reutilizar acentos existentes + un aro mínimo conserva claridad y evita abrir otra capa de UI.
+
 65. **La primera skill propia reutiliza `PulseBolt` y la accion de utilidad ya existente**
    - `RobotArchetypeConfig` ahora puede declarar `core_skill_type/label/cargas/recarga`, y `RobotBase` consume esa info para disparar una skill desde `throw_part` cuando no lleva una pieza.
    - Motivo: abrir un primer arquetipo Poke/Skillshot sin sumar botones nuevos, manteniendo la regla importante de que cargar una parte bloquea otras habilidades activas.

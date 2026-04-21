@@ -9,7 +9,7 @@
    - medir si `Iman` realmente abre rescates/negaciones a media distancia o si el rango actual se siente demasiado corto, tramposo o poco legible cuando hay varias piezas sueltas.
    - medir si `Aguja` realmente introduce poke/skillshot legible o si `Pulso` todavia se siente demasiado parecido al item universal del borde.
    - medir si `Ancla` realmente corta rutas/duelos con `Baliza` o si la supresion actual se siente demasiado sutil para justificar el rol de Control/Zona.
-   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Iman/Pulso/Baliza x/y` + estado `zona`) alcanza como legibilidad de laboratorio o si conviene compactarlo mas.
+   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Iman/Pulso/Baliza x/y` + estado `zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
    - decidir si el selector runtime actual ya alcanza como flujo de laboratorio o si el siguiente paso debe ser persistencia/presets por escena, mas claridad visual o reforzar con otra skill/regla al arquetipo que siga borroso.
 
 2. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
@@ -23,7 +23,7 @@
 
 3. **Hacer visible y testeable el rescate/negacion**
    - usar el coverage headless 2v2 actual como red de seguridad mientras se hacen sesiones reales con la contraccion de arena ya activa.
-   - medir si el nuevo disco de recuperacion sobre las piezas realmente alcanza para leer urgencia/ownership en 2v2 y FFA o si todavia hace falta una pista compacta adicional.
+   - medir si el nuevo combo `disco de recuperacion + aro de pertenencia` sobre las piezas realmente alcanza para leer urgencia/ownership en 2v2 y FFA o si todavia hace falta una pista compacta adicional.
    - medir en partida si `throw_pickup_delay`/`pickup_delay` se sienten justos o demasiado punitivos ahora que perder una ronda sí importa y el espacio se va cerrando.
    - ajustar si hace falta radio de retorno, cleanup y ritmo de choque con un aliado en escena, sin reabrir spam accidental.
 

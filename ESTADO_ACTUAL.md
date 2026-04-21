@@ -84,6 +84,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
 - lectura diegética de daño modular: cada extremidad ya puede mostrar `Smoke` cuando está dañada y `Spark` cuando entra en estado crítico; además, brazos y piernas dañados aflojan su propia pose (`caen` o `arrastran`) para reforzar “pieza floja” sobre el robot mismo. Todo vive sobre la pieza, no en el HUD, y desaparece al repararla o perderla.
 - lectura diegética de ventana de rescate: las partes desprendidas ahora también usan un disco plano sobre el piso que reduce su escala y calienta su color conforme se consume la recuperación posible.
+- lectura diegética de identidad en pantalla compartida: cada robot ahora reutiliza `FacingMarker` + `CoreLight` como acento visual ligero por equipo/jugador, y las partes desprendidas agregan un aro fino de pertenencia con ese mismo color para que rescate/negacion y oportunismo FFA se entiendan sin otro HUD.
 - validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
 - validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda, scoreboard y ahora tambien un resumen compacto del orden de bajas.
 - validacion automatizada del cierre de partida reforzado: `match_completion_test.gd` ahora cubre tambien el panel final + stats simples + desgaste modular acumulado + linea `Reinicio | F5...`, `match_modular_loss_stats_test.gd` fuerza brazos/piernas perdidos por equipo para validar el nuevo resumen, y `match_manual_restart_test.gd` verifica reinicio manual inmediato con score limpio sobre `main.tscn`.
@@ -248,6 +249,14 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - brazo dañado cae sin contaminar el brazo sano
   - pierna dañada arrastra tambien su thruster
   - reparar devuelve la pose original
+- Se sumó `robot_identity_readability_test.gd` para cubrir el nuevo contrato de identidad:
+  - robots de distinta identidad resuelven colores distintos
+  - `FacingMarker` y `CoreLight` ya no quedan neutros para todos
+  - la lectura sigue viviendo en mundo, no en otra banda de HUD
+- `detached_part_recovery_readability_test.gd` ahora también cubre la pertenencia de piezas:
+  - la parte expone `OwnershipIndicator`
+  - reutiliza el mismo color de identidad del robot dueño
+  - sigue viéndose mientras la pieza permanece disponible en el piso
 - Se agrego un test dedicado `two_vs_two_carry_validation_test.gd` sobre la escena principal 2v2 y se corrigio `robot_part_return_test.gd` para respetar el `pickup_delay` real.
 - Se corrigio una advertencia de tipado en `_refresh_carry_indicator_color()` que rompía la compilación headless al tratarse como error.
 - Se endurecio la salida de los tests headless actuales: ahora conservan estado de fallo y terminan con codigo distinto de cero cuando una asercion falla.
@@ -312,7 +321,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay cinco tipos de pickup, con `Equipos` usando dos pares y `FFA` tres tipos activos por ronda; `municion` solo entra cuando el roster del laboratorio tiene suficiente disputa real por skills propias. Todavia faltan pesos finos por modo/mapa, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
-- La nueva lectura de rescate tambien sigue siendo deliberadamente minima: el disco sobre la pieza hace visible la urgencia sin sumar HUD, pero falta validar por playtest si alcanza con cuatro robots y arena contrayendose.
+- La nueva lectura de rescate tambien sigue siendo deliberadamente minima: ahora combina disco de urgencia + aro de pertenencia sobre la pieza sin sumar HUD, pero falta validar por playtest si esa dupla alcanza con cuatro robots y arena contrayendose.
 - El HUD dual ya existe y ahora puede alternarse en runtime con `F1` sobre un override local; sigue pendiente decidir por playtest que modo conviene dejar por defecto en `Equipos` y `FFA`, y si hace falta persistencia/preset por modo ademas del toggle de laboratorio.
 - La nueva lectura de daño es deliberadamente simple: combina marcadores geométricos sobrios (`Smoke`/`Spark`) con poses flojas por extremidad, no partículas finales ni VFX de producción. Falta playtestear si alcanza o si conviene enriquecer humo/chispas sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.

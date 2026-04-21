@@ -38,6 +38,7 @@ var _starting_collision_layer := 1
 var _starting_collision_mask := 1
 var _pickup_ready_at := 0.0
 var _recovery_indicator: MeshInstance3D = null
+var _ownership_indicator: MeshInstance3D = null
 
 
 func _ready() -> void:
@@ -245,6 +246,7 @@ func _configure_collision_shape() -> void:
 
 func _setup_recovery_indicator() -> void:
 	if _recovery_indicator != null:
+		_setup_ownership_indicator()
 		return
 
 	var indicator_mesh := CylinderMesh.new()
@@ -271,6 +273,36 @@ func _setup_recovery_indicator() -> void:
 	_recovery_indicator.top_level = true
 	_recovery_indicator.visible = false
 	add_child(_recovery_indicator)
+	_setup_ownership_indicator()
+
+
+func _setup_ownership_indicator() -> void:
+	if _ownership_indicator != null:
+		return
+
+	var indicator_mesh := CylinderMesh.new()
+	indicator_mesh.top_radius = recovery_indicator_radius * 1.18
+	indicator_mesh.bottom_radius = recovery_indicator_radius * 1.18
+	indicator_mesh.height = 0.015
+	indicator_mesh.radial_segments = 24
+	indicator_mesh.rings = 1
+
+	var indicator_material := StandardMaterial3D.new()
+	indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	indicator_material.no_depth_test = true
+	indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	indicator_material.albedo_color = _get_owner_identity_color()
+	indicator_material.emission_enabled = true
+	indicator_material.emission = _get_owner_identity_color()
+	indicator_material.emission_energy_multiplier = 0.85
+
+	_ownership_indicator = MeshInstance3D.new()
+	_ownership_indicator.name = "OwnershipIndicator"
+	_ownership_indicator.mesh = indicator_mesh
+	_ownership_indicator.material_override = indicator_material
+	_ownership_indicator.top_level = true
+	_ownership_indicator.visible = false
+	add_child(_ownership_indicator)
 
 
 func _refresh_recovery_indicator() -> void:
@@ -279,6 +311,8 @@ func _refresh_recovery_indicator() -> void:
 
 	var should_show := not is_carried() and not lifetime_timer.is_stopped() and cleanup_time > 0.0
 	_recovery_indicator.visible = should_show
+	if _ownership_indicator != null:
+		_ownership_indicator.visible = should_show
 	if not should_show:
 		return
 
@@ -295,6 +329,29 @@ func _refresh_recovery_indicator() -> void:
 	_recovery_indicator.global_position = global_position + Vector3.UP * recovery_indicator_height
 	_recovery_indicator.global_rotation = Vector3.ZERO
 	_recovery_indicator.scale = Vector3(display_scale, 1.0, display_scale)
+	_refresh_ownership_indicator()
+
+
+func _refresh_ownership_indicator() -> void:
+	if _ownership_indicator == null:
+		return
+
+	var material := _ownership_indicator.material_override as StandardMaterial3D
+	var owner_color := _get_owner_identity_color()
+	if material != null:
+		material.albedo_color = owner_color
+		material.emission = owner_color
+
+	_ownership_indicator.global_position = global_position + Vector3.UP * (recovery_indicator_height + 0.012)
+	_ownership_indicator.global_rotation = Vector3.ZERO
+	_ownership_indicator.scale = Vector3.ONE
+
+
+func _get_owner_identity_color() -> Color:
+	if original_robot != null and is_instance_valid(original_robot) and original_robot.has_method("get_identity_color"):
+		return original_robot.call("get_identity_color") as Color
+
+	return PART_RECOVERY_COLORS.get(part_name, Color(0.95, 0.62, 0.18, 0.85))
 
 
 func _on_lifetime_timer_timeout() -> void:

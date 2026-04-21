@@ -93,6 +93,17 @@ const KEYBOARD_PROFILE_HARD_AIM_LABELS := {
 	KeyboardProfile.WASD_SPACE: "TFGX",
 }
 
+const IDENTITY_COLORS := [
+	Color(1.0, 0.62, 0.18, 1.0),
+	Color(0.24, 0.78, 1.0, 1.0),
+	Color(0.44, 0.92, 0.46, 1.0),
+	Color(0.92, 0.42, 0.92, 1.0),
+	Color(1.0, 0.84, 0.2, 1.0),
+	Color(0.52, 0.62, 1.0, 1.0),
+	Color(0.3, 0.9, 0.78, 1.0),
+	Color(1.0, 0.42, 0.56, 1.0),
+]
+
 const ENERGY_LIMB_PAIRS := {
 	"left_arm": ["left_arm", "right_arm"],
 	"right_arm": ["left_arm", "right_arm"],
@@ -337,6 +348,20 @@ func get_team_identity() -> int:
 		return robot_id
 
 	return get_instance_id()
+
+
+func get_identity_color() -> Color:
+	var identity_index := 0
+	if team_id > 0:
+		identity_index = team_id - 1
+	elif player_index > 0:
+		identity_index = player_index - 1
+	elif robot_id > 0:
+		identity_index = robot_id - 1
+	else:
+		identity_index = int(get_instance_id())
+
+	return IDENTITY_COLORS[wrapi(identity_index, 0, IDENTITY_COLORS.size())]
 
 
 func uses_keyboard_input() -> bool:
@@ -2300,6 +2325,12 @@ func _refresh_core_visuals() -> void:
 		var base_albedo: Color = base_values["albedo"]
 		var base_emission: Color = base_values["emission"]
 		var base_emission_energy: float = float(base_values["emission_energy"])
+		var identity_strength := _get_identity_visual_strength(visual_node)
+		if identity_strength > 0.0:
+			var identity_color := get_identity_color()
+			base_albedo = base_albedo.lerp(identity_color, identity_strength)
+			base_emission = base_emission.lerp(identity_color, minf(identity_strength + 0.12, 1.0))
+			base_emission_energy = maxf(base_emission_energy, 0.35 + identity_strength * 0.45)
 		var damage_blend := (1.0 - intact_ratio) * 0.4
 		var disabled_blend := 0.55 if _is_disabled else 0.0
 		var unstable_blend := 0.35 if is_disabled_explosion_unstable() else 0.0
@@ -2324,6 +2355,19 @@ func _refresh_core_visuals() -> void:
 				base_emission_energy,
 				0.12 + disabled_blend * 0.85 + energy_blend * 0.75 + energy_surge_blend * 0.55 + mobility_blend * 0.7 + unstable_blend * 0.8
 			)
+
+
+func _get_identity_visual_strength(visual_node: MeshInstance3D) -> float:
+	if visual_node == null:
+		return 0.0
+
+	match visual_node.name:
+		"FacingMarker":
+			return 0.9
+		"LeftCoreLight", "RightCoreLight":
+			return 1.0
+
+	return 0.0
 
 
 func _apply_material_damage_tint(mesh_instance: MeshInstance3D, health_ratio: float, flash_strength: float) -> void:
