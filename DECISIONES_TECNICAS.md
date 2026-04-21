@@ -287,6 +287,10 @@
    - `RobotBase` cachea sus valores base, restaura esos campos antes de volver a aplicar `RobotArchetypeConfig` y luego `Main` reinicia todo el match con `start_match()`.
    - Motivo: evitar stacking accidental de multiplicadores, mantener sincronizados roster/marcador FFA y permitir que el selector runtime cambie loadouts varias veces en la misma sesion sin drift de stats ni timers stale.
 
+72. **El recap de cierre vive en el mismo HUD, pero solo entre rondas**
+   - `MatchController` ahora deriva un recap estructurado (`Decision`, `Marcador` y un estado final por robot con `sigue en pie` o `baja N | causa`) a partir de la misma telemetria de eliminacion ya existente, y `MatchHud` lo muestra en un `RecapPanel` lateral oculto durante la ronda activa.
+   - Motivo: reforzar el “como perdi” y el cierre de match sin abrir otra escena/post-partida prematura ni sumar texto que tape el combate mientras la ronda sigue viva.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

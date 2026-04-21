@@ -65,6 +65,9 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - robots fuera conservan causa corta (`vacio`, `explosion` o `explosion inestable`)
   - el bloque superior recuerda la ultima baja con `Ultima baja | ...`
   - cuando la ronda ya cerro, el mismo bloque superior conserva `Resumen | ...` con el orden de bajas hasta el siguiente reset
+- recap de cierre visible solo fuera del combate:
+  - `MatchController` ahora expone un recap estructurado (`Decision`, `Marcador` y estado final por robot) para la ronda o partida cerrada
+  - `MatchHud` lo dibuja en un `RecapPanel` lateral oculto durante la ronda activa, de modo que la pelea sigue limpia y el detalle aparece solo cuando ya importa entender por que se perdio
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
 - indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
@@ -292,8 +295,8 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - El HUD dual ya existe y ahora puede alternarse en runtime con `F1` sobre un override local; sigue pendiente decidir por playtest que modo conviene dejar por defecto en `Equipos` y `FFA`, y si hace falta persistencia/preset por modo ademas del toggle de laboratorio.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
-- El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats, replay ni explicación explícita de por qué perdió cada jugador.
-- La nueva lectura de bajas ya suma `Resumen | ...` al cierre de ronda, pero todavía falta validar en playtest si ese contrato compacto alcanza o si la versión final necesita un panel/resumen post-ronda o post-partida más explícito.
+- El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats ni replay; por ahora el reemplazo es un `RecapPanel` corto dentro del mismo HUD.
+- La nueva lectura de bajas ya suma `Resumen | ...` al cierre de ronda y ahora también un `RecapPanel` dedicado entre rondas/partidas; todavía falta validar en playtest si ese contrato ya alcanza o si la versión final necesita una pantalla/post-partida más fuerte.
 - Se agregó el primer pickup universal de movilidad:
   - existe una escena nueva `edge_mobility_pickup.tscn` con pedestal persistente y cooldown visible
   - al tocarla, `RobotBase` activa una ventana breve de movilidad reforzada (`traccion + control`) sin tocar el sistema de energía ni agregar UI pesada

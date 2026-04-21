@@ -1,6 +1,18 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/match_hud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_recap"]
+bg_color = Color(0.0392157, 0.0588235, 0.0823529, 0.862745)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.396078, 0.631373, 0.717647, 0.745098)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="MatchHud" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -40,4 +52,39 @@ offset_top = 122.0
 offset_right = 620.0
 offset_bottom = 280.0
 theme_override_colors/font_color = Color(0.88, 0.91, 0.94, 1)
+text = ""
+
+[node name="RecapPanel" type="PanelContainer" parent="Root"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+offset_left = 688.0
+offset_top = 20.0
+offset_right = 1004.0
+offset_bottom = 278.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_recap")
+
+[node name="Margin" type="MarginContainer" parent="Root/RecapPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="RecapVBox" type="VBoxContainer" parent="Root/RecapPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RecapTitleLabel" type="Label" parent="Root/RecapPanel/Margin/RecapVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.968627, 0.839216, 0.490196, 1)
+text = ""
+
+[node name="RecapLabel" type="Label" parent="Root/RecapPanel/Margin/RecapVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 196)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.878431, 0.913725, 0.941176, 1)
+autowrap_mode = 2
 text = ""

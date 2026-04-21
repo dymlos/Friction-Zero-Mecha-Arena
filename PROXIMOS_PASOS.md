@@ -15,6 +15,7 @@
    - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` usando tambien el toggle `F1` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.
    - revisar si el modo contextual realmente limpia sin esconder decisiones tacticas como `Foco`, `item`, `carga`, `impulso`, `energia` o `3/4 partes`.
    - decidir si el toggle runtime actual alcanza para laboratorio o si la siguiente capa necesita persistencia/preset mas visible por modo, ademas del `MatchConfig`.
+   - medir si el nuevo `RecapPanel` lateral explica suficientemente bien `Decision + Marcador + baja N | causa` o si aun hace falta una pantalla/post-ronda mas fuerte.
    - playtestear si `damage_feedback_threshold` y `critical_damage_feedback_threshold` se leen bien con cuatro robots y arena en contracción.
    - decidir si el feedback geométrico actual ya alcanza o si conviene migrarlo a humo/chispas más ricos sin ensuciar pantalla compartida.
    - ajustar posición/escala de marcadores antes de sumar más VFX o UI.
@@ -40,7 +41,7 @@
   - playtestear si `rounds_to_win=3` y `match_restart_delay` dejan leer bien la victoria o si el resultado pasa demasiado rápido.
   - decidir si el reinicio automático debe seguir siendo la solución del laboratorio o si conviene pasar a una espera corta con confirmación/manual restart más adelante.
   - definir si ring-out y destruccion total siguen puntuando igual o si alguno merece bonus/feedback diferencial.
-  - medir si `Resumen | ...` + `Ultima baja | ...` + `Fuera | vacio/explosion/explosion inestable` + `Inutilizado | explota/inestable` ya explican suficientemente bien la derrota inmediata o si la siguiente capa debe ser un panel/resumen post-ronda más explícito.
+  - medir si `Resumen | ...` + `Ultima baja | ...` + `Fuera | vacio/explosion/explosion inestable` + `Inutilizado | explota/inestable` + el nuevo `RecapPanel` ya explican suficientemente bien la derrota inmediata o si la siguiente capa debe ser una pantalla post-ronda/post-partida más fuerte.
 
 7. **Afinar la nueva presion de arena**
    - playtestear si el inicio del cierre (`space_reduction_start_ratio`) llega demasiado tarde o demasiado pronto.

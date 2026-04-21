@@ -271,6 +271,10 @@ func _apply_match_pressure_to_arena() -> void:
 func _refresh_hud() -> void:
 	ui.show_round_state(_build_round_state_lines())
 	ui.show_roster(match_controller.get_robot_status_lines())
+	ui.show_recap(
+		match_controller.get_round_recap_panel_title(),
+		match_controller.get_round_recap_panel_lines()
+	)
 
 
 func _connect_match_flow() -> void:

@@ -19,16 +19,23 @@ func _run() -> void:
 	await process_frame
 
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
+	var recap_panel := main.get_node_or_null("UI/MatchHud/Root/RecapPanel") as Control
+	var recap_title_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapTitleLabel") as Label
+	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapLabel") as Label
 	var robots := _get_scene_robots(main)
 	_assert(match_controller != null, "La escena principal deberia exponer MatchController.")
+	_assert(recap_panel != null, "El HUD deberia exponer un panel de recap de ronda.")
+	_assert(recap_title_label != null, "El recap deberia exponer un titulo legible.")
+	_assert(recap_label != null, "El recap deberia exponer un bloque de detalle legible.")
 	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar el resumen de ronda.")
-	if match_controller == null or robots.size() < 4:
+	if match_controller == null or recap_panel == null or recap_title_label == null or recap_label == null or robots.size() < 4:
 		await _cleanup_main(main)
 		_finish()
 		return
 
 	match_controller.match_mode = MatchController.MatchMode.TEAMS
 	match_controller.round_reset_delay = 0.45
+	_assert(not recap_panel.visible, "Durante la ronda activa el recap no deberia tapar el combate.")
 	for robot in robots:
 		robot.void_fall_y = -100.0
 
@@ -42,6 +49,23 @@ func _run() -> void:
 		_has_line(match_controller.get_round_state_lines(), expected_recap),
 		"Al cerrar la ronda, el HUD deberia conservar un resumen compacto del orden de bajas."
 	)
+	_assert(recap_panel.visible, "Al cerrar la ronda deberia aparecer un recap dedicado.")
+	_assert(
+		recap_title_label.text.contains("Cierre de ronda"),
+		"El panel deberia distinguir un cierre de ronda de un resultado de partida."
+	)
+	_assert(
+		recap_label.text.contains("Equipo 1 gana la ronda 1"),
+		"El recap deberia reiterar la decision de la ronda."
+	)
+	_assert(
+		recap_label.text.contains("Player 3 | baja 1 | vacio"),
+		"El recap deberia explicar la primera baja con orden y causa."
+	)
+	_assert(
+		recap_label.text.contains("Player 4 | baja 2 | vacio"),
+		"El recap deberia explicar la segunda baja con orden y causa."
+	)
 
 	await create_timer(maxf(match_controller.round_reset_delay + 0.2, 0.95)).timeout
 
@@ -49,6 +73,7 @@ func _run() -> void:
 		not _has_line_prefix(match_controller.get_round_state_lines(), "Resumen | "),
 		"El resumen compacto de la ronda anterior deberia limpiarse al iniciar la siguiente."
 	)
+	_assert(not recap_panel.visible, "Al iniciar la siguiente ronda el recap deberia ocultarse otra vez.")
 
 	await _cleanup_main(main)
 	_finish()

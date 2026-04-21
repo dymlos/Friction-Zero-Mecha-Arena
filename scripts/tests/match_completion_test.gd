@@ -19,10 +19,16 @@ func _run() -> void:
 	await process_frame
 
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
+	var recap_panel := main.get_node_or_null("UI/MatchHud/Root/RecapPanel") as Control
+	var recap_title_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapTitleLabel") as Label
+	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapLabel") as Label
 	var robots := _get_scene_robots(main)
 	_assert(match_controller != null, "La escena principal deberia instanciar MatchController.")
+	_assert(recap_panel != null, "El HUD deberia exponer un panel de recap para cierres de match.")
+	_assert(recap_title_label != null, "El recap deberia exponer un titulo legible.")
+	_assert(recap_label != null, "El recap deberia exponer un bloque de detalle legible.")
 	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para el laboratorio 2v2.")
-	if match_controller == null or robots.size() < 4:
+	if match_controller == null or recap_panel == null or recap_title_label == null or recap_label == null or robots.size() < 4:
 		await _cleanup_main(main)
 		_finish()
 		return
@@ -73,6 +79,19 @@ func _run() -> void:
 		match_controller.get_round_status_line().contains("gana la partida"),
 		"El estado visible deberia anunciar al ganador del match, no solo de la ronda."
 	)
+	_assert(recap_panel.visible, "Al terminar el match deberia aparecer el recap dedicado.")
+	_assert(
+		recap_title_label.text.contains("Resultado de partida"),
+		"El recap deberia distinguir un match cerrado de una ronda comun."
+	)
+	_assert(
+		recap_label.text.contains("Equipo 1 gana la partida 2-0"),
+		"El recap deberia dejar visible el resultado final del match."
+	)
+	_assert(
+		recap_label.text.contains("Player 3 | baja 1 | vacio"),
+		"El recap final deberia seguir explicando las bajas que cerraron la partida."
+	)
 	_assert(match_controller.get_team_score(1) == 2, "El score final del ganador deberia conservar la segunda ronda.")
 	_assert(
 		_has_target_score_line(match_controller.get_round_state_lines(), 2),
@@ -94,6 +113,7 @@ func _run() -> void:
 	_assert(match_controller.get_team_score(2) == 0, "El rival tambien deberia reiniciarse a cero.")
 	_assert(robots[2].visible, "Los robots eliminados deberian volver para el match siguiente.")
 	_assert(robots[3].visible, "El reinicio de match deberia restaurar a todo el equipo derrotado.")
+	_assert(not recap_panel.visible, "Tras reiniciar el match el recap anterior deberia ocultarse.")
 
 	await create_timer(0.4).timeout
 	await _cleanup_main(main)

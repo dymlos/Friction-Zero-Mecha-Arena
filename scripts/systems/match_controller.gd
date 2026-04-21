@@ -23,6 +23,7 @@ var _round_active := false
 var _round_reset_pending := false
 var _match_over := false
 var _round_eliminated_robot_ids: Dictionary = {}
+var _round_elimination_order_by_robot_id: Dictionary = {}
 var _round_elimination_recap_entries: Array[String] = []
 var _competitor_scores: Dictionary = {}
 var _competitor_labels: Dictionary = {}
@@ -68,6 +69,7 @@ func start_match() -> void:
 	_round_reset_pending = false
 	_match_over = false
 	_round_eliminated_robot_ids.clear()
+	_round_elimination_order_by_robot_id.clear()
 	_round_elimination_recap_entries.clear()
 	_last_elimination_summary = ""
 	_competitor_scores.clear()
@@ -229,6 +231,34 @@ func get_round_recap_line() -> String:
 	return "Resumen | %s" % " -> ".join(_round_elimination_recap_entries)
 
 
+func get_round_recap_panel_title() -> String:
+	if _round_active:
+		return ""
+
+	return "Resultado de partida" if _match_over else "Cierre de ronda"
+
+
+func get_round_recap_panel_lines() -> Array[String]:
+	if _round_active:
+		return []
+
+	var lines: Array[String] = []
+	if _round_status_line != "":
+		lines.append("Decision | %s" % _round_status_line)
+
+	var score_line := _build_score_summary_line()
+	if score_line != "":
+		lines.append(score_line)
+
+	for robot in registered_robots:
+		if not is_instance_valid(robot):
+			continue
+
+		lines.append(_build_robot_recap_panel_line(robot))
+
+	return lines
+
+
 func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> String:
 	if robot == null:
 		return ""
@@ -240,6 +270,7 @@ func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> Stri
 		return ""
 
 	_round_eliminated_robot_ids[robot_id] = cause
+	_round_elimination_order_by_robot_id[robot_id] = _round_elimination_order_by_robot_id.size() + 1
 	_round_elimination_recap_entries.append(_build_compact_elimination_summary(robot, cause))
 	_last_elimination_summary = _build_elimination_summary(robot, cause)
 	robot.hold_for_round_reset()
@@ -305,6 +336,25 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		segments.append("carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name()))
 
 	return "%s %s | %s" % [control_label, robot.get_roster_display_name(), " | ".join(segments)]
+
+
+func _build_robot_recap_panel_line(robot: RobotBase) -> String:
+	if robot == null:
+		return ""
+
+	var robot_id := robot.get_instance_id()
+	if _round_eliminated_robot_ids.has(robot_id):
+		var cause_label := _get_elimination_cause_label(_get_robot_elimination_cause(robot))
+		var elimination_order := int(_round_elimination_order_by_robot_id.get(robot_id, 0))
+		return "%s | baja %s | %s" % [robot.display_name, elimination_order, cause_label]
+
+	if robot.is_disabled_state():
+		var detail := "inutilizado"
+		if robot.is_disabled_explosion_unstable():
+			detail = "inutilizado | inestable"
+		return "%s | %s" % [robot.display_name, detail]
+
+	return "%s | sigue en pie" % robot.display_name
 
 
 func _register_competitor(robot: RobotBase) -> void:
@@ -476,6 +526,7 @@ func _reset_round() -> void:
 		robot.reset_to_spawn()
 
 	_round_eliminated_robot_ids.clear()
+	_round_elimination_order_by_robot_id.clear()
 	_round_elimination_recap_entries.clear()
 	_last_elimination_summary = ""
 	_round_number += 1
