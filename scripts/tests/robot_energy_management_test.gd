@@ -2,6 +2,8 @@ extends SceneTree
 
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 
+var _failed := false
+
 
 func _init() -> void:
 	call_deferred("_run")
@@ -52,13 +54,16 @@ func _run() -> void:
 
 	robot.queue_free()
 
-	quit()
+	_finish()
 
 
 func _assert(condition: bool, message: String) -> void:
 	if condition:
 		return
 
+	_failed = true
 	push_error(message)
-	quit(1)
 
+
+func _finish() -> void:
+	quit(1 if _failed else 0)

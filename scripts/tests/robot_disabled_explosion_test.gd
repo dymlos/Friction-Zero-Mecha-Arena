@@ -2,6 +2,8 @@ extends SceneTree
 
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 
+var _failed := false
+
 
 func _init() -> void:
 	call_deferred("_run")
@@ -41,7 +43,7 @@ func _run() -> void:
 	_assert(owner.visible, "El robot destruido deberia volver a aparecer tras la explosion.")
 	_assert(not owner.is_fully_disabled(), "El robot destruido deberia resetearse al respawn.")
 
-	quit()
+	_finish()
 
 
 func _get_total_part_health(robot) -> float:
@@ -56,5 +58,9 @@ func _assert(condition: bool, message: String) -> void:
 	if condition:
 		return
 
+	_failed = true
 	push_error(message)
-	quit(1)
+
+
+func _finish() -> void:
+	quit(1 if _failed else 0)

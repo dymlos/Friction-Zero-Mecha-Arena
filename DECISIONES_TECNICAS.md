@@ -19,8 +19,8 @@
    - Motivo: validar rescate/negacion rapido sin sumar botones ni una UI compleja antes de probar si el loop espacial funciona.
 
 5. **Negacion basica via riesgo espacial**
-   - El portador puede negar una parte si cae al vacio mientras la lleva; no existe todavia una accion dedicada de arrojar.
-   - Motivo: mantiene el prototipo legible y ya conecta recuperacion con posicionamiento y bordes letales, que son el nucleo del juego.
+   - El portador puede negar una parte si cae al vacio mientras la lleva, o si la lanza para crear una ventana de riesgo adicional.
+   - Motivo: mantiene la negación legible y posicionada, y obliga a tomar decisiones tácticas en lugar de intercambios instantáneos.
 
 6. **Cuerpo inutilizado con explosion corta y respawn**
    - Al perder las cuatro partes, el robot queda inactivo, cuenta unos segundos, explota con empuje/danio radial y luego vuelve al spawn.
@@ -59,8 +59,24 @@
    - Motivo: conectar el bucle de rescate con decisiones de espacio/tiempo y mantener el control del estado legible.
 
 15. **Ajuste de ritmo de duelo via parámetros exportados**
-   - Se prefirió reajustar el duel 2P ajustando `RobotBase` en lugar de agregar una mecánica nueva.
+   - Se prefirió reajustar el duelo 2P ajustando `RobotBase` en lugar de agregar una mecánica nueva.
    - Motivo: el equilibrio de inercia, alcance/impulso y daño de choque define la sensación principal del prototipo sin comprometer la simplicidad técnica existente.
+
+16. **2v2 de laboratorio con equipos y 4 slots locales**
+  - Se habilitó `main.tscn` con 4 robots y `local_player_count=4`, usando `team_id` para aliar jugadores en parejas.
+  - Motivo: validar rescate entre aliados en partidas 2v2 reales sin introducir todavía un mode manager completo de matchmaking.
+
+17. **Indicador de carga de parte legible sin HUD pesado**
+   - `RobotBase` muestra un indicador diegético sobre el robot cuando transporta una parte, con color por tipo de parte y pulso leve.
+   - Motivo: mejora la legibilidad para aliados, rivales y espectadores sin añadir una interfaz pesada en pantalla compartida.
+
+18. **Validación 2v2 sobre la escena real, no sobre un mock aislado**
+   - El coverage nuevo de rescate/negación usa `scenes/main/main.tscn` y no solo robots sueltos.
+   - Motivo: verifica a la vez equipos, bootstrap local, indicador de carga y retardos de pickup/lanzamiento en el contexto que realmente se prueba el laboratorio.
+
+19. **Tests headless con salida confiable**
+   - Los scripts de `scripts/tests/` ahora conservan un flag `_failed` y finalizan con `quit(1 if _failed else 0)`.
+   - Motivo: evitar falsos verdes en automatización cuando una aserción registra error pero el script llega al `quit()` final.
 
 ## Criterios mantenidos
 

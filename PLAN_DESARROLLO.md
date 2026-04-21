@@ -5,8 +5,10 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 ## Checkpoint actual - 2026-04-21
 
 - Etapa 0 a 3: base jugable ya integrada en `main.tscn` con arena, camara compartida, empuje, caida al vacio y respawn de prototipo.
-- Bootstrap local mas claro: `main.gd` ahora alinea robots con los spawns del arena blockout, asigna slots de jugador y deja 2 jugadores humanos activos por defecto.
+- Bootstrap local mas claro: `main.gd` ahora alinea robots con los spawns del arena blockout, asigna slots de jugador y admite 4 jugadores de teclado/slot por defecto para laboratorio 2v2.
 - Input local separado: `RobotBase` resuelve perfiles de teclado por slot y deja de leer joysticks "de todos" cuando el robot ya usa teclado.
+- Etapa 2v2: laboratorio 2v2 preparado con 4 robots por escena y `local_player_count=4`, incluyendo equipos por parejas para validar rescate aliado.
+- Validacion 2v2: el loop de rescate/negacion ya tiene cobertura headless en `main.tscn`, incluyendo indicador de carga visible y ventana de `throw_pickup_delay`.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
 - Etapa 2 y 3: el ritmo de choque del laboratorio 2P ya fue afinado en `RobotBase` para que los intercambios sean más fluidos sin perder el carácter de choque decisivo.
 - Etapa 5: primer slice funcional implementado. Cada robot ahora puede redistribuir energia hacia una parte foco, alterar de forma real el empuje o la traccion y activar un overdrive corto con recuperacion/cooldown.
@@ -14,7 +16,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y luego respawnea para mantener el match jugable.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, mensajes breves, foco energetico visible en el core y un roster compacto por robot para leer estado/carga/energia sin HUD pesado.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
-- Pendiente prioritario: convertir el baseline 2P en un escenario real de rescate aliado (2v2 simple o configuracion equivalente) y empezar el cierre de ronda real.
+- Pendiente prioritario: validar rescate y negación en 2v2 real, ajustar timers de captura/negación y empezar cierre de ronda con condiciones de victoria.
 
 ## Principios de orden
 
@@ -226,9 +228,10 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - partes desprendidas con propietario original y retorno parcial
 - pickup por cercania sin input extra
 - transporte que bloquea el ataque prototipo
-- negacion basica si el portador cae al vacio
+- negacion basica si el portador cae al vacio o lanza la parte fuera del contexto inmediato
 - cuerpo inutilizado con explosion diferida y respawn posterior
-- pendiente: feedback visual de transporte, rescate cooperativo mas visible y ajuste fino de tiempos/radios
+- feedback visual de transporte implementado con indicador diegetico en `RobotBase`
+- pendiente: rescate cooperativo mas visible en sesiones activas y ajuste fino de radio de retorno/timer de negación en 2v2
 
 ## Etapa 8 - Primeros arquetipos jugables
 

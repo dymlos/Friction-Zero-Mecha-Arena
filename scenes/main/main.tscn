@@ -19,6 +19,7 @@ script = ExtResource("1_main")
 [node name="PlayerOneRobot" parent="RobotRoot" instance=ExtResource("3_robot")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.8, 0)
 robot_id = 1
+team_id = 1
 display_name = "Player 1"
 is_player_controlled = true
 
@@ -26,6 +27,22 @@ is_player_controlled = true
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 4, 0.8, 0)
 robot_id = 2
 display_name = "Player 2"
+is_player_controlled = true
+team_id = 1
+
+[node name="PlayerThreeRobot" parent="RobotRoot" instance=ExtResource("3_robot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, -4)
+robot_id = 3
+team_id = 2
+display_name = "Player 3"
+is_player_controlled = true
+
+[node name="PlayerFourRobot" parent="RobotRoot" instance=ExtResource("3_robot")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 4)
+robot_id = 4
+team_id = 2
+display_name = "Player 4"
+is_player_controlled = true
 
 [node name="Systems" type="Node" parent="."]
 

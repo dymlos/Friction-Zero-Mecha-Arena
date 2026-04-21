@@ -23,9 +23,12 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - robot inutilizado al perder las cuatro partes, empujable y con explosion diferida antes del respawn
 - bootstrap local que deja dos robots humanos activos por defecto desde `main.tscn`
 - perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
+- escenario base 2v2 en `main.tscn` con dos equipos (pares por `team_id`) y 4 slots locales activos para validar rescate aliado y handoff en campo.
 - HUD minimo con roster compacto para leer estado, energia y si un robot transporta una parte
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
+- indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
+- validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
 
 ## Lo completado en esta iteracion
 
@@ -34,11 +37,18 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - Se hizo explicito el bootstrap local del prototipo: `main.gd` ahora asigna slots, spawns y deja dos jugadores activos por defecto.
 - Se separo ownership de input local con perfiles de teclado por jugador y fallback de joystick por slot, evitando que varios robots lean el mismo dispositivo.
 - Se agrego un roster compacto en HUD para leer rapido quien sigue activo, cuantas partes conserva y si transporta una parte recuperable.
+- Se incorporó configuración 2v2 de laboratorio: `main.tscn` ahora trae 4 robots con `team_id` por dupla, `main.gd` asigna perfiles de teclado adicionales (`NUMPAD` y `IJKL`) y `default_match_config.tres` deja 4 jugadores locales.
 - La energia ahora deja de ser solo dato: el robot puede mover el foco con entradas discretas, alterar multiplicadores reales y usar overdrive con penalizacion corta.
 - Se ajustó el ritmo de choque del prototipo base 2P tocando los valores exportados de `RobotBase`:
   - movimiento con menos frenado base (`glide_damping`)
   - empuje y alcance de impacto (`passive_push_strength`, `attack_range`, `attack_impulse_strength`)
   - ventana de daño por choque (`collision_damage_threshold`, `collision_damage_scale`, `collision_damage_cooldown`)
+- Se completo el indicador diegetico de parte en mano y se ajustaron timers de captura/negación:
+  - indicador orbitante y animado en `RobotBase` para lectura rápida
+  - `pickup_delay` y `throw_pickup_delay` en `DetachedPart` para evitar recuperaciones instantáneas tras negación.
+- Se agrego un test dedicado `two_vs_two_carry_validation_test.gd` sobre la escena principal 2v2 y se corrigio `robot_part_return_test.gd` para respetar el `pickup_delay` real.
+- Se corrigio una advertencia de tipado en `_refresh_carry_indicator_color()` que rompía la compilación headless al tratarse como error.
+- Se endurecio la salida de los tests headless actuales: ahora conservan estado de fallo y terminan con codigo distinto de cero cuando una asercion falla.
 - Se sumo validacion headless especifica para redistribucion y overdrive, cubriendo el slice tactico nuevo sin introducir infraestructura adicional.
 - Se sumaron verificaciones headless para el bootstrap multijugador y la separacion de input, manteniendo ademas las pruebas previas del loop modular.
 
@@ -49,15 +59,16 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_energy_management_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/local_multiplayer_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_input_ownership_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/two_vs_two_carry_validation_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 30`
 
-Resultado: las cinco verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: las seis verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
 - Todavia no hay torso independiente Hard.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
-- La escena principal ya permite duelo 1v1 humano real, pero todavia no demuestra rescates cooperativos reales porque no existe una configuracion 2v2 o aliado activo en vivo.
-- El roster mejora la lectura del estado modular, pero sigue siendo un HUD textual de depuracion; aun no existe feedback diegetico fuerte para "parte cargada".
-- La negacion por lanzamiento existe, pero aún no se testea como acción explícita en escenarios de 2v2 o con control de aliado (solo test de retorno básico y caída al vacío previos).
+- La escena principal ya permite duelo 1v1 humano real y 2v2 activo, pero el ajuste fino de rescate y negación en vivo sigue siendo de tipo manual.
+- El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
+- La validacion automatica ya cubre el caso 2v2 base; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos en match real.

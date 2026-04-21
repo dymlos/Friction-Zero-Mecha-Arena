@@ -21,7 +21,7 @@ func _ready() -> void:
 	_register_existing_robots()
 	_report_startup_structure()
 	ui.show_status(
-		"Friction Zero: %s robots en arena | energia P1 Q/E/R | P2 , . /"
+		"Friction Zero: %s robots en arena | controles locales por slot: P1 WASD, P2 flechas, P3 numpad, P4 IJKL"
 		% match_controller.registered_robots.size()
 	)
 	_refresh_hud()
@@ -75,6 +75,16 @@ func _assign_default_local_inputs(robot: RobotBase, index: int) -> void:
 
 	if index == 1:
 		robot.keyboard_profile = RobotBase.KeyboardProfile.ARROWS_ENTER
+		robot.joypad_device = -1
+		return
+
+	if index == 2:
+		robot.keyboard_profile = RobotBase.KeyboardProfile.NUMPAD
+		robot.joypad_device = -1
+		return
+
+	if index == 3:
+		robot.keyboard_profile = RobotBase.KeyboardProfile.IJKL
 		robot.joypad_device = -1
 		return
 

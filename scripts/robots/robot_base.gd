@@ -12,7 +12,7 @@ signal part_restored(robot: RobotBase, part_name: String, restored_by: RobotBase
 signal robot_exploded(robot: RobotBase)
 
 enum ControlMode { EASY, HARD }
-enum KeyboardProfile { NONE, WASD_SPACE, ARROWS_ENTER }
+enum KeyboardProfile { NONE, WASD_SPACE, ARROWS_ENTER, NUMPAD, IJKL }
 
 const DETACHED_PART_SCENE := preload("res://scenes/robots/detached_part.tscn")
 
@@ -28,6 +28,13 @@ const BODY_PART_LABELS := {
 	"right_arm": "brazo derecho",
 	"left_leg": "pierna izquierda",
 	"right_leg": "pierna derecha",
+}
+
+const CARRY_PART_COLORS := {
+	"left_arm": Color(0.98, 0.45, 0.12, 1.0),
+	"right_arm": Color(0.98, 0.58, 0.15, 1.0),
+	"left_leg": Color(0.22, 0.56, 0.94, 1.0),
+	"right_leg": Color(0.29, 0.72, 1.0, 1.0),
 }
 
 const PART_VISUAL_PATHS := {
@@ -81,13 +88,35 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"move_left": [KEY_LEFT],
 		"move_right": [KEY_RIGHT],
 		"move_forward": [KEY_UP],
-	"move_back": [KEY_DOWN],
-	"attack": [KEY_ENTER],
-	"energy_prev": [KEY_COMMA],
-	"energy_next": [KEY_PERIOD],
-	"throw_part": [KEY_SLASH],
-	"overdrive": [KEY_M],
-},
+		"move_back": [KEY_DOWN],
+		"attack": [KEY_ENTER],
+		"energy_prev": [KEY_COMMA],
+		"energy_next": [KEY_PERIOD],
+		"throw_part": [KEY_SLASH],
+		"overdrive": [KEY_M],
+	},
+	KeyboardProfile.NUMPAD: {
+		"move_left": [KEY_KP_4],
+		"move_right": [KEY_KP_6],
+		"move_forward": [KEY_KP_8],
+		"move_back": [KEY_KP_2],
+		"attack": [KEY_KP_0],
+		"energy_prev": [KEY_KP_1],
+		"energy_next": [KEY_KP_3],
+		"throw_part": [KEY_KP_ADD],
+		"overdrive": [KEY_KP_5],
+	},
+	KeyboardProfile.IJKL: {
+		"move_left": [KEY_J],
+		"move_right": [KEY_L],
+		"move_forward": [KEY_I],
+		"move_back": [KEY_K],
+		"attack": [KEY_U],
+		"energy_prev": [KEY_Y],
+		"energy_next": [KEY_H],
+		"throw_part": [KEY_N],
+		"overdrive": [KEY_B],
+	},
 }
 
 @export var robot_id := 0
@@ -142,6 +171,13 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var detached_part_throw_speed := 8.0
 @export var detached_part_pickup_range := 1.4
 @export var carried_part_return_range := 1.8
+@export_group("Prototype Carry Visual")
+@export var carry_indicator_radius := 0.09
+@export var carry_indicator_base_height := 0.95
+@export var carry_indicator_bob_height := 0.09
+@export var carry_indicator_pulse_speed := 6.5
+@export var carry_indicator_pulse_amount := 0.18
+@export var carry_indicator_rotation_speed := 1.3
 @export var disabled_explosion_delay := 1.6
 @export var disabled_explosion_radius := 3.6
 @export var disabled_explosion_impulse := 12.0
@@ -172,6 +208,9 @@ var _core_visual_nodes: Array[MeshInstance3D] = []
 var _material_base_values: Dictionary = {}
 var _collision_damage_ready_at: Dictionary = {}
 var _carried_part: DetachedPart = null
+var _carry_indicator: MeshInstance3D = null
+var _carry_indicator_animation_time := 0.0
+var _last_carried_part_name := ""
 var _selected_energy_part_name := "left_arm"
 var _energy_shift_cooldown_remaining := 0.0
 var _overdrive_part_name := ""
@@ -305,6 +344,7 @@ func _ready() -> void:
 	add_to_group("robots")
 	_cache_visual_references()
 	_prepare_visual_materials()
+	_setup_carry_indicator()
 	disabled_explosion_timer.wait_time = disabled_explosion_delay
 	reset_modular_state()
 	if is_player_controlled:
@@ -322,6 +362,7 @@ func _physics_process(delta: float) -> void:
 	_update_detached_part_interactions()
 	_update_prototype_attack()
 	_update_damage_visual_feedback(delta)
+	_update_carry_indicator_animation(delta)
 
 	if global_position.y <= void_fall_y:
 		fall_into_void()
@@ -413,12 +454,14 @@ func try_pick_up_detached_part(detached_part: DetachedPart) -> bool:
 		return false
 
 	_carried_part = detached_part
+	_refresh_visual_state()
 	return true
 
 
 func release_detached_part(detached_part: DetachedPart = null) -> void:
 	if detached_part == null or _carried_part == detached_part:
 		_carried_part = null
+	_refresh_visual_state()
 
 
 func is_fully_disabled() -> bool:
@@ -794,6 +837,7 @@ func throw_carried_part(throw_direction: Vector2 = Vector2.ZERO, throw_speed: fl
 		_carried_part = carried_part
 		return false
 
+	_refresh_visual_state()
 	return true
 
 
@@ -995,10 +1039,80 @@ func _register_material_base_values(mesh_instance: MeshInstance3D) -> void:
 
 
 func _refresh_visual_state() -> void:
+	_refresh_carry_indicator()
 	for part_name in BODY_PARTS:
 		_refresh_part_visual_state(part_name)
 
 	_refresh_core_visuals()
+
+
+func _setup_carry_indicator() -> void:
+	var indicator_mesh := SphereMesh.new()
+	indicator_mesh.radius = carry_indicator_radius
+	indicator_mesh.height = maxf(carry_indicator_radius * 1.6, 0.01)
+
+	var indicator_material := StandardMaterial3D.new()
+	indicator_material.albedo_color = Color(1.0, 0.57, 0.1, 1.0)
+	indicator_material.emission_enabled = true
+	indicator_material.emission = Color(1.0, 0.45, 0.08, 1.0)
+	indicator_material.emission_energy_multiplier = 2.2
+
+	_carry_indicator = MeshInstance3D.new()
+	_carry_indicator.name = "CarryIndicator"
+	_carry_indicator.mesh = indicator_mesh
+	_carry_indicator.material_override = indicator_material
+	_carry_indicator.position = Vector3(0.0, carry_indicator_base_height, 0.0)
+	_carry_indicator.visible = false
+	add_child(_carry_indicator)
+
+
+func _refresh_carry_indicator() -> void:
+	if _carry_indicator == null:
+		return
+
+	if not is_carrying_part():
+		_carry_indicator.visible = false
+		_last_carried_part_name = ""
+		return
+
+	var carried_part_name := get_carried_part_name()
+	if carried_part_name != _last_carried_part_name:
+		_refresh_carry_indicator_color(carried_part_name)
+		_last_carried_part_name = carried_part_name
+
+	_carry_indicator.visible = true
+
+
+func _refresh_carry_indicator_color(part_name: String) -> void:
+	if _carry_indicator == null:
+		return
+
+	var material := _carry_indicator.material_override as StandardMaterial3D
+	if material == null:
+		return
+
+	var color: Color = CARRY_PART_COLORS.get(part_name, Color(1.0, 0.57, 0.1, 1.0))
+	material.albedo_color = color
+	material.emission = color
+	material.emission_energy_multiplier = 2.2
+
+
+func _update_carry_indicator_animation(delta: float) -> void:
+	if _carry_indicator == null:
+		return
+	if not is_carrying_part():
+		_carry_indicator_animation_time = 0.0
+		_carry_indicator.scale = Vector3.ONE
+		_carry_indicator.rotation = Vector3.ZERO
+		_carry_indicator.position.y = carry_indicator_base_height
+		return
+
+	_carry_indicator_animation_time += delta
+	var wave := (sin(_carry_indicator_animation_time * carry_indicator_pulse_speed) + 1.0) * 0.5
+	var pulse := 1.0 + (wave - 0.5) * carry_indicator_pulse_amount * 2.0
+	_carry_indicator.scale = Vector3(pulse, 1.0 + pulse * 0.25, pulse)
+	_carry_indicator.position.y = carry_indicator_base_height + wave * carry_indicator_bob_height
+	_carry_indicator.rotation.y = fmod(_carry_indicator.rotation.y + carry_indicator_rotation_speed * delta, TAU)
 
 
 func _refresh_part_visual_state(part_name: String) -> void:

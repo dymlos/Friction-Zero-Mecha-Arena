@@ -9,7 +9,8 @@ const PART_COLLISION_SIZES := {
 }
 
 @export var cleanup_time := 10.0
-@export var pickup_delay := 0.35
+@export var pickup_delay := 0.4
+@export var throw_pickup_delay := 0.82
 @export var carried_hover_height := 1.4
 @export var carried_forward_offset := 0.7
 
@@ -89,6 +90,41 @@ func try_pick_up(robot: Node) -> bool:
 	collision_layer = 0
 	collision_mask = 0
 	lifetime_timer.stop()
+	set_physics_process(true)
+	return true
+
+
+func throw_from(carrier: Node, throw_direction: Vector3, throw_speed: float = 6.0) -> bool:
+	if not (carrier is Node3D):
+		return false
+	if not is_carried() or carrier_robot != carrier:
+		return false
+	if not is_instance_valid(carrier_robot):
+		return false
+
+	var carrier_node := carrier_robot as Node3D
+	var world_direction := throw_direction
+	world_direction.y = 0.0
+	if world_direction.length_squared() <= 0.001:
+		world_direction = -carrier_node.global_basis.z
+	world_direction = world_direction.normalized()
+
+	carrier_robot.release_detached_part(self)
+	global_position = carrier_node.global_position + Vector3.UP * carried_hover_height - carrier_node.global_basis.z * carried_forward_offset
+	global_rotation = carrier_node.global_rotation
+	freeze = false
+	linear_velocity = world_direction * throw_speed
+	angular_velocity = Vector3(
+		randf_range(-3.0, 3.0),
+		randf_range(-4.5, 4.5),
+		randf_range(-3.0, 3.0)
+	)
+	collision_layer = _starting_collision_layer
+	collision_mask = _starting_collision_mask
+	_pickup_ready_at = Time.get_ticks_msec() / 1000.0 + maxf(pickup_delay, throw_pickup_delay)
+	if lifetime_timer.is_stopped():
+		lifetime_timer.start(cleanup_time)
+	carrier_robot = null
 	set_physics_process(true)
 	return true
 

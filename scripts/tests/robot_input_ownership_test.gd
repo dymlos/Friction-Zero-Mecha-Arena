@@ -3,6 +3,8 @@ extends SceneTree
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
+var _failed := false
+
 
 func _init() -> void:
 	call_deferred("_run")
@@ -35,7 +37,7 @@ func _run() -> void:
 	_assert(p1_attack.has(KEY_SPACE), "El jugador 1 deberia atacar con Space.")
 	_assert(p2_attack.has(KEY_ENTER), "El jugador 2 deberia atacar con Enter.")
 
-	quit()
+	_finish()
 
 
 func _get_action_keycodes(action_name: StringName) -> Array[int]:
@@ -51,5 +53,9 @@ func _assert(condition: bool, message: String) -> void:
 	if condition:
 		return
 
+	_failed = true
 	push_error(message)
-	quit(1)
+
+
+func _finish() -> void:
+	quit(1 if _failed else 0)

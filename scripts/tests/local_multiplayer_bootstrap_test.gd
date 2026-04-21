@@ -3,6 +3,8 @@ extends SceneTree
 const MAIN_SCENE := preload("res://scenes/main/main.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
+var _failed := false
+
 
 func _init() -> void:
 	call_deferred("_run")
@@ -22,6 +24,9 @@ func _run() -> void:
 			robots.append(child as RobotBase)
 
 	_assert(robots.size() >= 2, "La escena principal deberia exponer al menos dos robots para el prototipo local.")
+	if robots.size() < 2:
+		_finish()
+		return
 	_assert(robots[0].is_player_controlled, "El primer robot deberia quedar activo para jugador local.")
 	_assert(robots[1].is_player_controlled, "El segundo robot deberia quedar activo para jugador local.")
 	_assert(robots[0].player_index == 1, "El primer robot deberia usar el slot del jugador 1.")
@@ -34,12 +39,16 @@ func _run() -> void:
 		_assert(roster_text.contains("Player 1"), "El roster deberia incluir a Player 1.")
 		_assert(roster_text.contains("Player 2"), "El roster deberia incluir a Player 2.")
 
-	quit()
+	_finish()
 
 
 func _assert(condition: bool, message: String) -> void:
 	if condition:
 		return
 
+	_failed = true
 	push_error(message)
-	quit(1)
+
+
+func _finish() -> void:
+	quit(1 if _failed else 0)

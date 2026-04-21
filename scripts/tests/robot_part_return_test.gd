@@ -1,6 +1,9 @@
 extends SceneTree
 
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
+const DetachedPart = preload("res://scripts/robots/detached_part.gd")
+
+var _failed := false
 
 
 func _init() -> void:
@@ -23,18 +26,29 @@ func _run() -> void:
 		detached_parts.size() == 1,
 		"Se esperaba exactamente una parte desprendida."
 	)
+	if detached_parts.size() != 1:
+		return
 
 	var detached_part = detached_parts[0]
+	_assert(detached_part is DetachedPart, "La parte desprendida deberia instanciar DetachedPart.")
+	if not (detached_part is DetachedPart):
+		return
+
+	await create_timer((detached_part as DetachedPart).pickup_delay + 0.05).timeout
 	var restored: bool = detached_part.try_deliver_to_robot(robot)
 	_assert(restored, "La parte desprendida deberia poder devolverse al robot original.")
 	_assert(robot.get_part_health("left_arm") > 0.0, "La parte deberia volver con vida parcial.")
 
-	quit()
+	_finish()
 
 
 func _assert(condition: bool, message: String) -> void:
 	if condition:
 		return
 
+	_failed = true
 	push_error(message)
-	quit(1)
+
+
+func _finish() -> void:
+	quit(1 if _failed else 0)
