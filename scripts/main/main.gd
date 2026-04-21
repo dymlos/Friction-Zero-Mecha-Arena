@@ -13,13 +13,17 @@ const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 @onready var match_controller: MatchController = $Systems/MatchController
 @onready var ui: MatchHud = $UI/MatchHud
 
+var _arena: ArenaBase = null
+
 
 func _ready() -> void:
 	# Esta escena solo conecta piezas grandes: arena, robots, UI y sistemas.
 	# La logica concreta vive en scripts mas chicos para que el proyecto crezca ordenado.
+	_arena = _get_active_arena()
 	_configure_playable_prototype()
 	_register_existing_robots()
 	match_controller.start_match()
+	_apply_match_pressure_to_arena()
 	_report_startup_structure()
 	ui.show_status(
 		"Friction Zero: %s robots en arena | controles locales por slot: P1 WASD, P2 flechas, P3 numpad, P4 IJKL"
@@ -29,6 +33,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	_apply_match_pressure_to_arena()
 	_refresh_hud()
 
 
@@ -102,11 +107,25 @@ func _get_scene_robots() -> Array[RobotBase]:
 
 
 func _get_arena_spawn_points() -> Array[Marker3D]:
-	for child in arena_root.get_children():
-		if child is ArenaBase:
-			return (child as ArenaBase).get_spawn_points()
+	if _arena != null:
+		return _arena.get_spawn_points()
 
 	return []
+
+
+func _get_active_arena() -> ArenaBase:
+	for child in arena_root.get_children():
+		if child is ArenaBase:
+			return child as ArenaBase
+
+	return null
+
+
+func _apply_match_pressure_to_arena() -> void:
+	if _arena == null:
+		return
+
+	_arena.set_play_area_scale(match_controller.get_current_play_area_scale())
 
 
 func _refresh_hud() -> void:

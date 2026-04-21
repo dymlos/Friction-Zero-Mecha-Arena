@@ -21,6 +21,7 @@ func _run() -> void:
 	var robots := _get_scene_robots(main)
 	_assert(robots.size() >= 4, "La escena 2v2 deberia exponer cuatro robots activos para laboratorio.")
 	if robots.size() < 4:
+		await _cleanup_main(main)
 		_finish()
 		return
 	_assert(robots[0].is_ally_of(robots[1]), "Player 1 y Player 2 deberian compartir equipo.")
@@ -41,6 +42,7 @@ func _run() -> void:
 	var detached_part := _get_only_detached_part()
 	_assert(detached_part != null, "La parte destruida deberia existir en escena.")
 	if detached_part == null:
+		await _cleanup_main(main)
 		_finish()
 		return
 
@@ -89,6 +91,7 @@ func _run() -> void:
 	_assert(delivered_after_throw_window, "La parte deberia poder volver al dueño una vez cumplido el throw_pickup_delay.")
 	_assert(owner.get_part_health("left_arm") > 0.0, "La parte restaurada deberia devolver vida parcial al brazo.")
 
+	await _cleanup_main(main)
 	_finish()
 
 
@@ -117,6 +120,17 @@ func _assert(condition: bool, message: String) -> void:
 
 	_failed = true
 	push_error(message)
+
+
+func _cleanup_main(main: Node) -> void:
+	if not is_instance_valid(main):
+		return
+
+	var parent := main.get_parent()
+	if parent != null:
+		parent.remove_child(main)
+	main.free()
+	await process_frame
 
 
 func _finish() -> void:

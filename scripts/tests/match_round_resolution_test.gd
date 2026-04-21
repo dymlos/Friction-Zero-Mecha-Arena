@@ -23,6 +23,7 @@ func _run() -> void:
 	_assert(match_controller != null, "La escena principal deberia instanciar MatchController.")
 	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para el laboratorio 2v2.")
 	if match_controller == null or robots.size() < 4:
+		await _cleanup_main(main)
 		_finish()
 		return
 
@@ -80,6 +81,7 @@ func _run() -> void:
 	)
 	_assert(match_controller.get_team_score(1) == 2, "La segunda ronda ganada deberia reflejarse en el scoreboard.")
 
+	await _cleanup_main(main)
 	_finish()
 
 
@@ -99,6 +101,17 @@ func _assert(condition: bool, message: String) -> void:
 
 	_failed = true
 	push_error(message)
+
+
+func _cleanup_main(main: Node) -> void:
+	if not is_instance_valid(main):
+		return
+
+	var parent := main.get_parent()
+	if parent != null:
+		parent.remove_child(main)
+	main.free()
+	await process_frame
 
 
 func _finish() -> void:

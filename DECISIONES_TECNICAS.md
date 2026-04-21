@@ -90,6 +90,18 @@
    - `match_round_resolution_test.gd` usa `main.tscn` para comprobar victorias por vacío y destrucción total, marcador y reset conjunto.
    - Motivo: la lógica de ronda depende de `Main`, `MatchController`, HUD y lifecycle de `RobotBase`; probar piezas aisladas dejaría huecos importantes.
 
+23. **Contraccion del arena como presion fisica real**
+   - `MatchController` calcula un factor de cierre segun `round_time_seconds` y `ArenaBase` reduce el tamano real del piso/edge markers.
+   - Motivo: cumplir la presion de endgame documentada sin agregar dano abstracto ni hazards nuevos que ensucien la lectura.
+
+24. **`Main` solo cablea presion entre match y arena**
+   - La escena principal pregunta el factor al `MatchController` y se lo aplica al `ArenaBase`; no resuelve timers ni geometria por si misma.
+   - Motivo: mantener responsabilidades claras y el proyecto legible para iteraciones futuras.
+
+25. **Timer de ronda base reducido a 60 segundos**
+   - La configuracion por defecto deja de usar 180s para que la contraccion aparezca en sesiones reales de laboratorio.
+   - Motivo: un sistema de presion que casi nunca se activa no aporta feedback util al prototipo.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

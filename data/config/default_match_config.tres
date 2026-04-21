@@ -8,7 +8,7 @@
 script = ExtResource("1_config")
 max_players = 4
 local_player_count = 4
-round_time_seconds = 180
+round_time_seconds = 60
 allow_team_mode = true
 progressive_space_reduction = true
 default_arena_scene = ExtResource("2_arena")

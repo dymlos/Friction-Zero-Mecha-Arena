@@ -10,6 +10,8 @@ enum EliminationCause { VOID, EXPLOSION }
 @export var match_mode: MatchMode = MatchMode.FFA
 @export var match_config: MatchConfig
 @export_range(0.2, 6.0, 0.1) var round_reset_delay := 1.8
+@export_range(0.0, 0.95, 0.05) var space_reduction_start_ratio := 0.55
+@export_range(0.35, 1.0, 0.05) var space_reduction_min_scale := 0.55
 
 var registered_robots: Array[RobotBase] = []
 
@@ -22,6 +24,7 @@ var _competitor_labels: Dictionary = {}
 var _competitor_order: Array[String] = []
 var _last_elimination_summary := ""
 var _round_status_line := ""
+var _round_elapsed_seconds := 0.0
 
 
 func register_robot(robot: RobotBase) -> void:
@@ -43,6 +46,13 @@ func get_local_player_count() -> int:
 	return clampi(match_config.local_player_count, 1, match_config.max_players)
 
 
+func _process(delta: float) -> void:
+	if not _round_active or _round_reset_pending:
+		return
+
+	_round_elapsed_seconds += delta
+
+
 func start_match() -> void:
 	_round_number = 1
 	_round_reset_pending = false
@@ -57,6 +67,7 @@ func start_match() -> void:
 			_register_competitor(robot)
 
 	_round_active = true
+	_round_elapsed_seconds = 0.0
 	_round_status_line = "Ronda %s en juego" % _round_number
 
 
@@ -86,7 +97,36 @@ func get_round_state_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	if is_space_reduction_active():
+		lines.append("Arena cerrandose | %s%%" % int(round(get_current_play_area_scale() * 100.0)))
 	return lines
+
+
+func is_progressive_space_reduction_enabled() -> bool:
+	if match_config == null:
+		return false
+
+	return match_config.progressive_space_reduction and float(match_config.round_time_seconds) > 0.0
+
+
+func get_current_play_area_scale() -> float:
+	if not _round_active or _round_reset_pending:
+		return 1.0
+	if not is_progressive_space_reduction_enabled():
+		return 1.0
+
+	var round_duration := maxf(float(match_config.round_time_seconds), 0.01)
+	var round_progress := clampf(_round_elapsed_seconds / round_duration, 0.0, 1.0)
+	if round_progress <= space_reduction_start_ratio:
+		return 1.0
+
+	var shrink_window := maxf(1.0 - space_reduction_start_ratio, 0.01)
+	var shrink_progress := clampf((round_progress - space_reduction_start_ratio) / shrink_window, 0.0, 1.0)
+	return lerpf(1.0, space_reduction_min_scale, shrink_progress)
+
+
+func is_space_reduction_active() -> bool:
+	return get_current_play_area_scale() < 0.999
 
 
 func get_alive_robots() -> Array[RobotBase]:
@@ -279,6 +319,7 @@ func _reset_round() -> void:
 	_round_number += 1
 	_round_active = true
 	_round_reset_pending = false
+	_round_elapsed_seconds = 0.0
 	_round_status_line = "Ronda %s en juego" % _round_number
 
 

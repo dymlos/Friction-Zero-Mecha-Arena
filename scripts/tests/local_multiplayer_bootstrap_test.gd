@@ -25,6 +25,7 @@ func _run() -> void:
 
 	_assert(robots.size() >= 2, "La escena principal deberia exponer al menos dos robots para el prototipo local.")
 	if robots.size() < 2:
+		await _cleanup_main(main)
 		_finish()
 		return
 	_assert(robots[0].is_player_controlled, "El primer robot deberia quedar activo para jugador local.")
@@ -39,6 +40,7 @@ func _run() -> void:
 		_assert(roster_text.contains("Player 1"), "El roster deberia incluir a Player 1.")
 		_assert(roster_text.contains("Player 2"), "El roster deberia incluir a Player 2.")
 
+	await _cleanup_main(main)
 	_finish()
 
 
@@ -48,6 +50,17 @@ func _assert(condition: bool, message: String) -> void:
 
 	_failed = true
 	push_error(message)
+
+
+func _cleanup_main(main: Node) -> void:
+	if not is_instance_valid(main):
+		return
+
+	var parent := main.get_parent()
+	if parent != null:
+		parent.remove_child(main)
+	main.free()
+	await process_frame
 
 
 func _finish() -> void:
