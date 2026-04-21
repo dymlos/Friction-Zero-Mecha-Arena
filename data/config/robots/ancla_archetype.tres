@@ -5,6 +5,8 @@
 [resource]
 script = ExtResource("1_config")
 archetype_label = "Ancla"
+accent_style = 6
+accent_color = Color(1, 0.78, 0.3, 1)
 max_move_speed_multiplier = 0.92
 move_acceleration_multiplier = 0.94
 glide_damping_multiplier = 1.08

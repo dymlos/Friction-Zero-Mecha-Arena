@@ -326,6 +326,7 @@ var _was_joypad_throw_pressed := false
 var _part_visual_nodes: Dictionary = {}
 var _part_flash_strength: Dictionary = {}
 var _core_visual_nodes: Array[MeshInstance3D] = []
+var _archetype_accent_visual_nodes: Array[MeshInstance3D] = []
 var _material_base_values: Dictionary = {}
 var _part_visual_base_transforms: Dictionary = {}
 var _damage_feedback_nodes: Dictionary = {}
@@ -364,6 +365,7 @@ var _active_control_beacon: Node = null
 var _disabled_explosion_is_unstable := false
 var _last_disabled_explosion_was_unstable := false
 var _archetype_base_values: Dictionary = {}
+var _archetype_accent_root: Node3D = null
 
 @onready var disabled_explosion_timer: Timer = $DisabledExplosionTimer
 @onready var upper_body_pivot: Node3D = $UpperBodyPivot
@@ -459,6 +461,13 @@ func get_archetype_label() -> String:
 		return ""
 
 	return archetype_config.archetype_label
+
+
+func get_archetype_visual_signature() -> String:
+	if archetype_config == null:
+		return ""
+
+	return "%s:%s" % [get_archetype_label(), int(archetype_config.accent_style)]
 
 
 func get_roster_display_name() -> String:
@@ -797,6 +806,7 @@ func apply_runtime_loadout(
 	control_mode = next_control_mode
 	_restore_archetype_base_values()
 	_apply_archetype_config()
+	_setup_archetype_accent_visuals()
 	disabled_explosion_timer.wait_time = disabled_explosion_delay
 	reset_modular_state()
 	if is_player_controlled:
@@ -943,6 +953,7 @@ func _ready() -> void:
 	_cache_archetype_base_values()
 	_apply_archetype_config()
 	_cache_visual_references()
+	_setup_archetype_accent_visuals()
 	_cache_part_visual_base_transforms()
 	_prepare_visual_materials()
 	_setup_damage_feedback_nodes()
@@ -2168,6 +2179,187 @@ func _cache_part_visual_base_transforms() -> void:
 				_part_visual_base_transforms[_material_key(mesh_instance)] = mesh_instance.transform
 
 
+func _setup_archetype_accent_visuals() -> void:
+	for visual_node in _archetype_accent_visual_nodes:
+		if visual_node == null:
+			continue
+		_material_base_values.erase(_material_key(visual_node))
+	_archetype_accent_visual_nodes.clear()
+	if is_instance_valid(_archetype_accent_root):
+		var accent_parent := _archetype_accent_root.get_parent()
+		if accent_parent != null:
+			accent_parent.remove_child(_archetype_accent_root)
+		_archetype_accent_root.free()
+	_archetype_accent_root = null
+
+	if upper_body_pivot == null or archetype_config == null:
+		return
+	if archetype_config.accent_style == RobotArchetypeConfig.AccentStyle.NONE:
+		return
+
+	var accent_root := Node3D.new()
+	accent_root.name = "ArchetypeAccent"
+	upper_body_pivot.add_child(accent_root)
+	_archetype_accent_root = accent_root
+
+	var accent_color := archetype_config.accent_color
+	match archetype_config.accent_style:
+		RobotArchetypeConfig.AccentStyle.BUMPER:
+			_add_archetype_accent_box(
+				accent_root,
+				"RamCrossbar",
+				Vector3(0.62, 0.1, 0.12),
+				Vector3(0.0, 0.46, -0.72),
+				accent_color
+			)
+			_add_archetype_accent_box(
+				accent_root,
+				"RamPillarLeft",
+				Vector3(0.08, 0.22, 0.12),
+				Vector3(-0.23, 0.39, -0.72),
+				accent_color
+			)
+			_add_archetype_accent_box(
+				accent_root,
+				"RamPillarRight",
+				Vector3(0.08, 0.22, 0.12),
+				Vector3(0.23, 0.39, -0.72),
+				accent_color
+			)
+		RobotArchetypeConfig.AccentStyle.LIFT:
+			_add_archetype_accent_box(
+				accent_root,
+				"LiftMast",
+				Vector3(0.1, 0.48, 0.1),
+				Vector3(0.0, 0.64, -0.02),
+				accent_color
+			)
+			_add_archetype_accent_box(
+				accent_root,
+				"LiftBeam",
+				Vector3(0.42, 0.08, 0.08),
+				Vector3(0.0, 0.86, -0.02),
+				accent_color
+			)
+		RobotArchetypeConfig.AccentStyle.BLADES:
+			_add_archetype_accent_box(
+				accent_root,
+				"BladeLeft",
+				Vector3(0.1, 0.08, 0.46),
+				Vector3(-0.28, 0.5, -0.2),
+				accent_color,
+				Vector3(0.0, 0.0, deg_to_rad(26.0))
+			)
+			_add_archetype_accent_box(
+				accent_root,
+				"BladeRight",
+				Vector3(0.1, 0.08, 0.46),
+				Vector3(0.28, 0.5, -0.2),
+				accent_color,
+				Vector3(0.0, 0.0, deg_to_rad(-26.0))
+			)
+		RobotArchetypeConfig.AccentStyle.FIN:
+			_add_archetype_accent_box(
+				accent_root,
+				"SkateFin",
+				Vector3(0.12, 0.34, 0.1),
+				Vector3(0.0, 0.64, 0.38),
+				accent_color,
+				Vector3(deg_to_rad(-18.0), 0.0, 0.0)
+			)
+			_add_archetype_accent_box(
+				accent_root,
+				"SkateTail",
+				Vector3(0.34, 0.06, 0.12),
+				Vector3(0.0, 0.46, 0.5),
+				accent_color
+			)
+		RobotArchetypeConfig.AccentStyle.SPIKE:
+			_add_archetype_accent_box(
+				accent_root,
+				"NeedleSpike",
+				Vector3(0.08, 0.08, 0.72),
+				Vector3(0.0, 0.5, -0.52),
+				accent_color
+			)
+		RobotArchetypeConfig.AccentStyle.HALO:
+			_add_archetype_accent_ring(
+				accent_root,
+				"AnchorHalo",
+				0.28,
+				0.04,
+				Vector3(0.0, 0.66, -0.02),
+				accent_color
+			)
+			_add_archetype_accent_box(
+				accent_root,
+				"AnchorStem",
+				Vector3(0.08, 0.26, 0.08),
+				Vector3(0.0, 0.46, -0.02),
+				accent_color
+			)
+
+	for visual_node in _archetype_accent_visual_nodes:
+		_register_material_base_values(visual_node)
+
+
+func _add_archetype_accent_box(
+	parent: Node3D,
+	node_name: String,
+	size: Vector3,
+	position: Vector3,
+	accent_color: Color,
+	rotation: Vector3 = Vector3.ZERO
+) -> void:
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	var visual := _build_archetype_accent_visual(node_name, mesh, position, accent_color, rotation)
+	parent.add_child(visual)
+	_archetype_accent_visual_nodes.append(visual)
+
+
+func _add_archetype_accent_ring(
+	parent: Node3D,
+	node_name: String,
+	radius: float,
+	thickness: float,
+	position: Vector3,
+	accent_color: Color
+) -> void:
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = radius
+	mesh.bottom_radius = radius
+	mesh.height = thickness
+	mesh.radial_segments = 24
+	mesh.rings = 1
+	var visual := _build_archetype_accent_visual(node_name, mesh, position, accent_color)
+	parent.add_child(visual)
+	_archetype_accent_visual_nodes.append(visual)
+
+
+func _build_archetype_accent_visual(
+	node_name: String,
+	mesh: PrimitiveMesh,
+	position: Vector3,
+	accent_color: Color,
+	rotation: Vector3 = Vector3.ZERO
+) -> MeshInstance3D:
+	var visual := MeshInstance3D.new()
+	visual.name = node_name
+	visual.mesh = mesh
+	visual.position = position
+	visual.rotation = rotation
+	var material := StandardMaterial3D.new()
+	material.albedo_color = accent_color
+	material.roughness = 0.28
+	material.metallic = 0.1
+	material.emission_enabled = true
+	material.emission = accent_color
+	material.emission_energy_multiplier = 0.4
+	visual.material_override = material
+	return visual
+
+
 func _prepare_visual_materials() -> void:
 	_material_base_values.clear()
 	for part_name in BODY_PARTS:
@@ -2175,6 +2367,9 @@ func _prepare_visual_materials() -> void:
 			_register_material_base_values(visual_node)
 
 	for visual_node in _core_visual_nodes:
+		_register_material_base_values(visual_node)
+
+	for visual_node in _archetype_accent_visual_nodes:
 		_register_material_base_values(visual_node)
 
 
@@ -2201,6 +2396,7 @@ func _refresh_visual_state() -> void:
 		_refresh_part_visual_state(part_name)
 
 	_refresh_core_visuals()
+	_refresh_archetype_accent_visuals()
 
 
 func _setup_damage_feedback_nodes() -> void:
@@ -2738,6 +2934,43 @@ func _get_damaged_part_pose_severity(health_ratio: float) -> float:
 		return 0.0
 
 	return 1.0 - clampf(health_ratio / threshold, 0.0, 1.0)
+
+
+func _refresh_archetype_accent_visuals() -> void:
+	if _archetype_accent_visual_nodes.is_empty():
+		return
+
+	var archetype_color := _get_archetype_accent_color().lerp(get_identity_color(), 0.24)
+	var intact_ratio := 1.0
+	if not BODY_PARTS.is_empty():
+		var alive_parts := 0.0
+		for part_name in BODY_PARTS:
+			alive_parts += get_part_health_ratio(part_name)
+		intact_ratio = alive_parts / BODY_PARTS.size()
+
+	var damage_blend := (1.0 - intact_ratio) * 0.22
+	var disabled_blend := 0.4 if _is_disabled else 0.0
+	for visual_node in _archetype_accent_visual_nodes:
+		var material := visual_node.material_override as StandardMaterial3D
+		var base_values: Dictionary = _material_base_values.get(_material_key(visual_node), {})
+		if material == null or base_values.is_empty():
+			continue
+
+		var base_albedo: Color = base_values["albedo"]
+		var base_emission: Color = base_values["emission"]
+		material.albedo_color = base_albedo.lerp(archetype_color, 0.78)
+		material.albedo_color = material.albedo_color.lerp(Color(0.1, 0.1, 0.1, 1.0), damage_blend + disabled_blend)
+		if material.emission_enabled:
+			material.emission = base_emission.lerp(archetype_color, 0.95)
+			material.emission = material.emission.lerp(Color(0.18, 0.12, 0.1, 1.0), disabled_blend * 0.8)
+			material.emission_energy_multiplier = maxf(0.18, 0.52 - damage_blend * 0.15 - disabled_blend * 0.22)
+
+
+func _get_archetype_accent_color() -> Color:
+	if archetype_config == null:
+		return get_identity_color()
+
+	return archetype_config.accent_color
 
 
 func _refresh_core_visuals() -> void:

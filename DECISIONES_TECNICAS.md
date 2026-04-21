@@ -352,6 +352,11 @@
    - `RobotBase` cachea sus valores base, restaura esos campos antes de volver a aplicar `RobotArchetypeConfig` y luego `Main` reinicia todo el match con `start_match()`.
    - Motivo: evitar stacking accidental de multiplicadores, mantener sincronizados roster/marcador FFA y permitir que el selector runtime cambie loadouts varias veces en la misma sesion sin drift de stats ni timers stale.
 
+72. **La lectura de arquetipo vive en el cuerpo, no solo en el roster**
+   - `RobotArchetypeConfig` ahora tambien define `accent_style/accent_color`, y `RobotBase` construye un `ArchetypeAccent` runtime sobre `UpperBodyPivot` con siluetas chicas por rol (`Ariete` bumper, `Grua` mastil, `Cizalla` cuchillas, `Patin` aleta, `Aguja` pua, `Ancla` halo).
+   - `apply_runtime_loadout()` reconstruye ese acento cuando cambia el loadout, y `robot_archetype_readability_test.gd` cubre que exista, cambie por arquetipo y no quede stale tras usar `F3`.
+   - Motivo: los seis arquetipos ya tenian texto en roster y algunas luces/skills propias, pero en pantalla compartida seguia faltando una pista corporal minima para leer roles sin abrir otro HUD ni depender de memoria externa.
+
 72. **El recap de cierre vive en el mismo HUD, pero solo entre rondas**
    - `MatchController` ahora deriva un recap estructurado (`Decision`, `Marcador` y un estado final por robot con `sigue en pie` o `baja N | causa`) a partir de la misma telemetria de eliminacion ya existente, y `MatchHud` lo muestra en un `RecapPanel` lateral oculto durante la ronda activa.
    - Motivo: reforzar el “como perdi” y el cierre de match sin abrir otra escena/post-partida prematura ni sumar texto que tape el combate mientras la ronda sigue viva.

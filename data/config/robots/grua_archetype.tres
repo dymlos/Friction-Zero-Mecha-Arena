@@ -5,6 +5,8 @@
 [resource]
 script = ExtResource("1_config")
 archetype_label = "Grua"
+accent_style = 2
+accent_color = Color(0.32, 0.84, 0.98, 1)
 max_move_speed_multiplier = 0.97
 move_acceleration_multiplier = 1.04
 glide_damping_multiplier = 1.0

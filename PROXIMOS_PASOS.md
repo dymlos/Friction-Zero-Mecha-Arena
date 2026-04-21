@@ -23,7 +23,7 @@
    - medir si `Aguja` realmente introduce poke/skillshot legible ahora que `Pulso` ya tiene lectura diegetica sobre `CoreLight`, o si aun hace falta ajustar color/intensidad/ritmo del pulso para cámara compartida.
    - si se retocan `pulse_charge_spawn_distance`, velocidad o lifetime de `Pulso`, conservar la cobertura headless que hoy evita que el proyectil nazca solapado con su robot origen.
    - medir si `Ancla` realmente corta rutas/duelos con `Baliza` o si la supresion actual se siente demasiado sutil para justificar el rol de Control/Zona.
-   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Iman/Pulso/Baliza x/y` + estado `zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
+   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Iman/Pulso/Baliza x/y` + estado `zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad + `ArchetypeAccent` por rol) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
    - decidir si el selector runtime actual ya alcanza como flujo de laboratorio o si el siguiente paso debe ser persistencia/presets por escena, mas claridad visual o reforzar con otra skill/regla al arquetipo que siga borroso.
 
 3. **Validar el nuevo HUD dual y la nueva lectura de daño modular**

@@ -5,6 +5,8 @@
 [resource]
 script = ExtResource("1_config")
 archetype_label = "Cizalla"
+accent_style = 3
+accent_color = Color(0.96, 0.34, 0.28, 1)
 max_move_speed_multiplier = 1.02
 move_acceleration_multiplier = 1.02
 glide_damping_multiplier = 0.98

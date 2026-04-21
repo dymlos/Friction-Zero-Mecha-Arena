@@ -2,8 +2,11 @@ extends Resource
 class_name RobotArchetypeConfig
 
 enum CoreSkillType { NONE, PULSE_SHOT, CONTROL_BEACON, RECOVERY_GRAB }
+enum AccentStyle { NONE, BUMPER, LIFT, BLADES, FIN, SPIKE, HALO }
 
 @export var archetype_label := ""
+@export var accent_style: AccentStyle = AccentStyle.NONE
+@export var accent_color := Color(0.92, 0.78, 0.24, 1.0)
 
 @export_group("Movement")
 @export_range(0.6, 1.6, 0.01) var max_move_speed_multiplier := 1.0

@@ -5,6 +5,8 @@
 [resource]
 script = ExtResource("1_config")
 archetype_label = "Patin"
+accent_style = 4
+accent_color = Color(0.22, 0.98, 0.74, 1)
 max_move_speed_multiplier = 1.18
 move_acceleration_multiplier = 1.12
 glide_damping_multiplier = 0.84
