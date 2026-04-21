@@ -12,15 +12,19 @@ class_name ArenaBase
 @onready var south_edge: MeshInstance3D = $EdgeMarkers/SouthEdge
 @onready var west_edge: MeshInstance3D = $EdgeMarkers/WestEdge
 @onready var east_edge: MeshInstance3D = $EdgeMarkers/EastEdge
+@onready var cover_blocks_root: Node3D = $CoverBlocks
 
 var _current_play_area_size := Vector2.ZERO
 var _platform_shape: BoxShape3D = null
 var _platform_mesh: BoxMesh = null
+var _cover_block_nodes: Array[Node3D] = []
+var _cover_block_original_positions: Dictionary = {}
 
 
 func _ready() -> void:
 	_current_play_area_size = safe_play_area_size
 	_prepare_runtime_resources()
+	_cache_cover_block_positions()
 	_update_play_area_visuals()
 
 
@@ -71,6 +75,21 @@ func _prepare_runtime_resources() -> void:
 		platform_visual.mesh = _platform_mesh
 
 
+func _cache_cover_block_positions() -> void:
+	_cover_block_nodes.clear()
+	_cover_block_original_positions.clear()
+	if cover_blocks_root == null:
+		return
+
+	for child in cover_blocks_root.get_children():
+		if not (child is Node3D):
+			continue
+
+		var cover_block := child as Node3D
+		_cover_block_nodes.append(cover_block)
+		_cover_block_original_positions[cover_block.get_instance_id()] = cover_block.position
+
+
 func _update_play_area_visuals() -> void:
 	var current_size := get_safe_play_area_size()
 	if _platform_shape != null:
@@ -86,3 +105,22 @@ func _update_play_area_visuals() -> void:
 	south_edge.transform = Transform3D(Basis().scaled(Vector3(current_size.x, 1.0, 0.14)), Vector3(0.0, edge_height, half_depth))
 	west_edge.transform = Transform3D(Basis().scaled(Vector3(0.14, 1.0, current_size.y)), Vector3(-half_width, edge_height, 0.0))
 	east_edge.transform = Transform3D(Basis().scaled(Vector3(0.14, 1.0, current_size.y)), Vector3(half_width, edge_height, 0.0))
+	_update_cover_block_positions(current_size)
+
+
+func _update_cover_block_positions(current_size: Vector2) -> void:
+	if _cover_block_nodes.is_empty():
+		return
+
+	var width_ratio := current_size.x / maxf(safe_play_area_size.x, 0.01)
+	var depth_ratio := current_size.y / maxf(safe_play_area_size.y, 0.01)
+	for cover_block in _cover_block_nodes:
+		if not is_instance_valid(cover_block):
+			continue
+
+		var original_position: Variant = _cover_block_original_positions.get(cover_block.get_instance_id(), cover_block.position)
+		if not (original_position is Vector3):
+			continue
+
+		var position := original_position as Vector3
+		cover_block.position = Vector3(position.x * width_ratio, position.y, position.z * depth_ratio)
