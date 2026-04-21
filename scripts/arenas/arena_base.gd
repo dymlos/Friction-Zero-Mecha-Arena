@@ -97,7 +97,7 @@ func _cache_edge_pickup_positions() -> void:
 	_edge_pickup_nodes.clear()
 	_edge_pickup_original_local_positions.clear()
 
-	for node in get_tree().get_nodes_in_group("edge_repair_pickups"):
+	for node in get_tree().get_nodes_in_group("edge_pickups"):
 		if not (node is Node3D):
 			continue
 

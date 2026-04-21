@@ -1,0 +1,52 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/pickups/edge_mobility_pickup.gd" id="1_pickup"]
+
+[sub_resource type="SphereShape3D" id="SphereShape_pickup"]
+radius = 0.95
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_base"]
+top_radius = 0.36
+bottom_radius = 0.54
+height = 0.26
+
+[sub_resource type="StandardMaterial3D" id="Material_base"]
+albedo_color = Color(0.15, 0.19, 0.22, 1)
+metallic = 0.18
+roughness = 0.42
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_core"]
+top_radius = 0.2
+bottom_radius = 0.26
+height = 0.72
+
+[sub_resource type="StandardMaterial3D" id="Material_core"]
+albedo_color = Color(0.16, 0.92, 0.78, 1)
+emission_enabled = true
+emission = Color(0.14, 1, 0.82, 1)
+emission_energy_multiplier = 2.0
+roughness = 0.14
+
+[node name="EdgeMobilityPickup" type="Area3D"]
+script = ExtResource("1_pickup")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape_pickup")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Base" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.84, 0, 0, 0, 1, 0, 0, 0, 0.84, 0, 0.13, 0)
+mesh = SubResource("CylinderMesh_base")
+material_override = SubResource("Material_base")
+
+[node name="Core" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.819152, 0, 0.573576, 0, 1, 0, -0.573576, 0, 0.819152, 0, 0.64, 0)
+mesh = SubResource("CylinderMesh_core")
+material_override = SubResource("Material_core")
+
+[node name="RespawnTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="timeout" from="RespawnTimer" to="." method="_on_respawn_timer_timeout"]

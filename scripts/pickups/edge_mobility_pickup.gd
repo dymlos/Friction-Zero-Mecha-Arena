@@ -1,15 +1,15 @@
 extends Area3D
-class_name EdgeRepairPickup
+class_name EdgeMobilityPickup
 
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
-signal pickup_collected(robot: RobotBase, repaired_part_name: String)
+signal pickup_collected(robot: RobotBase, boost_duration: float)
 
-@export var repair_amount := 25.0
-@export var respawn_delay := 8.0
+@export var boost_duration := 2.8
+@export var respawn_delay := 9.0
 @export var bob_height := 0.12
-@export var bob_speed := 2.2
-@export var rotation_speed := 1.1
+@export var bob_speed := 2.6
+@export var rotation_speed := 1.4
 
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var visuals_root: Node3D = $Visuals
@@ -24,7 +24,7 @@ var _base_visual_position := Vector3.ZERO
 
 func _ready() -> void:
 	add_to_group("edge_pickups")
-	add_to_group("edge_repair_pickups")
+	add_to_group("edge_mobility_pickups")
 	_base_visual_position = visuals_root.position
 	_set_available_state(true)
 
@@ -46,13 +46,12 @@ func _on_body_entered(body: Node) -> void:
 		return
 
 	var robot := body as RobotBase
-	var repaired_part_name := robot.repair_most_damaged_part(repair_amount)
-	if repaired_part_name == "":
+	if not robot.apply_mobility_boost(boost_duration):
 		return
 
 	_set_available_state(false)
 	respawn_timer.start(respawn_delay)
-	pickup_collected.emit(robot, repaired_part_name)
+	pickup_collected.emit(robot, boost_duration)
 
 
 func _on_respawn_timer_timeout() -> void:

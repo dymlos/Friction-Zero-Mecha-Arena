@@ -50,7 +50,7 @@
    - mantener Easy como modo plenamente jugable y legible
 
 10. **Validar y tensionar el nuevo incentivo de borde**
-   - playtestear si `repair_amount` y `respawn_delay` vuelven los flancos realmente tentadores o si la reparacion termina alargando demasiado los duelos.
-   - medir si las nuevas coberturas blockout y los pickups ya sincronizados con el borde vivo generan duelos más tácticos o si empiezan a volver esos flancos demasiado seguros.
-   - decidir si el siguiente paso en mapa debe ser refinar ese layout/cantidad de coberturas o introducir un segundo incentivo distinto en otro borde.
+   - playtestear si `repair_amount`, `boost_duration` y sus `respawn_delay` vuelven los bordes realmente tentadores o si alguno de los dos incentivos domina demasiado.
+   - medir si las nuevas coberturas blockout, la reparacion lateral y el impulso norte/sur ya generan duelos más tácticos o si empiezan a volver algunos flancos demasiado seguros.
+   - decidir si el siguiente paso de items debe ser variacion semialeatoria sobre `edge_pickups`, un pickup de energia o un primer item de “una sola carga” en mano.
    - mantener el centro limpio y legible, evitando saturar la arena con demasiados objetos.

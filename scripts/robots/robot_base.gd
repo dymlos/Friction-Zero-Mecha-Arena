@@ -164,6 +164,10 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var torso_turn_speed := 12.0
 @export var gravity := 28.0
 
+@export_group("Prototype Mobility Pickup")
+@export_range(1.0, 2.0, 0.05) var mobility_pickup_drive_multiplier := 1.22
+@export_range(1.0, 2.0, 0.05) var mobility_pickup_control_multiplier := 1.18
+
 @export_group("Prototype Energy")
 @export var focused_part_energy := 40.0
 @export var focused_pair_energy := 30.0
@@ -246,6 +250,7 @@ var _overdrive_part_name := ""
 var _overdrive_duration_remaining := 0.0
 var _overdrive_recovery_remaining := 0.0
 var _overdrive_cooldown_remaining := 0.0
+var _mobility_boost_remaining := 0.0
 var _hard_torso_world_direction := Vector3.FORWARD
 
 @onready var disabled_explosion_timer: Timer = $DisabledExplosionTimer
@@ -341,7 +346,7 @@ func set_torso_world_direction(world_direction: Vector3) -> void:
 
 
 func get_effective_leg_drive_multiplier() -> float:
-	return _get_leg_health_multiplier() * _get_leg_energy_multiplier()
+	return _get_leg_health_multiplier() * _get_leg_energy_multiplier() * _get_mobility_pickup_drive_multiplier()
 
 
 func get_effective_arm_power_multiplier() -> float:
@@ -354,6 +359,14 @@ func is_overdrive_active() -> bool:
 
 func is_overdrive_cooling_down() -> bool:
 	return _overdrive_cooldown_remaining > 0.0
+
+
+func is_mobility_boost_active() -> bool:
+	return _mobility_boost_remaining > 0.0
+
+
+func get_mobility_boost_time_left() -> float:
+	return maxf(_mobility_boost_remaining, 0.0)
 
 
 func get_input_hint() -> String:
@@ -404,6 +417,20 @@ func activate_overdrive() -> bool:
 	return true
 
 
+func apply_mobility_boost(duration: float) -> bool:
+	if duration <= 0.0:
+		return false
+	if _is_respawning or _is_disabled:
+		return false
+
+	var previous_remaining := _mobility_boost_remaining
+	_mobility_boost_remaining = maxf(_mobility_boost_remaining, duration)
+	if _mobility_boost_remaining > previous_remaining:
+		_refresh_visual_state()
+
+	return true
+
+
 func _ready() -> void:
 	_spawn_transform = global_transform
 	_starting_collision_layer = collision_layer
@@ -426,6 +453,7 @@ func _physics_process(delta: float) -> void:
 
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
 	_update_energy_state(delta)
+	_update_temporary_boosts(delta)
 	_update_energy_controls()
 	_update_prototype_movement(delta)
 	_update_control_mode_orientation(delta)
@@ -449,6 +477,7 @@ func reset_modular_state() -> void:
 	_overdrive_duration_remaining = 0.0
 	_overdrive_recovery_remaining = 0.0
 	_overdrive_cooldown_remaining = 0.0
+	_mobility_boost_remaining = 0.0
 	for part_name in BODY_PARTS:
 		part_health[part_name] = max_part_health
 		part_energy[part_name] = starting_energy_per_part
@@ -929,6 +958,15 @@ func _update_energy_state(delta: float) -> void:
 		_refresh_visual_state()
 
 
+func _update_temporary_boosts(delta: float) -> void:
+	if _mobility_boost_remaining <= 0.0:
+		return
+
+	_mobility_boost_remaining = maxf(_mobility_boost_remaining - delta, 0.0)
+	if _mobility_boost_remaining == 0.0:
+		_refresh_visual_state()
+
+
 func _update_energy_controls() -> void:
 	if not is_player_controlled or _is_disabled:
 		return
@@ -1022,7 +1060,7 @@ func _get_leg_health_multiplier() -> float:
 
 
 func _get_effective_leg_control_multiplier() -> float:
-	return _get_leg_control_health_multiplier() * _get_leg_energy_multiplier()
+	return _get_leg_control_health_multiplier() * _get_leg_energy_multiplier() * _get_mobility_pickup_control_multiplier()
 
 
 func _get_leg_control_health_multiplier() -> float:
@@ -1038,6 +1076,20 @@ func _get_arm_health_multiplier() -> float:
 
 func _get_leg_energy_multiplier() -> float:
 	return _get_pair_energy_multiplier("left_leg", "right_leg")
+
+
+func _get_mobility_pickup_drive_multiplier() -> float:
+	if not is_mobility_boost_active():
+		return 1.0
+
+	return mobility_pickup_drive_multiplier
+
+
+func _get_mobility_pickup_control_multiplier() -> float:
+	if not is_mobility_boost_active():
+		return 1.0
+
+	return mobility_pickup_control_multiplier
 
 
 func _get_arm_energy_multiplier() -> float:
@@ -1426,13 +1478,20 @@ func _refresh_core_visuals() -> void:
 		var disabled_blend := 0.55 if _is_disabled else 0.0
 		var energy_color := _get_energy_focus_color()
 		var energy_blend := _get_energy_visual_blend()
+		var mobility_color := Color(0.2, 0.92, 0.78, 1.0)
+		var mobility_blend := 0.42 if is_mobility_boost_active() else 0.0
 		material.albedo_color = base_albedo.lerp(Color(0.09, 0.08, 0.08, 1.0), damage_blend + disabled_blend)
 		material.albedo_color = material.albedo_color.lerp(energy_color, energy_blend * 0.18)
+		material.albedo_color = material.albedo_color.lerp(mobility_color, mobility_blend * 0.12)
 		if material.emission_enabled:
 			var warning_color := Color(1.0, 0.28, 0.12, 1.0)
 			material.emission = base_emission.lerp(warning_color, damage_blend + disabled_blend)
 			material.emission = material.emission.lerp(energy_color, energy_blend)
-			material.emission_energy_multiplier = maxf(base_emission_energy, 0.12 + disabled_blend * 0.85 + energy_blend * 0.75)
+			material.emission = material.emission.lerp(mobility_color, mobility_blend)
+			material.emission_energy_multiplier = maxf(
+				base_emission_energy,
+				0.12 + disabled_blend * 0.85 + energy_blend * 0.75 + mobility_blend * 0.7
+			)
 
 
 func _apply_material_damage_tint(mesh_instance: MeshInstance3D, health_ratio: float, flash_strength: float) -> void:

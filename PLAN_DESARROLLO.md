@@ -16,6 +16,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Cierre de match base: el laboratorio ya juega a first-to-3 por defecto; cuando un equipo alcanza el objetivo, `MatchController` anuncia ganador de partida, congela la ronda y reinicia el match completo tras una pausa corta.
 - Presion de endgame: el `arena_blockout` ahora reduce progresivamente su tamano durante la ronda, empujando el cierre hacia el centro sin agregar hazards extra.
 - Bordes con incentivo real: el laboratorio ahora suma pickups de reparacion instantanea en los flancos del arena; curan la parte activa mas dañada sin revivir piezas perdidas, fuerzan a exponerse cerca del vacio y ahora se recolocan con la misma escala del area segura para no quedar fuera del borde vivo durante la contraccion.
+- Incentivo universal de movilidad: el mismo arena ahora suma pickups de impulso en norte/sur; activan una ventana corta de traccion/control reforzados, se leen con glow turquesa sobre el robot y se recolocan con la misma logica de borde vivo para no convertirse en “premios muertos” durante la contraccion.
 - Cobertura de borde minima: el `arena_blockout` ya suma dos slabs estaticos simples junto a los pickups de reparacion; se desplazan con la contraccion del mapa para mantener duel zones legibles y no dejar geometria “flotando” fuera del area viva.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
 - Legibilidad modular reforzada: las partes dañadas ahora levantan marcadores sobrios sobre el propio robot (`Smoke` en daño relevante, `Spark` en daño critico) y se apagan al reparar o desprender la pieza.
@@ -28,7 +29,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, marcadores de humo/chispa por parte dañada, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
 - Lectura de eliminacion reforzada: el roster ahora deja visible `Inutilizado | explota Xs` mientras un casco deshabilitado espera su explosion, conserva `Fuera | vacio/explosion` tras la baja y el bloque superior de estado mantiene `Ultima baja | ...` para explicar por que se perdio una pieza clave sin sumar otra capa de UI.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
-- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, si la explicacion compacta de bajas (`Ultima baja`, `Fuera | vacio/explosion`, `Inutilizado | explota`) alcanza para explicar derrotas sin HUD extra, si la nueva cobertura de borde vuelve esos flancos más tácticos sin transformarlos en zonas seguras permanentes y si el laboratorio FFA ya produce supervivencia/oportunismo legibles en vez de caos opaco; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
+- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, si la explicacion compacta de bajas (`Ultima baja`, `Fuera | vacio/explosion`, `Inutilizado | explota`) alcanza para explicar derrotas sin HUD extra, si la combinacion reparacion + impulso vuelve los bordes más tácticos sin transformarlos en zonas seguras permanentes y si el laboratorio FFA ya produce supervivencia/oportunismo legibles en vez de caos opaco; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
 
 ## Principios de orden
 
@@ -141,7 +142,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - el HUD minimo ya muestra ronda y marcador, sin sumar barras pesadas
 - el HUD tambien explicita el objetivo del match (`Primero a X`) y el loop ya cierra la partida al alcanzarlo
 - el arena ahora se contrae progresivamente en el tramo final de la ronda y vuelve a escala completa al reset
-- el arena blockout ahora ofrece pickups de reparacion fijos cerca del borde para que los flancos valgan algo mas que riesgo puro
+- el arena blockout ahora ofrece pickups universales fijos cerca del borde: reparacion en flancos cubiertos e impulso de movilidad en norte/sur expuestos
 - pendiente: decidir si la pausa/reinicio automatico de match debe seguir siendo la solucion final o solo el cierre provisional del laboratorio, y si la puntuacion debe distinguir vacio vs destruccion
 
 ## Etapa 4 - Danio modular por brazos y piernas

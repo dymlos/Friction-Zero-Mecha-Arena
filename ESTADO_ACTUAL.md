@@ -34,6 +34,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - cierre de match simple: el laboratorio juega a `first-to-3`; cuando un equipo alcanza el objetivo, el HUD anuncia al ganador de la partida y el match se reinicia limpio tras una pausa corta
 - presion final de arena: el piso y sus edge markers se contraen de forma progresiva segun el tiempo de ronda, y el HUD agrega una linea corta cuando empieza el cierre
 - incentivo real de borde: el arena blockout ahora tiene pickups de reparacion instantanea en los flancos; curan la parte activa mas dañada, obligan a exponerse cerca del vacio para estabilizarse y siguen el borde vivo cuando la arena se contrae
+- segundo incentivo de borde: el mismo arena ahora suma pickups de movilidad en norte/sur; activan una ventana corta de traccion/control reforzados, exponen al robot en bordes sin cobertura y siguen el borde vivo cuando la arena se contrae
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
 - HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia y si un robot transporta una parte
 - lectura de eliminacion compacta en el mismo HUD:
@@ -167,14 +168,23 @@ Resultado: las diecinueve verificaciones dedicadas pasan y el proyecto sigue ini
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
+- El nuevo item universal sigue siendo deliberadamente simple: hoy solo existe reparacion instantanea e impulso corto; todavia no hay inventario, carga manual ni semialeatoriedad de spawns.
 - El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
-- El nuevo incentivo de borde sigue siendo deliberadamente minimo: solo existen pickups de reparacion fijos; todavia faltan variacion semialeatoria y otros tipos de item universal.
+- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay reparacion fija + impulso fijo; todavia faltan variacion semialeatoria, energia, utility y decidir si algun item debe pasar a “una carga en mano” en vez de activarse al tocarlo.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats, replay ni explicación explícita de por qué perdió cada jugador.
 - La nueva lectura de bajas mejora la explicación inmediata de la derrota, pero todavía falta validar en playtest si ese contrato compacto alcanza o si la versión final necesita un resumen/post-partida más explícito.
+- Se agregó el primer pickup universal de movilidad:
+  - existe una escena nueva `edge_mobility_pickup.tscn` con pedestal persistente y cooldown visible
+  - al tocarla, `RobotBase` activa una ventana breve de movilidad reforzada (`traccion + control`) sin tocar el sistema de energía ni agregar UI pesada
+  - la propia lectura del robot se refuerza con glow turquesa en el core y el roster compacto agrega `impulso` mientras el efecto sigue activo
+- Se amplió la lógica de pickups de borde para no acoplarla solo a reparación:
+  - `ArenaBase` ahora sigue cualquier nodo del grupo `edge_pickups`, no solo `edge_repair_pickups`
+  - el laboratorio principal suma dos pickups nuevos en norte/sur y los mueve junto al borde vivo durante la contracción
+  - `Main` también reporta la activación del impulso en la misma línea breve de estado

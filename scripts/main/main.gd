@@ -7,6 +7,7 @@ const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
+const EdgeMobilityPickup = preload("res://scripts/pickups/edge_mobility_pickup.gd")
 
 @export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
 
@@ -175,6 +176,16 @@ func _connect_arena_pickups() -> void:
 
 		pickup.pickup_collected.connect(_on_edge_repair_pickup_collected)
 
+	for node in get_tree().get_nodes_in_group("edge_mobility_pickups"):
+		if not (node is EdgeMobilityPickup):
+			continue
+
+		var mobility_pickup := node as EdgeMobilityPickup
+		if mobility_pickup.pickup_collected.is_connected(_on_edge_mobility_pickup_collected):
+			continue
+
+		mobility_pickup.pickup_collected.connect(_on_edge_mobility_pickup_collected)
+
 
 func _build_startup_status() -> String:
 	var control_segments: Array[String] = []
@@ -237,4 +248,11 @@ func _on_edge_repair_pickup_collected(robot: RobotBase, repaired_part_name: Stri
 	ui.show_status("%s estabilizo %s en borde" % [
 		robot.display_name,
 		RobotBase.get_part_display_name(repaired_part_name),
+	])
+
+
+func _on_edge_mobility_pickup_collected(robot: RobotBase, boost_duration: float) -> void:
+	ui.show_status("%s activo impulso de borde (%.1fs)" % [
+		robot.display_name,
+		boost_duration,
 	])
