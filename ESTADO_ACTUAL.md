@@ -34,6 +34,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - transporte de partes que bloquea el ataque prototipo
 - negacion basica de partes si el portador cae al vacio
 - lectura diegetica de recuperacion modular: cada parte desprendida ahora muestra un disco de recuperacion sobre el suelo que se achica segun `cleanup_time`; el prototipo tambien expone `recovery_lost` para distinguir timeout/vacio sin acoplar todavia otra UI
+- las negaciones exitosas al vacio ya tambien quedan acreditadas en el cierre: `DetachedPart` conserva el ultimo portador al perderse por `void`, `Main` lo traduce a `negaciones N` solo si quien la niega es rival del dueño original y `MatchController` reutiliza ese dato tanto en `RecapPanel` como en `MatchResultPanel`
 - robot inutilizado al perder las cuatro partes, empujable y con explosion diferida antes de quedar fuera de ronda o reiniciar
 - bootstrap local que deja cuatro robots humanos activos por defecto desde `main.tscn`
 - perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
@@ -53,6 +54,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - ese mismo roster ahora tambien recuerda el mapping real del soporte (`usa ... | objetivo ...`) segun el perfil del jugador eliminado, para que la nave siga siendo descubrible sin abrir otro panel
   - si el owner de la nave ya no tiene ningun aliado vivo al que asistir, `Main` poda esa `PilotSupportShip` en el acto y apaga el carril externo en el mismo sync, evitando apoyo/telegraphs stale hasta el reset de ronda
 - el cierre de partida/recap lateral ya tambien acredita ese aporte en `Stats | ...`: el equipo suma `apoyo N (M usos: estabilizador 1, energia 1, ...)` segun cuantas cargas tomo y gasto su `PilotSupportShip`, sin abrir otra capa de post-match
+- esa misma telemetria de cierre ahora ya no deja muda la negacion modular: un equipo rival que manda una pieza ajena al vacio suma `negaciones N`, haciendo mas legible el valor real del loop rescate/negacion sin otra pantalla
   - `FFA` mantiene la misma estructura base pero nunca instancia naves ni activa esos pickups, para no contaminar su identidad de supervivencia/oportunismo
 - laboratorio FFA dedicado en `scenes/main/main_ffa.tscn`, reutilizando la misma arena/shared screen pero con `match_mode=FFA` y bootstrap que neutraliza las alianzas del layout 2v2 para que cada robot compita por su cuenta; ese mismo laboratorio ahora reemplaza los slots de `Grua` y `Cizalla` por `Aguja` y `Ancla` para probar poke + control/zona sin romper el 2v2 base
 - el bootstrap FFA ya tambien diferencia el espacio inicial: en cuanto `match_mode=FFA`, `Main` genera spawns diagonales sobre un radio comun y hace mirar a cada robot hacia el centro, evitando que el laboratorio libre herede las lineas cardinales del 2v2

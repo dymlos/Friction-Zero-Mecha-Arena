@@ -40,6 +40,7 @@ var _starting_collision_mask := 1
 var _pickup_ready_at := 0.0
 var _recovery_indicator: MeshInstance3D = null
 var _ownership_indicator: MeshInstance3D = null
+var _last_recovery_loss_source: Node = null
 
 
 func _ready() -> void:
@@ -108,6 +109,10 @@ func get_cleanup_progress_ratio() -> float:
 	return clampf(get_cleanup_time_left() / cleanup_time, 0.0, 1.0)
 
 
+func get_last_recovery_loss_source() -> Node:
+	return _last_recovery_loss_source
+
+
 func is_pickup_ready() -> bool:
 	return _is_pickup_ready()
 
@@ -124,6 +129,7 @@ func try_pick_up(robot: Node) -> bool:
 	if not bool(robot.try_pick_up_detached_part(self)):
 		return false
 
+	_last_recovery_loss_source = null
 	carrier_robot = robot
 	freeze = true
 	linear_velocity = Vector3.ZERO
@@ -154,6 +160,7 @@ func throw_from(carrier: Node, throw_direction: Vector3, throw_speed: float = 6.
 	global_position = carrier_node.global_position + Vector3.UP * carried_hover_height - carrier_node.global_basis.z * carried_forward_offset
 	global_rotation = carrier_node.global_rotation
 	freeze = false
+	_last_recovery_loss_source = null
 	linear_velocity = world_direction * throw_speed
 	angular_velocity = Vector3(
 		randf_range(-3.0, 3.0),
@@ -202,6 +209,7 @@ func try_deliver_to_robot(target_robot: Node, delivered_by: Node = null) -> bool
 
 
 func deny_to_void() -> void:
+	_last_recovery_loss_source = carrier_robot if carrier_robot != null and is_instance_valid(carrier_robot) else null
 	if carrier_robot != null and is_instance_valid(carrier_robot) and carrier_robot.has_method("release_detached_part"):
 		carrier_robot.release_detached_part(self)
 
@@ -384,6 +392,7 @@ func _update_cleanup_timer(delta: float) -> void:
 
 
 func _expire_recovery_window() -> void:
+	_last_recovery_loss_source = null
 	recovery_lost.emit(self, "timeout")
 	_notify_owner_recovery_tracking(false)
 	queue_free()

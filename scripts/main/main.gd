@@ -481,6 +481,8 @@ func _on_robot_respawned(robot: RobotBase) -> void:
 
 
 func _on_robot_part_destroyed(robot: RobotBase, part_name: String, _detached_part: DetachedPart) -> void:
+	if _detached_part != null and not _detached_part.recovery_lost.is_connected(_on_detached_part_recovery_lost):
+		_detached_part.recovery_lost.connect(_on_detached_part_recovery_lost)
 	match_controller.record_part_loss(robot, part_name)
 	ui.show_status("%s perdio %s" % [robot.display_name, RobotBase.get_part_display_name(part_name)])
 
@@ -495,6 +497,25 @@ func _on_robot_part_restored(robot: RobotBase, part_name: String, restored_by: R
 		restored_by.display_name,
 		RobotBase.get_part_display_name(part_name),
 		robot.display_name,
+	])
+
+
+func _on_detached_part_recovery_lost(detached_part: DetachedPart, reason: String) -> void:
+	if detached_part == null or reason != "void":
+		return
+
+	var original_robot := detached_part.get_original_robot() as RobotBase
+	var denied_by := detached_part.get_last_recovery_loss_source() as RobotBase
+	if original_robot == null or denied_by == null:
+		return
+	if denied_by.is_ally_of(original_robot):
+		return
+
+	match_controller.record_part_denial(original_robot, denied_by)
+	ui.show_status("%s nego %s de %s" % [
+		denied_by.display_name,
+		RobotBase.get_part_display_name(detached_part.part_name),
+		original_robot.display_name,
 	])
 
 

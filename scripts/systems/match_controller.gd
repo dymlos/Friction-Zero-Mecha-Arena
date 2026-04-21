@@ -385,6 +385,19 @@ func record_part_restoration(restored_robot: RobotBase, restored_by: RobotBase) 
 	_increment_robot_match_stat(restored_by, "rescues")
 
 
+func record_part_denial(original_robot: RobotBase, denied_by: RobotBase) -> void:
+	if original_robot == null or denied_by == null:
+		return
+	if not _round_active or _round_reset_pending:
+		return
+	if denied_by == original_robot:
+		return
+	if denied_by.is_ally_of(original_robot):
+		return
+
+	_increment_robot_match_stat(denied_by, "denials")
+
+
 func record_part_loss(robot: RobotBase, part_name: String) -> void:
 	if robot == null:
 		return
@@ -611,6 +624,9 @@ func _build_competitor_match_stats_line(competitor_key: String) -> String:
 	var rescues := int(stats.get("rescues", 0))
 	if rescues > 0:
 		segments.append("rescates %s" % rescues)
+	var denial_segment := _build_part_denial_stats_segment(stats)
+	if denial_segment != "":
+		segments.append(denial_segment)
 	var edge_pickups := int(stats.get("edge_pickups", 0))
 	if edge_pickups > 0:
 		segments.append("borde %s" % edge_pickups)
@@ -669,6 +685,14 @@ func _build_part_loss_stats_segment(stats: Dictionary) -> String:
 		return "partes perdidas %s" % total_parts_lost
 
 	return "partes perdidas %s (%s)" % [total_parts_lost, ", ".join(breakdown)]
+
+
+func _build_part_denial_stats_segment(stats: Dictionary) -> String:
+	var total_denials := int(stats.get("denials", 0))
+	if total_denials <= 0:
+		return ""
+
+	return "negaciones %s" % total_denials
 
 
 func _build_elimination_stats_segment(stats: Dictionary) -> String:
@@ -788,6 +812,7 @@ func _ensure_competitor_match_stats(competitor_key: String) -> void:
 
 	_competitor_match_stats[competitor_key] = {
 		"rescues": 0,
+		"denials": 0,
 		"edge_pickups": 0,
 		"support_pickups": 0,
 		"support_pickup_stabilizer": 0,
