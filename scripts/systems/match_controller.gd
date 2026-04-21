@@ -397,6 +397,24 @@ func record_edge_pickup_collection(robot: RobotBase) -> void:
 	_increment_robot_match_stat(robot, "edge_pickups")
 
 
+func record_support_pickup_collection(robot: RobotBase) -> void:
+	if robot == null:
+		return
+	if not _round_active or _round_reset_pending:
+		return
+
+	_increment_robot_match_stat(robot, "support_pickups")
+
+
+func record_support_payload_use(robot: RobotBase) -> void:
+	if robot == null:
+		return
+	if not _round_active or _round_reset_pending:
+		return
+
+	_increment_robot_match_stat(robot, "support_uses")
+
+
 func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> String:
 	if robot == null:
 		return ""
@@ -581,11 +599,27 @@ func _build_competitor_match_stats_line(competitor_key: String) -> String:
 	var edge_pickups := int(stats.get("edge_pickups", 0))
 	if edge_pickups > 0:
 		segments.append("borde %s" % edge_pickups)
+	var support_segment := _build_support_stats_segment(stats)
+	if support_segment != "":
+		segments.append(support_segment)
 	var part_loss_segment := _build_part_loss_stats_segment(stats)
 	if part_loss_segment != "":
 		segments.append(part_loss_segment)
 	segments.append(_build_elimination_stats_segment(stats))
 	return "Stats | %s | %s" % [_get_competitor_label_from_key(competitor_key), " | ".join(segments)]
+
+
+func _build_support_stats_segment(stats: Dictionary) -> String:
+	var support_pickups := int(stats.get("support_pickups", 0))
+	var support_uses := int(stats.get("support_uses", 0))
+	if support_pickups <= 0 and support_uses <= 0:
+		return ""
+	if support_uses <= 0:
+		return "apoyo %s" % support_pickups
+	if support_uses == 1:
+		return "apoyo %s (1 uso)" % support_pickups
+
+	return "apoyo %s (%s usos)" % [support_pickups, support_uses]
 
 
 func _build_part_loss_stats_segment(stats: Dictionary) -> String:
@@ -669,6 +703,8 @@ func _ensure_competitor_match_stats(competitor_key: String) -> void:
 	_competitor_match_stats[competitor_key] = {
 		"rescues": 0,
 		"edge_pickups": 0,
+		"support_pickups": 0,
+		"support_uses": 0,
 		"parts_lost": 0,
 		"arms_lost": 0,
 		"legs_lost": 0,

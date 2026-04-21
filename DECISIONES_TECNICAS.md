@@ -258,6 +258,10 @@
    - `ArenaBase` ahora usa un perfil `teams` con dos pares espejados por ronda y un perfil `ffa` con layouts `3-de-4`, ambos seedados y reutilizando el mismo contrato `activate_edge_pickup_layout_for_round(round_number)`.
    - Motivo: Team vs Team necesita preservar claridad para rescate/choque, mientras FFA gana mas oportunismo y presencia de utilidad sin volver a ocho pickups activos ni romper justicia espacial.
 
+58. **El soporte post-muerte suma stats dentro del recap existente**
+   - `PilotSupportShip` emite eventos de pickup/uso y `Main` los delega a `MatchController`, que agrega `support_pickups` y `support_uses` por competidor dentro de la misma linea `Stats | ...`.
+   - Motivo: el nuevo soporte Teams ya afectaba la ronda pero quedaba invisible en el cierre; registrar `apoyo N (M usos)` preserva legibilidad post-match sin abrir otra UI o duplicar ownership de estado.
+
 58. **El HUD compacto resume el layout activo del borde**
    - `Main` agrega `Borde | ...` a las lineas de ronda usando `ArenaBase.get_active_edge_pickup_layout_summary()`.
    - Motivo: hacer medible y legible la rotación semialeatoria durante playtests sin sumar otro panel de UI ni depender de memoria externa.

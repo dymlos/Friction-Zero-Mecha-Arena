@@ -6,6 +6,8 @@ const PilotSupportPickup = preload("res://scripts/support/pilot_support_pickup.g
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 signal state_changed(support_ship: PilotSupportShip)
+signal payload_collected(support_ship: PilotSupportShip, payload_name: String)
+signal payload_used(support_ship: PilotSupportShip, payload_name: String, target_robot: RobotBase)
 
 @export var move_speed := 8.5
 @export_range(0.05, 0.5, 0.01) var support_repair_ratio := 0.22
@@ -121,11 +123,13 @@ func store_support_payload(payload_name: String) -> bool:
 	_refresh_target_selection(true)
 	_refresh_visuals()
 	_refresh_support_target_visuals()
+	payload_collected.emit(self, payload_name)
 	state_changed.emit(self)
 	return true
 
 
 func use_support_payload() -> bool:
+	var payload_name := _support_payload_name
 	var target_robot := _resolve_support_target_for_payload()
 	if target_robot == null:
 		return false
@@ -155,6 +159,7 @@ func use_support_payload() -> bool:
 	_set_selected_target(null)
 	_refresh_visuals()
 	_refresh_support_target_visuals()
+	payload_used.emit(self, payload_name, target_robot)
 	state_changed.emit(self)
 	return true
 

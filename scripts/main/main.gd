@@ -603,6 +603,10 @@ func _spawn_post_death_support_if_needed(robot: RobotBase) -> void:
 	support_ship.configure(robot, allied_robot, spawn_position, _arena)
 	if not support_ship.state_changed.is_connected(_on_post_death_support_state_changed):
 		support_ship.state_changed.connect(_on_post_death_support_state_changed)
+	if not support_ship.payload_collected.is_connected(_on_post_death_support_payload_collected):
+		support_ship.payload_collected.connect(_on_post_death_support_payload_collected)
+	if not support_ship.payload_used.is_connected(_on_post_death_support_payload_used):
+		support_ship.payload_used.connect(_on_post_death_support_payload_used)
 	match_controller.set_robot_support_state(robot, support_ship.get_status_summary())
 
 
@@ -724,6 +728,24 @@ func _on_post_death_support_state_changed(support_ship: PilotSupportShip) -> voi
 		support_ship.get_status_summary()
 	)
 	_refresh_hud()
+
+
+func _on_post_death_support_payload_collected(support_ship: PilotSupportShip, _payload_name: String) -> void:
+	if support_ship == null or not is_instance_valid(support_ship.owner_robot):
+		return
+
+	match_controller.record_support_pickup_collection(support_ship.owner_robot)
+
+
+func _on_post_death_support_payload_used(
+	support_ship: PilotSupportShip,
+	_payload_name: String,
+	_target_robot: RobotBase
+) -> void:
+	if support_ship == null or not is_instance_valid(support_ship.owner_robot):
+		return
+
+	match_controller.record_support_payload_use(support_ship.owner_robot)
 
 
 func _get_selected_lab_robot() -> RobotBase:

@@ -13,6 +13,7 @@
    - calibrar si `support_energy_surge_duration`, `support_mobility_boost_duration`, `support_interference_duration` y `support_interference_range` vuelven valiosas las cuatro cargas sin solaparse demasiado con los pickups de borde vivo o con `Baliza`.
    - confirmar por playtest que apagar la `PilotSupportShip` apenas muere el ultimo aliado se siente correcto y no corta ayudas “merecidas” demasiado pronto en cierres muy ajustados.
    - confirmar por playtest que `FFA` realmente queda limpio y que compartir la escena base no introduce confusion por elementos post-muerte ocultos.
+   - revisar si la nueva lectura `apoyo N (M usos)` alcanza para explicar el valor real del soporte en el cierre o si conviene desglosar mejor algun payload solo si el playtest demuestra que hoy sigue siendo opaco.
 
 2. **Validar el nuevo roster de arquetipos**
    - usar `F2/F3/F4` para recorrer cruces reales entre `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` en `main.tscn` y `main_ffa.tscn` sin editar escenas entre partidas.
