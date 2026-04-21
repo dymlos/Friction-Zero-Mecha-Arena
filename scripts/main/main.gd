@@ -11,6 +11,7 @@ const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
 const EdgeMobilityPickup = preload("res://scripts/pickups/edge_mobility_pickup.gd")
 const EdgeEnergyPickup = preload("res://scripts/pickups/edge_energy_pickup.gd")
 const EdgePulsePickup = preload("res://scripts/pickups/edge_pulse_pickup.gd")
+const EdgeChargePickup = preload("res://scripts/pickups/edge_charge_pickup.gd")
 const ARIETE_ARCHETYPE = preload("res://data/config/robots/ariete_archetype.tres")
 const GRUA_ARCHETYPE = preload("res://data/config/robots/grua_archetype.tres")
 const CIZALLA_ARCHETYPE = preload("res://data/config/robots/cizalla_archetype.tres")
@@ -300,6 +301,7 @@ func _configure_edge_pickup_layout_profile() -> void:
 
 	var layout_profile := ArenaBase.EDGE_PICKUP_LAYOUT_PROFILE_FFA if match_controller.match_mode == MatchController.MatchMode.FFA else ArenaBase.EDGE_PICKUP_LAYOUT_PROFILE_TEAMS
 	_arena.set_edge_pickup_layout_profile(layout_profile)
+	_arena.set_edge_pickup_allowed_ids(_build_allowed_edge_pickup_ids())
 
 
 func _report_startup_structure() -> void:
@@ -351,6 +353,16 @@ func _connect_arena_pickups() -> void:
 			continue
 
 		pulse_pickup.pickup_collected.connect(_on_edge_pulse_pickup_collected)
+
+	for node in get_tree().get_nodes_in_group("edge_charge_pickups"):
+		if not (node is EdgeChargePickup):
+			continue
+
+		var charge_pickup := node as EdgeChargePickup
+		if charge_pickup.pickup_collected.is_connected(_on_edge_charge_pickup_collected):
+			continue
+
+		charge_pickup.pickup_collected.connect(_on_edge_charge_pickup_collected)
 
 
 func _build_startup_status() -> String:
@@ -474,6 +486,19 @@ func _on_edge_pulse_pickup_collected(robot: RobotBase, item_name: String) -> voi
 	])
 
 
+func _on_edge_charge_pickup_collected(robot: RobotBase, restored_charges: int) -> void:
+	match_controller.record_edge_pickup_collection(robot)
+	var skill_label := robot.get_core_skill_label()
+	if skill_label == "":
+		skill_label = "skill"
+
+	ui.show_status("%s recargo municion de %s (+%s)" % [
+		robot.display_name,
+		skill_label,
+		restored_charges,
+	])
+
+
 func _on_round_started(round_number: int) -> void:
 	if _arena == null:
 		return
@@ -560,6 +585,7 @@ func _apply_lab_runtime_loadout(
 
 	_set_lab_slot_control_mode(robot.player_index, control_mode)
 	robot.apply_runtime_loadout(archetype_config, control_mode)
+	_configure_edge_pickup_layout_profile()
 
 	_applying_lab_selector_reset = true
 	for scene_robot in _get_scene_robots():
@@ -598,3 +624,35 @@ func _get_lab_robot_brief(robot: RobotBase) -> String:
 		archetype_label = "Base"
 	var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
 	return "P%s %s %s" % [robot.player_index, archetype_label, mode_label]
+
+
+func _build_allowed_edge_pickup_ids() -> PackedStringArray:
+	var allowed_ids := PackedStringArray(ArenaBase.DEFAULT_EDGE_PICKUP_ALLOWED_IDS)
+	if _should_enable_charge_pickups():
+		allowed_ids.append("charge")
+
+	return allowed_ids
+
+
+func _should_enable_charge_pickups() -> bool:
+	var robots := _get_scene_robots()
+	if robots.is_empty():
+		return false
+
+	if match_controller.match_mode == MatchController.MatchMode.FFA:
+		var skill_robot_count := 0
+		for robot in robots:
+			if robot.has_core_skill():
+				skill_robot_count += 1
+
+		return skill_robot_count >= 2
+
+	var teams_present := {}
+	var teams_with_skills := {}
+	for robot in robots:
+		var team_id := robot.get_team_identity()
+		teams_present[team_id] = true
+		if robot.has_core_skill():
+			teams_with_skills[team_id] = true
+
+	return teams_present.size() >= 2 and teams_present.size() == teams_with_skills.size()

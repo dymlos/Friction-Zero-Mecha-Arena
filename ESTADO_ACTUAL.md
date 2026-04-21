@@ -51,16 +51,17 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - segundo incentivo de borde: el mismo arena ahora suma pickups de movilidad en norte/sur; activan una ventana corta de traccion/control reforzados, exponen al robot en bordes sin cobertura y siguen el borde vivo cuando la arena se contrae
 - tercer incentivo de borde: el mismo arena ahora suma pickups de energia en diagonales; cortan la recuperacion posterior al overdrive, refuerzan temporalmente el par energetico seleccionado y tambien siguen el borde vivo cuando la arena se contrae
 - primer item de una sola carga en mano: el mismo arena ahora suma pickups de pulso en las diagonales restantes; cargan un `pulso` visible en el robot, comparten slot con las partes transportadas y convierten el siguiente ataque en un disparo repulsor corto
+- pickup de municion/carga de skill: el mismo arena ahora tambien puede habilitar pickups de `municion` que restauran una carga propia sobre `Grua`, `Aguja` o `Ancla`; `RobotBase` expone `restore_core_skill_charges()` para eso y el HUD publica `recargo municion...` cuando alguien lo disputa en borde
 - skill propia de recuperacion: `RobotBase` ahora tambien puede resolver `Iman` desde `throw_part`; `Grua` captura la parte desprendida lista mas prioritaria dentro de `recovery_skill_pickup_range`, reusa el mismo slot de carga y deja `skill Iman x/y` visible en el roster del laboratorio 2v2
 - primera skill propia por cargas: `RobotBase` ahora puede leer `core_skill_type/label/cargas/recarga` desde `RobotArchetypeConfig`; `Aguja` usa `Pulso` sobre la accion de utilidad cuando no lleva una parte, gasta una carga, recarga en segundo plano y deja `skill Pulso x/y` visible en el roster
 - segunda skill propia por zona: `RobotBase` ahora tambien puede desplegar `Baliza` desde `throw_part`; `Ancla` deja una sola `ControlBeacon` activa por robot, aplica supresion temporal de drive/control y reutiliza el mismo roster compacto para mostrar `skill Baliza x/y` y el estado `zona`
-- rotacion semialeatoria controlada de borde: esos ocho pedestales ya no quedan todos activos a la vez; `ArenaBase` usa un perfil `Equipos` de dos pares espejados por ronda y un perfil `FFA` de tres tipos activos por ronda para subir el oportunismo sin volver al borde completo
+- rotacion semialeatoria controlada de borde: esos diez pedestales ya no quedan todos activos a la vez; `ArenaBase` usa un perfil `Equipos` de dos pares espejados por ronda y un perfil `FFA` de tres tipos activos por ronda, pero `Main` solo agrega `municion` al mazo cuando el roster actual realmente tiene varias skills propias compitiendo por ese recurso
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
 - HUD dual base configurable desde `MatchConfig`:
   - modo `explicito`: mantiene `Modo`, `Objetivo`, hints de control, `4/4 partes` y energia `Eq` siempre visibles en la misma UI compacta
   - modo `contextual`: oculta esa informacion estable y solo vuelve a exponer dano, redistribucion, buffs, items/cargas y partes perdidas cuando se vuelven tacticamente relevantes
   - `Main` ya puede alternar ambos modos en runtime con `F1`, usando un override local de sesion para playtests sin mutar el recurso compartido
-  - ambos modos siguen reutilizando el mismo HUD compacto de ronda/roster y tambien resumen `Borde | ...` con los tipos activos de pickup de la ronda
+  - ambos modos siguen reutilizando el mismo HUD compacto de ronda/roster y tambien resumen `Borde | ...` con los tipos activos de pickup de la ronda, incluyendo `municion` cuando entra al mazo actual
 - lectura de eliminacion compacta en el mismo HUD:
   - robots inutilizados muestran cuenta atras breve de explosion en el roster
   - si la baja vino desde `Overdrive`, el mismo roster marca `inestable` antes de explotar
@@ -298,7 +299,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
-- El nuevo sistema de items sigue siendo deliberadamente simple: hoy existen reparacion instantanea, impulso corto, recarga breve y un solo item de carga (`pulse_charge`); la semialeatoriedad actual ya diferencia `Equipos` (2 pares) y `FFA` (3 tipos), pero todavia no hay inventario completo, pesos finos por modo/mapa ni variedad real de utilities.
+- El nuevo sistema de items sigue siendo deliberadamente simple: hoy existen reparacion instantanea, impulso corto, recarga breve, municion/carga de skill y un solo item de una carga en mano (`pulse_charge`); la semialeatoriedad actual ya diferencia `Equipos` (2 pares) y `FFA` (3 tipos), pero todavia no hay inventario completo, pesos finos por modo/mapa ni variedad real de utilities.
 - El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
 - Los nuevos arquetipos siguen siendo una capa deliberadamente liviana:
   - hoy combinan tuning + pasivas chicas, y `Grua/Aguja/Ancla` abren la primera tanda real de skills propias; todavia no hay selección runtime ni una segunda capa mas profunda de reglas por arquetipo
@@ -307,7 +308,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - La explosion inestable ya conecta overdrive con la ruta de destruccion total, pero todavia falta playtestear si sus multiplicadores vuelven especial esa apuesta sin convertirla en el cierre dominante del match.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
-- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay cuatro tipos de pickup, con `Equipos` usando dos pares y `FFA` tres tipos activos por ronda; todavia faltan pesos finos por modo/mapa, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
+- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay cinco tipos de pickup, con `Equipos` usando dos pares y `FFA` tres tipos activos por ronda; `municion` solo entra cuando el roster del laboratorio tiene suficiente disputa real por skills propias. Todavia faltan pesos finos por modo/mapa, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La nueva lectura de rescate tambien sigue siendo deliberadamente minima: el disco sobre la pieza hace visible la urgencia sin sumar HUD, pero falta validar por playtest si alcanza con cuatro robots y arena contrayendose.

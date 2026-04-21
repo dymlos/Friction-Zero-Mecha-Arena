@@ -569,6 +569,30 @@ func get_core_skill_max_charges() -> int:
 	return maxi(archetype_config.core_skill_max_charges, 0)
 
 
+func restore_core_skill_charges(charge_amount: int = 1) -> bool:
+	if not has_core_skill():
+		return false
+	if charge_amount <= 0:
+		return false
+
+	var max_charges := get_core_skill_max_charges()
+	if _core_skill_charges >= max_charges:
+		return false
+
+	var previous_charges := _core_skill_charges
+	_core_skill_charges = mini(_core_skill_charges + charge_amount, max_charges)
+	if _core_skill_charges >= max_charges:
+		_core_skill_recharge_remaining = 0.0
+	elif _core_skill_recharge_remaining <= 0.0:
+		_core_skill_recharge_remaining = _get_core_skill_recharge_seconds()
+
+	if _core_skill_charges == previous_charges:
+		return false
+
+	_refresh_visual_state()
+	return true
+
+
 func get_core_skill_status_summary() -> String:
 	if not has_core_skill():
 		return ""

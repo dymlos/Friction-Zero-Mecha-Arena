@@ -3,24 +3,31 @@ class_name ArenaBase
 
 const EDGE_PICKUP_LAYOUT_PROFILE_TEAMS := "teams"
 const EDGE_PICKUP_LAYOUT_PROFILE_FFA := "ffa"
+const DEFAULT_EDGE_PICKUP_ALLOWED_IDS := ["repair", "mobility", "energy", "pulse"]
 const EDGE_PICKUP_LABELS := {
 	"repair": "reparacion",
 	"mobility": "movilidad",
 	"energy": "energia",
 	"pulse": "pulso",
+	"charge": "municion",
 }
 const EDGE_PICKUP_LAYOUTS_BY_PROFILE := {
 	EDGE_PICKUP_LAYOUT_PROFILE_TEAMS: [
 		["repair", "mobility"],
-		["repair", "pulse"],
 		["energy", "mobility"],
+		["repair", "pulse"],
 		["energy", "pulse"],
+		["repair", "charge"],
+		["energy", "charge"],
 	],
 	EDGE_PICKUP_LAYOUT_PROFILE_FFA: [
 		["repair", "mobility", "pulse"],
 		["repair", "energy", "pulse"],
-		["repair", "energy", "mobility"],
 		["energy", "mobility", "pulse"],
+		["repair", "energy", "mobility"],
+		["repair", "pulse", "charge"],
+		["energy", "pulse", "charge"],
+		["mobility", "pulse", "charge"],
 	],
 }
 
@@ -48,6 +55,7 @@ var _cover_block_original_positions: Dictionary = {}
 var _edge_pickup_nodes: Array[Node3D] = []
 var _edge_pickup_original_local_positions: Dictionary = {}
 var _edge_pickup_layout_cycle: Array[PackedStringArray] = []
+var _edge_pickup_allowed_ids := PackedStringArray(DEFAULT_EDGE_PICKUP_ALLOWED_IDS)
 var _active_edge_pickup_layout := PackedStringArray()
 
 
@@ -121,6 +129,26 @@ func set_edge_pickup_layout_profile(profile_name: String) -> void:
 	_build_edge_pickup_layout_cycle()
 
 
+func set_edge_pickup_allowed_ids(allowed_ids: PackedStringArray) -> void:
+	var next_allowed_ids := PackedStringArray()
+	for layout_id in allowed_ids:
+		if not EDGE_PICKUP_LABELS.has(layout_id):
+			continue
+		if next_allowed_ids.has(layout_id):
+			continue
+
+		next_allowed_ids.append(layout_id)
+
+	if next_allowed_ids.is_empty():
+		next_allowed_ids = PackedStringArray(DEFAULT_EDGE_PICKUP_ALLOWED_IDS)
+	if _edge_pickup_allowed_ids == next_allowed_ids:
+		return
+
+	_edge_pickup_allowed_ids = next_allowed_ids
+	_active_edge_pickup_layout = PackedStringArray()
+	_build_edge_pickup_layout_cycle()
+
+
 func get_active_edge_pickup_layout_ids() -> PackedStringArray:
 	return _active_edge_pickup_layout.duplicate()
 
@@ -187,7 +215,17 @@ func _build_edge_pickup_layout_cycle() -> void:
 	_edge_pickup_layout_cycle.clear()
 	var profile_layouts: Array = EDGE_PICKUP_LAYOUTS_BY_PROFILE.get(edge_pickup_layout_profile, EDGE_PICKUP_LAYOUTS_BY_PROFILE[EDGE_PICKUP_LAYOUT_PROFILE_TEAMS])
 	for layout in profile_layouts:
-		_edge_pickup_layout_cycle.append(PackedStringArray(layout))
+		var packed_layout := PackedStringArray(layout)
+		var layout_allowed := true
+		for layout_id in packed_layout:
+			if _edge_pickup_allowed_ids.has(layout_id):
+				continue
+
+			layout_allowed = false
+			break
+
+		if layout_allowed:
+			_edge_pickup_layout_cycle.append(packed_layout)
 
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(edge_pickup_layout_seed)
@@ -207,6 +245,8 @@ func _get_edge_pickup_layout_id(pickup: Node) -> String:
 		return "energy"
 	if pickup.is_in_group("edge_pulse_pickups"):
 		return "pulse"
+	if pickup.is_in_group("edge_charge_pickups"):
+		return "charge"
 
 	return ""
 

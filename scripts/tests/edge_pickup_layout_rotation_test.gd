@@ -248,6 +248,8 @@ func _get_pickup_type_label(pickup: Node) -> String:
 		return "energy"
 	if pickup.is_in_group("edge_pulse_pickups"):
 		return "pulse"
+	if pickup.is_in_group("edge_charge_pickups"):
+		return "charge"
 
 	return "unknown"
 

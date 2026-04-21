@@ -316,6 +316,14 @@
    - `RobotArchetypeConfig` ahora soporta `RECOVERY_GRAB`; `grua_archetype.tres` lo expone como `Iman`, `DetachedPart` publica `is_pickup_ready()` y `RobotBase` usa `recovery_skill_pickup_range` para buscar la pieza lista mas conveniente, priorizando propias/aliadas sobre enemigas antes de reaprovechar `try_pick_up(self)`.
    - Motivo: Team vs Team necesitaba una herramienta activa de asistencia/recuperacion, pero el prototipo ya tenia un loop claro de carga/retorno/negacion. Capturar una pieza lista a media distancia fortalece el rol de `Grua`, respeta `pickup_delay/throw_pickup_delay`, sigue bloqueada por el mismo slot de carga y tambien deja una utilidad viable en FFA para negar piezas enemigas.
 
+79. **La municion/carga de skill se resuelve como pickup de borde inmediato**
+   - `EdgeChargePickup` llama a `RobotBase.restore_core_skill_charges()` y restaura una carga faltante sin abrir otro inventario ni otro boton; si el robot no tiene skill propia o ya esta al maximo, el pickup no se consume.
+   - Motivo: el documento pide una capa de `municion/carga`, pero el prototipo ya tenia charges en `Grua/Aguja/Ancla`. Reusar ese contrato vuelve el pickup legible, chico y valioso sin inventar una economia paralela.
+
+80. **La municion solo entra al mazo cuando el roster actual puede disputarla**
+   - `Main` calcula los tipos de pickup permitidos por ronda: en `FFA` exige al menos dos robots con skill propia; en `Equipos` exige que cada competidor tenga al menos una skill propia antes de habilitar layouts con `charge`.
+   - Motivo: evitar que el laboratorio 2v2 base regale valor gratis a un solo bando y mantener el borde tactico sin crear pickups muertos para la configuracion principal.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
