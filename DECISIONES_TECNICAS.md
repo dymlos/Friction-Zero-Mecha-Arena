@@ -34,7 +34,11 @@
    - `robot_core_skill_test.gd` ahora inspecciona el grupo `temporary_projectiles` tras disparar `Pulso` y comprueba que el proyectil no nazca solapado con el robot origen.
    - Motivo: cubrir un contrato fisico fino del arquetipo Poke/Skillshot sin depender de warnings del engine ni de inspeccion manual en playtests.
 
-9. **Bootstrap local desde `main` en vez de confiar en la escena armada a mano**
+9. **`PulseBolt` apaga su hitbox antes de liberarse**
+   - Al impactar o agotar lifetime, `PulseBolt` entra primero en un estado corto de despawn: deja de procesar, oculta el visual, desactiva `monitoring`/`CollisionShape3D` y solo despues hace `queue_free()`.
+   - Motivo: evitar eventos stale de `Area3D` durante el teardown del proyectil y dejar el contrato del skillshot mas robusto para tests y runtime.
+
+10. **Bootstrap local desde `main` en vez de confiar en la escena armada a mano**
    - `main.gd` ahora asigna spawns y slots locales a los robots ya presentes en la escena.
    - Motivo: deja el prototipo mas facil de entender y evita escenas "correctas por casualidad" cuando se suman mas jugadores o se cambian spawns.
 

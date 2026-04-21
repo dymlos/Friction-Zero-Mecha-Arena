@@ -2,6 +2,7 @@ extends SceneTree
 
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
+const PULSE_BOLT_SCENE := preload("res://scenes/projectiles/pulse_bolt.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
 
@@ -18,6 +19,7 @@ func _run() -> void:
 	await _validate_poke_archetype_exposes_a_charge_skill()
 	await _validate_charge_skill_spends_and_recovers_ammo()
 	await _validate_core_skill_projectile_ignores_the_source_robot()
+	await _validate_core_skill_projectile_disables_hitbox_before_despawn()
 	await _validate_core_skill_readability_stays_on_robot_body()
 	await _validate_ffa_lab_exposes_the_new_archetype_identity()
 	await process_frame
@@ -138,6 +140,37 @@ func _validate_core_skill_projectile_ignores_the_source_robot() -> void:
 	await _cleanup_node(source)
 
 
+func _validate_core_skill_projectile_disables_hitbox_before_despawn() -> void:
+	var source := await _spawn_robot(null)
+	var target := await _spawn_robot(null)
+	var projectile := PULSE_BOLT_SCENE.instantiate() as Area3D
+	root.add_child(projectile)
+
+	source.global_position = Vector3.ZERO
+	target.global_position = Vector3(0.0, 0.8, -1.0)
+	projectile.call("configure", source, Vector3.ZERO, Vector3.FORWARD, 10.0, 1.0, 4.0, 8.0)
+
+	await process_frame
+	await physics_frame
+
+	projectile.call("_on_body_entered", target)
+	await process_frame
+
+	var collision_shape := projectile.get_node_or_null("CollisionShape3D") as CollisionShape3D
+	_assert(
+		not projectile.monitoring,
+		"PulseBolt deberia desactivar su Area3D en cuanto impacta para no dejar warnings/eventos stale al despawn."
+	)
+	_assert(
+		collision_shape != null and collision_shape.disabled,
+		"PulseBolt deberia desactivar su hitbox antes de liberarse tras un impacto."
+	)
+
+	await process_frame
+	await _cleanup_node(target)
+	await _cleanup_node(source)
+
+
 func _validate_core_skill_readability_stays_on_robot_body() -> void:
 	var config := load(AGUJA_CONFIG_PATH)
 	_assert(config is RobotArchetypeConfig, "La prueba de lectura diegetica necesita el recurso Aguja.")
@@ -246,6 +279,8 @@ func _cleanup_node(node: Node) -> void:
 
 func _cleanup_group(group_name: String) -> void:
 	for node in get_nodes_in_group(group_name):
+		if not is_instance_valid(node):
+			continue
 		if not (node is Node):
 			continue
 

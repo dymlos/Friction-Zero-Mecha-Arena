@@ -11,6 +11,10 @@ const RobotBase = preload("res://scripts/robots/robot_base.gd")
 var _source_robot: RobotBase = null
 var _travel_direction := Vector3.FORWARD
 var _lifetime_remaining := 0.0
+var _is_despawning := false
+
+
+@onready var collision_shape: CollisionShape3D = $CollisionShape3D
 
 
 func _ready() -> void:
@@ -20,10 +24,13 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if _is_despawning:
+		return
+
 	global_position += _travel_direction * speed * delta
 	_lifetime_remaining = maxf(_lifetime_remaining - delta, 0.0)
 	if _lifetime_remaining == 0.0:
-		queue_free()
+		_begin_despawn()
 
 
 func configure(
@@ -61,6 +68,8 @@ func _face_travel_direction() -> void:
 
 
 func _on_body_entered(body: Node) -> void:
+	if _is_despawning:
+		return
 	if body == _source_robot:
 		return
 
@@ -68,8 +77,26 @@ func _on_body_entered(body: Node) -> void:
 		var robot := body as RobotBase
 		robot.apply_impulse(_travel_direction * impact_impulse)
 		robot.receive_attack_hit_from_robot(_travel_direction, damage_amount, _source_robot)
-		queue_free()
+		_begin_despawn()
 		return
 
 	if body is PhysicsBody3D:
-		queue_free()
+		_begin_despawn()
+
+
+func _begin_despawn() -> void:
+	if _is_despawning:
+		return
+
+	_is_despawning = true
+	set_physics_process(false)
+	visible = false
+	set_deferred("monitoring", false)
+	collision_shape.set_deferred("disabled", true)
+	_finalize_despawn.call_deferred()
+
+
+func _finalize_despawn() -> void:
+	await get_tree().process_frame
+	await get_tree().physics_frame
+	queue_free()
