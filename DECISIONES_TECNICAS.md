@@ -54,6 +54,14 @@
    - El overdrive concentra energia en la parte foco durante una ventana breve y luego deja una penalizacion temporal antes de volver a estar disponible.
    - Motivo: respeta la idea de apuesta de alto riesgo/alta recompensa sin convertir la redistribucion en spam.
 
+14. **Negacion de parte por lanzamiento**
+   - Se añadió una acción dedicada para lanzar una parte transportada, permitiendo negar recuperaciones sin introducir un sistema de item adicional.
+   - Motivo: conectar el bucle de rescate con decisiones de espacio/tiempo y mantener el control del estado legible.
+
+15. **Ajuste de ritmo de duelo via parámetros exportados**
+   - Se prefirió reajustar el duel 2P ajustando `RobotBase` en lugar de agregar una mecánica nueva.
+   - Motivo: el equilibrio de inercia, alcance/impulso y daño de choque define la sensación principal del prototipo sin comprometer la simplicidad técnica existente.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

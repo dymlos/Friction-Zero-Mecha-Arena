@@ -24,13 +24,21 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - bootstrap local que deja dos robots humanos activos por defecto desde `main.tscn`
 - perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
 - HUD minimo con roster compacto para leer estado, energia y si un robot transporta una parte
+- negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
+- ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
 
 ## Lo completado en esta iteracion
+
+- Se agrego la acción de lanzamiento de parte: el portador puede negar una parte en mano con input dedicado en lugar de depender solo de perder el control de la mano o caer al vacío.
 
 - Se hizo explicito el bootstrap local del prototipo: `main.gd` ahora asigna slots, spawns y deja dos jugadores activos por defecto.
 - Se separo ownership de input local con perfiles de teclado por jugador y fallback de joystick por slot, evitando que varios robots lean el mismo dispositivo.
 - Se agrego un roster compacto en HUD para leer rapido quien sigue activo, cuantas partes conserva y si transporta una parte recuperable.
 - La energia ahora deja de ser solo dato: el robot puede mover el foco con entradas discretas, alterar multiplicadores reales y usar overdrive con penalizacion corta.
+- Se ajustó el ritmo de choque del prototipo base 2P tocando los valores exportados de `RobotBase`:
+  - movimiento con menos frenado base (`glide_damping`)
+  - empuje y alcance de impacto (`passive_push_strength`, `attack_range`, `attack_impulse_strength`)
+  - ventana de daño por choque (`collision_damage_threshold`, `collision_damage_scale`, `collision_damage_cooldown`)
 - Se sumo validacion headless especifica para redistribucion y overdrive, cubriendo el slice tactico nuevo sin introducir infraestructura adicional.
 - Se sumaron verificaciones headless para el bootstrap multijugador y la separacion de input, manteniendo ademas las pruebas previas del loop modular.
 
@@ -52,4 +60,4 @@ Resultado: las cinco verificaciones dedicadas pasan y el proyecto sigue iniciand
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - La escena principal ya permite duelo 1v1 humano real, pero todavia no demuestra rescates cooperativos reales porque no existe una configuracion 2v2 o aliado activo en vivo.
 - El roster mejora la lectura del estado modular, pero sigue siendo un HUD textual de depuracion; aun no existe feedback diegetico fuerte para "parte cargada".
-- No existe accion de lanzamiento manual para negar partes: la negacion actual solo se resuelve llevando el portador al vacio.
+- La negacion por lanzamiento existe, pero aún no se testea como acción explícita en escenarios de 2v2 o con control de aliado (solo test de retorno básico y caída al vacío previos).

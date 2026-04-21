@@ -8,10 +8,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Bootstrap local mas claro: `main.gd` ahora alinea robots con los spawns del arena blockout, asigna slots de jugador y deja 2 jugadores humanos activos por defecto.
 - Input local separado: `RobotBase` resuelve perfiles de teclado por slot y deja de leer joysticks "de todos" cuando el robot ya usa teclado.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
+- Etapa 2 y 3: el ritmo de choque del laboratorio 2P ya fue afinado en `RobotBase` para que los intercambios sean más fluidos sin perder el carácter de choque decisivo.
 - Etapa 5: primer slice funcional implementado. Cada robot ahora puede redistribuir energia hacia una parte foco, alterar de forma real el empuje o la traccion y activar un overdrive corto con recuperacion/cooldown.
 - Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y luego respawnea para mantener el match jugable.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, mensajes breves, foco energetico visible en el core y un roster compacto por robot para leer estado/carga/energia sin HUD pesado.
+- Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
 - Pendiente prioritario: convertir el baseline 2P en un escenario real de rescate aliado (2v2 simple o configuracion equivalente) y empezar el cierre de ronda real.
 
 ## Principios de orden

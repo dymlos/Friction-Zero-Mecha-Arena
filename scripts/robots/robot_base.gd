@@ -55,6 +55,7 @@ const INPUT_ACTION_SUFFIXES := [
 	"energy_prev",
 	"energy_next",
 	"overdrive",
+	"throw_part",
 ]
 
 const ENERGY_LIMB_PAIRS := {
@@ -80,12 +81,13 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"move_left": [KEY_LEFT],
 		"move_right": [KEY_RIGHT],
 		"move_forward": [KEY_UP],
-		"move_back": [KEY_DOWN],
-		"attack": [KEY_ENTER],
-		"energy_prev": [KEY_COMMA],
-		"energy_next": [KEY_PERIOD],
-		"overdrive": [KEY_SLASH],
-	},
+	"move_back": [KEY_DOWN],
+	"attack": [KEY_ENTER],
+	"energy_prev": [KEY_COMMA],
+	"energy_next": [KEY_PERIOD],
+	"throw_part": [KEY_SLASH],
+	"overdrive": [KEY_M],
+},
 }
 
 @export var robot_id := 0
@@ -105,8 +107,8 @@ const KEYBOARD_PROFILE_BINDINGS := {
 
 @export_group("Prototype Movement")
 @export var max_move_speed := 7.5
-@export var move_acceleration := 20.0
-@export var glide_damping := 4.0
+@export var move_acceleration := 16.5
+@export var glide_damping := 3.1
 @export var turn_speed := 10.0
 @export var gravity := 28.0
 
@@ -128,15 +130,16 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export_range(0.2, 2.0, 0.05) var maximum_energy_multiplier := 1.35
 
 @export_group("Prototype Combat")
-@export var passive_push_strength := 3.5
-@export var attack_impulse_strength := 10.0
-@export var attack_range := 2.2
-@export var attack_cooldown := 0.4
+@export var passive_push_strength := 4.0
+@export var attack_impulse_strength := 11.0
+@export var attack_range := 2.3
+@export var attack_cooldown := 0.42
 @export var attack_damage := 28.0
-@export var collision_damage_threshold := 4.6
-@export var collision_damage_scale := 6.5
-@export var collision_damage_cooldown := 0.25
+@export var collision_damage_threshold := 4.1
+@export var collision_damage_scale := 6.0
+@export var collision_damage_cooldown := 0.3
 @export var detached_part_launch_speed := 5.2
+@export var detached_part_throw_speed := 8.0
 @export var detached_part_pickup_range := 1.4
 @export var carried_part_return_range := 1.8
 @export var disabled_explosion_delay := 1.6
@@ -162,6 +165,7 @@ var _was_joypad_attack_pressed := false
 var _was_joypad_energy_prev_pressed := false
 var _was_joypad_energy_next_pressed := false
 var _was_joypad_overdrive_pressed := false
+var _was_joypad_throw_pressed := false
 var _part_visual_nodes: Dictionary = {}
 var _part_flash_strength: Dictionary = {}
 var _core_visual_nodes: Array[MeshInstance3D] = []
@@ -750,6 +754,9 @@ func _update_energy_controls() -> void:
 	if not is_player_controlled or _is_disabled:
 		return
 
+	if is_instance_valid(_carried_part) and _is_throw_part_just_pressed():
+		throw_carried_part(_get_move_input_vector())
+
 	if _energy_shift_cooldown_remaining <= 0.0:
 		if _is_energy_prev_just_pressed():
 			_cycle_energy_focus(-1)
@@ -769,6 +776,25 @@ func _cycle_energy_focus(direction: int) -> void:
 		current_index = 0
 	var target_index := posmod(current_index + direction, BODY_PARTS.size())
 	set_energy_focus(BODY_PARTS[target_index])
+
+
+func throw_carried_part(throw_direction: Vector2 = Vector2.ZERO, throw_speed: float = detached_part_throw_speed) -> bool:
+	if _is_disabled or not is_instance_valid(_carried_part):
+		return false
+
+	var carried_part := _carried_part
+	_carried_part = null
+
+	var world_throw_direction := Vector3(throw_direction.x, 0.0, throw_direction.y)
+	if world_throw_direction.length_squared() <= 0.0001:
+		world_throw_direction = -global_transform.basis.z
+
+	var launched := carried_part.throw_from(self, world_throw_direction, throw_speed)
+	if not launched:
+		_carried_part = carried_part
+		return false
+
+	return true
 
 
 func _get_move_input_vector() -> Vector2:
@@ -1144,6 +1170,14 @@ func _is_overdrive_just_pressed() -> bool:
 	var joypad_pressed := _is_joypad_button_pressed(JOY_BUTTON_Y)
 	var joypad_just_pressed := joypad_pressed and not _was_joypad_overdrive_pressed
 	_was_joypad_overdrive_pressed = joypad_pressed
+	return keyboard_pressed or joypad_just_pressed
+
+
+func _is_throw_part_just_pressed() -> bool:
+	var keyboard_pressed := Input.is_action_just_pressed(_player_action_name("throw_part"))
+	var joypad_pressed := _is_joypad_button_pressed(JOY_BUTTON_X)
+	var joypad_just_pressed := joypad_pressed and not _was_joypad_throw_pressed
+	_was_joypad_throw_pressed = joypad_pressed
 	return keyboard_pressed or joypad_just_pressed
 
 
