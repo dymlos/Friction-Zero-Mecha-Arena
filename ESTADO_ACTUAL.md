@@ -37,6 +37,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - segundo incentivo de borde: el mismo arena ahora suma pickups de movilidad en norte/sur; activan una ventana corta de traccion/control reforzados, exponen al robot en bordes sin cobertura y siguen el borde vivo cuando la arena se contrae
 - tercer incentivo de borde: el mismo arena ahora suma pickups de energia en diagonales; cortan la recuperacion posterior al overdrive, refuerzan temporalmente el par energetico seleccionado y tambien siguen el borde vivo cuando la arena se contrae
 - primer item de una sola carga en mano: el mismo arena ahora suma pickups de pulso en las diagonales restantes; cargan un `pulso` visible en el robot, comparten slot con las partes transportadas y convierten el siguiente ataque en un disparo repulsor corto
+- rotacion semialeatoria controlada de borde: esos ocho pedestales ya no quedan todos activos a la vez; `ArenaBase` rota por ronda un mazo de cuatro cruces y deja solo dos pares espejados activos para bajar clutter sin perder justicia espacial
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
 - HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia, buffs temporales y si un robot transporta una parte
 - lectura de eliminacion compacta en el mismo HUD:
@@ -53,6 +54,13 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 
 ## Lo completado en esta iteracion
 
+- Se convirtió el borde fijo en una rotación semialeatoria controlada:
+  - `ArenaBase` ahora arma un mazo seedado con los cuatro cruces base (`repair/energy` x `mobility/pulse`) y activa solo dos pares espejados por ronda
+  - `MatchController` emite `round_started` y `Main` reaplica ese layout al inicio de cada ronda real, sin meter un director de match nuevo
+  - los pickups de borde ahora exponen `is_spawn_enabled()` / `set_spawn_enabled()` para apagarse completos cuando su pedestal no forma parte del layout actual, manteniendo el telegraph base+núcleo cuando sí están activos
+- Se ajustó la validación existente al nuevo contrato de mapa:
+  - `edge_pickup_layout_rotation_test.gd` cubre arena aislada + `main.tscn`, verificando 4 pickups activos por ronda, pares espejados y avance de layout tras reset
+  - los tests de movilidad, energía y pulso sobre `main.tscn` ya buscan un pickup realmente activo antes de validar roster/HUD
 - Se agregó el primer item universal de una sola carga en mano:
   - existe una escena nueva `edge_pulse_pickup.tscn` con pedestal persistente, cooldown visible y contrato de pickup equivalente al resto de incentivos de borde
   - al tocarla, `RobotBase` guarda `pulse_charge`, reaprovecha `CarryIndicator`, muestra `item pulso` en el roster y no permite mezclar la carga con una `DetachedPart`
@@ -161,6 +169,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 ## Validacion realizada
 
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/arena_edge_cover_layout_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/edge_pickup_layout_rotation_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/edge_pulse_pickup_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/edge_repair_pickup_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_mode_bootstrap_test.gd`
@@ -182,17 +191,17 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_hard_control_mode_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 5`
 
-Resultado: las veinte verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
-- El nuevo sistema de items sigue siendo deliberadamente simple: hoy existen reparacion instantanea, impulso corto, recarga breve y un solo item de carga (`pulse_charge`); todavia no hay inventario completo, semialeatoriedad de spawns ni variedad real de utilities.
+- El nuevo sistema de items sigue siendo deliberadamente simple: hoy existen reparacion instantanea, impulso corto, recarga breve y un solo item de carga (`pulse_charge`); la semialeatoriedad actual es un mazo controlado de layouts por ronda, pero todavia no hay inventario completo, pesos por modo/mapa ni variedad real de utilities.
 - El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
-- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay reparacion fija + impulso fijo + energia fija + pulso cargable; todavia faltan variacion semialeatoria, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
+- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay cuatro tipos de pickup y solo dos pares activos por ronda; todavia faltan pesos por modo/mapa, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.

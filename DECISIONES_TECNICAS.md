@@ -218,6 +218,14 @@
    - `EdgePulsePickup` entrega una sola carga de `pulse_charge`; al usarla, `RobotBase` consume el item y dispara `PulseBolt`, un proyectil corto que empuja y daña al primer objetivo o cobertura física que encuentra.
    - Motivo: validar la tensión “choque vs influencia a distancia” sin abrir todavía un sistema completo de habilidades, munición por personaje ni HUD nuevo.
 
+55. **Los edge pickups rotan por ronda en un mazo seedado de pares espejados**
+   - `ArenaBase` define cuatro cruces base (`repair + mobility`, `repair + pulse`, `energy + mobility`, `energy + pulse`) y `activate_edge_pickup_layout_for_round(round_number)` deja activos solo dos pares espejados por ronda.
+   - Motivo: cumplir el criterio de “pocos items, importantes y semialeatorios” sin romper justicia espacial, sin duplicar escenas y sin abrir todavía pesos complejos por mapa o respawns con cambio de tipo.
+
+56. **La rotación de pickups se cuelga del inicio de ronda, no del cooldown individual**
+   - `MatchController` emite `round_started`, `Main` aplica el layout al `ArenaBase` activo y cada pickup expone `set_spawn_enabled()` para apagarse completo cuando no forma parte del layout actual.
+   - Motivo: mantener responsabilidades claras, evitar un director extra de mapa y conservar el telegraph local de pedestal/cooldown dentro de los pickups ya existentes.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

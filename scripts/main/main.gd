@@ -28,6 +28,7 @@ func _ready() -> void:
 	_arena = _get_active_arena()
 	_configure_playable_prototype()
 	_connect_arena_pickups()
+	_connect_match_flow()
 	_register_existing_robots()
 	match_controller.start_match()
 	_apply_match_pressure_to_arena()
@@ -156,6 +157,13 @@ func _apply_match_pressure_to_arena() -> void:
 func _refresh_hud() -> void:
 	ui.show_round_state(match_controller.get_round_state_lines())
 	ui.show_roster(match_controller.get_robot_status_lines())
+
+
+func _connect_match_flow() -> void:
+	if match_controller.round_started.is_connected(_on_round_started):
+		return
+
+	match_controller.round_started.connect(_on_round_started)
 
 
 func _report_startup_structure() -> void:
@@ -296,3 +304,10 @@ func _on_edge_pulse_pickup_collected(robot: RobotBase, item_name: String) -> voi
 		robot.display_name,
 		item_label,
 	])
+
+
+func _on_round_started(round_number: int) -> void:
+	if _arena == null:
+		return
+
+	_arena.activate_edge_pickup_layout_for_round(round_number)

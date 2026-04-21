@@ -162,11 +162,21 @@ func _validate_main_scene_energy_pickups() -> void:
 	_assert(pickup_near_edge, "Los pickups de energia deberian vivir cerca del riesgo de borde, no en el centro limpio.")
 
 	var scene_robots := _get_scene_robots(main)
-	if edge_pickups.size() > 0 and scene_robots.size() > 0:
+	var active_pickup := _find_enabled_pickup(main, "edge_energy_pickups")
+	if active_pickup == null:
+		for round_number in range(1, 5):
+			arena_base.activate_edge_pickup_layout_for_round(round_number)
+			await process_frame
+			active_pickup = _find_enabled_pickup(main, "edge_energy_pickups")
+			if active_pickup != null:
+				break
+
+	_assert(active_pickup != null, "La escena principal deberia habilitar energia en al menos un layout del borde.")
+
+	if active_pickup != null and scene_robots.size() > 0:
 		var robot := scene_robots[0]
-		var pickup := edge_pickups[0] as Node3D
-		robot.global_position = pickup.global_position
-		(pickup as Node).call("_on_body_entered", robot)
+		robot.global_position = active_pickup.global_position
+		active_pickup.call("_on_body_entered", robot)
 		await process_frame
 		var roster_lines := (match_controller as MatchController).get_robot_status_lines()
 		_assert(
@@ -253,6 +263,18 @@ func _get_edge_energy_pickups(root_node: Node) -> Array[Node3D]:
 			pickups.append(child as Node3D)
 
 	return pickups
+
+
+func _find_enabled_pickup(root_node: Node, group_name: String) -> Node3D:
+	for pickup in root_node.get_tree().get_nodes_in_group(group_name):
+		if not root_node.is_ancestor_of(pickup):
+			continue
+		if not (pickup is Node3D):
+			continue
+		if pickup.has_method("is_spawn_enabled") and bool(pickup.call("is_spawn_enabled")):
+			return pickup as Node3D
+
+	return null
 
 
 func _get_scene_robots(root_node: Node) -> Array[RobotBase]:

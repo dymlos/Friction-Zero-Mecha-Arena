@@ -1,9 +1,17 @@
 extends Node3D
 class_name ArenaBase
 
+const EDGE_PICKUP_LAYOUTS := [
+	["repair", "mobility"],
+	["repair", "pulse"],
+	["energy", "mobility"],
+	["energy", "pulse"],
+]
+
 @export var arena_id := "blockout_arena"
 @export var safe_play_area_size := Vector2(24.0, 16.0)
 @export var lethal_edge_margin := 2.0
+@export var edge_pickup_layout_seed := 11
 
 @onready var platform_collision_shape: CollisionShape3D = $Platform/CollisionShape3D
 @onready var platform_visual: MeshInstance3D = $Platform/PlatformVisual
@@ -21,6 +29,7 @@ var _cover_block_nodes: Array[Node3D] = []
 var _cover_block_original_positions: Dictionary = {}
 var _edge_pickup_nodes: Array[Node3D] = []
 var _edge_pickup_original_local_positions: Dictionary = {}
+var _edge_pickup_layout_cycle: Array[PackedStringArray] = []
 
 
 func _ready() -> void:
@@ -28,6 +37,7 @@ func _ready() -> void:
 	_prepare_runtime_resources()
 	_cache_cover_block_positions()
 	_cache_edge_pickup_positions()
+	_build_edge_pickup_layout_cycle()
 	_update_play_area_visuals()
 
 
@@ -60,6 +70,25 @@ func set_current_play_area_size(new_size: Vector2) -> void:
 
 	_current_play_area_size = target_size
 	_update_play_area_visuals()
+
+
+func activate_edge_pickup_layout_for_round(round_number: int) -> void:
+	if _edge_pickup_nodes.is_empty():
+		_cache_edge_pickup_positions()
+	if _edge_pickup_layout_cycle.is_empty():
+		_build_edge_pickup_layout_cycle()
+	if _edge_pickup_layout_cycle.is_empty():
+		return
+
+	var layout_index := posmod(maxi(round_number - 1, 0), _edge_pickup_layout_cycle.size())
+	var active_layout := _edge_pickup_layout_cycle[layout_index]
+	for pickup in _edge_pickup_nodes:
+		if not is_instance_valid(pickup):
+			continue
+		if not pickup.has_method("set_spawn_enabled"):
+			continue
+
+		pickup.call("set_spawn_enabled", active_layout.has(_get_edge_pickup_layout_id(pickup)))
 
 
 func is_position_inside_play_area(world_position: Vector3) -> bool:
@@ -107,6 +136,33 @@ func _cache_edge_pickup_positions() -> void:
 
 		_edge_pickup_nodes.append(pickup)
 		_edge_pickup_original_local_positions[pickup.get_instance_id()] = to_local(pickup.global_position)
+
+
+func _build_edge_pickup_layout_cycle() -> void:
+	_edge_pickup_layout_cycle.clear()
+	for layout in EDGE_PICKUP_LAYOUTS:
+		_edge_pickup_layout_cycle.append(PackedStringArray(layout))
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(edge_pickup_layout_seed)
+	for index in range(_edge_pickup_layout_cycle.size() - 1, 0, -1):
+		var swap_index := rng.randi_range(0, index)
+		var current_layout := _edge_pickup_layout_cycle[index]
+		_edge_pickup_layout_cycle[index] = _edge_pickup_layout_cycle[swap_index]
+		_edge_pickup_layout_cycle[swap_index] = current_layout
+
+
+func _get_edge_pickup_layout_id(pickup: Node) -> String:
+	if pickup.is_in_group("edge_repair_pickups"):
+		return "repair"
+	if pickup.is_in_group("edge_mobility_pickups"):
+		return "mobility"
+	if pickup.is_in_group("edge_energy_pickups"):
+		return "energy"
+	if pickup.is_in_group("edge_pulse_pickups"):
+		return "pulse"
+
+	return ""
 
 
 func _update_play_area_visuals() -> void:

@@ -18,6 +18,7 @@ signal pickup_collected(robot: RobotBase, surge_duration: float)
 @onready var respawn_timer: Timer = $RespawnTimer
 
 var _available := true
+var _spawn_enabled := true
 var _animation_time := 0.0
 var _base_visual_position := Vector3.ZERO
 
@@ -30,7 +31,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if not _available:
+	if not _spawn_enabled or not _available:
 		return
 
 	_animation_time += delta
@@ -40,7 +41,7 @@ func _process(delta: float) -> void:
 
 
 func _on_body_entered(body: Node) -> void:
-	if not _available:
+	if not _spawn_enabled or not _available:
 		return
 	if not (body is RobotBase):
 		return
@@ -55,16 +56,30 @@ func _on_body_entered(body: Node) -> void:
 
 
 func _on_respawn_timer_timeout() -> void:
+	if not _spawn_enabled:
+		return
+
 	_set_available_state(true)
+
+
+func is_spawn_enabled() -> bool:
+	return _spawn_enabled
+
+
+func set_spawn_enabled(is_enabled: bool) -> void:
+	_spawn_enabled = is_enabled
+	respawn_timer.stop()
+	_set_available_state(is_enabled)
 
 
 func _set_available_state(is_available: bool) -> void:
 	_available = is_available
-	set_deferred("monitoring", is_available)
-	collision_shape.set_deferred("disabled", not is_available)
-	visuals_root.visible = true
-	base_mesh.visible = true
-	core_mesh.visible = is_available
+	var should_monitor := _spawn_enabled and is_available
+	set_deferred("monitoring", should_monitor)
+	collision_shape.set_deferred("disabled", not should_monitor)
+	visuals_root.visible = _spawn_enabled
+	base_mesh.visible = _spawn_enabled
+	core_mesh.visible = _spawn_enabled and is_available
 	_animation_time = 0.0
 	visuals_root.position = _base_visual_position
 	visuals_root.rotation = Vector3.ZERO

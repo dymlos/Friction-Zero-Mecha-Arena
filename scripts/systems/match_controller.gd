@@ -4,6 +4,8 @@ class_name MatchController
 const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
+signal round_started(round_number: int)
+
 enum MatchMode { FFA, TEAMS }
 enum EliminationCause { VOID, EXPLOSION }
 
@@ -72,6 +74,7 @@ func start_match() -> void:
 
 	_round_elapsed_seconds = 0.0
 	_round_status_line = "Ronda %s en juego" % _round_number
+	round_started.emit(_round_number)
 
 
 func is_match_over() -> bool:
@@ -403,6 +406,7 @@ func _reset_round() -> void:
 	_round_reset_pending = false
 	_round_elapsed_seconds = 0.0
 	_round_status_line = "Ronda %s en juego" % _round_number
+	round_started.emit(_round_number)
 
 
 func _restart_match() -> void:
