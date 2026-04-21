@@ -9,7 +9,9 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Input local separado: `RobotBase` resuelve perfiles de teclado por slot y deja de leer joysticks "de todos" cuando el robot ya usa teclado.
 - Paridad/local Hard mas util: el perfil `WASD` ahora cubre lanzamiento de partes y tambien un camino Hard por teclado (`TFGX` para aim); el HUD expone los controles activos por slot al arranque y el roster los mantiene visibles durante la ronda para no depender de memoria externa en playtests.
 - Etapa 2v2: laboratorio 2v2 preparado con 4 robots por escena y `local_player_count=4`, incluyendo equipos por parejas para validar rescate aliado.
+- Laboratorio FFA expuesto: `scenes/main/main_ffa.tscn` ahora hereda el laboratorio principal pero arranca con `MatchMode.FFA`; `Main` neutraliza los `team_id` del layout 2v2 cuando corresponde para que rescate/negacion y scoring traten a cada robot como competidor individual.
 - Validacion 2v2: el loop de rescate/negacion ya tiene cobertura headless en `main.tscn`, incluyendo indicador de carga visible y ventana de `throw_pickup_delay`.
+- Validacion FFA: el prototipo ya cubre headless tanto el bootstrap libre sobre `main.tscn` como la escena dedicada `main_ffa.tscn`, evitando que el laboratorio 2v2 filtre alianzas falsas al modo todos-contra-todos.
 - Scoreboard minimo: `MatchController` ya registra bajas por vacio o explosion, suma ronda al ultimo contendiente en pie y reinicia todos los robots juntos tras una pausa corta.
 - Cierre de match base: el laboratorio ya juega a first-to-3 por defecto; cuando un equipo alcanza el objetivo, `MatchController` anuncia ganador de partida, congela la ronda y reinicia el match completo tras una pausa corta.
 - Presion de endgame: el `arena_blockout` ahora reduce progresivamente su tamano durante la ronda, empujando el cierre hacia el centro sin agregar hazards extra.
@@ -25,7 +27,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, marcadores de humo/chispa por parte dañada, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
-- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, y si la nueva cobertura de borde vuelve esos flancos más tácticos sin transformarlos en zonas seguras permanentes; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
+- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, si la nueva cobertura de borde vuelve esos flancos más tácticos sin transformarlos en zonas seguras permanentes y si el laboratorio FFA ya produce supervivencia/oportunismo legibles en vez de caos opaco; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
 
 ## Principios de orden
 

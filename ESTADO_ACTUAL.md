@@ -29,6 +29,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - bootstrap local que deja cuatro robots humanos activos por defecto desde `main.tscn`
 - perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
 - escenario base 2v2 en `main.tscn` con dos equipos (pares por `team_id`) y 4 slots locales activos para validar rescate aliado y handoff en campo.
+- laboratorio FFA dedicado en `scenes/main/main_ffa.tscn`, reutilizando la misma arena/shared screen pero con `match_mode=FFA` y bootstrap que neutraliza las alianzas del layout 2v2 para que cada robot compita por su cuenta
 - cierre de ronda simple: el ultimo robot/equipo en pie suma una ronda y todos los robots vuelven juntos tras un delay corto
 - cierre de match simple: el laboratorio juega a `first-to-3`; cuando un equipo alcanza el objetivo, el HUD anuncia al ganador de la partida y el match se reinicia limpio tras una pausa corta
 - presion final de arena: el piso y sus edge markers se contraen de forma progresiva segun el tiempo de ronda, y el HUD agrega una linea corta cuando empieza el cierre
@@ -41,9 +42,14 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - lectura diegética de daño modular: cada extremidad ya puede mostrar `Smoke` cuando está dañada y `Spark` cuando entra en estado crítico; ambos marcadores viven sobre la pieza, no en el HUD, y desaparecen al repararla o perderla.
 - validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
 - validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda y scoreboard.
+- validacion automatizada FFA: `ffa_mode_bootstrap_test.gd` y `ffa_lab_scene_test.gd` comprueban que el laboratorio libre no hereda alianzas falsas del setup 2v2 y que el marcador sigue siendo individual
 
 ## Lo completado en esta iteracion
 
+- Se expuso un laboratorio FFA real sin duplicar logica de bootstrap:
+  - `scenes/main/main_ffa.tscn` hereda el laboratorio principal y solo fija `MatchController.MatchMode.FFA`
+  - `Main` ahora neutraliza `team_id` de los robots cuando el match arranca en FFA, evitando que el rescate/negacion trate a rivales como aliados por reutilizar el layout 2v2
+  - el scoreboard y el roster siguen leyendo a cada robot como competidor individual
 - Se agrego el primer cierre de ronda real del prototipo:
   - `MatchController` deja de ser solo registro pasivo y ahora detecta al ultimo robot/equipo en pie
   - una baja por vacio o por explosion saca al robot de la ronda actual
@@ -122,6 +128,8 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/arena_edge_cover_layout_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/edge_repair_pickup_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_mode_bootstrap_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_lab_scene_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_part_return_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_explosion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_damage_feedback_test.gd`
@@ -137,11 +145,12 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_hard_control_mode_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 5`
 
-Resultado: las quince verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: las diecisiete verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
+- El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.

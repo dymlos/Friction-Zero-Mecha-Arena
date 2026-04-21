@@ -18,32 +18,37 @@
    - revisar si la referencia persistente de controles activos ya alcanza o si sigue faltando una ayuda mas compacta para pantalla compartida.
    - playtestear si la nueva lectura torso/chasis mejora el combate o si todavia se siente demasiado sutil para pantalla compartida.
 
-4. **Pulir el cierre de match que ya existe**
+4. **Validar la identidad del nuevo laboratorio FFA**
+   - correr sesiones reales en `scenes/main/main_ffa.tscn` para comprobar si el mismo layout 4P ya genera supervivencia, oportunismo y third-party legibles.
+   - medir si el rescate/negacion sigue siendo entendible cuando nadie tiene aliados y decidir si FFA necesita valores o spawns propios, no solo otra bandera de match.
+   - revisar si el marcador first-to-3 y la contraccion actual producen buen ritmo en FFA o si ese modo necesita objetivo/duracion distintos.
+
+5. **Pulir el cierre de match que ya existe**
    - playtestear si `rounds_to_win=3` y `match_restart_delay` dejan leer bien la victoria o si el resultado pasa demasiado rápido.
    - decidir si el reinicio automático debe seguir siendo la solución del laboratorio o si conviene pasar a una espera corta con confirmación/manual restart más adelante.
    - definir si ring-out y destruccion total siguen puntuando igual o si alguno merece bonus/feedback diferencial.
 
-5. **Afinar la nueva presion de arena**
+6. **Afinar la nueva presion de arena**
    - playtestear si el inicio del cierre (`space_reduction_start_ratio`) llega demasiado tarde o demasiado pronto.
    - revisar si el minimo de contraccion deja espacio suficiente para un cierre legible en 2v2 y FFA.
    - decidir si conviene sumar feedback visual sobrio extra en el piso, no solo en edge markers + HUD.
 
-6. **Pulir la energia ahora que ya es jugable**
+7. **Pulir la energia ahora que ya es jugable**
    - decidir si el foco debe quedar en presets por arquetipo o en redistribucion libre mas adelante
    - ligar mejor la lectura diegetica del foco/overdrive con materiales o VFX sobrios
    - revisar valores de multiplicadores, duracion y recuperacion contra sensacion real en partida
 
-7. **Mejorar validacion jugable**
+8. **Mejorar validacion jugable**
    - sumar una escena/configuración de prueba pensada para reproducir rescates, negaciones y cierres de ronda/contraccion más rápido que en el match completo
    - ajuste fino de valores de aceleracion, damping, empuje y danio
    - medir si el reset corto de ronda y el reinicio de match dejan suficiente tiempo de lectura o si necesitan delays algo mayores
 
-8. **Profundizar el soporte Hard sin convertirlo en requisito**
+9. **Profundizar el soporte Hard sin convertirlo en requisito**
    - direccionar mejor ataques/skills futuros usando la nueva referencia de torso
    - decidir si el daño modular debe ponderar tambien frente/espalda del chasis inferior y no solo del torso
    - mantener Easy como modo plenamente jugable y legible
 
-9. **Validar y tensionar el nuevo incentivo de borde**
+10. **Validar y tensionar el nuevo incentivo de borde**
    - playtestear si `repair_amount` y `respawn_delay` vuelven los flancos realmente tentadores o si la reparacion termina alargando demasiado los duelos.
    - medir si las nuevas coberturas blockout y los pickups ya sincronizados con el borde vivo generan duelos más tácticos o si empiezan a volver esos flancos demasiado seguros.
    - decidir si el siguiente paso en mapa debe ser refinar ese layout/cantidad de coberturas o introducir un segundo incentivo distinto en otro borde.

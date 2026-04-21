@@ -178,6 +178,14 @@
    - `ArenaBase` ahora cachea la posicion local original de los nodos del grupo `edge_repair_pickups` y los reubica con la misma escala X/Z que el area segura.
    - Motivo: si el pickup quedaba fijo mientras la arena se cerraba, el incentivo de borde se salia del espacio jugable y rompia el duelo riesgo/recompensa del endgame.
 
+45. **FFA expuesto como escena heredada del laboratorio principal**
+   - `scenes/main/main_ffa.tscn` hereda `main.tscn`, fija `MatchMode.FFA` y reutiliza la misma arena, HUD y bootstrap local.
+   - Motivo: volver FFA una opcion testeable ya mismo sin duplicar escenas grandes ni abrir una segunda rama de codigo para el laboratorio.
+
+46. **Neutralizacion de `team_id` cuando el bootstrap corre en FFA**
+   - `Main` pone `team_id = 0` en los robots si `MatchController` arranca en `FFA`, antes de registrarlos.
+   - Motivo: el layout 2v2 conserva parejas en escena para `main.tscn`; sin neutralizar eso en FFA, `is_ally_of` permitia rescates/devoluciones falsas entre rivales.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
