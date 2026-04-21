@@ -239,6 +239,25 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					roster_label.text.contains("interferencia"),
 					"El roster deberia distinguir cuando la nave lleva una carga de interferencia."
 				)
+				var interference_range_indicator := support_ship.get_node_or_null("InterferenceRangeIndicator") as MeshInstance3D
+				_assert(
+					interference_range_indicator != null,
+					"La nave de apoyo deberia exponer un telegraph diegetico del rango real de interferencia."
+				)
+				if interference_range_indicator != null:
+					_assert(
+						interference_range_indicator.visible,
+						"El telegraph de rango deberia activarse cuando la nave lleva una carga de interferencia."
+					)
+					var expected_range_scale: float = float(support_ship.get("support_interference_range")) * 2.0
+					_assert(
+						is_equal_approx(interference_range_indicator.scale.x, expected_range_scale),
+						"El telegraph de rango deberia usar el diametro real de la interferencia en el eje X."
+					)
+					_assert(
+						is_equal_approx(interference_range_indicator.scale.z, expected_range_scale),
+						"El telegraph de rango deberia usar el diametro real de la interferencia en el eje Z."
+					)
 
 				var enemy_robot := robots[2]
 				var second_enemy_robot := robots[3]
@@ -314,6 +333,11 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					not roster_label.text.contains("apoyo interferencia"),
 					"Tras gastar la carga de interferencia, el roster deberia limpiar el payload pendiente."
 				)
+				if interference_range_indicator != null:
+					_assert(
+						not interference_range_indicator.visible,
+						"Tras gastar la carga, el telegraph de rango deberia apagarse otra vez."
+					)
 
 		var support_gates := get_nodes_in_group("support_lane_gates")
 		_assert(

@@ -425,6 +425,10 @@
    - `PilotSupportShip` ahora usa `RobotBase.is_player_support_prev_just_pressed()/next_just_pressed()` para ciclar aliados o rivales validos segun el payload cargado, resume `apoyo <payload> > <objetivo>` en el roster y crea un `SupportTargetIndicator` diegetico sobre el robot apuntado; `interferencia` solo se consume si ese objetivo seleccionado entra en rango.
    - Motivo: la capa externa ya tenia cargas y rutas, pero seguia faltando una decision tactica explicita y legible. Reusar `energy_prev/next` evita abrir otra UI o mas botones, mientras el indicador en mundo aclara adonde va a caer el apoyo sin volver ruidosa la pantalla compartida.
 
+93. **`Interferencia` telegraphia su radio real desde la propia nave**
+   - `PilotSupportShip` ahora crea `InterferenceRangeIndicator` runtime: un cilindro fino orientado sobre el piso, visible solo cuando el payload cargado es `interference`, escalado con `support_interference_range * 2` y atenuado cuando el objetivo seleccionado aun queda fuera del radio real.
+   - Motivo: con solo el `SupportTargetIndicator` atenuado, el gating espacial de `interferencia` seguia siendo facil de perder en pantalla compartida. Un anillo sobrio pegado a la nave explica el alcance real sin agregar otro panel ni ruido persistente cuando la carga no aplica.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

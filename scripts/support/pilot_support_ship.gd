@@ -22,6 +22,9 @@ signal state_changed(support_ship: PilotSupportShip)
 @export_range(1.0, 12.0, 0.5) var target_indicator_pulse_speed := 4.8
 @export_range(0.0, 0.3, 0.01) var target_indicator_pulse_amount := 0.18
 @export_range(0.05, 0.5, 0.01) var target_indicator_size := 0.18
+@export_group("Interference Readability")
+@export_range(-1.0, 0.2, 0.01) var interference_range_indicator_height := -0.5
+@export_range(0.01, 0.12, 0.01) var interference_range_indicator_thickness := 0.03
 
 var owner_robot: RobotBase = null
 var allied_robot: RobotBase = null
@@ -46,6 +49,7 @@ func _ready() -> void:
 	_duplicate_runtime_material(status_ring_visual)
 	_duplicate_runtime_material(status_pulse_visual)
 	_ensure_support_target_indicator()
+	_ensure_interference_range_indicator()
 	_refresh_visuals()
 
 
@@ -159,6 +163,7 @@ func _physics_process(delta: float) -> void:
 	target_selection_changed = _refresh_target_selection() or target_selection_changed
 	_update_status_beacon(delta)
 	_update_target_indicator(delta)
+	_update_interference_range_indicator()
 	_try_collect_support_pickup()
 	if owner_robot.is_player_support_action_just_pressed():
 		use_support_payload()
@@ -240,6 +245,7 @@ func _refresh_visuals() -> void:
 	_apply_color_to_visual(hull_visual, hull_color, false)
 	_apply_color_to_visual(glow_visual, glow_color, true)
 	_apply_status_beacon_visuals(glow_color)
+	_update_interference_range_indicator()
 
 
 func _get_support_payload_color() -> Color:
@@ -407,6 +413,32 @@ func _ensure_support_target_indicator() -> void:
 	add_child(indicator)
 
 
+func _ensure_interference_range_indicator() -> void:
+	if get_node_or_null("InterferenceRangeIndicator") != null:
+		return
+
+	var indicator := MeshInstance3D.new()
+	indicator.name = "InterferenceRangeIndicator"
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 0.5
+	mesh.bottom_radius = 0.5
+	mesh.height = 1.0
+	mesh.radial_segments = 48
+	mesh.rings = 1
+	indicator.mesh = mesh
+	indicator.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	indicator.rotation_degrees = Vector3(90.0, 0.0, 0.0)
+	indicator.position = Vector3(0.0, interference_range_indicator_height, 0.0)
+	indicator.visible = false
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.emission_enabled = true
+	material.roughness = 0.22
+	indicator.material_override = material
+	add_child(indicator)
+
+
 func _update_target_indicator(delta: float) -> void:
 	var indicator := get_node_or_null("SupportTargetIndicator") as MeshInstance3D
 	if indicator == null:
@@ -445,6 +477,42 @@ func _update_target_indicator(delta: float) -> void:
 
 	material.albedo_color = indicator_color
 	material.emission = indicator_color
+	material.emission_energy_multiplier = emission_boost
+
+
+func _update_interference_range_indicator() -> void:
+	var indicator := get_node_or_null("InterferenceRangeIndicator") as MeshInstance3D
+	if indicator == null:
+		return
+
+	var is_interference_payload := _support_payload_name == PilotSupportPickup.PAYLOAD_INTERFERENCE
+	indicator.visible = is_interference_payload
+	if not is_interference_payload:
+		return
+
+	indicator.position = Vector3(0.0, interference_range_indicator_height, 0.0)
+	indicator.scale = Vector3(
+		support_interference_range * 2.0,
+		interference_range_indicator_thickness,
+		support_interference_range * 2.0
+	)
+
+	var target_robot := get_selected_target_robot()
+	var in_range := target_robot != null and _is_target_in_interference_range(target_robot)
+	var accent_color := _get_support_payload_color()
+	var indicator_color := accent_color.darkened(0.2)
+	var emission_boost := 0.48
+	if in_range:
+		indicator_color = accent_color.lightened(0.06)
+		emission_boost = 0.92
+
+	var material := indicator.material_override as StandardMaterial3D
+	if material == null:
+		return
+
+	indicator_color.a = 0.24 if in_range else 0.12
+	material.albedo_color = indicator_color
+	material.emission = accent_color
 	material.emission_energy_multiplier = emission_boost
 
 
