@@ -172,26 +172,107 @@ func is_position_inside_play_area(world_position: Vector3) -> bool:
 
 
 func get_support_lane_spawn_position_near(world_position: Vector3) -> Vector3:
+	return get_support_lane_position_from_progress(get_support_lane_progress_near(world_position))
+
+
+func get_support_lane_progress_near(world_position: Vector3) -> float:
 	var local_position := to_local(world_position)
-	var half_size := get_safe_play_area_size() * 0.5
-	var edge_margin := maxf(support_lane_margin, 0.5)
-	var candidates: Array[Vector3] = [
-		Vector3(clampf(local_position.x, -half_size.x, half_size.x), 0.55, -half_size.y - edge_margin),
-		Vector3(clampf(local_position.x, -half_size.x, half_size.x), 0.55, half_size.y + edge_margin),
-		Vector3(-half_size.x - edge_margin, 0.55, clampf(local_position.z, -half_size.y, half_size.y)),
-		Vector3(half_size.x + edge_margin, 0.55, clampf(local_position.z, -half_size.y, half_size.y)),
+	var lane_extents := _get_support_lane_extents()
+	var corner_candidates := [
+		{"distance_squared": Vector2(local_position.x - lane_extents.x, local_position.z + lane_extents.y).length_squared(), "progress": lane_extents.x * 2.0},
+		{"distance_squared": Vector2(local_position.x + lane_extents.x, local_position.z + lane_extents.y).length_squared(), "progress": 0.0},
+		{"distance_squared": Vector2(local_position.x - lane_extents.x, local_position.z - lane_extents.y).length_squared(), "progress": lane_extents.x * 2.0 + lane_extents.y * 2.0},
+		{"distance_squared": Vector2(local_position.x + lane_extents.x, local_position.z - lane_extents.y).length_squared(), "progress": lane_extents.x * 2.0 + lane_extents.y * 4.0},
 	]
-	var best_local_position: Vector3 = candidates[0]
+	var edge_candidates := [
+		{"distance_squared": absf(local_position.z + lane_extents.y), "progress": clampf(local_position.x + lane_extents.x, 0.0, lane_extents.x * 2.0)},
+		{"distance_squared": absf(local_position.x - lane_extents.x), "progress": lane_extents.x * 2.0 + clampf(local_position.z + lane_extents.y, 0.0, lane_extents.y * 2.0)},
+		{"distance_squared": absf(local_position.z - lane_extents.y), "progress": lane_extents.x * 2.0 + lane_extents.y * 2.0 + clampf(lane_extents.x - local_position.x, 0.0, lane_extents.x * 2.0)},
+		{"distance_squared": absf(local_position.x + lane_extents.x), "progress": lane_extents.x * 4.0 + lane_extents.y * 2.0 + clampf(lane_extents.y - local_position.z, 0.0, lane_extents.y * 2.0)},
+	]
+	var best_progress := 0.0
 	var best_distance_squared := INF
-	for candidate in candidates:
-		var candidate_distance := Vector2(candidate.x - local_position.x, candidate.z - local_position.z).length_squared()
+	for candidate in corner_candidates:
+		var candidate_distance := float(candidate["distance_squared"])
 		if candidate_distance >= best_distance_squared:
 			continue
 
 		best_distance_squared = candidate_distance
-		best_local_position = candidate
+		best_progress = float(candidate["progress"])
+	for candidate in edge_candidates:
+		var candidate_distance := float(candidate["distance_squared"])
+		if candidate_distance >= best_distance_squared:
+			continue
 
-	return to_global(best_local_position)
+		best_distance_squared = candidate_distance
+		best_progress = float(candidate["progress"])
+
+	return fposmod(best_progress, get_support_lane_perimeter_length())
+
+
+func get_support_lane_position_from_progress(progress: float) -> Vector3:
+	var lane_extents := _get_support_lane_extents()
+	var perimeter := get_support_lane_perimeter_length()
+	if perimeter <= 0.0:
+		return global_position
+
+	var remaining := fposmod(progress, perimeter)
+	var horizontal_length := lane_extents.x * 2.0
+	var vertical_length := lane_extents.y * 2.0
+	var local_position := Vector3(-lane_extents.x, 0.55, -lane_extents.y)
+	if remaining <= horizontal_length:
+		local_position.x = -lane_extents.x + remaining
+		return to_global(local_position)
+
+	remaining -= horizontal_length
+	local_position = Vector3(lane_extents.x, 0.55, -lane_extents.y)
+	if remaining <= vertical_length:
+		local_position.z = -lane_extents.y + remaining
+		return to_global(local_position)
+
+	remaining -= vertical_length
+	local_position = Vector3(lane_extents.x, 0.55, lane_extents.y)
+	if remaining <= horizontal_length:
+		local_position.x = lane_extents.x - remaining
+		return to_global(local_position)
+
+	remaining -= horizontal_length
+	local_position = Vector3(-lane_extents.x, 0.55, lane_extents.y)
+	local_position.z = lane_extents.y - remaining
+	return to_global(local_position)
+
+
+func get_support_lane_tangent_from_progress(progress: float) -> Vector2:
+	var lane_extents := _get_support_lane_extents()
+	var perimeter := get_support_lane_perimeter_length()
+	if perimeter <= 0.0:
+		return Vector2.RIGHT
+
+	var remaining := fposmod(progress, perimeter)
+	var horizontal_length := lane_extents.x * 2.0
+	var vertical_length := lane_extents.y * 2.0
+	if remaining < horizontal_length:
+		return Vector2.RIGHT
+	if remaining < horizontal_length + vertical_length:
+		return Vector2.DOWN
+	if remaining < horizontal_length * 2.0 + vertical_length:
+		return Vector2.LEFT
+	return Vector2.UP
+
+
+func advance_support_lane_progress(progress: float, signed_distance: float) -> float:
+	return fposmod(progress + signed_distance, get_support_lane_perimeter_length())
+
+
+func get_support_lane_perimeter_length() -> float:
+	var lane_extents := _get_support_lane_extents()
+	return (lane_extents.x + lane_extents.y) * 4.0
+
+
+func _get_support_lane_extents() -> Vector2:
+	var half_size := get_safe_play_area_size() * 0.5
+	var edge_margin := maxf(support_lane_margin, 0.5)
+	return Vector2(half_size.x + edge_margin, half_size.y + edge_margin)
 
 
 func _prepare_runtime_resources() -> void:

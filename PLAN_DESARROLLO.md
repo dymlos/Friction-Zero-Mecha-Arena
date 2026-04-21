@@ -9,7 +9,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Input local separado: `RobotBase` resuelve perfiles de teclado por slot y deja de leer joysticks "de todos" cuando el robot ya usa teclado.
 - Paridad/local Hard mas util: el perfil `WASD` ahora cubre lanzamiento de partes y tambien un camino Hard por teclado (`TFGX` para aim); el HUD expone los controles activos por slot al arranque y el roster los mantiene visibles durante la ronda para no depender de memoria externa en playtests.
 - Etapa 2v2: laboratorio 2v2 preparado con 4 robots por escena y `local_player_count=4`, incluyendo equipos por parejas para validar rescate aliado.
-- Primer slice de post-muerte Teams: cuando un robot cae en `Equipos` y aun sobrevive un aliado, `Main` ahora crea una `PilotSupportShip` discreta en el carril externo del arena; usa el input del jugador eliminado, recoge pickups `estabilizador` / `energia` / `movilidad` solo visibles en ese estado y puede estabilizar la parte activa mas dañada, disparar una `energy surge` corta o dar un impulso breve de movilidad sobre el aliado vivo sin activarse en `FFA`.
+- Primer slice de post-muerte Teams: cuando un robot cae en `Equipos` y aun sobrevive un aliado, `Main` ahora crea una `PilotSupportShip` discreta en el carril externo del arena; usa el input del jugador eliminado, recorre un loop perimetral continuo ligado al borde vivo, recoge pickups `estabilizador` / `energia` / `movilidad` solo visibles en ese estado y puede estabilizar la parte activa mas dañada, disparar una `energy surge` corta o dar un impulso breve de movilidad sobre el aliado vivo sin activarse en `FFA`.
 - Laboratorio FFA expuesto: `scenes/main/main_ffa.tscn` ahora hereda el laboratorio principal pero arranca con `MatchMode.FFA`; `Main` neutraliza los `team_id` del layout 2v2 cuando corresponde para que rescate/negacion y scoring traten a cada robot como competidor individual.
 - Roster FFA ahora mas util para oportunismo: `main_ffa.tscn` ya reemplaza los slots de `Grua` y `Cizalla` por `Aguja` y `Ancla`, abriendo poke + control/zona sin romper el laboratorio 2v2 enfocado en rescate aliado.
 - Validacion 2v2: el loop de rescate/negacion ya tiene cobertura headless en `main.tscn`, incluyendo indicador de carga visible y ventana de `throw_pickup_delay`.
@@ -442,10 +442,10 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 **Dependencias:** Etapas 11 y 9. No conviene implementarla antes de que Team vs Team sea divertido sin post-muerte.
 
 **Estado actual del prototipo:**
-- ya existe un primer corte funcional y deliberadamente liviano: la `PilotSupportShip` aparece solo en `Teams`, se mueve por un carril externo pegado al borde vivo, reutiliza el input del jugador eliminado y no entra al set de objetivos de la camara compartida
+- ya existe un primer corte funcional y deliberadamente liviano: la `PilotSupportShip` aparece solo en `Teams`, se mueve por un loop perimetral continuo pegado al borde vivo, reutiliza el input del jugador eliminado y no entra al set de objetivos de la camara compartida
 - la primera terna de ayudas de esa capa sigue siendo pro-aliado: pickups discretos, ocultos hasta que exista al menos una nave activa, cargan `estabilizador`, `energia` o `movilidad`, dejan `apoyo` / `apoyo estabilizador` / `apoyo energia` / `apoyo movilidad` visible en el roster y permiten reparar la parte activa mas dañada, activar una `energy surge` corta o reforzar un impulso breve de movilidad sobre el aliado vivo
 - `FFA` mantiene identidad propia: comparte la estructura base del laboratorio pero no crea naves ni activa esos pickups post-muerte
-- pendiente: decidir por playtest si la terna `estabilizador + energia + movilidad` ya alcanza como fundamento o si la siguiente iteracion debe sumar rutas/obstaculos externos o una forma acotada de interferencia enemiga, sin volver la capa post-muerte demasiado ruidosa.
+- pendiente: decidir por playtest si la terna `estabilizador + energia + movilidad` ya alcanza como fundamento o si la siguiente iteracion debe sumar obstaculos externos reales o una forma acotada de interferencia enemiga, sin volver la capa post-muerte demasiado ruidosa.
 
 ## Etapa 13 - UI, legibilidad y postpartida
 

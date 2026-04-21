@@ -345,6 +345,10 @@
    - `PilotSupportPickup` ahora tambien soporta `movilidad`; `PilotSupportShip` la consume llamando a `RobotBase.apply_mobility_boost()`, mientras el carril externo suma pickups extra sobre norte/sur y el roster reutiliza la misma lectura compacta `movilidad`/`impulso` que ya existia para los boosts de desplazamiento.
    - Motivo: la capa post-muerte necesitaba una tercera decision pro-aliado antes de pensar en interferencia enemiga, pero abrir un buff nuevo solo para la nave habria duplicado reglas y telegraph. Reusar el estado de movilidad del robot mantiene el sistema chico, legible y alineado con la fantasia principal de reposicionarse para el siguiente choque.
 
+85. **El carril post-muerte paso a ser un loop continuo, no “lado mas cercano”**
+   - `ArenaBase` ahora expone progreso/tangente/avance del support lane (`get_support_lane_progress_near()`, `get_support_lane_position_from_progress()`, `get_support_lane_tangent_from_progress()`, `advance_support_lane_progress()`), y `PilotSupportShip` guarda `_lane_progress` para moverse sobre ese recorrido continuo en vez de reproyectarse cada frame al borde mas cercano.
+   - Motivo: el snap por lado mas cercano dejaba una nave funcional pero con poca sensacion de ruta externa; el loop perimetral mantiene la capa chica, acompaña la contraccion del arena y vuelve legible la decision de rodear esquinas sin meter todavia colisiones ni obstaculos propios.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

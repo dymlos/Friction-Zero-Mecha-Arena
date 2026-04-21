@@ -4,7 +4,7 @@
 
 1. **Validar el nuevo soporte post-muerte de Teams**
    - correr sesiones reales en `main.tscn` dejando caer a un jugador temprano para medir si la `PilotSupportShip` suma involucramiento sin tapar el combate principal.
-   - medir si el carril externo actual se ve lo suficiente con la camara compartida o si necesita ruta/obstaculos suaves para que la nave tenga mas decisiones sin irse de foco.
+   - medir si el nuevo loop perimetral ya se entiende con la camara compartida o si necesita obstaculos suaves / puntos de decision extra para que la nave gane profundidad sin irse de foco.
    - medir si la terna `estabilizador + energia + movilidad` ya cubre comeback, rescate y reposicionamiento sin necesitar todavia interferencia ofensiva.
    - revisar si el roster `apoyo` / `apoyo estabilizador` / `apoyo energia` / `apoyo movilidad` ya alcanza como telemetria o si la nave necesita una pista diegética adicional para espectador casual.
    - calibrar si `support_energy_surge_duration` y `support_mobility_boost_duration` vuelven valiosas la segunda y tercera ayuda sin solaparse demasiado con los pickups de borde vivo.

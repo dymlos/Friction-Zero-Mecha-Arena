@@ -16,6 +16,7 @@ var owner_robot: RobotBase = null
 var allied_robot: RobotBase = null
 var arena: ArenaBase = null
 var _support_payload_name := ""
+var _lane_progress := 0.0
 
 @onready var hull_visual: MeshInstance3D = $HullVisual
 @onready var glow_visual: MeshInstance3D = $GlowVisual
@@ -36,7 +37,11 @@ func configure(
 	owner_robot = next_owner_robot
 	allied_robot = next_allied_robot
 	arena = next_arena
-	global_position = spawn_position
+	if arena != null:
+		_lane_progress = arena.get_support_lane_progress_near(spawn_position)
+		global_position = arena.get_support_lane_position_from_progress(_lane_progress)
+	else:
+		global_position = spawn_position
 	_refresh_visuals()
 
 
@@ -116,8 +121,13 @@ func _update_movement(delta: float) -> void:
 	if move_input.length_squared() <= 0.0:
 		return
 
-	var desired_position := global_position + Vector3(move_input.x, 0.0, move_input.y) * move_speed * delta
-	global_position = arena.get_support_lane_spawn_position_near(desired_position)
+	var tangent := arena.get_support_lane_tangent_from_progress(_lane_progress)
+	var signed_input := move_input.normalized().dot(tangent)
+	if absf(signed_input) <= 0.2:
+		return
+
+	_lane_progress = arena.advance_support_lane_progress(_lane_progress, signed_input * move_speed * delta)
+	global_position = arena.get_support_lane_position_from_progress(_lane_progress)
 
 
 func _try_collect_support_pickup() -> void:

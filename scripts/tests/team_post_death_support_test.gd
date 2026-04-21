@@ -62,7 +62,7 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 	if support_ship != null:
 		var start_position := support_ship.global_position
 		Input.action_press("p2_move_right")
-		await _wait_frames(3)
+		await _wait_physics_frames(3)
 		Input.action_release("p2_move_right")
 		_assert(
 			support_ship.global_position.distance_to(start_position) > 0.05,
@@ -240,6 +240,11 @@ func _assert(condition: bool, message: String) -> void:
 func _wait_frames(frame_count: int) -> void:
 	for _index in range(maxi(frame_count, 0)):
 		await process_frame
+
+
+func _wait_physics_frames(frame_count: int) -> void:
+	for _index in range(maxi(frame_count, 0)):
+		await physics_frame
 
 
 func _cleanup_main(main: Node) -> void:
