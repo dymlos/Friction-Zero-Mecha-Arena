@@ -58,12 +58,28 @@ const INPUT_ACTION_SUFFIXES := [
 	"move_right",
 	"move_forward",
 	"move_back",
+	"aim_left",
+	"aim_right",
+	"aim_forward",
+	"aim_back",
 	"attack",
 	"energy_prev",
 	"energy_next",
 	"overdrive",
 	"throw_part",
 ]
+
+const KEYBOARD_PROFILE_LABELS := {
+	KeyboardProfile.NONE: "sin teclado",
+	KeyboardProfile.WASD_SPACE: "WASD",
+	KeyboardProfile.ARROWS_ENTER: "flechas",
+	KeyboardProfile.NUMPAD: "numpad",
+	KeyboardProfile.IJKL: "IJKL",
+}
+
+const KEYBOARD_PROFILE_HARD_AIM_LABELS := {
+	KeyboardProfile.WASD_SPACE: "TFGH",
+}
 
 const ENERGY_LIMB_PAIRS := {
 	"left_arm": ["left_arm", "right_arm"],
@@ -79,9 +95,14 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"move_right": [KEY_D],
 		"move_forward": [KEY_W],
 		"move_back": [KEY_S],
+		"aim_left": [KEY_F],
+		"aim_right": [KEY_H],
+		"aim_forward": [KEY_T],
+		"aim_back": [KEY_G],
 		"attack": [KEY_SPACE],
 		"energy_prev": [KEY_Q],
 		"energy_next": [KEY_E],
+		"throw_part": [KEY_C],
 		"overdrive": [KEY_R],
 	},
 	KeyboardProfile.ARROWS_ENTER: {
@@ -321,6 +342,21 @@ func is_overdrive_active() -> bool:
 
 func is_overdrive_cooling_down() -> bool:
 	return _overdrive_cooldown_remaining > 0.0
+
+
+func get_input_hint() -> String:
+	if uses_keyboard_input():
+		var move_label := str(KEYBOARD_PROFILE_LABELS.get(keyboard_profile, "teclado"))
+		if control_mode == ControlMode.HARD:
+			var aim_label := str(KEYBOARD_PROFILE_HARD_AIM_LABELS.get(keyboard_profile, "stick derecho"))
+			return "%s + aim %s" % [move_label, aim_label]
+
+		return move_label
+
+	if joypad_device >= 0:
+		return "joy %s" % joypad_device
+
+	return "joy slot %s" % max(player_index - 1, 0)
 
 
 func set_energy_focus(part_name: String) -> bool:
@@ -907,7 +943,13 @@ func _get_aim_input_vector() -> Vector2:
 	if not is_player_controlled or _is_disabled or control_mode != ControlMode.HARD:
 		return Vector2.ZERO
 
-	var best_vector := Vector2.ZERO
+	var keyboard_vector := Input.get_vector(
+		_player_action_name("aim_left"),
+		_player_action_name("aim_right"),
+		_player_action_name("aim_forward"),
+		_player_action_name("aim_back")
+	)
+	var best_vector := keyboard_vector
 	for device in _get_joypad_devices_to_read():
 		var raw_vector := Vector2(
 			Input.get_joy_axis(device, JOY_AXIS_RIGHT_X),

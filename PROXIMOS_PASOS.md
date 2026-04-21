@@ -8,8 +8,10 @@
    - ajustar si hace falta radio de retorno, cleanup y ritmo de choque con un aliado en escena, sin reabrir spam accidental.
 
 2. **Convertir el soporte Hard en una opcion realmente jugable**
-   - evaluar si hace falta mapping de teclado dedicado o si Hard debe seguir siendo joypad-first en esta etapa.
+   - playtestear si `WASD + TFGH` alcanza como camino Hard/local de laboratorio o si sigue resultando demasiado exigente/confuso para pantalla compartida.
    - decidir si `hard_mode_player_slots` alcanza como configuracion de laboratorio o si conviene un selector runtime por jugador.
+   - resolver si vale la pena extender aim por teclado a otro perfil local o si conviene dejar el resto de los slots Hard explicitamente joypad-first.
+   - revisar si la leyenda inicial del HUD alcanza o si hace falta una referencia mas persistente/compacta de controles activos.
    - playtestear si la nueva lectura torso/chasis mejora el combate o si todavia se siente demasiado sutil para pantalla compartida.
 
 3. **Pulir el cierre de match que ya existe**
@@ -36,3 +38,8 @@
    - direccionar mejor ataques/skills futuros usando la nueva referencia de torso
    - decidir si el daño modular debe ponderar tambien frente/espalda del chasis inferior y no solo del torso
    - mantener Easy como modo plenamente jugable y legible
+
+8. **Agregar un primer incentivo real en bordes del mapa**
+   - evaluar si el siguiente slice deberia ser un pickup universal simple, una cobertura blockout o ambos en pequeño para que los bordes ofrezcan algo mas que riesgo.
+   - mantener el centro limpio y legible, evitando saturar la arena con demasiados objetos.
+   - validar que cualquier incentivo nuevo siga sirviendo a la fantasia principal de patinar, leer y chocar con precision.

@@ -29,6 +29,7 @@ func _run() -> void:
 	var p2_left := _get_action_keycodes("p2_move_left")
 	var p1_attack := _get_action_keycodes("p1_attack")
 	var p2_attack := _get_action_keycodes("p2_attack")
+	var p1_throw := _get_action_keycodes("p1_throw_part")
 
 	_assert(p1_left.has(KEY_A), "El jugador 1 deberia conservar el perfil WASD.")
 	_assert(not p1_left.has(KEY_LEFT), "El jugador 1 no deberia compartir flechas con el jugador 2.")
@@ -36,6 +37,7 @@ func _run() -> void:
 	_assert(not p2_left.has(KEY_A), "El jugador 2 no deberia reutilizar la tecla A del jugador 1.")
 	_assert(p1_attack.has(KEY_SPACE), "El jugador 1 deberia atacar con Space.")
 	_assert(p2_attack.has(KEY_ENTER), "El jugador 2 deberia atacar con Enter.")
+	_assert(p1_throw.has(KEY_C), "El jugador 1 deberia poder lanzar partes con una tecla dedicada.")
 
 	_finish()
 

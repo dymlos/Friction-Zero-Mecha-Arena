@@ -146,6 +146,14 @@
    - La configuracion por defecto deja de usar 180s para que la contraccion aparezca en sesiones reales de laboratorio.
    - Motivo: un sistema de presion que casi nunca se activa no aporta feedback util al prototipo.
 
+37. **Camino Hard por teclado acotado al perfil `WASD`**
+   - `RobotBase` ahora crea acciones `aim_left/right/forward/back` y el perfil `WASD_SPACE` las resuelve con `TFGH`; ademas suma `throw_part` en `C`.
+   - Motivo: cerrar la brecha mas evidente del laboratorio local con el minimo cambio posible, sin intentar resolver de golpe un esquema Hard perfecto para 4 teclados compartidos.
+
+38. **Leyenda de controles visible desde el arranque**
+   - `Main` construye el mensaje inicial del HUD leyendo `robot.get_input_hint()` por slot local.
+   - Motivo: que los playtests Easy/Hard no dependan de recordar mappings fuera del juego y dejar explicito cuando un slot Hard sigue necesitando aim por stick derecho.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

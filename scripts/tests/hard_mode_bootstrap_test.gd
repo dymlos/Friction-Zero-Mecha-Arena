@@ -12,7 +12,7 @@ func _init() -> void:
 
 func _run() -> void:
 	var main = MAIN_SCENE.instantiate()
-	main.hard_mode_player_slots = PackedInt32Array([2, 4])
+	main.hard_mode_player_slots = PackedInt32Array([1, 4])
 	root.add_child(main)
 
 	await process_frame
@@ -25,8 +25,8 @@ func _run() -> void:
 		_finish()
 		return
 
-	_assert(robots[0].control_mode == RobotBase.ControlMode.EASY, "P1 deberia permanecer en Easy si no esta listado.")
-	_assert(robots[1].control_mode == RobotBase.ControlMode.HARD, "P2 deberia quedar en Hard segun la configuracion de slots.")
+	_assert(robots[0].control_mode == RobotBase.ControlMode.HARD, "P1 deberia quedar en Hard segun la configuracion de slots.")
+	_assert(robots[1].control_mode == RobotBase.ControlMode.EASY, "P2 deberia permanecer en Easy si no esta listado.")
 	_assert(robots[2].control_mode == RobotBase.ControlMode.EASY, "P3 deberia permanecer en Easy si no esta listado.")
 	_assert(robots[3].control_mode == RobotBase.ControlMode.HARD, "P4 deberia quedar en Hard segun la configuracion de slots.")
 
@@ -34,8 +34,17 @@ func _run() -> void:
 	_assert(roster_label is Label, "El HUD deberia seguir mostrando el roster compacto.")
 	if roster_label is Label:
 		var roster_text := (roster_label as Label).text
-		_assert(roster_text.contains("Player 2"), "El roster deberia seguir incluyendo al jugador Hard.")
+		_assert(roster_text.contains("Player 1"), "El roster deberia seguir incluyendo al jugador Hard.")
 		_assert(roster_text.contains("Hard"), "El roster deberia hacer visible que un robot usa Control Hard.")
+
+	var status_label := main.get_node_or_null("UI/MatchHud/Root/StatusLabel")
+	_assert(status_label is Label, "El HUD deberia exponer el estado inicial del laboratorio.")
+	if status_label is Label:
+		var status_text := (status_label as Label).text
+		_assert(
+			status_text.contains("TFGH"),
+			"El estado inicial deberia dejar visible el aim por teclado para el slot Hard del laboratorio."
+		)
 
 	await _cleanup_main(main)
 	_finish()

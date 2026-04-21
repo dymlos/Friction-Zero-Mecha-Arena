@@ -27,10 +27,7 @@ func _ready() -> void:
 	match_controller.start_match()
 	_apply_match_pressure_to_arena()
 	_report_startup_structure()
-	ui.show_status(
-		"Friction Zero: %s robots en arena | controles locales por slot: P1 WASD, P2 flechas, P3 numpad, P4 IJKL"
-		% match_controller.registered_robots.size()
-	)
+	ui.show_status(_build_startup_status())
 	_refresh_hud()
 
 
@@ -150,6 +147,24 @@ func _report_startup_structure() -> void:
 
 	print("Friction Zero base cargada.")
 	print("Arenas: %s | Robots: %s | Sistemas: %s" % [arena_count, robot_count, system_count])
+
+
+func _build_startup_status() -> String:
+	var control_segments: Array[String] = []
+	for robot in match_controller.registered_robots:
+		if not is_instance_valid(robot) or not robot.is_player_controlled:
+			continue
+
+		control_segments.append("P%s %s" % [robot.player_index, robot.get_input_hint()])
+
+	var control_summary := ", ".join(control_segments)
+	if control_summary == "":
+		control_summary = "sin jugadores locales"
+
+	return "Friction Zero: %s robots en arena | %s" % [
+		match_controller.registered_robots.size(),
+		control_summary,
+	]
 
 
 func _on_robot_fell_into_void(robot: RobotBase) -> void:

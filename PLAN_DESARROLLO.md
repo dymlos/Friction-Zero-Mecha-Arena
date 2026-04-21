@@ -7,6 +7,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Etapa 0 a 3: base jugable ya integrada en `main.tscn` con arena, camara compartida, empuje, caida al vacio y cierre de ronda simple por ultimo robot/equipo en pie.
 - Bootstrap local mas claro: `main.gd` ahora alinea robots con los spawns del arena blockout, asigna slots de jugador y admite 4 jugadores de teclado/slot por defecto para laboratorio 2v2.
 - Input local separado: `RobotBase` resuelve perfiles de teclado por slot y deja de leer joysticks "de todos" cuando el robot ya usa teclado.
+- Paridad/local Hard mas util: el perfil `WASD` ahora cubre lanzamiento de partes y tambien un camino Hard por teclado (`TFGH` para aim); el estado inicial del HUD deja visibles los controles activos por slot para no depender de memoria externa durante playtests.
 - Etapa 2v2: laboratorio 2v2 preparado con 4 robots por escena y `local_player_count=4`, incluyendo equipos por parejas para validar rescate aliado.
 - Validacion 2v2: el loop de rescate/negacion ya tiene cobertura headless en `main.tscn`, incluyendo indicador de carga visible y ventana de `throw_pickup_delay`.
 - Scoreboard minimo: `MatchController` ya registra bajas por vacio o explosion, suma ronda al ultimo contendiente en pie y reinicia todos los robots juntos tras una pausa corta.
@@ -212,8 +213,9 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 **Estado actual del prototipo:**
 - el torso superior ya puede orientarse por separado del chasis usando `UpperBodyPivot`
 - la direccion de combate/impacto modular en Hard ya se lee desde ese torso, no desde el chasis completo
-- el soporte actual esta pensado para joypad con stick derecho; si no hay aim input dedicado, el torso conserva/alinea orientacion sin romper el control base
-- el laboratorio principal ya puede forzar slots concretos a Hard desde `Main`, pero sigue pendiente decidir si necesita mapping de teclado propio y playtestear si aporta profundidad sin volver opaco el juego
+- el soporte actual sigue siendo mayormente joypad-first, pero el perfil `WASD` ya tiene aim por teclado (`TFGH`) para habilitar al menos un slot Hard jugable sin joystick en laboratorio
+- `Main` ya puede forzar slots concretos a Hard desde `hard_mode_player_slots` y el estado inicial del HUD deja visible el mapping activo por slot
+- sigue pendiente decidir si conviene extender aim por teclado a otros perfiles locales o mantenerlos como soporte Hard solo con joypad
 
 ## Etapa 7 - Partes desprendidas, recuperacion y cuerpo averiado
 
