@@ -30,6 +30,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - partes desprendidas con propietario original, pickup por cercania y retorno parcial
 - transporte de partes que bloquea el ataque prototipo
 - negacion basica de partes si el portador cae al vacio
+- lectura diegetica de recuperacion modular: cada parte desprendida ahora muestra un disco de recuperacion sobre el suelo que se achica segun `cleanup_time`; el prototipo tambien expone `recovery_lost` para distinguir timeout/vacio sin acoplar todavia otra UI
 - robot inutilizado al perder las cuatro partes, empujable y con explosion diferida antes de quedar fuera de ronda o reiniciar
 - bootstrap local que deja cuatro robots humanos activos por defecto desde `main.tscn`
 - perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
@@ -79,6 +80,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
 - indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
 - lectura diegética de daño modular: cada extremidad ya puede mostrar `Smoke` cuando está dañada y `Spark` cuando entra en estado crítico; ambos marcadores viven sobre la pieza, no en el HUD, y desaparecen al repararla o perderla.
+- lectura diegética de ventana de rescate: las partes desprendidas ahora también usan un disco plano sobre el piso que reduce su escala y calienta su color conforme se consume la recuperación posible.
 - validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
 - validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda, scoreboard y ahora tambien un resumen compacto del orden de bajas.
 - validacion automatizada del cierre de partida reforzado: `match_completion_test.gd` ahora cubre tambien el panel final + stats simples + linea `Reinicio | F5...`, y `match_manual_restart_test.gd` verifica reinicio manual inmediato con score limpio sobre `main.tscn`.
@@ -262,6 +264,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_explosion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_unstable_explosion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_damage_feedback_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/detached_part_recovery_readability_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_energy_management_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_archetype_roster_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_archetype_passive_test.gd`
@@ -300,6 +303,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay cuatro tipos de pickup, con `Equipos` usando dos pares y `FFA` tres tipos activos por ronda; todavia faltan pesos finos por modo/mapa, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
+- La nueva lectura de rescate tambien sigue siendo deliberadamente minima: el disco sobre la pieza hace visible la urgencia sin sumar HUD, pero falta validar por playtest si alcanza con cuatro robots y arena contrayendose.
 - El HUD dual ya existe y ahora puede alternarse en runtime con `F1` sobre un override local; sigue pendiente decidir por playtest que modo conviene dejar por defecto en `Equipos` y `FFA`, y si hace falta persistencia/preset por modo ademas del toggle de laboratorio.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.

@@ -304,6 +304,10 @@
    - `MatchController` agrega solo durante ronda activa y expone lineas compactas `Stats | Competidor | rescates N | borde N | bajas N (...)` tanto en `RecapPanel` como en `MatchResultPanel`.
    - Motivo: cumplir el pedido de “stats simples de fin de partida” sin abrir otra escena, sin duplicar estado en `Main` y sin permitir padding accidental durante el tiempo muerto posterior al cierre.
 
+76. **La ventana de recuperacion vive sobre la pieza, no en otra banda del HUD**
+   - `DetachedPart` ahora crea un `RecoveryIndicator` runtime `top_level`, expone `get_cleanup_time_left()/get_cleanup_progress_ratio()` y emite `recovery_lost` con `timeout` o `void` cuando la recuperacion ya no es posible.
+   - Motivo: Team vs Team necesitaba volver mas legible la urgencia del rescate sin cargar el roster/HUD con otra linea persistente; un telegraph diegetico sobre la propia pieza conserva claridad, funciona tambien en FFA y deja un hook chico para futuras lecturas compactas si hicieran falta.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

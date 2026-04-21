@@ -34,6 +34,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Laboratorio Hard expuesto: `Main` ya puede asignar `ControlMode.HARD` por slot local mediante `hard_mode_player_slots`, y el roster deja visible si cada robot juega en Easy o Hard junto al hint real de input.
 - Selector runtime de laboratorio listo: `Main` ahora deja ciclar slot/arquetipo/modo con `F2/F3/F4`, reaplica el `RobotArchetypeConfig` sobre el robot activo, reinicia el match completo y mantiene sincronizados el roster, la linea `Lab | ...` y el marcador FFA sin editar escenas.
 - Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
+- Rescate modular mas legible: cada parte desprendida ahora muestra un disco diegetico sobre el suelo que se achica segun su `cleanup_time`, haciendo visible la ventana de recuperacion sin abrir otra banda de HUD.
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun; la variante nacida desde `Overdrive` queda marcada como explosion `inestable`.
 - Etapa 8: ya existe una mezcla mas honesta entre pasivas y primeras skills propias. `RobotArchetypeConfig` sigue reutilizando hooks legibles para `Ariete`, `Grua`, `Cizalla` y `Patin`, y ahora tambien puede declarar `core_skill_type/label/cargas/recarga`; `Aguja` abre el arquetipo Poke/Skillshot con `Pulso` recargable y `Ancla` suma Control/Zona con `Baliza` persistente dentro del laboratorio FFA sin duplicar la escena del robot.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, marcadores de humo/chispa por parte dañada, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
@@ -275,7 +276,8 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - negacion basica si el portador cae al vacio o lanza la parte fuera del contexto inmediato
 - cuerpo inutilizado con explosion diferida; si la explosion cierra la ronda, el robot espera el reset comun
 - feedback visual de transporte implementado con indicador diegetico en `RobotBase`
-- pendiente: rescate cooperativo mas visible en sesiones activas y ajuste fino de radio de retorno/timer de negación en 2v2 con la nueva presión de ronda
+- las partes tiradas ahora muestran una ventana de recuperacion diegetica sobre el suelo y exponen un hook `recovery_lost` para futuras lecturas compactas si hace falta
+- pendiente: validar por playtest si el disco de recuperacion ya alcanza para rescate cooperativo en sesiones activas o si todavia falta reforzar radio de retorno/timer de negación en 2v2 con la nueva presión de ronda
 
 ## Etapa 8 - Primeros arquetipos jugables
 

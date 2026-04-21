@@ -1,6 +1,8 @@
 extends RigidBody3D
 class_name DetachedPart
 
+signal recovery_lost(detached_part: DetachedPart, reason: String)
+
 const PART_COLLISION_SIZES := {
 	"left_arm": Vector3(0.45, 0.35, 0.7),
 	"right_arm": Vector3(0.45, 0.35, 0.7),
@@ -8,11 +10,22 @@ const PART_COLLISION_SIZES := {
 	"right_leg": Vector3(0.55, 0.8, 1.15),
 }
 
+const PART_RECOVERY_COLORS := {
+	"left_arm": Color(0.98, 0.45, 0.12, 0.85),
+	"right_arm": Color(0.98, 0.58, 0.15, 0.85),
+	"left_leg": Color(0.22, 0.56, 0.94, 0.85),
+	"right_leg": Color(0.29, 0.72, 1.0, 0.85),
+}
+
 @export var cleanup_time := 10.0
 @export var pickup_delay := 0.4
 @export var throw_pickup_delay := 0.82
 @export var carried_hover_height := 1.4
 @export var carried_forward_offset := 0.7
+@export_group("Recovery Readability")
+@export var recovery_indicator_height := 0.08
+@export var recovery_indicator_radius := 0.32
+@export_range(0.2, 1.0, 0.05) var recovery_indicator_min_scale := 0.35
 
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var visuals_root: Node3D = $Visuals
@@ -24,6 +37,7 @@ var carrier_robot: Node = null
 var _starting_collision_layer := 1
 var _starting_collision_mask := 1
 var _pickup_ready_at := 0.0
+var _recovery_indicator: MeshInstance3D = null
 
 
 func _ready() -> void:
@@ -31,10 +45,13 @@ func _ready() -> void:
 	_starting_collision_layer = collision_layer
 	_starting_collision_mask = collision_mask
 	_pickup_ready_at = Time.get_ticks_msec() / 1000.0 + pickup_delay
+	_setup_recovery_indicator()
 	lifetime_timer.start(cleanup_time)
+	_refresh_recovery_indicator()
 
 
 func _physics_process(_delta: float) -> void:
+	_refresh_recovery_indicator()
 	if carrier_robot == null or not is_instance_valid(carrier_robot):
 		return
 
@@ -61,6 +78,7 @@ func configure_from_visuals(owner_robot: Node, part_id: String, source_visuals: 
 		randf_range(-4.5, 4.5),
 		randf_range(-3.0, 3.0)
 	)
+	_refresh_recovery_indicator()
 
 
 func get_original_robot() -> Node:
@@ -69,6 +87,20 @@ func get_original_robot() -> Node:
 
 func is_carried() -> bool:
 	return carrier_robot != null and is_instance_valid(carrier_robot)
+
+
+func get_cleanup_time_left() -> float:
+	if lifetime_timer == null or lifetime_timer.is_stopped():
+		return 0.0
+
+	return maxf(lifetime_timer.time_left, 0.0)
+
+
+func get_cleanup_progress_ratio() -> float:
+	if cleanup_time <= 0.0:
+		return 0.0
+
+	return clampf(get_cleanup_time_left() / cleanup_time, 0.0, 1.0)
 
 
 func try_pick_up(robot: Node) -> bool:
@@ -91,6 +123,7 @@ func try_pick_up(robot: Node) -> bool:
 	collision_mask = 0
 	lifetime_timer.stop()
 	set_physics_process(true)
+	_refresh_recovery_indicator()
 	return true
 
 
@@ -126,6 +159,7 @@ func throw_from(carrier: Node, throw_direction: Vector3, throw_speed: float = 6.
 		lifetime_timer.start(cleanup_time)
 	carrier_robot = null
 	set_physics_process(true)
+	_refresh_recovery_indicator()
 	return true
 
 
@@ -164,6 +198,7 @@ func deny_to_void() -> void:
 	if carrier_robot != null and is_instance_valid(carrier_robot) and carrier_robot.has_method("release_detached_part"):
 		carrier_robot.release_detached_part(self)
 
+	recovery_lost.emit(self, "void")
 	queue_free()
 
 
@@ -204,5 +239,60 @@ func _configure_collision_shape() -> void:
 	collision_shape.shape = box_shape
 
 
+func _setup_recovery_indicator() -> void:
+	if _recovery_indicator != null:
+		return
+
+	var indicator_mesh := CylinderMesh.new()
+	indicator_mesh.top_radius = recovery_indicator_radius
+	indicator_mesh.bottom_radius = recovery_indicator_radius
+	indicator_mesh.height = 0.03
+	indicator_mesh.radial_segments = 24
+	indicator_mesh.rings = 1
+
+	var indicator_material := StandardMaterial3D.new()
+	indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	indicator_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	indicator_material.no_depth_test = true
+	indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	indicator_material.albedo_color = Color(0.95, 0.62, 0.18, 0.8)
+	indicator_material.emission_enabled = true
+	indicator_material.emission = Color(1.0, 0.7, 0.22)
+	indicator_material.emission_energy_multiplier = 0.5
+
+	_recovery_indicator = MeshInstance3D.new()
+	_recovery_indicator.name = "RecoveryIndicator"
+	_recovery_indicator.mesh = indicator_mesh
+	_recovery_indicator.material_override = indicator_material
+	_recovery_indicator.top_level = true
+	_recovery_indicator.visible = false
+	add_child(_recovery_indicator)
+
+
+func _refresh_recovery_indicator() -> void:
+	if _recovery_indicator == null:
+		return
+
+	var should_show := not is_carried() and not lifetime_timer.is_stopped() and cleanup_time > 0.0
+	_recovery_indicator.visible = should_show
+	if not should_show:
+		return
+
+	var ratio := get_cleanup_progress_ratio()
+	var base_color: Color = PART_RECOVERY_COLORS.get(part_name, Color(0.95, 0.62, 0.18, 0.85))
+	var urgency_color := Color(1.0, 0.24, 0.18, 0.95)
+	var display_scale := lerpf(recovery_indicator_min_scale, 1.0, ratio)
+	var material := _recovery_indicator.material_override as StandardMaterial3D
+	if material != null:
+		var indicator_color := urgency_color.lerp(base_color, ratio)
+		material.albedo_color = indicator_color
+		material.emission = indicator_color
+
+	_recovery_indicator.global_position = global_position + Vector3.UP * recovery_indicator_height
+	_recovery_indicator.global_rotation = Vector3.ZERO
+	_recovery_indicator.scale = Vector3(display_scale, 1.0, display_scale)
+
+
 func _on_lifetime_timer_timeout() -> void:
+	recovery_lost.emit(self, "timeout")
 	queue_free()
