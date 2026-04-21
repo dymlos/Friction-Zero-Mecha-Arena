@@ -158,6 +158,14 @@
    - Se mantiene `WASD + TFGX` como unico camino Hard/local totalmente por teclado; el resto de los perfiles Hard queda explicitamente joypad-first y el roster persiste esa advertencia durante la ronda.
    - Motivo: evitar nuevos solapes de teclas y UX confusa en teclado compartido hasta tener evidencia de playtests que justifique reabrir mappings o sumar selector runtime.
 
+40. **Incentivo de borde via pickup de reparacion instantanea**
+   - El primer objetivo real de borde se resolvio con `EdgeRepairPickup`: un pickup universal simple, fijo y visible que cura la parte activa mas dañada al tocarlo.
+   - Motivo: volver los flancos tentadores ya en el laboratorio sin introducir todavía inventario, rareza o una capa de items que opaque el nucleo de patinar/chocar.
+
+41. **La reparacion de borde no revive piezas destruidas**
+   - `RobotBase` expone `repair_most_damaged_part(...)` y solo repara partes que sigan activas; los miembros destruidos siguen dependiendo del loop de partes desprendidas.
+   - Motivo: sumar sustain tactico y comeback parcial sin invalidar rescate aliado, negacion enemiga ni el peso de perder una pierna o un brazo.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

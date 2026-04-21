@@ -485,6 +485,48 @@ func restore_part_from_return(part_name: String, restored_by: RobotBase) -> bool
 	return restore_part(part_name, get_restored_part_health_amount(), restored_by)
 
 
+func repair_part(part_name: String, repair_amount: float) -> bool:
+	if not BODY_PARTS.has(part_name):
+		return false
+	if repair_amount <= 0.0:
+		return false
+
+	var current_health := get_part_health(part_name)
+	if current_health <= 0.0 or current_health >= max_part_health:
+		return false
+
+	part_health[part_name] = minf(current_health + repair_amount, max_part_health)
+	_part_flash_strength[part_name] = 1.0
+	_refresh_visual_state()
+	return true
+
+
+func repair_most_damaged_part(repair_amount: float) -> String:
+	if repair_amount <= 0.0:
+		return ""
+
+	var target_part := ""
+	var lowest_health_ratio := 1.01
+	for part_name in BODY_PARTS:
+		var current_health := get_part_health(part_name)
+		if current_health <= 0.0 or current_health >= max_part_health:
+			continue
+
+		var health_ratio := get_part_health_ratio(part_name)
+		if health_ratio >= lowest_health_ratio:
+			continue
+
+		lowest_health_ratio = health_ratio
+		target_part = part_name
+
+	if target_part == "":
+		return ""
+	if not repair_part(target_part, repair_amount):
+		return ""
+
+	return target_part
+
+
 func restore_part(part_name: String, restored_health: float, restored_by: RobotBase = self) -> bool:
 	if not BODY_PARTS.has(part_name):
 		return false

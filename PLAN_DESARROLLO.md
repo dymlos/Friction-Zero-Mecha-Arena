@@ -13,6 +13,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Scoreboard minimo: `MatchController` ya registra bajas por vacio o explosion, suma ronda al ultimo contendiente en pie y reinicia todos los robots juntos tras una pausa corta.
 - Cierre de match base: el laboratorio ya juega a first-to-3 por defecto; cuando un equipo alcanza el objetivo, `MatchController` anuncia ganador de partida, congela la ronda y reinicia el match completo tras una pausa corta.
 - Presion de endgame: el `arena_blockout` ahora reduce progresivamente su tamano durante la ronda, empujando el cierre hacia el centro sin agregar hazards extra.
+- Bordes con incentivo real: el laboratorio ahora suma pickups de reparacion instantanea en los flancos del arena; curan la parte activa mas dañada sin revivir piezas perdidas y fuerzan a exponerse cerca del vacio.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
 - Etapa 2 y 3: el ritmo de choque del laboratorio 2P ya fue afinado en `RobotBase` para que los intercambios sean más fluidos sin perder el carácter de choque decisivo.
 - Etapa 5: primer slice funcional implementado. Cada robot ahora puede redistribuir energia hacia una parte foco, alterar de forma real el empuje o la traccion y activar un overdrive corto con recuperacion/cooldown.
@@ -135,6 +136,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - el HUD minimo ya muestra ronda y marcador, sin sumar barras pesadas
 - el HUD tambien explicita el objetivo del match (`Primero a X`) y el loop ya cierra la partida al alcanzarlo
 - el arena ahora se contrae progresivamente en el tramo final de la ronda y vuelve a escala completa al reset
+- el arena blockout ahora ofrece pickups de reparacion fijos cerca del borde para que los flancos valgan algo mas que riesgo puro
 - pendiente: decidir si la pausa/reinicio automatico de match debe seguir siendo la solucion final o solo el cierre provisional del laboratorio, y si la puntuacion debe distinguir vacio vs destruccion
 
 ## Etapa 4 - Danio modular por brazos y piernas
@@ -308,6 +310,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - ventaja aleatoria excesiva
 - items de movilidad que rompan bordes letales
 - reparacion que alargue partidas sin tension
+
+**Estado actual del prototipo:**
+- existe un primer slice previo al sistema completo de items: pickups de reparacion instantanea, fijos y simetricos en los bordes del `arena_blockout`
+- curan solo la parte activa mas dañada y no reemplazan la devolucion de partes destruidas
+- todavia no hay inventario, rareza, spawn semialeatorio ni competencia entre item transportado y parte cargada
 
 **Dependencias:** Etapas 3, 5, 7 y 8.
 

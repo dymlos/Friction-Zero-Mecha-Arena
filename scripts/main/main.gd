@@ -6,6 +6,7 @@ const MatchHud = preload("res://scripts/ui/match_hud.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
+const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
 
 @export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
 
@@ -23,6 +24,7 @@ func _ready() -> void:
 	# La logica concreta vive en scripts mas chicos para que el proyecto crezca ordenado.
 	_arena = _get_active_arena()
 	_configure_playable_prototype()
+	_connect_arena_pickups()
 	_register_existing_robots()
 	match_controller.start_match()
 	_apply_match_pressure_to_arena()
@@ -149,6 +151,18 @@ func _report_startup_structure() -> void:
 	print("Arenas: %s | Robots: %s | Sistemas: %s" % [arena_count, robot_count, system_count])
 
 
+func _connect_arena_pickups() -> void:
+	for node in get_tree().get_nodes_in_group("edge_repair_pickups"):
+		if not (node is EdgeRepairPickup):
+			continue
+
+		var pickup := node as EdgeRepairPickup
+		if pickup.pickup_collected.is_connected(_on_edge_repair_pickup_collected):
+			continue
+
+		pickup.pickup_collected.connect(_on_edge_repair_pickup_collected)
+
+
 func _build_startup_status() -> String:
 	var control_segments: Array[String] = []
 	for robot in match_controller.registered_robots:
@@ -204,3 +218,10 @@ func _on_robot_exploded(robot: RobotBase) -> void:
 	var message := match_controller.record_robot_elimination(robot, MatchController.EliminationCause.EXPLOSION)
 	if message != "":
 		ui.show_status(message)
+
+
+func _on_edge_repair_pickup_collected(robot: RobotBase, repaired_part_name: String) -> void:
+	ui.show_status("%s estabilizo %s en borde" % [
+		robot.display_name,
+		RobotBase.get_part_display_name(repaired_part_name),
+	])

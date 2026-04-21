@@ -32,6 +32,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - cierre de ronda simple: el ultimo robot/equipo en pie suma una ronda y todos los robots vuelven juntos tras un delay corto
 - cierre de match simple: el laboratorio juega a `first-to-3`; cuando un equipo alcanza el objetivo, el HUD anuncia al ganador de la partida y el match se reinicia limpio tras una pausa corta
 - presion final de arena: el piso y sus edge markers se contraen de forma progresiva segun el tiempo de ronda, y el HUD agrega una linea corta cuando empieza el cierre
+- incentivo real de borde: el arena blockout ahora tiene pickups de reparacion instantanea en los flancos; curan la parte activa mas dañada y obligan a exponerse cerca del vacio para estabilizarse
 - HUD minimo con estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia y si un robot transporta una parte
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
@@ -70,6 +71,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - `Main` aplica ese factor sobre `ArenaBase` sin mezclar logica de match y geometria
   - el `arena_blockout` reduce piso util y edge markers reales, y vuelve a tamano completo al reset de ronda
   - `default_match_config.tres` baja la ronda base a 60 segundos para que la contraccion aparezca en playtests normales
+- Se agrego el primer incentivo real de borde:
+  - `EdgeRepairPickup` aparece en los flancos del `arena_blockout` como pickup universal simple y visible
+  - al tocarlo, el robot repara solo la parte activa mas castigada; no revive partes destruidas ni reemplaza el loop de rescate aliado
+  - `Main` publica una linea breve en HUD cuando alguien logra estabilizarse en el borde, sin sumar una UI nueva
 - Se hizo explicito el bootstrap local del prototipo: `main.gd` ahora asigna slots, spawns y deja cuatro jugadores activos por defecto.
 - Se separo ownership de input local con perfiles de teclado por jugador y fallback de joystick por slot, evitando que varios robots lean el mismo dispositivo.
 - Se agrego un HUD compacto de ronda:
@@ -119,6 +124,7 @@ Resultado: las doce verificaciones dedicadas pasan y el proyecto sigue iniciando
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
+- El nuevo incentivo de borde es deliberadamente minimo: solo existen pickups de reparacion fijos; todavia faltan cobertura blockout dedicada, variacion semialeatoria o otros tipos de item universal.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats, replay ni explicación explícita de por qué perdió cada jugador.

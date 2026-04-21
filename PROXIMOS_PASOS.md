@@ -38,7 +38,7 @@
    - decidir si el daño modular debe ponderar tambien frente/espalda del chasis inferior y no solo del torso
    - mantener Easy como modo plenamente jugable y legible
 
-8. **Agregar un primer incentivo real en bordes del mapa**
-   - evaluar si el siguiente slice deberia ser un pickup universal simple, una cobertura blockout o ambos en pequeño para que los bordes ofrezcan algo mas que riesgo.
+8. **Validar y tensionar el nuevo incentivo de borde**
+   - playtestear si `repair_amount` y `respawn_delay` vuelven los flancos realmente tentadores o si la reparacion termina alargando demasiado los duelos.
+   - decidir si el siguiente paso en mapa debe ser sumar cobertura blockout ligera alrededor de esos pickups o introducir un segundo incentivo distinto en otro borde.
    - mantener el centro limpio y legible, evitando saturar la arena con demasiados objetos.
-   - validar que cualquier incentivo nuevo siga sirviendo a la fantasia principal de patinar, leer y chocar con precision.
