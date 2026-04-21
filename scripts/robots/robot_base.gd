@@ -18,6 +18,7 @@ enum KeyboardProfile { NONE, WASD_SPACE, ARROWS_ENTER, NUMPAD, IJKL }
 
 const DETACHED_PART_SCENE := preload("res://scenes/robots/detached_part.tscn")
 const PULSE_BOLT_SCENE := preload("res://scenes/projectiles/pulse_bolt.tscn")
+const CONTROL_BEACON_SCENE := preload("res://scenes/skills/control_beacon.tscn")
 
 const BODY_PARTS := [
 	"left_arm",
@@ -206,6 +207,15 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var pulse_charge_spawn_distance := 1.0
 @export var pulse_charge_spawn_height := 0.72
 
+@export_group("Prototype Control Skill")
+@export var control_beacon_duration := 3.2
+@export var control_beacon_radius := 1.75
+@export var control_beacon_spawn_distance := 1.1
+@export var control_beacon_spawn_height := 0.05
+@export_range(0.2, 1.0, 0.01) var control_zone_drive_multiplier := 0.72
+@export_range(0.2, 1.0, 0.01) var control_zone_control_multiplier := 0.64
+@export_range(0.05, 0.4, 0.01) var control_zone_refresh_window := 0.16
+
 @export_group("Prototype Combat")
 @export var passive_push_strength := 4.0
 @export var attack_impulse_strength := 11.0
@@ -281,6 +291,10 @@ var _mobility_boost_remaining := 0.0
 var _core_skill_charges := 0
 var _core_skill_recharge_remaining := 0.0
 var _hard_torso_world_direction := Vector3.FORWARD
+var _control_zone_suppression_remaining := 0.0
+var _control_zone_drive_state_multiplier := 1.0
+var _control_zone_control_state_multiplier := 1.0
+var _active_control_beacon: Node = null
 var _disabled_explosion_is_unstable := false
 var _last_disabled_explosion_was_unstable := false
 
@@ -416,7 +430,12 @@ func set_torso_world_direction(world_direction: Vector3) -> void:
 
 
 func get_effective_leg_drive_multiplier() -> float:
-	return _get_leg_health_multiplier() * _get_leg_energy_multiplier() * _get_mobility_pickup_drive_multiplier()
+	return (
+		_get_leg_health_multiplier()
+		* _get_leg_energy_multiplier()
+		* _get_mobility_pickup_drive_multiplier()
+		* _get_control_zone_drive_multiplier()
+	)
 
 
 func get_effective_arm_power_multiplier() -> float:
@@ -465,6 +484,36 @@ func is_mobility_boost_active() -> bool:
 
 func get_mobility_boost_time_left() -> float:
 	return maxf(_mobility_boost_remaining, 0.0)
+
+
+func is_control_zone_suppressed() -> bool:
+	return _control_zone_suppression_remaining > 0.0
+
+
+func get_control_zone_suppression_time_left() -> float:
+	return maxf(_control_zone_suppression_remaining, 0.0)
+
+
+func apply_control_zone_suppression(
+	duration: float,
+	drive_multiplier: float,
+	control_multiplier: float
+) -> bool:
+	if duration <= 0.0:
+		return false
+	if _is_respawning or _is_disabled:
+		return false
+
+	_control_zone_suppression_remaining = maxf(_control_zone_suppression_remaining, duration)
+	_control_zone_drive_state_multiplier = minf(
+		_control_zone_drive_state_multiplier,
+		clampf(drive_multiplier, 0.2, 1.0)
+	)
+	_control_zone_control_state_multiplier = minf(
+		_control_zone_control_state_multiplier,
+		clampf(control_multiplier, 0.2, 1.0)
+	)
+	return true
 
 
 func has_core_skill() -> bool:
@@ -521,6 +570,8 @@ func use_core_skill() -> bool:
 	match archetype_config.core_skill_type:
 		RobotArchetypeConfig.CoreSkillType.PULSE_SHOT:
 			used = _spawn_core_skill_pulse()
+		RobotArchetypeConfig.CoreSkillType.CONTROL_BEACON:
+			used = _spawn_control_beacon()
 		_:
 			used = false
 
@@ -716,6 +767,7 @@ func _physics_process(delta: float) -> void:
 
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
 	_update_energy_state(delta)
+	_update_control_zone_state(delta)
 	_update_temporary_boosts(delta)
 	_update_core_skill_state(delta)
 	_update_energy_controls()
@@ -745,6 +797,8 @@ func reset_modular_state() -> void:
 	_energy_surge_remaining = 0.0
 	_mobility_boost_remaining = 0.0
 	_reset_core_skill_state()
+	_clear_control_zone_suppression()
+	_clear_active_control_beacon()
 	_disabled_explosion_is_unstable = false
 	_last_disabled_explosion_was_unstable = false
 	_carried_item_name = ""
@@ -922,6 +976,8 @@ func hold_for_round_reset() -> void:
 	_attack_cooldown_remaining = 0.0
 	_planar_velocity = Vector3.ZERO
 	external_impulse = Vector3.ZERO
+	_clear_active_control_beacon()
+	_clear_control_zone_suppression()
 	_clear_carried_item()
 	_deny_carried_part_if_any()
 	_exit_disabled_state()
@@ -1014,6 +1070,8 @@ func fall_into_void() -> void:
 		return
 
 	_is_respawning = true
+	_clear_active_control_beacon()
+	_clear_control_zone_suppression()
 	_clear_carried_item()
 	_deny_carried_part_if_any()
 	fell_into_void.emit(self)
@@ -1035,6 +1093,8 @@ func reset_to_spawn() -> void:
 	_planar_velocity = Vector3.ZERO
 	external_impulse = Vector3.ZERO
 	_attack_cooldown_remaining = 0.0
+	_clear_active_control_beacon()
+	_clear_control_zone_suppression()
 	_carried_part = null
 	_carried_item_name = ""
 	_held_for_round_reset = false
@@ -1137,6 +1197,39 @@ func _spawn_core_skill_pulse() -> bool:
 		pulse_charge_impulse * _get_core_skill_impulse_multiplier(),
 		pulse_charge_damage * _get_core_skill_damage_multiplier()
 	)
+
+
+func _spawn_control_beacon() -> bool:
+	var scene_instance := CONTROL_BEACON_SCENE.instantiate()
+	if not (scene_instance is Node3D):
+		return false
+
+	if is_instance_valid(_active_control_beacon):
+		_active_control_beacon.queue_free()
+		_active_control_beacon = null
+
+	var control_beacon := scene_instance as Node3D
+	var beacon_parent := get_parent()
+	if beacon_parent == null:
+		beacon_parent = get_tree().current_scene
+	if beacon_parent == null:
+		return false
+
+	var forward := _get_combat_forward_vector()
+	var spawn_position := global_position + Vector3.UP * control_beacon_spawn_height + forward * control_beacon_spawn_distance
+	beacon_parent.add_child(control_beacon)
+	control_beacon.call(
+		"configure",
+		self,
+		spawn_position,
+		control_beacon_radius,
+		control_beacon_duration,
+		control_zone_drive_multiplier,
+		control_zone_control_multiplier,
+		control_zone_refresh_window
+	)
+	_active_control_beacon = control_beacon
+	return true
 
 
 func _spawn_pulse_bolt(projectile_speed: float, lifetime: float, push_impulse: float, damage: float) -> bool:
@@ -1362,6 +1455,16 @@ func _update_temporary_boosts(delta: float) -> void:
 		_refresh_visual_state()
 
 
+func _update_control_zone_state(delta: float) -> void:
+	if _control_zone_suppression_remaining <= 0.0:
+		_clear_control_zone_suppression()
+		return
+
+	_control_zone_suppression_remaining = maxf(_control_zone_suppression_remaining - delta, 0.0)
+	if _control_zone_suppression_remaining == 0.0:
+		_clear_control_zone_suppression()
+
+
 func _update_core_skill_state(delta: float) -> void:
 	if not has_core_skill():
 		_core_skill_charges = 0
@@ -1484,7 +1587,12 @@ func _get_leg_health_multiplier() -> float:
 
 
 func _get_effective_leg_control_multiplier() -> float:
-	return _get_leg_control_health_multiplier() * _get_leg_energy_multiplier() * _get_mobility_pickup_control_multiplier()
+	return (
+		_get_leg_control_health_multiplier()
+		* _get_leg_energy_multiplier()
+		* _get_mobility_pickup_control_multiplier()
+		* _get_control_zone_control_multiplier()
+	)
 
 
 func _get_leg_control_health_multiplier() -> float:
@@ -1514,6 +1622,20 @@ func _get_mobility_pickup_control_multiplier() -> float:
 		return 1.0
 
 	return mobility_pickup_control_multiplier
+
+
+func _get_control_zone_drive_multiplier() -> float:
+	if not is_control_zone_suppressed():
+		return 1.0
+
+	return clampf(_control_zone_drive_state_multiplier, 0.2, 1.0)
+
+
+func _get_control_zone_control_multiplier() -> float:
+	if not is_control_zone_suppressed():
+		return 1.0
+
+	return clampf(_control_zone_control_state_multiplier, 0.2, 1.0)
 
 
 func _get_arm_energy_multiplier() -> float:
@@ -1578,6 +1700,19 @@ func _get_energy_focus_color() -> Color:
 func _reset_core_skill_state() -> void:
 	_core_skill_charges = get_core_skill_max_charges()
 	_core_skill_recharge_remaining = 0.0
+
+
+func _clear_control_zone_suppression() -> void:
+	_control_zone_suppression_remaining = 0.0
+	_control_zone_drive_state_multiplier = 1.0
+	_control_zone_control_state_multiplier = 1.0
+
+
+func _clear_active_control_beacon() -> void:
+	if is_instance_valid(_active_control_beacon):
+		_active_control_beacon.queue_free()
+
+	_active_control_beacon = null
 
 
 func _get_core_skill_recharge_seconds() -> float:

@@ -30,13 +30,14 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - bootstrap local que deja cuatro robots humanos activos por defecto desde `main.tscn`
 - perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
 - escenario base 2v2 en `main.tscn` con dos equipos (pares por `team_id`) y 4 slots locales activos para validar rescate aliado y handoff en campo.
-- laboratorio FFA dedicado en `scenes/main/main_ffa.tscn`, reutilizando la misma arena/shared screen pero con `match_mode=FFA` y bootstrap que neutraliza las alianzas del layout 2v2 para que cada robot compita por su cuenta; ese mismo laboratorio ahora reemplaza el slot de `Grua` por `Aguja` para probar poke/skillshot sin romper el 2v2 base
-- primera capa de identidad de arquetipos apoyada sobre sistemas ya existentes, mas una primera skill propia en FFA:
+- laboratorio FFA dedicado en `scenes/main/main_ffa.tscn`, reutilizando la misma arena/shared screen pero con `match_mode=FFA` y bootstrap que neutraliza las alianzas del layout 2v2 para que cada robot compita por su cuenta; ese mismo laboratorio ahora reemplaza los slots de `Grua` y `Cizalla` por `Aguja` y `Ancla` para probar poke + control/zona sin romper el 2v2 base
+- primera capa de identidad de arquetipos apoyada sobre sistemas ya existentes, mas dos skills propias en FFA:
   - `Ariete`: mas vida/empuje y tambien mas resistencia al impulso externo para validar pusher/tank
   - `Grua`: mejor retorno de partes y ahora estabiliza otra pieza dañada al completar un rescate para validar asistencia/recuperacion
   - `Cizalla`: mas daño/pressure modular y bonus extra contra piezas ya tocadas para validar dismantle
   - `Patin`: mas velocidad/menos damping y ventanas de impulso mas largas para validar movilidad/reposition
   - `Aguja`: convierte la accion `throw_part` en `Pulso` cuando no lleva una parte, con 2 cargas recargables y el mismo `PulseBolt` repulsor como base para validar poke/skillshot limpio
+  - `Ancla`: convierte esa misma accion en `Baliza`, una zona persistente corta que ralentiza drive/control rivales, evita apilar varias balizas por robot y deja `zona` visible en el roster cuando afecta a alguien
   - `RobotArchetypeConfig` vive en recursos `.tres`, `RobotBase` lo aplica al arrancar y tambien lo consulta al resolver `apply_impulse`, retornos, daño modular y boosts temporales, sin abrir otra UI
 - cierre de ronda simple: el ultimo robot/equipo en pie suma una ronda y todos los robots vuelven juntos tras un delay corto
 - cierre de match simple: el laboratorio juega a `first-to-3`; cuando un equipo alcanza el objetivo, el HUD anuncia al ganador de la partida y el match se reinicia limpio tras una pausa corta
@@ -46,6 +47,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - tercer incentivo de borde: el mismo arena ahora suma pickups de energia en diagonales; cortan la recuperacion posterior al overdrive, refuerzan temporalmente el par energetico seleccionado y tambien siguen el borde vivo cuando la arena se contrae
 - primer item de una sola carga en mano: el mismo arena ahora suma pickups de pulso en las diagonales restantes; cargan un `pulso` visible en el robot, comparten slot con las partes transportadas y convierten el siguiente ataque en un disparo repulsor corto
 - primera skill propia por cargas: `RobotBase` ahora puede leer `core_skill_type/label/cargas/recarga` desde `RobotArchetypeConfig`; `Aguja` usa `Pulso` sobre la accion de utilidad cuando no lleva una parte, gasta una carga, recarga en segundo plano y deja `skill Pulso x/y` visible en el roster
+- segunda skill propia por zona: `RobotBase` ahora tambien puede desplegar `Baliza` desde `throw_part`; `Ancla` deja una sola `ControlBeacon` activa por robot, aplica supresion temporal de drive/control y reutiliza el mismo roster compacto para mostrar `skill Baliza x/y` y el estado `zona`
 - rotacion semialeatoria controlada de borde: esos ocho pedestales ya no quedan todos activos a la vez; `ArenaBase` usa un perfil `Equipos` de dos pares espejados por ronda y un perfil `FFA` de tres tipos activos por ronda para subir el oportunismo sin volver al borde completo
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
 - HUD dual base configurable desde `MatchConfig`:
@@ -83,6 +85,11 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - `RobotBase` expone `has_core_skill()`, `use_core_skill()` y `get_core_skill_status_summary()`, y reaprovecha `throw_part` cuando el robot no carga una pieza para no abrir botones nuevos
   - `Aguja` vive en `data/config/robots/aguja_archetype.tres` y se expone primero en `main_ffa.tscn`, de modo que el laboratorio libre gane poke/skillshot mientras `main.tscn` conserva `Grua` para rescate aliado
   - `robot_core_skill_test.gd` cubre recurso, gasto/recarga de cargas, empuje/daño del disparo y lectura del roster FFA
+- Se completó el sexto arquetipo documentado sin abrir otro sistema de habilidades:
+  - `Ancla` vive en `data/config/robots/ancla_archetype.tres` y usa `Baliza`, una `ControlBeacon` persistente corta que ralentiza drive/control rivales dentro del area
+  - `RobotBase` limita `Baliza` a una sola instancia activa por robot y la vuelve a desplegar desde `throw_part`, manteniendo el mismo contrato de input/cargas que ya usabamos para `Aguja`
+  - `MatchController` solo agrega `zona` al roster cuando el efecto esta activo, evitando otra capa de HUD
+  - `robot_control_skill_test.gd` cubre recurso, despliegue/reemplazo de baliza, supresion sobre rival y lectura del roster FFA
 - Se profundizó esa identidad del roster sin abrir skills activas ni escenas nuevas:
   - `RobotArchetypeConfig` ahora tambien define hooks livianos de pasiva (`received_impulse_multiplier`, `return_support_repair_ratio`, `damaged_part_bonus_damage_multiplier`, `mobility_boost_duration_multiplier`)
   - `RobotBase` los consume en `apply_impulse`, `restore_part`, `receive_attack_hit_from_robot` / `receive_collision_hit_from_robot` y `apply_mobility_boost`, reutilizando sistemas ya legibles en el laboratorio
@@ -243,6 +250,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_energy_management_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_archetype_roster_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_archetype_passive_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_control_skill_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_core_skill_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/local_multiplayer_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_completion_test.gd`
@@ -267,8 +275,8 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - El nuevo sistema de items sigue siendo deliberadamente simple: hoy existen reparacion instantanea, impulso corto, recarga breve y un solo item de carga (`pulse_charge`); la semialeatoriedad actual ya diferencia `Equipos` (2 pares) y `FFA` (3 tipos), pero todavia no hay inventario completo, pesos finos por modo/mapa ni variedad real de utilities.
 - El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
 - Los nuevos arquetipos siguen siendo una capa deliberadamente liviana:
-  - hoy combinan tuning + pasivas chicas, y solo `Aguja` abre una skill propia por cargas; todavia no hay selección runtime ni un arquetipo claro de Control/Zona
-  - si `Ariete`, `Grua`, `Cizalla`, `Patin` y `Aguja` siguen sintiéndose demasiado parecidos en playtest, el siguiente paso debera ser cerrar ese gap de roster con otra regla/skill visible o selector de laboratorio, no solo más multiplicadores
+  - hoy combinan tuning + pasivas chicas, y `Aguja/Ancla` abren las dos primeras skills propias; todavia no hay selección runtime ni una segunda capa mas profunda de reglas por arquetipo
+  - si `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` siguen sintiéndose demasiado parecidos en playtest, el siguiente paso debera ser selector de laboratorio u otra regla visible por rol, no solo más multiplicadores
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - La explosion inestable ya conecta overdrive con la ruta de destruccion total, pero todavia falta playtestear si sus multiplicadores vuelven especial esa apuesta sin convertirla en el cierre dominante del match.

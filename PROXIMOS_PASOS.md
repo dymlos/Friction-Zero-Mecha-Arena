@@ -3,11 +3,12 @@
 ## Siguiente iteracion recomendada
 
 1. **Validar el nuevo roster de arquetipos**
-   - correr sesiones reales con `Ariete`, `Grua`, `Cizalla` y `Patin` en `main.tscn`, y con `Aguja` en `main_ffa.tscn`, para decidir si la mezcla actual de pasivas + primera skill propia ya produce identidades claras.
+   - correr sesiones reales con `Ariete`, `Grua`, `Cizalla` y `Patin` en `main.tscn`, y con `Aguja` + `Ancla` en `main_ffa.tscn`, para decidir si la mezcla actual de pasivas + primeras skills propias ya produce identidades claras.
    - medir si las pasivas actuales se entienden por playtest sin otra capa de UI: `Ariete` aguantando empuje, `Grua` estabilizando rescates, `Cizalla` rematando partes tocadas y `Patin` explotando mejor los pickups de impulso.
    - medir si `Aguja` realmente introduce poke/skillshot legible o si `Pulso` todavia se siente demasiado parecido al item universal del borde.
-   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Pulso x/y` en roster) alcanza como legibilidad de laboratorio o si conviene compactarlo mas.
-   - decidir si el siguiente paso del roster debe ser selector runtime, abrir el arquetipo faltante de Control/Zona o reforzar con otra skill/regla al arquetipo que siga borroso.
+   - medir si `Ancla` realmente corta rutas/duelos con `Baliza` o si la supresion actual se siente demasiado sutil para justificar el rol de Control/Zona.
+   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Pulso/Baliza x/y` + estado `zona`) alcanza como legibilidad de laboratorio o si conviene compactarlo mas.
+   - decidir si el siguiente paso del roster debe ser selector runtime o reforzar con otra skill/regla al arquetipo que siga borroso.
 
 2. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
    - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` usando tambien el toggle `F1` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.
@@ -29,8 +30,9 @@
    - playtestear si la nueva lectura torso/chasis mejora el combate o si todavia se siente demasiado sutil para pantalla compartida.
 
 5. **Validar la identidad del nuevo laboratorio FFA**
-   - correr sesiones reales en `scenes/main/main_ffa.tscn` para comprobar si el mismo layout 4P ya genera supervivencia, oportunismo y third-party legibles ahora que el roster libre incluye a `Aguja`.
+   - correr sesiones reales en `scenes/main/main_ffa.tscn` para comprobar si el mismo layout 4P ya genera supervivencia, oportunismo y third-party legibles ahora que el roster libre incluye a `Aguja` y `Ancla`.
    - medir si el rescate/negacion sigue siendo entendible cuando nadie tiene aliados y decidir si FFA necesita valores o spawns propios, no solo otra bandera de match.
+   - revisar si `Baliza` vuelve algunas diagonales/coberturas demasiado seguras o si realmente empuja rotacion y lectura espacial.
    - revisar si el marcador first-to-3 y la contraccion actual producen buen ritmo en FFA o si ese modo necesita objetivo/duracion distintos.
 
 6. **Pulir el cierre de match que ya existe**

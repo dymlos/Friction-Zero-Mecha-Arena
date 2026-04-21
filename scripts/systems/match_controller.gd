@@ -295,6 +295,8 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		segments.append("energia")
 	if robot.is_mobility_boost_active():
 		segments.append("impulso")
+	if robot.is_control_zone_suppressed():
+		segments.append("zona")
 	if robot.has_carried_item():
 		segments.append("item %s" % robot.get_carried_item_display_name())
 	if robot.is_carrying_part():

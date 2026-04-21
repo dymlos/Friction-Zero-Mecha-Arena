@@ -267,6 +267,18 @@
    - `main_ffa.tscn` reemplaza el slot de `Grua` por `Aguja`, mientras `main.tscn` conserva `Ariete/Grua/Cizalla/Patin` para seguir priorizando rescate aliado en equipos.
    - Motivo: FFA gana oportunismo y poke legible sin debilitar el laboratorio 2v2 que hoy valida mejor asistencia/recuperacion.
 
+67. **`Ancla` completa Control/Zona con una baliza persistente corta**
+   - `RobotArchetypeConfig.CoreSkillType` ahora tambien puede ser `CONTROL_BEACON`, y `RobotBase` lo resuelve desplegando `ControlBeacon`, una zona breve que ralentiza drive/control de rivales dentro del area.
+   - Motivo: cerrar el sexto arquetipo documentado con el cambio mas chico posible, reutilizando la misma accion de utilidad y manteniendo el efecto claramente subordinado al combate de choque.
+
+68. **Solo una baliza activa por robot para proteger la claridad**
+   - Al redeplegar `Baliza`, `RobotBase` libera la anterior antes de crear la nueva; `main_ffa.tscn` expone `Ancla` en lugar de `Cizalla`, manteniendo el 2v2 base intacto.
+   - Motivo: evitar stack de hazards, mantener la lectura limpia en pantalla compartida y abrir el sexto rol principalmente donde FFA gana mas con control y oportunismo.
+
+69. **La lectura de zona vive en el roster existente**
+   - `MatchController.get_robot_status_lines()` agrega `zona` cuando `RobotBase` esta bajo supresion de `Baliza`, y `robot_control_skill_test.gd` valida recurso, despliegue, reemplazo y presencia en roster FFA.
+   - Motivo: hacer visible el nuevo estado tactico sin abrir otra capa de HUD ni obligar al jugador a interpretar solo el mesh de la baliza.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
