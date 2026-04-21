@@ -1,0 +1,99 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/arenas/arena_blockout.tscn" id="1_arena"]
+
+[node name="ArenaTeamsValidation" instance=ExtResource("1_arena")]
+arena_id = "teams_validation_arena"
+safe_play_area_size = Vector2(18, 12)
+support_lane_margin = 1.6
+edge_pickup_layout_seed = 5
+pressure_band_thickness = 1.0
+pressure_band_inset = 0.5
+pressure_band_length_ratio = 0.72
+
+[node name="SpawnPlayer1" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0.8, -1.4)
+
+[node name="SpawnPlayer2" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -3.2, 0.8, 1.4)
+
+[node name="SpawnPlayer3" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.2, 0.8, -1.4)
+
+[node name="SpawnPlayer4" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 0.8, 1.4)
+
+[node name="WestCover" parent="CoverBlocks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.9, 0.45, -0.8)
+
+[node name="EastCover" parent="CoverBlocks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9, 0.45, 0.8)
+
+[node name="WestRepairPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.7, 0.3, -1.8)
+
+[node name="EastRepairPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7, 0.3, 1.8)
+
+[node name="NorthMobilityPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 0.3, -4.9)
+
+[node name="SouthMobilityPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3, 0.3, 4.9)
+
+[node name="NorthChargePickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 0.3, -5.3)
+
+[node name="SouthChargePickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 0.3, 5.3)
+
+[node name="NorthUtilityPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0.3, -5.1)
+
+[node name="SouthUtilityPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0.3, 5.1)
+
+[node name="NorthWestEnergyPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8, 0.3, -4.0)
+
+[node name="SouthEastEnergyPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8, 0.3, 4.0)
+
+[node name="NorthEastPulsePickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8, 0.3, -4.0)
+
+[node name="SouthWestPulsePickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8, 0.3, 4.0)
+
+[node name="NorthSupportPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -7.6)
+
+[node name="SouthSupportPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 7.6)
+
+[node name="NorthSupportMobilityPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0.45, -7.6)
+
+[node name="SouthSupportMobilityPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 0.45, 7.6)
+
+[node name="WestSupportPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.6, 0.45, 0)
+
+[node name="EastSupportPickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6, 0.45, 0)
+
+[node name="NorthWestSupportInterferencePickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.6, 0.45, -3.2)
+
+[node name="SouthEastSupportInterferencePickup" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6, 0.45, 3.2)
+
+[node name="NorthSupportGate" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.8, 0.45, -7.6)
+
+[node name="EastSupportGate" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10.6, 0.45, 3.2)
+
+[node name="SouthSupportGate" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.8, 0.45, 7.6)

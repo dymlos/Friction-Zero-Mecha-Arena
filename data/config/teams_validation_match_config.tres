@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/match_config.gd" id="1_config"]
+[ext_resource type="PackedScene" path="res://scenes/arenas/arena_teams_validation.tscn" id="2_arena"]
+[ext_resource type="PackedScene" path="res://scenes/robots/robot_base.tscn" id="3_robot"]
+
+[resource]
+script = ExtResource("1_config")
+max_players = 4
+local_player_count = 4
+round_time_seconds = 28
+rounds_to_win = 1
+allow_team_mode = true
+progressive_space_reduction = true
+hud_detail_mode = 0
+default_arena_scene = ExtResource("2_arena")
+default_robot_scene = ExtResource("3_robot")

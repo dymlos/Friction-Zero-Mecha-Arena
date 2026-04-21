@@ -218,6 +218,10 @@
    - Al recoger energia, `RobotBase` corta la recuperacion post-overdrive, reaplica el foco actual y suma una ventana corta de rendimiento extra sobre ese mismo par; no reactiva overdrive ni elimina todo el cooldown restante.
    - Motivo: volver valioso el pickup de energia sin volverlo spam ni borrar la identidad de riesgo/recompensa del overdrive.
 
+53. **La validacion rapida vive en una escena heredada, no en flags temporales del laboratorio base**
+   - `scenes/main/main_teams_validation.tscn` y `arena_teams_validation.tscn` encapsulan el setup corto (`first-to-1`, 28s, arena mas compacta, reinicios breves) sin tocar `main.tscn` ni el blockout principal.
+   - Motivo: acelerar playtests de rescate/negacion/contraccion sin confundir el laboratorio principal con tuning de debug ni abrir condicionales extras en `Main`.
+
 53. **Primer item cargable comparte slot con las partes transportadas**
    - `RobotBase` ahora usa un unico slot/logica de payload visible: puede llevar una `DetachedPart` o una `pulse_charge`, pero no ambos a la vez.
    - Motivo: mantener legible la pantalla compartida, evitar estados superpuestos y volver real la decision entre rescate/negacion y utilidad ofensiva.

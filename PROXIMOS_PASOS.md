@@ -32,7 +32,7 @@
    - ajustar posición/escala de marcadores y amplitud de la pose de desgaste antes de sumar más VFX o UI.
 
 4. **Hacer visible y testeable el rescate/negacion**
-   - usar el coverage headless 2v2 actual como red de seguridad mientras se hacen sesiones reales con la contraccion de arena ya activa.
+   - usar `scenes/main/main_teams_validation.tscn` como escena corta de referencia y el coverage headless 2v2/validacion como red de seguridad mientras se hacen sesiones reales con la contraccion de arena ya activa.
    - medir si el nuevo combo `disco de recuperacion + aro de pertenencia + RecoveryTargetIndicator + CarryOwnerIndicator + CarryReturnIndicator` realmente alcanza para leer urgencia/ownership/objetivo de retorno tambien durante el transporte en 2v2 y FFA o si todavia hace falta compactar escala/contraste/ritmo de esos cues.
    - medir en partida si `throw_pickup_delay`/`pickup_delay` se sienten justos o demasiado punitivos ahora que perder una ronda sí importa y el espacio se va cerrando.
    - ajustar si hace falta radio de retorno, cleanup y ritmo de choque con un aliado en escena, sin reabrir spam accidental.
@@ -68,8 +68,8 @@
   - medir si `unstable_disabled_explosion_radius_multiplier`, `unstable_disabled_explosion_impulse_multiplier` y `unstable_disabled_explosion_damage_multiplier` vuelven especial la sobrecarga sin transformar el overdrive en una ruta dominante de remate
 
 10. **Mejorar validacion jugable**
-   - sumar una escena/configuración de prueba pensada para reproducir rescates, negaciones y cierres de ronda/contraccion más rápido que en el match completo
-   - ajuste fino de valores de aceleracion, damping, empuje y danio
+   - decidir si el nuevo `main_teams_validation.tscn` ya alcanza como flujo rapido o si hace falta un segundo laboratorio igual de corto pero enfocado en FFA/arquetipos.
+   - ajuste fino de valores de aceleracion, damping, empuje y danio usando esa escena corta para iterar mas rapido antes de tocar `main.tscn`.
    - medir si el reset corto de ronda y el reinicio de match dejan suficiente tiempo de lectura o si necesitan delays algo mayores
 
 11. **Profundizar el soporte Hard sin convertirlo en requisito**
