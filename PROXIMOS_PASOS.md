@@ -5,8 +5,9 @@
 1. **Validar el nuevo soporte post-muerte de Teams**
    - correr sesiones reales en `main.tscn` dejando caer a un jugador temprano para medir si la `PilotSupportShip` suma involucramiento sin tapar el combate principal.
    - medir si el nuevo loop perimetral + `gates` temporales ya se entiende con la camara compartida o si necesita mas variedad de rutas/obstaculos suaves para que la nave gane profundidad sin irse de foco.
-   - medir si la mezcla `estabilizador + energia + movilidad + interferencia` sigue sintiendose discreta y si la nueva carga enemiga recompensa realmente acercarse al borde en vez de spamearse por seguridad.
-   - revisar si la combinacion `roster + StatusBeacon` ya alcanza como telemetria o si la nave todavia necesita otra pista diegética para espectador casual.
+   - medir si la mezcla `estabilizador + energia + movilidad + interferencia` sigue sintiendose discreta y si la nueva seleccion manual de objetivo recompensa realmente acercarse al borde en vez de spamearse por seguridad.
+   - revisar si la combinacion `roster + StatusBeacon + SupportTargetIndicator` ya alcanza como telemetria o si la nave todavia necesita otra pista diegética para espectador casual.
+   - calibrar si el ciclado de objetivo con `energy_prev/next` se entiende rapido para el jugador eliminado o si conviene compactar mejor la pista en HUD/estado inicial.
    - calibrar si `support_energy_surge_duration`, `support_mobility_boost_duration`, `support_interference_duration` y `support_interference_range` vuelven valiosas las cuatro cargas sin solaparse demasiado con los pickups de borde vivo o con `Baliza`.
    - confirmar por playtest que `FFA` realmente queda limpio y que compartir la escena base no introduce confusion por elementos post-muerte ocultos.
 

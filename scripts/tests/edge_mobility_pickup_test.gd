@@ -111,8 +111,8 @@ func _validate_pickup_cooldown_telegraph() -> void:
 			"El nucleo del pickup de movilidad deberia volver a verse cuando reaparece la carga."
 		)
 
-	await _cleanup_node(robot)
 	await _cleanup_node(pickup)
+	await _cleanup_node(robot)
 
 
 func _validate_main_scene_mobility_pickups() -> void:
@@ -174,6 +174,7 @@ func _validate_main_scene_mobility_pickups() -> void:
 			"El roster compacto deberia dejar visible cuando un robot tiene el pickup de movilidad activo."
 		)
 
+	await _disable_edge_pickups(main)
 	await _cleanup_node(main)
 
 
@@ -280,15 +281,43 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 	return robots
 
 
+func _disable_edge_pickups(root_node: Node) -> void:
+	for pickup in root_node.get_tree().get_nodes_in_group("edge_pickups"):
+		if not root_node.is_ancestor_of(pickup):
+			continue
+		if pickup.has_method("set_spawn_enabled"):
+			pickup.call("set_spawn_enabled", false)
+
+	await process_frame
+	await physics_frame
+
+
 func _cleanup_node(node: Node) -> void:
 	if not is_instance_valid(node):
 		return
 
+	var areas: Array[Area3D] = []
+	if node is Area3D:
+		areas.append(node as Area3D)
+	for child in node.find_children("*", "Area3D", true, false):
+		if child is Area3D:
+			areas.append(child as Area3D)
+	for area in areas:
+		area.monitoring = false
+		area.monitorable = false
+		var collision_shape := area.get_node_or_null("CollisionShape3D") as CollisionShape3D
+		if collision_shape != null:
+			collision_shape.disabled = true
+	if not areas.is_empty():
+		await physics_frame
+		await process_frame
+
 	var parent := node.get_parent()
 	if parent != null:
 		parent.remove_child(node)
-	node.free()
+	node.queue_free()
 	await process_frame
+	await physics_frame
 
 
 func _assert(condition: bool, message: String) -> void:

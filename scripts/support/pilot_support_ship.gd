@@ -16,6 +16,12 @@ signal state_changed(support_ship: PilotSupportShip)
 @export_range(0.2, 1.0, 0.01) var support_interference_drive_multiplier := 0.78
 @export_range(0.2, 1.0, 0.01) var support_interference_control_multiplier := 0.72
 @export_range(0.1, 2.5, 0.1) var gate_disruption_duration := 0.65
+@export_group("Target Readability")
+@export_range(0.6, 2.4, 0.05) var target_indicator_height := 1.3
+@export_range(0.0, 0.4, 0.01) var target_indicator_bob_height := 0.08
+@export_range(1.0, 12.0, 0.5) var target_indicator_pulse_speed := 4.8
+@export_range(0.0, 0.3, 0.01) var target_indicator_pulse_amount := 0.18
+@export_range(0.05, 0.5, 0.01) var target_indicator_size := 0.18
 
 var owner_robot: RobotBase = null
 var allied_robot: RobotBase = null
@@ -24,6 +30,8 @@ var _support_payload_name := ""
 var _lane_progress := 0.0
 var _gate_disruption_time_left := 0.0
 var _status_pulse_phase := 0.0
+var _selected_target_robot: RobotBase = null
+var _target_indicator_phase := 0.0
 
 @onready var hull_visual: MeshInstance3D = $HullVisual
 @onready var glow_visual: MeshInstance3D = $GlowVisual
@@ -37,6 +45,7 @@ func _ready() -> void:
 	_duplicate_runtime_material(glow_visual)
 	_duplicate_runtime_material(status_ring_visual)
 	_duplicate_runtime_material(status_pulse_visual)
+	_ensure_support_target_indicator()
 	_refresh_visuals()
 
 
@@ -54,6 +63,7 @@ func configure(
 		global_position = arena.get_support_lane_position_from_progress(_lane_progress)
 	else:
 		global_position = spawn_position
+	_refresh_target_selection(true)
 	_refresh_visuals()
 
 
@@ -68,8 +78,18 @@ func get_status_summary() -> String:
 	var payload_label := get_support_payload_label()
 	if payload_label != "":
 		summary += " %s" % payload_label
+		var target_label := _get_selected_target_label()
+		if target_label != "":
+			summary += " > %s" % target_label
 
 	return summary
+
+
+func get_selected_target_robot() -> RobotBase:
+	if not is_instance_valid(_selected_target_robot):
+		return null
+
+	return _selected_target_robot
 
 
 func get_support_payload_label() -> String:
@@ -85,38 +105,29 @@ func store_support_payload(payload_name: String) -> bool:
 		return false
 
 	_support_payload_name = payload_name
+	_refresh_target_selection(true)
 	_refresh_visuals()
 	state_changed.emit(self)
 	return true
 
 
 func use_support_payload() -> bool:
-	var target_robot: RobotBase = null
+	var target_robot := _resolve_support_target_for_payload()
+	if target_robot == null:
+		return false
 
 	match _support_payload_name:
 		PilotSupportPickup.PAYLOAD_STABILIZER:
-			target_robot = _resolve_support_target()
-			if target_robot == null:
-				return false
 			var repaired_part := target_robot.repair_most_damaged_part(target_robot.max_part_health * support_repair_ratio)
 			if repaired_part == "":
 				return false
 		PilotSupportPickup.PAYLOAD_SURGE:
-			target_robot = _resolve_support_target()
-			if target_robot == null:
-				return false
 			if not target_robot.apply_energy_surge(support_energy_surge_duration):
 				return false
 		PilotSupportPickup.PAYLOAD_MOBILITY:
-			target_robot = _resolve_support_target()
-			if target_robot == null:
-				return false
 			if not target_robot.apply_mobility_boost(support_mobility_boost_duration):
 				return false
 		PilotSupportPickup.PAYLOAD_INTERFERENCE:
-			target_robot = _resolve_enemy_interference_target()
-			if target_robot == null:
-				return false
 			if not target_robot.apply_control_zone_suppression(
 				support_interference_duration,
 				support_interference_drive_multiplier,
@@ -127,6 +138,7 @@ func use_support_payload() -> bool:
 			return false
 
 	_support_payload_name = ""
+	_set_selected_target(null)
 	_refresh_visuals()
 	state_changed.emit(self)
 	return true
@@ -141,12 +153,17 @@ func _physics_process(delta: float) -> void:
 	var was_gate_disrupted := is_gate_disrupted()
 	_gate_disruption_time_left = maxf(_gate_disruption_time_left - delta, 0.0)
 	_update_movement(delta)
+	var target_selection_changed := _update_target_selection_from_input()
+	target_selection_changed = _refresh_target_selection() or target_selection_changed
 	_update_status_beacon(delta)
+	_update_target_indicator(delta)
 	_try_collect_support_pickup()
 	if owner_robot.is_player_support_action_just_pressed():
 		use_support_payload()
 	if was_gate_disrupted != is_gate_disrupted():
 		_refresh_visuals()
+		state_changed.emit(self)
+	elif target_selection_changed:
 		state_changed.emit(self)
 
 
@@ -191,29 +208,15 @@ func _try_collect_support_pickup() -> void:
 			return
 
 
-func _resolve_support_target() -> RobotBase:
-	if is_instance_valid(allied_robot) and allied_robot.is_held_for_round_reset() == false:
-		return allied_robot
-
-	if owner_robot == null:
+func _resolve_support_target_for_payload() -> RobotBase:
+	var target_robot := get_selected_target_robot()
+	if target_robot == null:
 		return null
-	if owner_robot.get_parent() == null:
-		return null
+	if _support_payload_name == PilotSupportPickup.PAYLOAD_INTERFERENCE:
+		if not _is_target_in_interference_range(target_robot):
+			return null
 
-	for sibling in owner_robot.get_parent().get_children():
-		if not (sibling is RobotBase):
-			continue
-		if sibling == owner_robot:
-			continue
-
-		var allied_candidate := sibling as RobotBase
-		if allied_candidate.is_held_for_round_reset():
-			continue
-		if owner_robot.is_ally_of(allied_candidate):
-			allied_robot = allied_candidate
-			return allied_robot
-
-	return null
+	return target_robot
 
 
 func _refresh_visuals() -> void:
@@ -248,36 +251,208 @@ func _get_support_payload_color() -> Color:
 	return Color(0.98, 0.8, 0.28, 1.0)
 
 
-func _resolve_enemy_interference_target() -> RobotBase:
-	if owner_robot == null:
-		return null
-	if owner_robot.get_parent() == null:
-		return null
+func _get_selected_target_label() -> String:
+	var target_robot := get_selected_target_robot()
+	if target_robot == null:
+		return ""
 
-	var nearest_enemy: RobotBase = null
-	var nearest_distance := support_interference_range
+	return target_robot.display_name
+
+
+func _update_target_selection_from_input() -> bool:
+	if not has_support_payload():
+		return false
+	if owner_robot == null:
+		return false
+
+	var selection_direction := 0
+	if owner_robot.is_player_support_prev_just_pressed():
+		selection_direction = -1
+	elif owner_robot.is_player_support_next_just_pressed():
+		selection_direction = 1
+	if selection_direction == 0:
+		return false
+
+	return _cycle_selected_target(selection_direction)
+
+
+func _refresh_target_selection(force_default: bool = false) -> bool:
+	if not has_support_payload():
+		return _set_selected_target(null)
+
+	var candidates := _get_support_target_candidates()
+	if candidates.is_empty():
+		return _set_selected_target(null)
+	if force_default or not _contains_support_target(candidates, _selected_target_robot):
+		return _set_selected_target(_get_default_support_target(candidates))
+
+	return false
+
+
+func _cycle_selected_target(direction: int) -> bool:
+	var candidates := _get_support_target_candidates()
+	if candidates.is_empty():
+		return _set_selected_target(null)
+	if candidates.size() == 1:
+		return _set_selected_target(candidates[0])
+	if not _contains_support_target(candidates, _selected_target_robot):
+		return _set_selected_target(_get_default_support_target(candidates))
+
+	var current_index := candidates.find(_selected_target_robot)
+	if current_index < 0:
+		return _set_selected_target(_get_default_support_target(candidates))
+
+	var next_index := wrapi(current_index + direction, 0, candidates.size())
+	return _set_selected_target(candidates[next_index])
+
+
+func _get_support_target_candidates() -> Array[RobotBase]:
+	var candidates: Array[RobotBase] = []
+	if owner_robot == null or owner_robot.get_parent() == null:
+		return candidates
+
+	var wants_enemy_target := _support_payload_name == PilotSupportPickup.PAYLOAD_INTERFERENCE
 	for sibling in owner_robot.get_parent().get_children():
 		if not (sibling is RobotBase):
 			continue
 
-		var enemy_candidate := sibling as RobotBase
-		if enemy_candidate == owner_robot:
+		var candidate := sibling as RobotBase
+		if candidate == owner_robot:
 			continue
-		if enemy_candidate.is_held_for_round_reset() or enemy_candidate.is_disabled_state():
+		if candidate.is_held_for_round_reset() or candidate.is_disabled_state():
 			continue
-		if owner_robot.is_ally_of(enemy_candidate):
+		if wants_enemy_target:
+			if owner_robot.is_ally_of(candidate):
+				continue
+		elif not owner_robot.is_ally_of(candidate):
 			continue
 
-		var planar_offset := enemy_candidate.global_position - global_position
+		candidates.append(candidate)
+
+	candidates.sort_custom(_compare_support_targets)
+	return candidates
+
+
+func _get_default_support_target(candidates: Array[RobotBase]) -> RobotBase:
+	if candidates.is_empty():
+		return null
+	if _support_payload_name != PilotSupportPickup.PAYLOAD_INTERFERENCE:
+		if _contains_support_target(candidates, allied_robot):
+			return allied_robot
+		return candidates[0]
+
+	var nearest_target := candidates[0]
+	var nearest_distance := INF
+	for candidate in candidates:
+		var planar_offset := candidate.global_position - global_position
 		planar_offset.y = 0.0
-		var distance := planar_offset.length()
-		if distance > nearest_distance:
-			continue
+		var distance := planar_offset.length_squared()
+		if distance < nearest_distance:
+			nearest_distance = distance
+			nearest_target = candidate
 
-		nearest_enemy = enemy_candidate
-		nearest_distance = distance
+	return nearest_target
 
-	return nearest_enemy
+
+func _contains_support_target(candidates: Array[RobotBase], target_robot: RobotBase) -> bool:
+	if not is_instance_valid(target_robot):
+		return false
+
+	return candidates.find(target_robot) >= 0
+
+
+func _set_selected_target(target_robot: RobotBase) -> bool:
+	if not is_instance_valid(target_robot):
+		target_robot = null
+	if _selected_target_robot == target_robot:
+		return false
+
+	_selected_target_robot = target_robot
+	if target_robot != null and owner_robot != null and owner_robot.is_ally_of(target_robot):
+		allied_robot = target_robot
+	return true
+
+
+func _compare_support_targets(left: RobotBase, right: RobotBase) -> bool:
+	if left == null:
+		return false
+	if right == null:
+		return true
+	if left.player_index != right.player_index:
+		return left.player_index < right.player_index
+
+	return left.get_instance_id() < right.get_instance_id()
+
+
+func _ensure_support_target_indicator() -> void:
+	if get_node_or_null("SupportTargetIndicator") != null:
+		return
+
+	var indicator := MeshInstance3D.new()
+	indicator.name = "SupportTargetIndicator"
+	var box_mesh := BoxMesh.new()
+	box_mesh.size = Vector3.ONE * target_indicator_size
+	indicator.mesh = box_mesh
+	indicator.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	indicator.rotation_degrees = Vector3(0.0, 45.0, 45.0)
+	indicator.visible = false
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.emission_enabled = true
+	material.roughness = 0.15
+	indicator.material_override = material
+	add_child(indicator)
+
+
+func _update_target_indicator(delta: float) -> void:
+	var indicator := get_node_or_null("SupportTargetIndicator") as MeshInstance3D
+	if indicator == null:
+		return
+
+	var target_robot := get_selected_target_robot()
+	if not has_support_payload() or target_robot == null:
+		indicator.visible = false
+		_target_indicator_phase = 0.0
+		return
+
+	_target_indicator_phase = wrapf(
+		_target_indicator_phase + delta * target_indicator_pulse_speed,
+		0.0,
+		TAU
+	)
+	var bob_offset := sin(_target_indicator_phase) * target_indicator_bob_height
+	var pulse_scale := 1.0 + sin(_target_indicator_phase) * target_indicator_pulse_amount
+	indicator.visible = true
+	indicator.global_position = target_robot.global_position + Vector3(0.0, target_indicator_height + bob_offset, 0.0)
+	indicator.scale = Vector3.ONE * pulse_scale
+	indicator.rotation_degrees = Vector3(0.0, 45.0 + rad_to_deg(_target_indicator_phase) * 0.12, 45.0)
+
+	var accent_color := _get_support_payload_color()
+	var in_range := _support_payload_name != PilotSupportPickup.PAYLOAD_INTERFERENCE or _is_target_in_interference_range(target_robot)
+	var material := indicator.material_override as StandardMaterial3D
+	if material == null:
+		return
+
+	var indicator_color := accent_color
+	var emission_boost := 1.3
+	if not in_range:
+		indicator_color = accent_color.darkened(0.38)
+		indicator_color.a = 0.65
+		emission_boost = 0.45
+
+	material.albedo_color = indicator_color
+	material.emission = indicator_color
+	material.emission_energy_multiplier = emission_boost
+
+
+func _is_target_in_interference_range(target_robot: RobotBase) -> bool:
+	if target_robot == null:
+		return false
+
+	var planar_offset := target_robot.global_position - global_position
+	planar_offset.y = 0.0
+	return planar_offset.length() <= support_interference_range
 
 
 func _apply_color_to_visual(visual: MeshInstance3D, color: Color, enable_emission: bool) -> void:

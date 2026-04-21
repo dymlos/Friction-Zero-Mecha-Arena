@@ -764,6 +764,14 @@ func is_player_support_action_just_pressed() -> bool:
 	return _is_throw_part_just_pressed()
 
 
+func is_player_support_prev_just_pressed() -> bool:
+	return _is_energy_prev_just_pressed()
+
+
+func is_player_support_next_just_pressed() -> bool:
+	return _is_energy_next_just_pressed()
+
+
 func apply_runtime_loadout(
 	next_archetype_config: RobotArchetypeConfig,
 	next_control_mode: ControlMode

@@ -322,6 +322,24 @@ func _cleanup_node(node: Node) -> void:
 	if not is_instance_valid(node):
 		return
 
+	var areas: Array[Area3D] = []
+	if node is Area3D:
+		areas.append(node as Area3D)
+	for child in node.find_children("*", "Area3D", true, false):
+		if child is Area3D:
+			areas.append(child as Area3D)
+	for area in areas:
+		area.monitoring = false
+		area.monitorable = false
+		var collision_shape := area.get_node_or_null("CollisionShape3D") as CollisionShape3D
+		if collision_shape != null:
+			collision_shape.disabled = true
+	if not areas.is_empty():
+		await physics_frame
+		await process_frame
+		await physics_frame
+		await process_frame
+
 	var parent := node.get_parent()
 	if parent != null:
 		parent.remove_child(node)

@@ -401,6 +401,10 @@
    - `RobotBase` ahora suma `CarryReturnIndicator`, una aguja corta junto al marker de carga que se tiñe con el color del dueño original y rota hacia ese robot mientras la `DetachedPart` sigue en mano.
    - Motivo: aun con `CarryOwnerIndicator`, en movimiento rapido seguia faltando una lectura inmediata de “adonde va esto”. Resolverlo dentro del mismo paquete visual del portador mantiene el rescate legible sin abrir HUD ni lineas tether ruidosas entre robots.
 
+92. **El soporte post-muerte selecciona objetivo sobre el mismo input secundario, no por auto-pick opaco**
+   - `PilotSupportShip` ahora usa `RobotBase.is_player_support_prev_just_pressed()/next_just_pressed()` para ciclar aliados o rivales validos segun el payload cargado, resume `apoyo <payload> > <objetivo>` en el roster y crea un `SupportTargetIndicator` diegetico sobre el robot apuntado; `interferencia` solo se consume si ese objetivo seleccionado entra en rango.
+   - Motivo: la capa externa ya tenia cargas y rutas, pero seguia faltando una decision tactica explicita y legible. Reusar `energy_prev/next` evita abrir otra UI o mas botones, mientras el indicador en mundo aclara adonde va a caer el apoyo sin volver ruidosa la pantalla compartida.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

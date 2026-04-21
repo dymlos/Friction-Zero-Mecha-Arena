@@ -232,6 +232,7 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 				)
 
 				var enemy_robot := robots[2]
+				var second_enemy_robot := robots[3]
 				_assert(
 					enemy_robot.has_method("is_control_zone_suppressed"),
 					"La interferencia ligera deberia reutilizar el contrato de supresion legible ya expuesto por RobotBase."
@@ -246,9 +247,44 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					"Si no hay un rival cerca del carril, la carga de interferencia deberia seguir disponible."
 				)
 
-				enemy_robot.global_position = support_ship.global_position + Vector3(2.0, 0.35, 0.0)
+				enemy_robot.global_position = support_ship.global_position + Vector3(1.2, 0.35, 0.0)
+				second_enemy_robot.global_position = support_ship.global_position + Vector3(2.2, 0.35, 0.0)
 				enemy_robot.velocity = Vector3.ZERO
+				second_enemy_robot.velocity = Vector3.ZERO
 				await _wait_physics_frames(2)
+
+				_assert(
+					support_ship.has_method("get_selected_target_robot"),
+					"La nave de apoyo deberia exponer el objetivo seleccionado para que el soporte tactico pueda leerse y validarse."
+				)
+				_assert(
+					support_ship.get_node_or_null("SupportTargetIndicator") != null,
+					"La nave de apoyo deberia mostrar un indicador diegetico sobre el objetivo seleccionado."
+				)
+				if support_ship.has_method("get_selected_target_robot"):
+					_assert(
+						support_ship.call("get_selected_target_robot") == enemy_robot,
+						"La interferencia deberia apuntar por defecto al rival valido mas cercano al carril."
+					)
+				_assert(
+					roster_label.text.contains(enemy_robot.display_name),
+					"El roster deberia dejar visible a que rival apunta la interferencia cargada."
+				)
+
+				Input.action_press("p2_energy_next")
+				await _wait_frames(2)
+				Input.action_release("p2_energy_next")
+				await _wait_frames(2)
+
+				if support_ship.has_method("get_selected_target_robot"):
+					_assert(
+						support_ship.call("get_selected_target_robot") == second_enemy_robot,
+						"El jugador eliminado deberia poder ciclar el objetivo de interferencia entre rivales validos."
+					)
+				_assert(
+					roster_label.text.contains(second_enemy_robot.display_name),
+					"Tras ciclar el objetivo, el roster deberia actualizar el rival seleccionado."
+				)
 
 				Input.action_press("p2_throw_part")
 				await _wait_frames(2)
@@ -257,8 +293,13 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 
 				if enemy_robot.has_method("is_control_zone_suppressed"):
 					_assert(
-						bool(enemy_robot.call("is_control_zone_suppressed")),
-						"La carga de interferencia deberia aplicar una supresion breve al rival cercano al carril."
+						not bool(enemy_robot.call("is_control_zone_suppressed")),
+						"Tras ciclar el objetivo, la interferencia no deberia quedarse pegada al rival previo."
+					)
+				if second_enemy_robot.has_method("is_control_zone_suppressed"):
+					_assert(
+						bool(second_enemy_robot.call("is_control_zone_suppressed")),
+						"La carga de interferencia deberia aplicarse sobre el rival actualmente seleccionado."
 					)
 				_assert(
 					not roster_label.text.contains("apoyo interferencia"),
