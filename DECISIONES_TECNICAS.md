@@ -70,6 +70,10 @@
    - `DetachedPart` conserva el ultimo portador solo para el momento de perderse al vacio; `Main` usa ese dato para convertir `recovery_lost = "void"` en `negaciones N` unicamente si quien la niega no es aliado del dueño original.
    - Motivo: el loop rescate/negacion ya tenia el evento correcto; reaprovecharlo mantiene la regla simple, evita duplicar estado en runtime y vuelve el cierre de partida mas explicativo sin otra UI.
 
+83. **Los “replay snippets” del prototipo viven como momentos textuales dentro del cierre existente**
+   - `MatchController` conserva tambien el primer y el ultimo resumen completo de eliminacion de cada ronda para exponer `Momento inicial | ...` y `Momento final | ...` en `RecapPanel` y `MatchResultPanel`; si solo hubo una baja relevante, colapsa a `Momento clave | ...`.
+   - Motivo: el documento pedia una pista de jugadas importantes al final, pero grabar replay real todavia seria demasiado costoso; reusar la telemetria de bajas da un cierre mas memorable sin otra escena, sin buffers de input/video y sin romper la claridad del HUD.
+
 16. **Ajuste de ritmo de duelo via parámetros exportados**
    - Se prefirió reajustar el duelo 2P ajustando `RobotBase` en lugar de agregar una mecánica nueva.
    - Motivo: el equilibrio de inercia, alcance/impulso y daño de choque define la sensación principal del prototipo sin comprometer la simplicidad técnica existente.

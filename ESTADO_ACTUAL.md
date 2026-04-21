@@ -103,6 +103,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - el pulso vive en el propio marcador y se limpia al restaurar partes, explotar o respawnear
 - recap de cierre visible solo fuera del combate:
   - `MatchController` ahora expone un recap estructurado (`Decision`, `Marcador` y estado final por robot) para la ronda o partida cerrada
+  - ese mismo cierre ahora reutiliza la primera y la ultima baja completas como `Momento inicial | ...` / `Momento final | ...`, ofreciendo snippets textuales de jugadas importantes sin un sistema de replay aparte
   - `MatchHud` lo dibuja en un `RecapPanel` lateral oculto durante la ronda activa, de modo que la pelea sigue limpia y el detalle aparece solo cuando ya importa entender por que se perdio
 - cierre de partida reforzado sin salir del laboratorio:
   - cuando el match termina, `MatchHud` ahora suma un `MatchResultPanel` centrado con `Partida cerrada`, ganador, marcador final, lineas `Stats | Equipo ...` y `Reinicio | F5 ahora o Xs`
@@ -382,7 +383,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - La nueva lectura de daño es deliberadamente simple: combina marcadores geométricos sobrios (`Smoke`/`Spark`) con poses flojas por extremidad, no partículas finales ni VFX de producción. Falta playtestear si alcanza o si conviene enriquecer humo/chispas sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya no es solo “ganador + reinicio”: ahora suma stats simples por competidor (`rescates`, `borde`, `partes perdidas` por tipo y `bajas` por causa) dentro del mismo HUD; sigue faltando decidir por playtest si esa telemetria ya basta o si la version final pide otra capa de post-partida.
-- La nueva lectura de bajas ya suma `Resumen | ...`, `RecapPanel`, `MatchResultPanel` y ahora `Stats | ...` con desgaste modular; todavía falta validar en playtest si ese contrato ya alcanza o si la versión final necesita una pantalla/post-partida más fuerte o un replay corto.
+- La nueva lectura de bajas ya suma `Resumen | ...`, `Momento inicial/final`, `RecapPanel`, `MatchResultPanel` y ahora `Stats | ...` con desgaste modular; todavía falta validar en playtest si ese contrato ya alcanza o si la versión final necesita una pantalla/post-partida más fuerte o un replay corto.
 - La regression reciente del soporte Teams ya quedo cerrada:
   - el gasto de payload ya no depende de esperar al siguiente `_physics_process()` para apagar marca alta, marca de piso o radio de `interferencia`
   - la suite completa vuelve a pasar en una sola corrida headless, lo que deja el slice post-muerte mas confiable para futuras iteraciones

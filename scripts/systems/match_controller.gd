@@ -33,6 +33,7 @@ var _round_eliminated_robot_ids: Dictionary = {}
 var _round_elimination_source_robot_ids: Dictionary = {}
 var _round_elimination_order_by_robot_id: Dictionary = {}
 var _round_elimination_recap_entries: Array[String] = []
+var _round_elimination_highlight_entries: Array[String] = []
 var _competitor_scores: Dictionary = {}
 var _competitor_labels: Dictionary = {}
 var _competitor_archetype_labels: Dictionary = {}
@@ -90,6 +91,7 @@ func start_match() -> void:
 	_round_elimination_source_robot_ids.clear()
 	_round_elimination_order_by_robot_id.clear()
 	_round_elimination_recap_entries.clear()
+	_round_elimination_highlight_entries.clear()
 	_last_elimination_summary = ""
 	_competitor_scores.clear()
 	_competitor_labels.clear()
@@ -282,6 +284,7 @@ func get_round_recap_panel_lines() -> Array[String]:
 		lines.append(tiebreaker_line)
 	if _match_over:
 		lines.append_array(_build_match_stats_lines())
+	lines.append_array(_build_round_highlight_lines())
 
 	for robot in registered_robots:
 		if not is_instance_valid(robot):
@@ -321,6 +324,7 @@ func get_match_result_lines() -> Array[String]:
 	if tiebreaker_line != "":
 		lines.append(tiebreaker_line)
 	lines.append_array(_build_match_stats_lines())
+	lines.append_array(_build_round_highlight_lines())
 
 	if _last_elimination_summary != "":
 		lines.append("Cierre | %s" % _last_elimination_summary)
@@ -471,6 +475,7 @@ func record_robot_elimination(
 	_round_elimination_order_by_robot_id[robot_id] = _round_elimination_order_by_robot_id.size() + 1
 	_round_elimination_recap_entries.append(_build_compact_elimination_summary(robot, cause, source_robot))
 	_last_elimination_summary = _build_elimination_summary(robot, cause, source_robot)
+	_round_elimination_highlight_entries.append(_last_elimination_summary)
 	_record_elimination_stats(robot, cause)
 	robot.hold_for_round_reset()
 
@@ -779,6 +784,24 @@ func _build_compact_elimination_summary(
 	return _build_elimination_summary(robot, cause, source_robot)
 
 
+func _build_round_highlight_lines() -> Array[String]:
+	if _round_active:
+		return []
+	if _round_elimination_highlight_entries.is_empty():
+		return []
+
+	var lines: Array[String] = []
+	var first_highlight := str(_round_elimination_highlight_entries.front())
+	var last_highlight := str(_round_elimination_highlight_entries.back())
+	if first_highlight == last_highlight:
+		lines.append("Momento clave | %s" % first_highlight)
+		return lines
+
+	lines.append("Momento inicial | %s" % first_highlight)
+	lines.append("Momento final | %s" % last_highlight)
+	return lines
+
+
 func _build_ffa_standings_line() -> String:
 	if match_mode != MatchMode.FFA:
 		return ""
@@ -1043,6 +1066,7 @@ func _reset_round() -> void:
 	_round_eliminated_robot_ids.clear()
 	_round_elimination_order_by_robot_id.clear()
 	_round_elimination_recap_entries.clear()
+	_round_elimination_highlight_entries.clear()
 	_last_elimination_summary = ""
 	_robot_support_state.clear()
 	_round_number += 1
