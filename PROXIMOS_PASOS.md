@@ -74,7 +74,7 @@
    - usar `main_teams_validation.tscn` y `main_ffa_validation.tscn` como rutas rapidas base antes de tocar `main.tscn` o `main_ffa.tscn`.
    - ajuste fino de valores de aceleracion, damping, empuje y danio usando esas escenas cortas para iterar mas rapido antes de tocar los laboratorios largos.
    - medir si el reset corto de ronda y el reinicio de match dejan suficiente tiempo de lectura o si necesitan delays algo mayores
-   - aislar los warnings Jolt que todavia aparecen en `scripts/tests/edge_charge_pickup_test.gd`; `PulseBolt` ya apaga hitbox antes del free, asi que el ruido restante probablemente vive en otro teardown de `Area3D`.
+   - mantener una corrida completa `scripts/tests/*.gd` como chequeo de regresion rapida cuando se toque soporte Teams o teardown de escenas, porque el bug reciente del `SupportTargetFloorIndicator` solo aparecia en suite completa y no en ejecuciones aisladas.
 
 11. **Profundizar el soporte Hard sin convertirlo en requisito**
    - direccionar mejor ataques/skills futuros usando la nueva referencia de torso

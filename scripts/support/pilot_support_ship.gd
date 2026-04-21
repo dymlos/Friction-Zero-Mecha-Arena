@@ -56,6 +56,7 @@ func _ready() -> void:
 	_ensure_support_target_floor_indicator()
 	_ensure_interference_range_indicator()
 	_refresh_visuals()
+	_refresh_support_target_visuals()
 
 
 func configure(
@@ -74,6 +75,7 @@ func configure(
 		global_position = spawn_position
 	_refresh_target_selection(true)
 	_refresh_visuals()
+	_refresh_support_target_visuals()
 
 
 func belongs_to_owner(robot: RobotBase) -> bool:
@@ -118,6 +120,7 @@ func store_support_payload(payload_name: String) -> bool:
 	_support_payload_name = payload_name
 	_refresh_target_selection(true)
 	_refresh_visuals()
+	_refresh_support_target_visuals()
 	state_changed.emit(self)
 	return true
 
@@ -151,6 +154,7 @@ func use_support_payload() -> bool:
 	_support_payload_name = ""
 	_set_selected_target(null)
 	_refresh_visuals()
+	_refresh_support_target_visuals()
 	state_changed.emit(self)
 	return true
 
@@ -384,6 +388,7 @@ func _set_selected_target(target_robot: RobotBase) -> bool:
 	_selected_target_robot = target_robot
 	if target_robot != null and owner_robot != null and owner_robot.is_ally_of(target_robot):
 		allied_robot = target_robot
+	_refresh_support_target_visuals()
 	return true
 
 
@@ -585,6 +590,12 @@ func _update_interference_range_indicator() -> void:
 	material.albedo_color = indicator_color
 	material.emission = accent_color
 	material.emission_energy_multiplier = emission_boost
+
+
+func _refresh_support_target_visuals() -> void:
+	_update_target_indicator(0.0)
+	_update_target_floor_indicator()
+	_update_interference_range_indicator()
 
 
 func _is_target_in_interference_range(target_robot: RobotBase) -> bool:

@@ -445,6 +445,10 @@
    - `PilotSupportShip` ahora crea `SupportTargetFloorIndicator` runtime: un anillo fino y top-level que sigue al robot seleccionado, reaprovecha el color del payload y tambien se atenúa cuando `interferencia` sigue fuera de rango.
    - Motivo: el marcador flotante resolvia “quien” pero no siempre “donde” en caos de pantalla compartida. Una marca sobria pegada al piso mantiene el target legible sin HUD extra ni tether entre nave y robot.
 
+96. **Los cues de soporte se refrescan al cambiar estado, no solo por tick fisico**
+   - `PilotSupportShip` ahora centraliza `_refresh_support_target_visuals()` y lo invoca al configurar la nave, guardar/gastar payload y cambiar target seleccionado.
+   - Motivo: el estado logico del soporte podia quedar un frame por delante de `SupportTargetIndicator`, `SupportTargetFloorIndicator` e `InterferenceRangeIndicator`, dejando telegraphs stale en tests headless y reinicios cortos. Sincronizarlos en el mismo punto donde cambia el estado corrige la causa real sin sumar timers ni waits artificiales.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

@@ -46,6 +46,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - la nave ahora suma un `StatusBeacon` diegetico sobre el casco; mantiene un aro visible en idle y enciende un pulso/acento al cargar `payload` o quedar `interferida`, reforzando la lectura del carril sin HUD nuevo
   - cuando lleva payload, la nave ahora tambien puede ciclar objetivo con `energy_prev/next`; el roster expone `apoyo <payload> > <objetivo>`, un `SupportTargetIndicator` sobrio marca sobre el robot apuntado y `SupportTargetFloorIndicator` refuerza ese mismo target a nivel piso para que siga leyendose en pantalla compartida
   - cuando la carga equipada es `interferencia`, la nave tambien dibuja `InterferenceRangeIndicator`: un anillo sobrio sobre el piso, centrado en el ship y escalado con `support_interference_range`, que baja intensidad si el objetivo seleccionado aun queda fuera del radio real
+  - esos tres cues (`SupportTargetIndicator`, `SupportTargetFloorIndicator`, `InterferenceRangeIndicator`) ahora tambien se sincronizan inmediatamente al guardar/gastar payload o al cambiar target, evitando un frame stale donde el mundo seguia mostrando una ayuda ya consumida
   - ese mismo roster ahora tambien recuerda el mapping real del soporte (`usa ... | objetivo ...`) segun el perfil del jugador eliminado, para que la nave siga siendo descubrible sin abrir otro panel
   - `FFA` mantiene la misma estructura base pero nunca instancia naves ni activa esos pickups, para no contaminar su identidad de supervivencia/oportunismo
 - laboratorio FFA dedicado en `scenes/main/main_ffa.tscn`, reutilizando la misma arena/shared screen pero con `match_mode=FFA` y bootstrap que neutraliza las alianzas del layout 2v2 para que cada robot compita por su cuenta; ese mismo laboratorio ahora reemplaza los slots de `Grua` y `Cizalla` por `Aguja` y `Ancla` para probar poke + control/zona sin romper el 2v2 base
@@ -368,6 +369,9 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya no es solo “ganador + reinicio”: ahora suma stats simples por competidor (`rescates`, `borde`, `partes perdidas` por tipo y `bajas` por causa) dentro del mismo HUD; sigue faltando decidir por playtest si esa telemetria ya basta o si la version final pide otra capa de post-partida.
 - La nueva lectura de bajas ya suma `Resumen | ...`, `RecapPanel`, `MatchResultPanel` y ahora `Stats | ...` con desgaste modular; todavía falta validar en playtest si ese contrato ya alcanza o si la versión final necesita una pantalla/post-partida más fuerte o un replay corto.
+- La regression reciente del soporte Teams ya quedo cerrada:
+  - el gasto de payload ya no depende de esperar al siguiente `_physics_process()` para apagar marca alta, marca de piso o radio de `interferencia`
+  - la suite completa vuelve a pasar en una sola corrida headless, lo que deja el slice post-muerte mas confiable para futuras iteraciones
 - Se agregó el primer pickup universal de movilidad:
   - existe una escena nueva `edge_mobility_pickup.tscn` con pedestal persistente y cooldown visible
   - al tocarla, `RobotBase` activa una ventana breve de movilidad reforzada (`traccion + control`) sin tocar el sistema de energía ni agregar UI pesada
