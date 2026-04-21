@@ -106,6 +106,8 @@ func get_round_state_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	if _last_elimination_summary != "":
+		lines.append("Ultima baja | %s" % _last_elimination_summary)
 	if is_space_reduction_active():
 		lines.append("Arena cerrandose | %s%%" % int(round(get_current_play_area_scale() * 100.0)))
 	return lines
@@ -207,16 +209,25 @@ func _build_robot_status_line(robot: RobotBase) -> String:
 	var control_label := "P%s" % robot.player_index if robot.is_player_controlled else "CPU"
 	var state_label := "Activo"
 	var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
+	var state_detail := ""
 	if is_robot_eliminated(robot):
 		state_label = "Fuera"
+		state_detail = _get_elimination_cause_label(_get_robot_elimination_cause(robot))
 	elif robot.is_disabled_state():
 		state_label = "Inutilizado"
+		var explosion_time_left := robot.get_disabled_explosion_time_left()
+		if explosion_time_left > 0.0:
+			state_detail = "explota %.1fs" % snappedf(explosion_time_left, 0.1)
+
+	var state_segment := state_label
+	if state_detail != "":
+		state_segment += " | %s" % state_detail
 
 	var line := "%s %s | %s | %s | %s/4 partes" % [
 		control_label,
 		robot.display_name,
 		mode_label,
-		state_label,
+		state_segment,
 		robot.get_active_part_count(),
 	]
 	if robot.is_player_controlled:
@@ -273,6 +284,24 @@ func _get_competitor_label_from_key(competitor_key: String) -> String:
 func _build_elimination_summary(robot: RobotBase, cause: EliminationCause) -> String:
 	var cause_label := "cayo al vacio" if cause == EliminationCause.VOID else "explosiono tras quedar inutilizado"
 	return "%s %s" % [robot.display_name, cause_label]
+
+
+func _get_robot_elimination_cause(robot: RobotBase) -> int:
+	if robot == null:
+		return -1
+	if not _round_eliminated_robot_ids.has(robot.get_instance_id()):
+		return -1
+
+	return int(_round_eliminated_robot_ids[robot.get_instance_id()])
+
+
+func _get_elimination_cause_label(cause: int) -> String:
+	if cause == EliminationCause.VOID:
+		return "vacio"
+	if cause == EliminationCause.EXPLOSION:
+		return "explosion"
+
+	return ""
 
 
 func _find_last_competitor_standing() -> String:

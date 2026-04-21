@@ -36,6 +36,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - incentivo real de borde: el arena blockout ahora tiene pickups de reparacion instantanea en los flancos; curan la parte activa mas dañada, obligan a exponerse cerca del vacio para estabilizarse y siguen el borde vivo cuando la arena se contrae
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
 - HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia y si un robot transporta una parte
+- lectura de eliminacion compacta en el mismo HUD:
+  - robots inutilizados muestran cuenta atras breve de explosion en el roster
+  - robots fuera conservan causa corta (`vacio` o `explosion`)
+  - el bloque superior recuerda la ultima baja con `Ultima baja | ...`
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
 - indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
@@ -49,6 +53,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - Se hizo visible el modo activo del laboratorio en el HUD de ronda:
   - `MatchController.get_round_state_lines()` ahora agrega `Modo | FFA` o `Modo | Equipos`
   - esto deja claro que `main_ffa.tscn` no es solo “la misma escena con otros scores”, sino un laboratorio libre ya legible desde el estado principal
+- Se reforzo la lectura de bajas sin sumar HUD nuevo:
+  - `MatchController.get_robot_status_lines()` ahora deja visible `Inutilizado | explota Xs` mientras un robot espera su explosion diferida
+  - al quedar fuera, el roster conserva la causa corta (`vacio` o `explosion`) y el bloque superior agrega `Ultima baja | ...`
+  - esto cubre mejor la necesidad de “entender por que perdi” con la misma capa compacta que ya usaba el laboratorio
 - Se cubrió el cierre real de ronda FFA en la escena dedicada:
   - `ffa_round_resolution_test.gd` elimina tres robots en `main_ffa.tscn`
   - valida ganador individual, marcador por robot y persistencia de la línea `Modo | FFA`
@@ -144,6 +152,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_energy_management_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/local_multiplayer_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_completion_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_elimination_readability_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_input_ownership_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/two_vs_two_carry_validation_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/match_round_resolution_test.gd`
@@ -153,7 +162,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_hard_control_mode_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 5`
 
-Resultado: las dieciocho verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: las diecinueve verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
@@ -168,3 +177,4 @@ Resultado: las dieciocho verificaciones dedicadas pasan y el proyecto sigue inic
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats, replay ni explicación explícita de por qué perdió cada jugador.
+- La nueva lectura de bajas mejora la explicación inmediata de la derrota, pero todavía falta validar en playtest si ese contrato compacto alcanza o si la versión final necesita un resumen/post-partida más explícito.

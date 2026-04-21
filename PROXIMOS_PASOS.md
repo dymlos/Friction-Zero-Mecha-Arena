@@ -27,6 +27,7 @@
    - playtestear si `rounds_to_win=3` y `match_restart_delay` dejan leer bien la victoria o si el resultado pasa demasiado rápido.
    - decidir si el reinicio automático debe seguir siendo la solución del laboratorio o si conviene pasar a una espera corta con confirmación/manual restart más adelante.
    - definir si ring-out y destruccion total siguen puntuando igual o si alguno merece bonus/feedback diferencial.
+   - medir si `Ultima baja | ...` + `Fuera | vacio/explosion` + `Inutilizado | explota` ya explican suficientemente bien la derrota inmediata o si la siguiente capa debe ser un resumen corto de post-ronda.
 
 6. **Afinar la nueva presion de arena**
    - playtestear si el inicio del cierre (`space_reduction_start_ratio`) llega demasiado tarde o demasiado pronto.

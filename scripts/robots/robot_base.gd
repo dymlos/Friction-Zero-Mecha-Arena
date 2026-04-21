@@ -280,6 +280,13 @@ func is_disabled_state() -> bool:
 	return _is_disabled
 
 
+func get_disabled_explosion_time_left() -> float:
+	if not _is_disabled:
+		return 0.0
+
+	return maxf(disabled_explosion_timer.time_left, 0.0)
+
+
 func is_carrying_part() -> bool:
 	return is_instance_valid(_carried_part)
 

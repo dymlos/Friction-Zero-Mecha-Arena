@@ -190,6 +190,10 @@
    - `MatchController.get_round_state_lines()` agrega `Modo | FFA` o `Modo | Equipos` antes del objetivo y el marcador.
    - Motivo: una vez que `main.tscn` y `main_ffa.tscn` comparten casi toda la escena, la lectura tiene que dejar visible el modo activo sin depender del nombre del archivo o del contexto externo del playtest.
 
+48. **La explicación de bajas vive en el HUD compacto existente**
+   - `MatchController.get_robot_status_lines()` ahora usa el mismo roster para mostrar `Inutilizado | explota Xs` y `Fuera | vacio/explosion`, mientras `get_round_state_lines()` agrega `Ultima baja | ...`.
+   - Motivo: mejora la lectura de derrota y amenaza inminente en pantalla compartida sin introducir una capa nueva de UI ni romper la prioridad por claridad.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
