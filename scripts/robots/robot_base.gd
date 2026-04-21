@@ -378,6 +378,10 @@ func get_energy_state_summary() -> String:
 	return "Foco %s" % part_label
 
 
+func is_energy_balanced() -> bool:
+	return _is_energy_balanced()
+
+
 func get_combat_forward_vector() -> Vector3:
 	return _get_combat_forward_vector()
 

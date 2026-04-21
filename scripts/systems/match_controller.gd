@@ -99,15 +99,28 @@ func get_last_elimination_summary() -> String:
 	return _last_elimination_summary
 
 
+func get_hud_detail_mode() -> MatchConfig.HudDetailMode:
+	if match_config == null:
+		return MatchConfig.HudDetailMode.EXPLICIT
+
+	return match_config.hud_detail_mode
+
+
+func is_contextual_hud_enabled() -> bool:
+	return get_hud_detail_mode() == MatchConfig.HudDetailMode.CONTEXTUAL
+
+
 func get_team_score(team_id: int) -> int:
 	return int(_competitor_scores.get(_get_team_competitor_key(team_id), 0))
 
 
 func get_round_state_lines() -> Array[String]:
 	var lines: Array[String] = []
+	var contextual_hud := is_contextual_hud_enabled()
 	lines.append(get_round_status_line())
-	lines.append("Modo | %s" % get_match_mode_label())
-	lines.append("Objetivo | Primero a %s" % get_rounds_to_win())
+	if not contextual_hud:
+		lines.append("Modo | %s" % get_match_mode_label())
+		lines.append("Objetivo | Primero a %s" % get_rounds_to_win())
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
@@ -170,11 +183,12 @@ func get_alive_robots() -> Array[RobotBase]:
 
 func get_robot_status_lines() -> Array[String]:
 	var lines: Array[String] = []
+	var contextual_hud := is_contextual_hud_enabled()
 	for robot in registered_robots:
 		if not is_instance_valid(robot):
 			continue
 
-		lines.append(_build_robot_status_line(robot))
+		lines.append(_build_robot_status_line(robot, contextual_hud))
 
 	return lines
 
@@ -223,10 +237,9 @@ func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> Stri
 	return _round_status_line
 
 
-func _build_robot_status_line(robot: RobotBase) -> String:
+func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 	var control_label := "P%s" % robot.player_index if robot.is_player_controlled else "CPU"
 	var state_label := "Activo"
-	var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
 	var state_detail := ""
 	if is_robot_eliminated(robot):
 		state_label = "Fuera"
@@ -243,26 +256,30 @@ func _build_robot_status_line(robot: RobotBase) -> String:
 	if state_detail != "":
 		state_segment += " | %s" % state_detail
 
-	var line := "%s %s | %s | %s | %s/4 partes" % [
-		control_label,
-		robot.display_name,
-		mode_label,
-		state_segment,
-		robot.get_active_part_count(),
-	]
-	if robot.is_player_controlled:
-		line += " | %s" % robot.get_input_hint()
-	line += " | %s" % robot.get_energy_state_summary()
+	var segments: Array[String] = [state_segment]
+	if contextual_hud:
+		if robot.control_mode == RobotBase.ControlMode.HARD:
+			segments.append("Hard")
+		if robot.get_active_part_count() < RobotBase.BODY_PARTS.size():
+			segments.append("%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()])
+		if not robot.is_energy_balanced():
+			segments.append(robot.get_energy_state_summary())
+	else:
+		var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
+		segments = [mode_label, state_segment, "%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()]]
+		if robot.is_player_controlled:
+			segments.append(robot.get_input_hint())
+		segments.append(robot.get_energy_state_summary())
 	if robot.is_energy_surge_active():
-		line += " | energia"
+		segments.append("energia")
 	if robot.is_mobility_boost_active():
-		line += " | impulso"
+		segments.append("impulso")
 	if robot.has_carried_item():
-		line += " | item %s" % robot.get_carried_item_display_name()
+		segments.append("item %s" % robot.get_carried_item_display_name())
 	if robot.is_carrying_part():
-		line += " | carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name())
+		segments.append("carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name()))
 
-	return line
+	return "%s %s | %s" % [control_label, robot.display_name, " | ".join(segments)]
 
 
 func _register_competitor(robot: RobotBase) -> void:

@@ -12,5 +12,6 @@ round_time_seconds = 60
 rounds_to_win = 3
 allow_team_mode = true
 progressive_space_reduction = true
+hud_detail_mode = 0
 default_arena_scene = ExtResource("2_arena")
 default_robot_scene = ExtResource("3_robot")

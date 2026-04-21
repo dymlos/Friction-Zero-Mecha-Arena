@@ -32,10 +32,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
 - Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y, si eso cierra la ronda, queda fuera hasta el reset comun; la variante nacida desde `Overdrive` queda marcada como explosion `inestable`.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, marcadores de humo/chispa por parte dañada, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
+- HUD dual base: `MatchConfig` ya deja alternar entre un modo `explicito` (mantiene `Modo`, `Objetivo`, hints de control, `4/4 partes` y `Eq` siempre visibles) y un modo `contextual` que oculta esa informacion estable y solo vuelve a exponer daño, foco energetico, buffs, items y cargas cuando realmente importan.
 - Lectura de borde reforzada: el mismo HUD compacto ahora añade `Borde | ...` con los tipos activos de pickup de la ronda para que el layout semialeatorio sea legible en playtests sin abrir otra capa de UI.
 - Lectura de eliminacion reforzada: el roster ahora deja visible `Inutilizado | explota Xs` y tambien `Inutilizado | inestable | explota Xs` cuando la baja viene de overdrive; tras la explosion conserva `Fuera | vacio/explosion/explosion inestable`, el bloque superior mantiene `Ultima baja | ...` y, cuando la ronda ya cerro, añade `Resumen | ...` con el orden de bajas para explicar por que se perdio una pieza clave sin sumar otra capa de UI.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
-- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, si la explicacion compacta de bajas (`Ultima baja`, `Resumen | ...`, `Fuera | vacio/explosion/explosion inestable`, `Inutilizado | explota/inestable`) alcanza para explicar derrotas sin HUD extra, si la rotacion semialeatoria controlada de edge pickups vuelve los bordes más tácticos sin transformarlos en zonas seguras permanentes y si el perfil FFA de tres tipos activos por ronda produce supervivencia/oportunismo legibles sin saturar el borde; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo, si la explosion inestable vuelve el overdrive mas tenso sin volverse dominante y si el nuevo conflicto `parte vs item` sigue siendo claro cuando los rounds ya importan de verdad.
+- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, si el HUD `explicito/contextual` limpia la pantalla sin esconder decisiones tacticas y cual deberia ser el default en `Equipos` y `FFA`, si la explicacion compacta de bajas (`Ultima baja`, `Resumen | ...`, `Fuera | vacio/explosion/explosion inestable`, `Inutilizado | explota/inestable`) alcanza para explicar derrotas sin HUD extra, si la rotacion semialeatoria controlada de edge pickups vuelve los bordes más tácticos sin transformarlos en zonas seguras permanentes y si el perfil FFA de tres tipos activos por ronda produce supervivencia/oportunismo legibles sin saturar el borde; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo, si la explosion inestable vuelve el overdrive mas tenso sin volverse dominante y si el nuevo conflicto `parte vs item` sigue siendo claro cuando los rounds ya importan de verdad.
 
 ## Principios de orden
 
@@ -146,7 +147,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - el vacio ya elimina al robot de la ronda actual
 - el ultimo robot/equipo en pie suma una ronda
 - el HUD minimo ya muestra ronda y marcador, sin sumar barras pesadas
-- el HUD tambien explicita el objetivo del match (`Primero a X`) y el loop ya cierra la partida al alcanzarlo
+- en modo explicito, el HUD tambien deja visible el objetivo del match (`Primero a X`) y el loop ya cierra la partida al alcanzarlo
 - el arena ahora se contrae progresivamente en el tramo final de la ronda y vuelve a escala completa al reset
 - el arena blockout ahora ofrece ocho pedestales de borde, pero solo activa dos pares espejados por ronda mediante una rotacion semialeatoria controlada entre reparacion, movilidad, energia y pulso
 - pendiente: decidir si la pausa/reinicio automatico de match debe seguir siendo la solucion final o solo el cierre provisional del laboratorio, y si la puntuacion debe distinguir vacio vs destruccion
@@ -438,6 +439,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - causa de muerte dificil de explicar si los eventos no se registran bien
 
 **Dependencias:** Etapas 4, 5, 7 y 11. Los replays dependen de registrar eventos desde etapas anteriores.
+
+**Estado actual del prototipo:**
+- ya existe un primer slice de HUD dual configurable desde `MatchConfig`, sin duplicar escenas ni abrir otra capa de UI
+- el modo `explicito` deja visibles `Modo`, `Objetivo`, hints de control y estado completo del roster; el modo `contextual` conserva marcador/estado base y solo reexpone dano, energia, buffs, items y cargas cuando cambian
+- sigue pendiente decidir por playtest si alcanza con configurarlo por recurso/escena o si hace falta un toggle runtime mas visible para sesiones locales
 
 ## Dependencias resumidas
 

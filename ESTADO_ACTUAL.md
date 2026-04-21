@@ -40,7 +40,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - primer item de una sola carga en mano: el mismo arena ahora suma pickups de pulso en las diagonales restantes; cargan un `pulso` visible en el robot, comparten slot con las partes transportadas y convierten el siguiente ataque en un disparo repulsor corto
 - rotacion semialeatoria controlada de borde: esos ocho pedestales ya no quedan todos activos a la vez; `ArenaBase` usa un perfil `Equipos` de dos pares espejados por ronda y un perfil `FFA` de tres tipos activos por ronda para subir el oportunismo sin volver al borde completo
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
-- HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia, buffs temporales y si un robot transporta una parte; ahora tambien resume `Borde | ...` con los tipos activos de pickup de la ronda
+- HUD dual base configurable desde `MatchConfig`:
+  - modo `explicito`: mantiene `Modo`, `Objetivo`, hints de control, `4/4 partes` y energia `Eq` siempre visibles en la misma UI compacta
+  - modo `contextual`: oculta esa informacion estable y solo vuelve a exponer dano, redistribucion, buffs, items/cargas y partes perdidas cuando se vuelven tacticamente relevantes
+  - ambos modos siguen reutilizando el mismo HUD compacto de ronda/roster y tambien resumen `Borde | ...` con los tipos activos de pickup de la ronda
 - lectura de eliminacion compacta en el mismo HUD:
   - robots inutilizados muestran cuenta atras breve de explosion en el roster
   - si la baja vino desde `Overdrive`, el mismo roster marca `inestable` antes de explotar
@@ -57,6 +60,11 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - validacion automatizada de explosion inestable: `robot_unstable_explosion_test.gd` compara la variante base contra la version nacida en `Overdrive`, y `match_unstable_explosion_readability_test.gd` verifica su lectura compacta en `main.tscn`
 
 ## Lo completado en esta iteracion
+
+- Se volvio configurable el nivel de detalle del HUD sin abrir otra escena/UI:
+  - `MatchConfig` ahora expone `hud_detail_mode` para alternar entre `EXPLICIT` y `CONTEXTUAL`
+  - `MatchController` filtra las mismas lineas de ronda/roster en vez de duplicar widgets; `Main` solo refresca el HUD existente
+  - `hud_detail_mode_test.gd` cubre el contrato completo sobre `main.tscn`: default explicito, ocultamiento de ruido estable en contextual y reaparicion contextual de foco/item/partes perdidas
 
 - Se agrego un resumen compacto del cierre de ronda sobre el mismo HUD:
   - `MatchController` ahora conserva `Resumen | ...` con el orden de bajas solo cuando la ronda ya termino, sin ensuciar el estado activo del combate
@@ -229,6 +237,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay cuatro tipos de pickup, con `Equipos` usando dos pares y `FFA` tres tipos activos por ronda; todavia faltan pesos finos por modo/mapa, mas utility y decidir si hace falta una capa explicita de inventario en vez de seguir con cargas puntuales.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
+- El HUD dual ya existe, pero hoy se elige por `MatchConfig`; todavia no hay toggle runtime por jugador/sesion ni criterio cerrado sobre que modo conviene dejar por defecto en `Equipos` y `FFA`.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya existe, pero sigue siendo intencionalmente sobrio: no hay post-partida con stats, replay ni explicación explícita de por qué perdió cada jugador.

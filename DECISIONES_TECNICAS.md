@@ -122,9 +122,9 @@
    - `Main` define `hard_mode_player_slots` y asigna `ControlMode.HARD` o `EASY` durante el bootstrap local.
    - Motivo: volver el soporte Hard realmente testeable en el laboratorio sin introducir todavía menús, perfiles persistentes ni un selector previo a partida.
 
-31. **Roster compacto incluye modo e hint de control**
-   - `MatchController` agrega el modo de control al estado textual de cada robot y, para jugadores locales, mantiene tambien `robot.get_input_hint()`.
-   - Motivo: que la configuracion real del laboratorio quede visible para jugadores y debugging durante toda la ronda sin sumar HUD pesado ni un selector nuevo.
+31. **El roster compacto puede operar en modo explicito o contextual**
+   - `MatchController` filtra las mismas lineas del roster segun `MatchConfig.hud_detail_mode`: `EXPLICIT` deja visible modo de control, hints y estado completo; `CONTEXTUAL` oculta lo estable y reexpone solo lo tacticamente relevante.
+   - Motivo: cumplir el documento de HUD configurable sin duplicar escenas ni fijar el laboratorio a un unico nivel de ruido visual.
 
 32. **Control Hard validado con test de impacto dirigido**
    - `robot_hard_control_mode_test.gd` comprueba que el mismo vector de golpe pasa de castigar pierna trasera a castigar un brazo cuando el torso gira en Hard.
@@ -155,7 +155,7 @@
    - Motivo: que los playtests Easy/Hard no dependan de recordar mappings fuera del juego y dejar explicito cuando un slot Hard sigue necesitando aim por stick derecho.
 
 39. **Politica Hard/local cerrada a favor de claridad**
-   - Se mantiene `WASD + TFGX` como unico camino Hard/local totalmente por teclado; el resto de los perfiles Hard queda explicitamente joypad-first y el roster persiste esa advertencia durante la ronda.
+   - Se mantiene `WASD + TFGX` como unico camino Hard/local totalmente por teclado; el resto de los perfiles Hard queda explicitamente joypad-first y esa advertencia sigue visible al arrancar, ademas de persistir en el roster cuando el HUD esta en modo `explicito`.
    - Motivo: evitar nuevos solapes de teclas y UX confusa en teclado compartido hasta tener evidencia de playtests que justifique reabrir mappings o sumar selector runtime.
 
 40. **Incentivo de borde via pickup de reparacion instantanea**
@@ -186,9 +186,9 @@
    - `Main` pone `team_id = 0` en los robots si `MatchController` arranca en `FFA`, antes de registrarlos.
    - Motivo: el layout 2v2 conserva parejas en escena para `main.tscn`; sin neutralizar eso en FFA, `is_ally_of` permitia rescates/devoluciones falsas entre rivales.
 
-47. **El HUD de estado siempre explicita el modo de match**
-   - `MatchController.get_round_state_lines()` agrega `Modo | FFA` o `Modo | Equipos` antes del objetivo y el marcador.
-   - Motivo: una vez que `main.tscn` y `main_ffa.tscn` comparten casi toda la escena, la lectura tiene que dejar visible el modo activo sin depender del nombre del archivo o del contexto externo del playtest.
+47. **El HUD explicito deja visible el modo de match**
+   - En `EXPLICIT`, `MatchController.get_round_state_lines()` agrega `Modo | FFA` o `Modo | Equipos` antes del objetivo y el marcador; en `CONTEXTUAL` esas lineas fijas se ocultan para priorizar el estado cambiante.
+   - Motivo: mantener la claridad de laboratorio cuando hace falta depurar/configurar el setup, pero permitir una variante mas limpia que no repita informacion estable durante toda la ronda.
 
 48. **La explicación de bajas vive en el HUD compacto existente**
    - `MatchController.get_robot_status_lines()` ahora usa el mismo roster para mostrar `Inutilizado | explota Xs` y `Fuera | vacio/explosion`, mientras `get_round_state_lines()` agrega `Ultima baja | ...`.
@@ -241,6 +241,10 @@
 60. **El cierre de ronda se resume en la misma banda textual del HUD**
    - `MatchController` ahora guarda el orden de bajas de la ronda y solo lo expone como `Resumen | ...` cuando la ronda ya termino; al iniciar la siguiente, ese recap se limpia.
    - Motivo: reforzar la explicacion de “como termino esta ronda” sin abrir otra capa de post-ronda, sin esconder el combate activo bajo texto extra y reutilizando el contrato compacto ya establecido en `get_round_state_lines()`.
+
+61. **El detalle del HUD se controla desde `MatchConfig`, no con otra escena**
+   - `MatchConfig.hud_detail_mode` alterna entre `EXPLICIT` y `CONTEXTUAL`, `RobotBase` expone `is_energy_balanced()` para que el filtro sepa cuando volver a mostrar energia, y `Main` sigue refrescando el mismo `MatchHud` sin branching adicional de escenas.
+   - Motivo: sumar la configuracion pedida por el documento de UI con el menor cambio posible, manteniendo el codigo testeable por headless y sin duplicar layouts.
 
 ## Criterios mantenidos
 

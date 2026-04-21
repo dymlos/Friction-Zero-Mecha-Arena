@@ -2,7 +2,10 @@
 
 ## Siguiente iteracion recomendada
 
-1. **Validar la nueva lectura de daño modular**
+1. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
+   - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.
+   - revisar si el modo contextual realmente limpia sin esconder decisiones tacticas como `Foco`, `item`, `carga`, `impulso`, `energia` o `3/4 partes`.
+   - decidir si alcanza con configurarlo desde `MatchConfig` o si la siguiente capa necesita un toggle runtime / preset mas visible para laboratorio local.
    - playtestear si `damage_feedback_threshold` y `critical_damage_feedback_threshold` se leen bien con cuatro robots y arena en contracción.
    - decidir si el feedback geométrico actual ya alcanza o si conviene migrarlo a humo/chispas más ricos sin ensuciar pantalla compartida.
    - ajustar posición/escala de marcadores antes de sumar más VFX o UI.
