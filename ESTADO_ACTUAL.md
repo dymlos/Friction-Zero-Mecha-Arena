@@ -93,4 +93,3 @@ Resultado: las ocho verificaciones dedicadas pasan y el proyecto sigue iniciando
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
-- Los scripts `SceneTree` de integracion todavia dejan warnings `ObjectDB instances leaked at exit`; la funcionalidad valida y devuelve exit code correcto, pero la salida no es totalmente limpia.

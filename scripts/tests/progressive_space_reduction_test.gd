@@ -66,6 +66,7 @@ func _run() -> void:
 		"Tras el reset comun de ronda, el arena deberia volver al tamano completo."
 	)
 
+	await create_timer(0.8).timeout
 	await _cleanup_main(main)
 	_finish()
 

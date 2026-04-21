@@ -81,6 +81,7 @@ func _run() -> void:
 	)
 	_assert(match_controller.get_team_score(1) == 2, "La segunda ronda ganada deberia reflejarse en el scoreboard.")
 
+	await create_timer(0.8).timeout
 	await _cleanup_main(main)
 	_finish()
 
