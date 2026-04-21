@@ -16,6 +16,7 @@
    - medir si las pasivas/skills actuales se entienden por playtest sin otra capa de UI: `Ariete` aguantando empuje, `Grua` estabilizando rescates y usando `Iman`, `Cizalla` rematando partes tocadas y `Patin` explotando mejor los pickups de impulso.
    - medir si `Iman` realmente abre rescates/negaciones a media distancia o si el rango actual se siente demasiado corto, tramposo o poco legible cuando hay varias piezas sueltas.
    - medir si `Aguja` realmente introduce poke/skillshot legible ahora que `Pulso` ya tiene lectura diegetica sobre `CoreLight`, o si aun hace falta ajustar color/intensidad/ritmo del pulso para cámara compartida.
+   - si se retocan `pulse_charge_spawn_distance`, velocidad o lifetime de `Pulso`, conservar la cobertura headless que hoy evita que el proyectil nazca solapado con su robot origen.
    - medir si `Ancla` realmente corta rutas/duelos con `Baliza` o si la supresion actual se siente demasiado sutil para justificar el rol de Control/Zona.
    - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Iman/Pulso/Baliza x/y` + estado `zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
    - decidir si el selector runtime actual ya alcanza como flujo de laboratorio o si el siguiente paso debe ser persistencia/presets por escena, mas claridad visual o reforzar con otra skill/regla al arquetipo que siga borroso.

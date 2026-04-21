@@ -30,75 +30,79 @@
    - Se agregaron `scripts/tests/robot_part_return_test.gd` y `scripts/tests/robot_disabled_explosion_test.gd`.
    - Motivo: verificar el loop modular nuevo con algo mas fuerte que un simple arranque del proyecto, sin introducir una infraestructura de tests mas pesada de la necesaria.
 
-8. **Bootstrap local desde `main` en vez de confiar en la escena armada a mano**
+8. **Las skills de proyectil se validan tambien en su frame de spawn**
+   - `robot_core_skill_test.gd` ahora inspecciona el grupo `temporary_projectiles` tras disparar `Pulso` y comprueba que el proyectil no nazca solapado con el robot origen.
+   - Motivo: cubrir un contrato fisico fino del arquetipo Poke/Skillshot sin depender de warnings del engine ni de inspeccion manual en playtests.
+
+9. **Bootstrap local desde `main` en vez de confiar en la escena armada a mano**
    - `main.gd` ahora asigna spawns y slots locales a los robots ya presentes en la escena.
    - Motivo: deja el prototipo mas facil de entender y evita escenas "correctas por casualidad" cuando se suman mas jugadores o se cambian spawns.
 
-9. **Ownership de input por slot, no por dispositivo global**
+10. **Ownership de input por slot, no por dispositivo global**
    - Cada `RobotBase` usa un perfil de teclado concreto o un joystick resuelto por slot/dispositivo explicito.
    - Motivo: elimina el problema de varios robots leyendo las mismas teclas o todos los joysticks a la vez, que hacia engañosa cualquier prueba local de combate.
 
-10. **HUD de roster compacto en vez de barra pesada**
+11. **HUD de roster compacto en vez de barra pesada**
    - El HUD nuevo lista estado de ronda, marcador compacto y estado/carga por robot, sin barras invasivas.
    - Motivo: mejora la lectura del loop modular y del cierre de ronda sin romper la prioridad del proyecto por claridad y pantalla compartida limpia.
 
-11. **Redistribucion de energia discreta por foco de parte**
+12. **Redistribucion de energia discreta por foco de parte**
    - Cambiar el foco reasigna energia entre las cuatro partes usando presets simples en vez de sliders o menus.
    - Motivo: vuelve tactica la energia ya en este prototipo sin exigir una UI compleja ni microgestion poco legible.
 
-12. **Energia aplicada como multiplicador real separado de la salud**
+13. **Energia aplicada como multiplicador real separado de la salud**
    - La salud sigue definiendo la degradacion base; la energia ahora suma o resta rendimiento sobre movilidad y empuje aunque la pieza siga sana.
    - Motivo: evita que la energia quede anulada por clamps internos y hace visible la decision antes del choque.
 
-13. **Overdrive corto con recuperacion y cooldown**
+14. **Overdrive corto con recuperacion y cooldown**
    - El overdrive concentra energia en la parte foco durante una ventana breve y luego deja una penalizacion temporal antes de volver a estar disponible.
    - Motivo: respeta la idea de apuesta de alto riesgo/alta recompensa sin convertir la redistribucion en spam.
 
-14. **Negacion de parte por lanzamiento**
+15. **Negacion de parte por lanzamiento**
    - Se añadió una acción dedicada para lanzar una parte transportada, permitiendo negar recuperaciones sin introducir un sistema de item adicional.
    - Motivo: conectar el bucle de rescate con decisiones de espacio/tiempo y mantener el control del estado legible.
 
-15. **Ajuste de ritmo de duelo via parámetros exportados**
+16. **Ajuste de ritmo de duelo via parámetros exportados**
    - Se prefirió reajustar el duelo 2P ajustando `RobotBase` en lugar de agregar una mecánica nueva.
    - Motivo: el equilibrio de inercia, alcance/impulso y daño de choque define la sensación principal del prototipo sin comprometer la simplicidad técnica existente.
 
-16. **2v2 de laboratorio con equipos y 4 slots locales**
+17. **2v2 de laboratorio con equipos y 4 slots locales**
   - Se habilitó `main.tscn` con 4 robots y `local_player_count=4`, usando `team_id` para aliar jugadores en parejas.
   - Motivo: validar rescate entre aliados en partidas 2v2 reales sin introducir todavía un mode manager completo de matchmaking.
 
-17. **Indicador de carga de parte legible sin HUD pesado**
+18. **Indicador de carga de parte legible sin HUD pesado**
    - `RobotBase` muestra un indicador diegético sobre el robot cuando transporta una parte, con color por tipo de parte y pulso leve.
    - Motivo: mejora la legibilidad para aliados, rivales y espectadores sin añadir una interfaz pesada en pantalla compartida.
 
-18. **Validación 2v2 sobre la escena real, no sobre un mock aislado**
+19. **Validación 2v2 sobre la escena real, no sobre un mock aislado**
    - El coverage nuevo de rescate/negación usa `scenes/main/main.tscn` y no solo robots sueltos.
    - Motivo: verifica a la vez equipos, bootstrap local, indicador de carga y retardos de pickup/lanzamiento en el contexto que realmente se prueba el laboratorio.
 
-19. **Tests headless con salida confiable**
+20. **Tests headless con salida confiable**
    - Los scripts de `scripts/tests/` ahora conservan un flag `_failed` y finalizan con `quit(1 if _failed else 0)`.
    - Motivo: evitar falsos verdes en automatización cuando una aserción registra error pero el script llega al `quit()` final.
 
-20. **Scoring de ronda simple y simétrico para el prototipo**
+21. **Scoring de ronda simple y simétrico para el prototipo**
    - Ring-out y destrucción total cuentan igual: eliminan al robot de la ronda y el último contendiente en pie suma un punto.
    - Motivo: cerrar el sandbox infinito con la menor cantidad de reglas nuevas, sin comprometer todavía el diseño final de puntuación por modo.
 
-21. **Cierre de match first-to-X desde `MatchConfig`**
+22. **Cierre de match first-to-X desde `MatchConfig`**
    - El objetivo de rondas vive en `rounds_to_win`; cuando un competidor lo alcanza, `MatchController` anuncia ganador de partida y detiene la ronda actual.
    - Motivo: el prototipo necesitaba una condición de victoria real, configurable y fácil de leer sin meter un mode flow más pesado todavía.
 
-22. **Reinicio automático tras victoria de match**
+23. **Reinicio automático tras victoria de match**
    - Tras una pausa corta (`match_restart_delay`), el laboratorio reinicia el match completo y vuelve a ronda 1 con score limpio.
    - Motivo: mantener la escena siempre jugable en playtests locales y evitar volver al estado de sandbox infinito o exigir UI/menu extra en esta etapa.
 
-23. **Robots eliminados quedan fuera hasta el reset común**
+24. **Robots eliminados quedan fuera hasta el reset común**
    - `RobotBase` ahora puede quedar retenido para el reset de ronda en vez de auto-respawnear inmediatamente tras vacío o explosión.
    - Motivo: preservar lectura del resultado, evitar que una baja decisiva se “deshaga” sola y mantener el cierre de ronda legible.
 
-24. **Cierre de ronda validado sobre la escena real**
+25. **Cierre de ronda validado sobre la escena real**
    - `match_round_resolution_test.gd` usa `main.tscn` para comprobar victorias por vacío y destrucción total, marcador y reset conjunto.
    - Motivo: la lógica de ronda depende de `Main`, `MatchController`, HUD y lifecycle de `RobotBase`; probar piezas aisladas dejaría huecos importantes.
 
-25. **Cierre de match validado con la escena real**
+26. **Cierre de match validado con la escena real**
    - `match_completion_test.gd` también usa `main.tscn` para verificar objetivo first-to-X, anuncio de ganador y reinicio limpio del match.
    - Motivo: la victoria de match depende del mismo wiring real entre `Main`, `MatchController`, HUD, timers y robots eliminados; un mock aislado dejaría fuera el lifecycle crítico.
 

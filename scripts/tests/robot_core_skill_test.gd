@@ -17,6 +17,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_poke_archetype_exposes_a_charge_skill()
 	await _validate_charge_skill_spends_and_recovers_ammo()
+	await _validate_core_skill_projectile_ignores_the_source_robot()
 	await _validate_core_skill_readability_stays_on_robot_body()
 	await _validate_ffa_lab_exposes_the_new_archetype_identity()
 	await process_frame
@@ -101,6 +102,39 @@ func _validate_charge_skill_spends_and_recovers_ammo() -> void:
 
 	await _cleanup_group("temporary_projectiles")
 	await _cleanup_node(target)
+	await _cleanup_node(source)
+
+
+func _validate_core_skill_projectile_ignores_the_source_robot() -> void:
+	var config := load(AGUJA_CONFIG_PATH)
+	_assert(config is RobotArchetypeConfig, "La prueba del proyectil necesita el recurso Aguja.")
+	if not (config is RobotArchetypeConfig):
+		return
+
+	var tuned_config := (config as RobotArchetypeConfig).duplicate(true) as RobotArchetypeConfig
+	tuned_config.set("core_skill_recharge_seconds", 99.0)
+	var source := await _spawn_robot(tuned_config)
+
+	source.global_position = Vector3.ZERO
+
+	var used := bool(source.call("use_core_skill"))
+	_assert(used, "La prueba del proyectil necesita disparar `Pulso`.")
+	if not used:
+		await _cleanup_node(source)
+		return
+
+	await process_frame
+	await physics_frame
+
+	var projectile := _get_first_temporary_projectile()
+	_assert(projectile != null, "Disparar `Pulso` deberia crear un proyectil temporal.")
+	if projectile != null:
+		_assert(
+			not projectile.get_overlapping_bodies().has(source),
+			"El proyectil `Pulso` deberia ignorar a su robot de origen para no chocar/solaparse al nacer."
+		)
+
+	await _cleanup_group("temporary_projectiles")
 	await _cleanup_node(source)
 
 
@@ -216,6 +250,14 @@ func _cleanup_group(group_name: String) -> void:
 			continue
 
 		await _cleanup_node(node as Node)
+
+
+func _get_first_temporary_projectile() -> Area3D:
+	for node in get_nodes_in_group("temporary_projectiles"):
+		if node is Area3D:
+			return node as Area3D
+
+	return null
 
 
 func _await_seconds(seconds: float) -> void:

@@ -123,7 +123,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - `RobotBase` expone `has_core_skill()`, `use_core_skill()` y `get_core_skill_status_summary()`, y reaprovecha `throw_part` cuando el robot no carga una pieza para no abrir botones nuevos
   - `Grua` vive en `data/config/robots/grua_archetype.tres` y usa `Iman`, una captura magnetica de piezas listas que prioriza propias/aliadas y refuerza el rescate aliado del laboratorio 2v2 sin abrir otra escena o inventario
   - `Aguja` vive en `data/config/robots/aguja_archetype.tres` y se expone primero en `main_ffa.tscn`, de modo que el laboratorio libre gane poke/skillshot mientras `main.tscn` conserva `Grua` como rol de rescate activo
-  - `robot_core_skill_test.gd` cubre recurso, gasto/recarga de cargas, empuje/daño del disparo y lectura del roster FFA
+  - `robot_core_skill_test.gd` cubre recurso, gasto/recarga de cargas, empuje/daño del disparo, que `Pulso` no nazca solapado con su robot origen y lectura del roster FFA
 - Se completó el sexto arquetipo documentado sin abrir otro sistema de habilidades:
   - `Ancla` vive en `data/config/robots/ancla_archetype.tres` y usa `Baliza`, una `ControlBeacon` persistente corta que ralentiza drive/control rivales dentro del area
   - `RobotBase` limita `Baliza` a una sola instancia activa por robot y la vuelve a desplegar desde `throw_part`, manteniendo el mismo contrato de input/cargas que ya usabamos para `Aguja`
