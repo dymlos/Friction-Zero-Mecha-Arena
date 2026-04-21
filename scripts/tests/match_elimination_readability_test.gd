@@ -19,24 +19,36 @@ func _run() -> void:
 	await process_frame
 
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
+	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapLabel") as Label
+	var match_result_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultLabel") as Label
 	var robots := _get_scene_robots(main)
 	_assert(match_controller != null, "La escena principal deberia exponer MatchController.")
+	_assert(recap_label != null, "La escena principal deberia exponer el detalle del recap para validar atribucion.")
+	_assert(match_result_label != null, "La escena principal deberia exponer el detalle del resultado final para validar atribucion.")
 	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar lectura de eliminacion.")
-	if match_controller == null or robots.size() < 4:
+	if match_controller == null or recap_label == null or match_result_label == null or robots.size() < 4:
 		await _cleanup_main(main)
 		_finish()
 		return
 
 	match_controller.match_mode = MatchController.MatchMode.TEAMS
+	match_controller.match_config.rounds_to_win = 1
 	match_controller.round_reset_delay = 0.45
+	match_controller.match_restart_delay = 1.1
 
 	for robot in robots:
 		robot.void_fall_y = -100.0
 
+	var explosion_attacker := robots[0]
 	robots[2].disabled_explosion_delay = 0.35
 	robots[2].disabled_explosion_timer.wait_time = 0.35
 	for part_name in robots[2].BODY_PARTS:
-		robots[2].apply_damage_to_part(part_name, robots[2].max_part_health + 10.0, Vector3.LEFT)
+		robots[2].apply_damage_to_part(
+			part_name,
+			robots[2].max_part_health + 10.0,
+			Vector3.LEFT,
+			explosion_attacker
+		)
 
 	await create_timer(0.05).timeout
 
@@ -62,10 +74,15 @@ func _run() -> void:
 		"El roster deberia conservar la causa breve de eliminacion por explosion."
 	)
 	_assert(
-		_has_line_with_fragment(match_controller.get_round_state_lines(), "Ultima baja | Player 3 explosiono"),
-		"El estado de ronda deberia dejar visible la ultima baja por explosion."
+		_has_line_with_fragment(
+			match_controller.get_round_state_lines(),
+			"Ultima baja | Player 3 explosiono tras quedar inutilizado por Player 1"
+		),
+		"El estado de ronda deberia dejar visible la ultima baja por explosion junto con el rival que la forzo."
 	)
 
+	var void_attacker := robots[1]
+	robots[3].apply_damage_to_part("left_leg", 6.0, Vector3.LEFT, void_attacker)
 	robots[3].fall_into_void()
 	await create_timer(0.05).timeout
 
@@ -79,8 +96,23 @@ func _run() -> void:
 		"El roster deberia conservar la causa breve de eliminacion por vacio."
 	)
 	_assert(
-		_has_line_with_fragment(match_controller.get_round_state_lines(), "Ultima baja | Player 4 cayo al vacio"),
-		"El estado de ronda deberia exponer tambien la ultima baja por vacio."
+		_has_line_with_fragment(
+			match_controller.get_round_state_lines(),
+			"Ultima baja | Player 4 cayo al vacio por Player 2"
+		),
+		"El estado de ronda deberia exponer tambien la ultima baja por vacio junto con el rival responsable."
+	)
+	_assert(
+		recap_label.text.contains("Player 3 | baja 1 | explosion por Player 1"),
+		"El recap lateral deberia conservar la atribucion del rival que forzo la explosion."
+	)
+	_assert(
+		recap_label.text.contains("Player 4 | baja 2 | vacio por Player 2"),
+		"El recap lateral deberia conservar la atribucion del rival que forzo la caida al vacio."
+	)
+	_assert(
+		match_result_label.text.contains("Cierre | Player 4 cayo al vacio por Player 2"),
+		"El resultado final deberia reutilizar la ultima baja con atribucion del rival responsable."
 	)
 
 	await create_timer(maxf(match_controller.round_reset_delay + 0.2, 0.95)).timeout

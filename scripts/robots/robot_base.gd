@@ -311,6 +311,8 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export_range(1.0, 2.0, 0.05) var unstable_disabled_explosion_radius_multiplier := 1.2
 @export_range(1.0, 2.0, 0.05) var unstable_disabled_explosion_impulse_multiplier := 1.35
 @export_range(1.0, 2.0, 0.05) var unstable_disabled_explosion_damage_multiplier := 1.35
+@export_group("Prototype Elimination Attribution")
+@export_range(0.2, 5.0, 0.1) var elimination_attribution_window := 2.4
 
 @export_group("Prototype Void")
 @export var void_fall_y := -6.0
@@ -382,6 +384,8 @@ var _last_disabled_explosion_was_unstable := false
 var _archetype_base_values: Dictionary = {}
 var _archetype_accent_root: Node3D = null
 var _is_lab_selected := false
+var _recent_elimination_source_robot: RobotBase = null
+var _recent_elimination_source_remaining := 0.0
 
 @onready var disabled_explosion_timer: Timer = $DisabledExplosionTimer
 @onready var upper_body_pivot: Node3D = $UpperBodyPivot
@@ -568,6 +572,17 @@ func get_received_impulse_multiplier() -> float:
 		archetype_multiplier = maxf(archetype_config.received_impulse_multiplier, 0.1)
 
 	return archetype_multiplier * _get_stability_received_impulse_multiplier()
+
+
+func get_recent_elimination_source() -> RobotBase:
+	if _recent_elimination_source_remaining <= 0.0:
+		return null
+	if not is_instance_valid(_recent_elimination_source_robot):
+		return null
+	if _recent_elimination_source_robot == self:
+		return null
+
+	return _recent_elimination_source_robot
 
 
 func get_damaged_part_bonus_damage_multiplier() -> float:
@@ -1049,6 +1064,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
+	_update_recent_elimination_source(delta)
 	_update_energy_state(delta)
 	_update_control_zone_state(delta)
 	_update_temporary_boosts(delta)
@@ -1096,6 +1112,8 @@ func reset_modular_state() -> void:
 	_clear_active_control_beacon()
 	_disabled_explosion_is_unstable = false
 	_last_disabled_explosion_was_unstable = false
+	_recent_elimination_source_robot = null
+	_recent_elimination_source_remaining = 0.0
 	_recoverable_detached_part_ids.clear()
 	_carried_item_name = ""
 	for part_name in BODY_PARTS:
@@ -1296,8 +1314,9 @@ func is_fully_disabled() -> bool:
 	return true
 
 
-func apply_impulse(impulse: Vector3) -> void:
+func apply_impulse(impulse: Vector3, source_robot: RobotBase = null) -> void:
 	impulse.y = 0.0
+	_remember_recent_elimination_source(source_robot)
 	external_impulse += impulse * get_received_impulse_multiplier()
 
 
@@ -1350,6 +1369,7 @@ func apply_damage_to_part(
 	var effective_damage := damage_amount
 	if is_instance_valid(source_robot) and current_health < max_part_health:
 		effective_damage *= source_robot.get_damaged_part_bonus_damage_multiplier()
+	_remember_recent_elimination_source(source_robot)
 
 	part_health[part_name] = maxf(current_health - effective_damage, 0.0)
 	_part_flash_strength[part_name] = 1.0
@@ -1401,6 +1421,28 @@ func reset_to_spawn() -> void:
 	reset_modular_state()
 	set_physics_process(true)
 	respawned.emit(self)
+
+
+func _remember_recent_elimination_source(source_robot: RobotBase) -> void:
+	if not is_instance_valid(source_robot):
+		return
+	if source_robot == self:
+		return
+
+	_recent_elimination_source_robot = source_robot
+	_recent_elimination_source_remaining = elimination_attribution_window
+
+
+func _update_recent_elimination_source(delta: float) -> void:
+	if _recent_elimination_source_remaining <= 0.0:
+		_recent_elimination_source_robot = null
+		_recent_elimination_source_remaining = 0.0
+		return
+
+	_recent_elimination_source_remaining = maxf(_recent_elimination_source_remaining - delta, 0.0)
+	if _recent_elimination_source_remaining == 0.0 or not is_instance_valid(_recent_elimination_source_robot):
+		_recent_elimination_source_robot = null
+		_recent_elimination_source_remaining = 0.0
 
 
 func _update_prototype_movement(delta: float) -> void:
@@ -1472,7 +1514,7 @@ func _update_prototype_attack() -> void:
 		if forward.dot(direction_to_other) < 0.25:
 			continue
 
-		other.apply_impulse(direction_to_other * attack_impulse_strength * arm_power)
+		other.apply_impulse(direction_to_other * attack_impulse_strength * arm_power, self)
 		other.receive_attack_hit_from_robot(direction_to_other, attack_damage * arm_power, self)
 
 
@@ -1576,7 +1618,10 @@ func _apply_passive_collision_pushes() -> void:
 			push_direction = _get_combat_forward_vector()
 
 		push_direction = push_direction.normalized()
-		other_robot.apply_impulse(push_direction * passive_push_strength * get_effective_arm_power_multiplier())
+		other_robot.apply_impulse(
+			push_direction * passive_push_strength * get_effective_arm_power_multiplier(),
+			self
+		)
 		_try_apply_collision_damage(other_robot, push_direction)
 
 
@@ -3686,8 +3731,8 @@ func _apply_disabled_explosion() -> void:
 			direction = offset / distance
 
 		var distance_ratio := 1.0 - clampf(distance / explosion_radius, 0.0, 1.0)
-		other_robot.apply_impulse(direction * explosion_impulse * distance_ratio)
-		other_robot.receive_attack_hit(direction, explosion_damage * distance_ratio)
+		other_robot.apply_impulse(direction * explosion_impulse * distance_ratio, self)
+		other_robot.receive_attack_hit_from_robot(direction, explosion_damage * distance_ratio, self)
 
 
 func _get_disabled_explosion_radius_for_current_state() -> float:

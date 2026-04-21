@@ -44,10 +44,15 @@ func _run() -> void:
 	robots[3].fall_into_void()
 	await create_timer(0.05).timeout
 
-	var expected_recap := "Resumen | %s vacio -> %s vacio" % [robots[2].display_name, robots[3].display_name]
 	_assert(
-		_has_line(match_controller.get_round_state_lines(), expected_recap),
-		"Al cerrar la ronda, el HUD deberia conservar un resumen compacto del orden de bajas."
+		_has_recap_with_fragments(
+			match_controller.get_round_state_lines(),
+			[
+				"%s cayo al vacio" % robots[2].display_name,
+				"%s cayo al vacio" % robots[3].display_name,
+			]
+		),
+		"Al cerrar la ronda, el HUD deberia conservar un resumen compacto del orden de bajas aunque la atribucion sume al rival responsable."
 	)
 	_assert(recap_panel.visible, "Al cerrar la ronda deberia aparecer un recap dedicado.")
 	_assert(
@@ -89,9 +94,17 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 	return robots
 
 
-func _has_line(lines: Array[String], expected: String) -> bool:
+func _has_recap_with_fragments(lines: Array[String], fragments: Array[String]) -> bool:
 	for line in lines:
-		if line == expected:
+		if not line.begins_with("Resumen | "):
+			continue
+
+		var has_all_fragments := true
+		for fragment in fragments:
+			if not line.contains(fragment):
+				has_all_fragments = false
+				break
+		if has_all_fragments:
 			return true
 
 	return false

@@ -210,6 +210,10 @@
    - `MatchController.get_robot_status_lines()` ahora usa el mismo roster para mostrar `Inutilizado | explota Xs` y `Fuera | vacio/explosion`, mientras `get_round_state_lines()` agrega `Ultima baja | ...`.
    - Motivo: mejora la lectura de derrota y amenaza inminente en pantalla compartida sin introducir una capa nueva de UI ni romper la prioridad por claridad.
 
+49. **La autoria de la baja se deriva de una ventana corta de agresor reciente**
+   - `RobotBase` conserva durante unos segundos el ultimo rival que aplico empuje/daño relevante; `Main` reutiliza ese seam al registrar bajas por `void` o `explosion`, y `MatchController` extiende la misma telemetria existente con `por Player X` en `Ultima baja`, `Resumen | ...`, recap y resultado final.
+   - Motivo: el prototipo ya explicaba la causa (`vacio`, `explosion`, `inestable`), pero no quien la habia forzado; una ventana corta mantiene la atribucion legible sin inventar un feed de combate persistente ni trackers mas pesados.
+
 49. **Segundo incentivo de borde via pickup universal de movilidad**
    - `EdgeMobilityPickup` activa una ventana breve de traccion/control reforzados sobre `RobotBase` y reaparece tras cooldown, sin tocar el sistema de energia ni abrir una capa nueva de inventario.
    - Motivo: sumar un item universal que refuerce la fantasia principal de patinar/reposicionarse, manteniendo la lectura limpia y el riesgo atado al borde.

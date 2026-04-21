@@ -212,6 +212,9 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - `MatchController.get_robot_status_lines()` ahora deja visible `Inutilizado | explota Xs` mientras un robot espera su explosion diferida
   - al quedar fuera, el roster conserva la causa corta (`vacio` o `explosion`) y el bloque superior agrega `Ultima baja | ...`
   - esto cubre mejor la necesidad de “entender por que perdi” con la misma capa compacta que ya usaba el laboratorio
+- la atribucion del rival responsable ya tambien se conserva dentro de esa misma capa:
+  - `RobotBase` recuerda por una ventana corta el ultimo rival que aplico empuje/daño relevante, incluyendo choque, ataque, proyectil y explosion diferida
+  - `Main` pasa ese dato a `MatchController` cuando una baja termina en `void` o `explosion`, y el HUD extiende `Ultima baja | ...`, `Resumen | ...`, `RecapPanel` y `MatchResultPanel` con `por Player X` cuando la autoria sigue siendo confiable
 - Se cubrió el cierre real de ronda FFA en la escena dedicada:
   - `ffa_round_resolution_test.gd` elimina tres robots en `main_ffa.tscn`
   - valida ganador individual, marcador por robot y persistencia de la línea `Modo | FFA`

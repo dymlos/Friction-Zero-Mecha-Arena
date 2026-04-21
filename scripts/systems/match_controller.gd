@@ -30,6 +30,7 @@ var _round_active := false
 var _round_reset_pending := false
 var _match_over := false
 var _round_eliminated_robot_ids: Dictionary = {}
+var _round_elimination_source_robot_ids: Dictionary = {}
 var _round_elimination_order_by_robot_id: Dictionary = {}
 var _round_elimination_recap_entries: Array[String] = []
 var _competitor_scores: Dictionary = {}
@@ -86,6 +87,7 @@ func start_match() -> void:
 	_round_reset_pending = false
 	_match_over = false
 	_round_eliminated_robot_ids.clear()
+	_round_elimination_source_robot_ids.clear()
 	_round_elimination_order_by_robot_id.clear()
 	_round_elimination_recap_entries.clear()
 	_last_elimination_summary = ""
@@ -449,7 +451,11 @@ func record_support_payload_use(robot: RobotBase, payload_name: String = "") -> 
 	_increment_support_payload_stat(robot, payload_name, "support_use")
 
 
-func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> String:
+func record_robot_elimination(
+	robot: RobotBase,
+	cause: EliminationCause,
+	source_robot: RobotBase = null
+) -> String:
 	if robot == null:
 		return ""
 	if not _round_active or _round_reset_pending:
@@ -460,9 +466,11 @@ func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> Stri
 		return ""
 
 	_round_eliminated_robot_ids[robot_id] = cause
+	if is_instance_valid(source_robot) and source_robot != robot:
+		_round_elimination_source_robot_ids[robot_id] = source_robot.get_instance_id()
 	_round_elimination_order_by_robot_id[robot_id] = _round_elimination_order_by_robot_id.size() + 1
-	_round_elimination_recap_entries.append(_build_compact_elimination_summary(robot, cause))
-	_last_elimination_summary = _build_elimination_summary(robot, cause)
+	_round_elimination_recap_entries.append(_build_compact_elimination_summary(robot, cause, source_robot))
+	_last_elimination_summary = _build_elimination_summary(robot, cause, source_robot)
 	_record_elimination_stats(robot, cause)
 	robot.hold_for_round_reset()
 
@@ -542,6 +550,9 @@ func _build_robot_recap_panel_line(robot: RobotBase) -> String:
 	if _round_eliminated_robot_ids.has(robot_id):
 		var cause_label := _get_elimination_cause_label(_get_robot_elimination_cause(robot))
 		var elimination_order := int(_round_elimination_order_by_robot_id.get(robot_id, 0))
+		var source_suffix := _get_elimination_source_suffix(robot)
+		if source_suffix != "":
+			cause_label += source_suffix
 		return "%s | baja %s | %s" % [robot.display_name, elimination_order, cause_label]
 
 	if robot.is_disabled_state():
@@ -597,13 +608,43 @@ func _get_competitor_label_from_key(competitor_key: String) -> String:
 	return str(_competitor_labels.get(competitor_key, competitor_key))
 
 
-func _build_elimination_summary(robot: RobotBase, cause: EliminationCause) -> String:
+func _build_elimination_summary(
+	robot: RobotBase,
+	cause: EliminationCause,
+	source_robot: RobotBase = null
+) -> String:
 	var cause_label := "cayo al vacio"
 	if cause == EliminationCause.EXPLOSION:
 		cause_label = "explosiono tras quedar inutilizado"
 	elif cause == EliminationCause.UNSTABLE_EXPLOSION:
 		cause_label = "exploto en sobrecarga"
-	return "%s %s" % [robot.display_name, cause_label]
+	return "%s %s%s" % [
+		robot.display_name,
+		cause_label,
+		_get_elimination_source_suffix_for_robot(source_robot),
+	]
+
+
+func _get_elimination_source_suffix(robot: RobotBase) -> String:
+	if robot == null:
+		return ""
+
+	var source_id := int(_round_elimination_source_robot_ids.get(robot.get_instance_id(), 0))
+	if source_id == 0:
+		return ""
+
+	var source_node := instance_from_id(source_id)
+	if not (source_node is RobotBase):
+		return ""
+
+	return _get_elimination_source_suffix_for_robot(source_node as RobotBase)
+
+
+func _get_elimination_source_suffix_for_robot(source_robot: RobotBase) -> String:
+	if not is_instance_valid(source_robot):
+		return ""
+
+	return " por %s" % source_robot.display_name
 
 
 func _build_match_stats_lines() -> Array[String]:
@@ -730,8 +771,12 @@ func _build_plural_segment(amount: int, singular_label: String, plural_label: St
 	return "%s %s" % [amount, plural_label]
 
 
-func _build_compact_elimination_summary(robot: RobotBase, cause: EliminationCause) -> String:
-	return "%s %s" % [robot.display_name, _get_elimination_cause_label(cause)]
+func _build_compact_elimination_summary(
+	robot: RobotBase,
+	cause: EliminationCause,
+	source_robot: RobotBase = null
+) -> String:
+	return _build_elimination_summary(robot, cause, source_robot)
 
 
 func _build_ffa_standings_line() -> String:

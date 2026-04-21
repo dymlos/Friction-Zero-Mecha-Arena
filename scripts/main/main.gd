@@ -467,7 +467,11 @@ func _build_round_state_lines() -> Array[String]:
 
 
 func _on_robot_fell_into_void(robot: RobotBase) -> void:
-	var message := match_controller.record_robot_elimination(robot, MatchController.EliminationCause.VOID)
+	var message := match_controller.record_robot_elimination(
+		robot,
+		MatchController.EliminationCause.VOID,
+		robot.get_recent_elimination_source()
+	)
 	if message != "":
 		ui.show_status(message)
 	_spawn_post_death_support_if_needed(robot)
@@ -529,7 +533,11 @@ func _on_robot_disabled(robot: RobotBase) -> void:
 
 func _on_robot_exploded(robot: RobotBase) -> void:
 	var cause := MatchController.EliminationCause.UNSTABLE_EXPLOSION if robot.was_last_disabled_explosion_unstable() else MatchController.EliminationCause.EXPLOSION
-	var message := match_controller.record_robot_elimination(robot, cause)
+	var message := match_controller.record_robot_elimination(
+		robot,
+		cause,
+		robot.get_recent_elimination_source()
+	)
 	if message != "":
 		ui.show_status(message)
 	_spawn_post_death_support_if_needed(robot)
