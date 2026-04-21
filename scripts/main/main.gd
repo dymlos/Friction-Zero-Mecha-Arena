@@ -54,6 +54,7 @@ func _register_existing_robots() -> void:
 
 func _configure_playable_prototype() -> void:
 	var robots := _get_scene_robots()
+	_apply_match_mode_bootstrap(robots)
 	var spawn_points := _get_arena_spawn_points()
 	var local_player_count: int = min(match_controller.get_local_player_count(), robots.size())
 
@@ -70,6 +71,18 @@ func _configure_playable_prototype() -> void:
 		robot.capture_spawn_transform()
 		if robot.is_player_controlled:
 			robot.refresh_input_setup()
+
+
+func _apply_match_mode_bootstrap(robots: Array[RobotBase]) -> void:
+	if match_controller == null:
+		return
+	if match_controller.match_mode != MatchController.MatchMode.FFA:
+		return
+
+	# El laboratorio 2v2 deja team_id en la escena; en FFA se neutralizan para que
+	# rescate/negacion y scoring traten a cada robot como competidor individual.
+	for robot in robots:
+		robot.team_id = 0
 
 
 func _assign_default_local_inputs(robot: RobotBase, index: int) -> void:

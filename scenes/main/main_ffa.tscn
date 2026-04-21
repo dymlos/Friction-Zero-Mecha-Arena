@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/main/main.tscn" id="1_main"]
+
+[node name="MainFFA" instance=ExtResource("1_main")]
+
+[node name="PlayerOneRobot" parent="RobotRoot"]
+team_id = 0
+
+[node name="PlayerTwoRobot" parent="RobotRoot"]
+team_id = 0
+
+[node name="PlayerThreeRobot" parent="RobotRoot"]
+team_id = 0
+
+[node name="PlayerFourRobot" parent="RobotRoot"]
+team_id = 0
+
+[node name="MatchController" parent="Systems"]
+match_mode = 0
