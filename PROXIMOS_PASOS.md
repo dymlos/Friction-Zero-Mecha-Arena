@@ -30,7 +30,7 @@
    - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` usando tambien el toggle `F1` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.
    - revisar si el modo contextual realmente limpia sin esconder decisiones tacticas como `Foco`, `item`, `carga`, `impulso`, `energia` o `3/4 partes`.
    - decidir si el toggle runtime actual alcanza para laboratorio o si la siguiente capa necesita persistencia/preset mas visible por modo, ademas del `MatchConfig`.
-   - medir si `RecapPanel` lateral + `MatchResultPanel` centrado + `Stats | ...` (incluyendo `partes perdidas`) + los nuevos `Momento inicial/final` explican suficientemente bien `Decision + Marcador + baja N | causa/autor` sin necesitar otra escena/post-ronda.
+   - medir si `RecapPanel` lateral + `MatchResultPanel` centrado + `Stats | ...` (incluyendo `partes perdidas`) + los nuevos `Momento inicial/final` + el detalle repetido `Player X | baja N | causa` explican suficientemente bien `Decision + Marcador + como perdi` sin necesitar otra escena/post-ronda.
    - playtestear si `damage_feedback_threshold`, `critical_damage_feedback_threshold` y la nueva pose floja de brazos/piernas se leen bien con cuatro robots y arena en contracción.
    - decidir si el feedback geométrico actual ya alcanza o si conviene migrarlo a humo/chispas más ricos sin ensuciar pantalla compartida.
    - ajustar posición/escala de marcadores y amplitud de la pose de desgaste antes de sumar más VFX o UI.
@@ -61,7 +61,7 @@
   - playtestear si `rounds_to_win=3`, `match_restart_delay`, el panel `Partida cerrada` y el atajo `F5` dejan leer bien la victoria o si el resultado sigue pasando demasiado rápido.
   - decidir si el reinicio automático debe seguir siendo el fallback del laboratorio o si conviene pasar a una solución manual-only más adelante.
   - definir si ring-out y destruccion total siguen puntuando igual o si alguno merece bonus/feedback diferencial.
-  - medir si `Resumen | ...` + `Ultima baja | ...` + `Momento inicial/final` + `Fuera | vacio/explosion/explosion inestable` + `Inutilizado | explota/inestable` + atribucion `por Player X` + `DisabledWarningIndicator` + `Stats | ...` con `partes perdidas` + `RecapPanel` + `MatchResultPanel` ya explican suficientemente bien la derrota inmediata o si la siguiente capa debe ser una pantalla post-ronda/post-partida más fuerte.
+  - medir si `Resumen | ...` + `Ultima baja | ...` + `Momento inicial/final` + `Fuera | vacio/explosion/explosion inestable` + `Inutilizado | explota/inestable` + atribucion `por Player X` + `DisabledWarningIndicator` + `Stats | ...` con `partes perdidas` + `RecapPanel` + `MatchResultPanel` + detalle `Player X | baja N | causa` ya explican suficientemente bien la derrota inmediata o si la siguiente capa debe ser una pantalla post-ronda/post-partida más fuerte.
 
 8. **Afinar la nueva presion de arena**
    - playtestear si el inicio del cierre (`space_reduction_start_ratio`) llega demasiado tarde o demasiado pronto.

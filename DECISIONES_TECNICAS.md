@@ -74,6 +74,10 @@
    - `MatchController` conserva tambien el primer y el ultimo resumen completo de eliminacion de cada ronda para exponer `Momento inicial | ...` y `Momento final | ...` en `RecapPanel` y `MatchResultPanel`; si solo hubo una baja relevante, colapsa a `Momento clave | ...`.
    - Motivo: el documento pedia una pista de jugadas importantes al final, pero grabar replay real todavia seria demasiado costoso; reusar la telemetria de bajas da un cierre mas memorable sin otra escena, sin buffers de input/video y sin romper la claridad del HUD.
 
+84. **El panel final reutiliza tambien el recap compacto por robot**
+   - `MatchController.get_match_result_lines()` ahora agrega el mismo `_build_robot_recap_panel_line(robot)` que usa el recap lateral, de modo que `MatchResultPanel` repite `Player X | baja N | causa` o `sigue en pie` sin mantener otra estructura paralela.
+   - Motivo: la vista centrada de cierre es la mas visible y antes dependia del recap lateral para responder “como perdi”; reutilizar la misma linea compacta mejora esa explicacion sin abrir UI nueva ni duplicar telemetria.
+
 16. **Ajuste de ritmo de duelo via parámetros exportados**
    - Se prefirió reajustar el duelo 2P ajustando `RobotBase` en lugar de agregar una mecánica nueva.
    - Motivo: el equilibrio de inercia, alcance/impulso y daño de choque define la sensación principal del prototipo sin comprometer la simplicidad técnica existente.

@@ -325,6 +325,11 @@ func get_match_result_lines() -> Array[String]:
 		lines.append(tiebreaker_line)
 	lines.append_array(_build_match_stats_lines())
 	lines.append_array(_build_round_highlight_lines())
+	for robot in registered_robots:
+		if not is_instance_valid(robot):
+			continue
+
+		lines.append(_build_robot_recap_panel_line(robot))
 
 	if _last_elimination_summary != "":
 		lines.append("Cierre | %s" % _last_elimination_summary)
