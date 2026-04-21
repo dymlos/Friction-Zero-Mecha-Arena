@@ -6,8 +6,10 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 - Etapa 0 a 3: base jugable ya integrada en `main.tscn` con arena, camara compartida, empuje, caida al vacio y respawn de prototipo.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
+- Etapa 7: base funcional implementada. Las partes desprendidas ya conservan propietario, pueden recogerse por cercania, bloquear el ataque mientras se cargan y volver con vida parcial; si el portador cae al vacio, la parte se niega.
+- Robot inutilizado: ahora entra en una cuenta regresiva corta, explota con empuje/danio radial y luego respawnea para mantener el match jugable.
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas y mensajes breves de HUD.
-- Pendiente prioritario: cerrar el loop posterior a la destruccion con partes recuperables, cuerpo inutilizado explosivo y primeros hooks claros de energia redistribuida.
+- Pendiente prioritario: probar este loop nuevo en situaciones mas reales de 2+ jugadores activos y conectar la energia redistribuida con decisiones visibles.
 
 ## Principios de orden
 
@@ -214,6 +216,14 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - reglas de pertenencia de partes confusas
 
 **Dependencias:** Etapas 3 y 4. La explosion tambien depende de Etapa 2 para empuje radial.
+
+**Estado actual del prototipo:**
+- partes desprendidas con propietario original y retorno parcial
+- pickup por cercania sin input extra
+- transporte que bloquea el ataque prototipo
+- negacion basica si el portador cae al vacio
+- cuerpo inutilizado con explosion diferida y respawn posterior
+- pendiente: feedback visual de transporte, rescate cooperativo mas visible y ajuste fino de tiempos/radios
 
 ## Etapa 8 - Primeros arquetipos jugables
 

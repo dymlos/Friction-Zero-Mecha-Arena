@@ -14,13 +14,21 @@
    - Piernas afectan movilidad/control; brazos afectan empuje/ataque.
    - Motivo: cumple el objetivo de que perder partes cambie la pelea inmediatamente y de forma legible.
 
-4. **Robot inutilizado sin explosion todavia**
-   - Al perder las cuatro partes, el robot deja de actuar pero permanece fisico.
-   - Motivo: preservar claridad y mantener el slice pequeno; la explosion diferida es la siguiente capa natural.
+4. **Recuperacion modular sin input extra**
+   - Las partes se recogen por cercania; el robot original puede recuperarlas directamente y un aliado puede cargarlas hasta devolverlas.
+   - Motivo: validar rescate/negacion rapido sin sumar botones ni una UI compleja antes de probar si el loop espacial funciona.
 
-5. **Referencias de tipos con `preload()`**
-   - Los scripts principales ahora precargan clases usadas en anotaciones.
-   - Motivo: evitar dependencia del cache global del editor y asegurar arranque correcto en CLI/headless.
+5. **Negacion basica via riesgo espacial**
+   - El portador puede negar una parte si cae al vacio mientras la lleva; no existe todavia una accion dedicada de arrojar.
+   - Motivo: mantiene el prototipo legible y ya conecta recuperacion con posicionamiento y bordes letales, que son el nucleo del juego.
+
+6. **Cuerpo inutilizado con explosion corta y respawn**
+   - Al perder las cuatro partes, el robot queda inactivo, cuenta unos segundos, explota con empuje/danio radial y luego vuelve al spawn.
+   - Motivo: cierra la segunda ruta de eliminacion sin dejar cuerpos permanentes ni romper el ritmo de prueba del match.
+
+7. **Verificacion headless por scripts dedicados**
+   - Se agregaron `scripts/tests/robot_part_return_test.gd` y `scripts/tests/robot_disabled_explosion_test.gd`.
+   - Motivo: verificar el loop modular nuevo con algo mas fuerte que un simple arranque del proyecto, sin introducir una infraestructura de tests mas pesada de la necesaria.
 
 ## Criterios mantenidos
 

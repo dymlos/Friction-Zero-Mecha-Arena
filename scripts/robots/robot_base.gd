@@ -8,6 +8,8 @@ signal respawned(robot: RobotBase)
 signal prototype_attack_used(robot: RobotBase)
 signal part_destroyed(robot: RobotBase, part_name: String, detached_part: DetachedPart)
 signal robot_disabled(robot: RobotBase)
+signal part_restored(robot: RobotBase, part_name: String, restored_by: RobotBase)
+signal robot_exploded(robot: RobotBase)
 
 enum ControlMode { EASY, HARD }
 
@@ -53,9 +55,11 @@ const KEYBOARD_INPUT_BINDINGS := {
 
 @export var robot_id := 0
 @export var display_name := "Prototype Robot"
+@export var team_id := 0
 @export var control_mode: ControlMode = ControlMode.EASY
 @export var max_part_health := 100.0
 @export var starting_energy_per_part := 25.0
+@export_range(0.1, 1.0, 0.05) var restored_part_health_ratio := 0.35
 
 @export_group("Prototype Controls")
 @export var is_player_controlled := false
@@ -80,6 +84,12 @@ const KEYBOARD_INPUT_BINDINGS := {
 @export var collision_damage_scale := 6.5
 @export var collision_damage_cooldown := 0.25
 @export var detached_part_launch_speed := 5.2
+@export var detached_part_pickup_range := 1.4
+@export var carried_part_return_range := 1.8
+@export var disabled_explosion_delay := 1.6
+@export var disabled_explosion_radius := 3.6
+@export var disabled_explosion_impulse := 12.0
+@export var disabled_explosion_damage := 24.0
 
 @export_group("Prototype Void")
 @export var void_fall_y := -6.0
@@ -101,10 +111,29 @@ var _part_flash_strength: Dictionary = {}
 var _core_visual_nodes: Array[MeshInstance3D] = []
 var _material_base_values: Dictionary = {}
 var _collision_damage_ready_at: Dictionary = {}
+var _carried_part: DetachedPart = null
+
+@onready var disabled_explosion_timer: Timer = $DisabledExplosionTimer
 
 
 static func get_part_display_name(part_name: String) -> String:
 	return BODY_PART_LABELS.get(part_name, part_name)
+
+
+func get_team_identity() -> int:
+	if team_id > 0:
+		return team_id
+	if robot_id > 0:
+		return robot_id
+
+	return get_instance_id()
+
+
+func is_ally_of(other_robot: RobotBase) -> bool:
+	if other_robot == null:
+		return false
+
+	return get_team_identity() == other_robot.get_team_identity()
 
 
 func _ready() -> void:
@@ -114,6 +143,7 @@ func _ready() -> void:
 	add_to_group("robots")
 	_cache_visual_references()
 	_prepare_visual_materials()
+	disabled_explosion_timer.wait_time = disabled_explosion_delay
 	reset_modular_state()
 	if is_player_controlled:
 		_ensure_default_input_actions()
@@ -126,6 +156,7 @@ func _physics_process(delta: float) -> void:
 
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
 	_update_prototype_movement(delta)
+	_update_detached_part_interactions()
 	_update_prototype_attack()
 	_update_damage_visual_feedback(delta)
 
@@ -135,6 +166,7 @@ func _physics_process(delta: float) -> void:
 
 func reset_modular_state() -> void:
 	_is_disabled = false
+	disabled_explosion_timer.stop()
 	_part_flash_strength.clear()
 	_collision_damage_ready_at.clear()
 	for part_name in BODY_PARTS:
@@ -162,6 +194,49 @@ func set_part_energy(part_name: String, value: float) -> void:
 		return
 
 	part_energy[part_name] = maxf(value, 0.0)
+
+
+func get_restored_part_health_amount() -> float:
+	return maxf(max_part_health * restored_part_health_ratio, 1.0)
+
+
+func restore_part_from_return(part_name: String, restored_by: RobotBase) -> bool:
+	return restore_part(part_name, get_restored_part_health_amount(), restored_by)
+
+
+func restore_part(part_name: String, restored_health: float, restored_by: RobotBase = self) -> bool:
+	if not BODY_PARTS.has(part_name):
+		return false
+	if restored_health <= 0.0:
+		return false
+	if get_part_health(part_name) > 0.0:
+		return false
+
+	part_health[part_name] = clampf(restored_health, 0.0, max_part_health)
+	_part_flash_strength[part_name] = 1.0
+	if _is_disabled and not is_fully_disabled():
+		_exit_disabled_state()
+
+	_refresh_visual_state()
+	part_restored.emit(self, part_name, restored_by)
+	return true
+
+
+func try_pick_up_detached_part(detached_part: DetachedPart) -> bool:
+	if detached_part == null:
+		return false
+	if _is_respawning or _is_disabled:
+		return false
+	if is_instance_valid(_carried_part):
+		return false
+
+	_carried_part = detached_part
+	return true
+
+
+func release_detached_part(detached_part: DetachedPart = null) -> void:
+	if detached_part == null or _carried_part == detached_part:
+		_carried_part = null
 
 
 func is_fully_disabled() -> bool:
@@ -217,6 +292,7 @@ func fall_into_void() -> void:
 		return
 
 	_is_respawning = true
+	_deny_carried_part_if_any()
 	fell_into_void.emit(self)
 	visible = false
 	collision_layer = 0
@@ -228,11 +304,13 @@ func fall_into_void() -> void:
 
 
 func reset_to_spawn() -> void:
+	_cleanup_owned_detached_parts()
 	global_transform = _spawn_transform
 	velocity = Vector3.ZERO
 	_planar_velocity = Vector3.ZERO
 	external_impulse = Vector3.ZERO
 	_attack_cooldown_remaining = 0.0
+	_carried_part = null
 	visible = true
 	collision_layer = _starting_collision_layer
 	collision_mask = _starting_collision_mask
@@ -275,6 +353,8 @@ func _update_prototype_movement(delta: float) -> void:
 
 func _update_prototype_attack() -> void:
 	if not is_player_controlled or _is_disabled:
+		return
+	if is_instance_valid(_carried_part):
 		return
 
 	if not _is_attack_just_pressed():
@@ -364,7 +444,16 @@ func _enter_disabled_state() -> void:
 	_is_disabled = true
 	_attack_cooldown_remaining = 0.0
 	_planar_velocity = Vector3.ZERO
+	disabled_explosion_timer.start(disabled_explosion_delay)
 	robot_disabled.emit(self)
+
+
+func _exit_disabled_state() -> void:
+	if not _is_disabled:
+		return
+
+	_is_disabled = false
+	disabled_explosion_timer.stop()
 
 
 func _spawn_detached_part(part_name: String, impact_direction: Vector3) -> void:
@@ -380,7 +469,6 @@ func _spawn_detached_part(part_name: String, impact_direction: Vector3) -> void:
 	if source_visuals.is_empty():
 		return
 
-	detached_part.global_transform = global_transform
 	var launch_direction := impact_direction
 	if launch_direction.length_squared() == 0.0:
 		launch_direction = -global_transform.basis.z
@@ -388,7 +476,6 @@ func _spawn_detached_part(part_name: String, impact_direction: Vector3) -> void:
 	launch_direction.y = 0.35
 	launch_direction = launch_direction.normalized()
 	var initial_velocity := _planar_velocity + external_impulse + launch_direction * detached_part_launch_speed
-	detached_part.configure_from_visuals(part_name, source_visuals, initial_velocity)
 
 	var detach_parent := get_parent()
 	if detach_parent == null:
@@ -397,7 +484,67 @@ func _spawn_detached_part(part_name: String, impact_direction: Vector3) -> void:
 		return
 
 	detach_parent.add_child(detached_part)
+	detached_part.global_transform = global_transform
+	detached_part.configure_from_visuals(self, part_name, source_visuals, initial_velocity)
 	part_destroyed.emit(self, part_name, detached_part)
+
+
+func _update_detached_part_interactions() -> void:
+	if _is_respawning:
+		return
+
+	if is_instance_valid(_carried_part):
+		_try_deliver_carried_part()
+		return
+
+	var nearby_part := _find_nearby_detached_part()
+	if nearby_part == null:
+		return
+
+	if nearby_part.try_deliver_to_robot(self):
+		return
+
+	nearby_part.try_pick_up(self)
+
+
+func _try_deliver_carried_part() -> void:
+	if not is_instance_valid(_carried_part):
+		_carried_part = null
+		return
+
+	var owner_node := _carried_part.get_original_robot()
+	if not (owner_node is RobotBase):
+		return
+
+	var owner_robot := owner_node as RobotBase
+	if not is_ally_of(owner_robot):
+		return
+	if global_position.distance_to(owner_robot.global_position) > carried_part_return_range:
+		return
+
+	_carried_part.try_deliver_to_robot(owner_robot, self)
+
+
+func _find_nearby_detached_part() -> DetachedPart:
+	var nearest_part: DetachedPart = null
+	var nearest_distance := detached_part_pickup_range
+
+	for node in get_tree().get_nodes_in_group("detached_parts"):
+		if not (node is DetachedPart):
+			continue
+
+		var detached_part := node as DetachedPart
+		if detached_part.is_carried():
+			continue
+
+		var distance := global_position.distance_to(detached_part.global_position)
+		if distance > nearest_distance:
+			continue
+
+		nearest_part = detached_part
+		nearest_distance = distance
+
+	return nearest_part
 
 
 func _get_move_input_vector() -> Vector2:
@@ -688,6 +835,71 @@ func _get_dpad_move_vector(device: int) -> Vector2:
 		dpad_vector.y += 1.0
 
 	return dpad_vector.normalized()
+
+
+func _deny_carried_part_if_any() -> void:
+	if not is_instance_valid(_carried_part):
+		_carried_part = null
+		return
+
+	var carried_part := _carried_part
+	_carried_part = null
+	carried_part.deny_to_void()
+
+
+func _cleanup_owned_detached_parts() -> void:
+	for node in get_tree().get_nodes_in_group("detached_parts"):
+		if not (node is DetachedPart):
+			continue
+
+		var detached_part := node as DetachedPart
+		if detached_part.get_original_robot() == self:
+			detached_part.queue_free()
+
+
+func _on_disabled_explosion_timer_timeout() -> void:
+	if not _is_disabled or _is_respawning:
+		return
+
+	_deny_carried_part_if_any()
+	_apply_disabled_explosion()
+	robot_exploded.emit(self)
+	_start_disabled_respawn()
+
+
+func _apply_disabled_explosion() -> void:
+	for node in get_tree().get_nodes_in_group("robots"):
+		if not (node is RobotBase):
+			continue
+
+		var other_robot := node as RobotBase
+		if other_robot == self:
+			continue
+
+		var offset := other_robot.global_position - global_position
+		offset.y = 0.0
+		var distance := offset.length()
+		if distance > disabled_explosion_radius:
+			continue
+
+		var direction := Vector3.FORWARD
+		if distance > 0.001:
+			direction = offset / distance
+
+		var distance_ratio := 1.0 - clampf(distance / disabled_explosion_radius, 0.0, 1.0)
+		other_robot.apply_impulse(direction * disabled_explosion_impulse * distance_ratio)
+		other_robot.receive_attack_hit(direction, disabled_explosion_damage * distance_ratio)
+
+
+func _start_disabled_respawn() -> void:
+	_is_respawning = true
+	_exit_disabled_state()
+	visible = false
+	collision_layer = 0
+	collision_mask = 0
+	set_physics_process(false)
+	await get_tree().create_timer(0.9).timeout
+	reset_to_spawn()
 
 
 func _report_joypad_status() -> void:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/robots/robot_base.gd" id="1_robot"]
 
@@ -139,3 +139,8 @@ material_override = SubResource("Material_trim")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.46, 0.58, 1.21)
 mesh = SubResource("BoxMesh_thruster_nozzle")
 material_override = SubResource("Material_trim")
+
+[node name="DisabledExplosionTimer" type="Timer" parent="."]
+one_shot = true
+wait_time = 1.6
+[connection signal="timeout" from="DisabledExplosionTimer" to="." method="_on_disabled_explosion_timer_timeout"]

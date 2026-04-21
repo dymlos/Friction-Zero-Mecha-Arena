@@ -13,26 +13,31 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - penalizaciones funcionales:
   - piernas menos sanas reducen velocidad y control
   - brazos menos sanos reducen empuje y embestida
-- robot inutilizado al perder las cuatro partes, pero todavia empujable
+- partes desprendidas con propietario original, pickup por cercania y retorno parcial
+- transporte de partes que bloquea el ataque prototipo
+- negacion basica de partes si el portador cae al vacio
+- robot inutilizado al perder las cuatro partes, empujable y con explosion diferida antes del respawn
 
 ## Lo completado en esta iteracion
 
-- Se implemento danio modular por direccion de impacto.
-- Se agrego una escena reutilizable para partes desprendidas.
-- Se conectaron eventos de perdida de parte e inutilizacion al HUD de prototipo.
-- Se corrigio la resolucion de tipos de GDScript con `preload()` para que el proyecto parsee bien fuera del cache del editor.
+- Se agrego recuperacion modular basica con propietario, retorno parcial y bloqueo de ataque al cargar una parte.
+- Se implemento negacion basica de partes mediante caida al vacio del portador.
+- Se agrego explosion diferida para robots inutilizados, con danio/empuje radial y respawn posterior.
+- Se sumaron verificaciones headless especificas para retorno de partes y explosion del cuerpo averiado.
 
 ## Validacion realizada
 
-- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_part_return_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_explosion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 30`
 
-Resultado: el proyecto inicia sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: los dos loops nuevos pasan en verificaciones dedicadas y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
 - Todavia no hay torso independiente Hard.
 - La energia existe como dato y multiplicador futuro, pero no hay redistribucion jugable ni UI asociada.
-- Las partes desprendidas aun no se pueden recuperar, negar ni devolver.
-- No hay explosion diferida del cuerpo inutilizado ni cierre real de ronda por destruccion total.
+- La escena principal todavia no demuestra rescates cooperativos reales porque solo un robot esta controlado por jugador.
+- Aun no hay feedback visual dedicado para "parte cargada" mas alla del propio mesh transportado y el mensaje breve de HUD.
+- No existe accion de lanzamiento manual para negar partes: la negacion actual solo se resuelve llevando el portador al vacio.

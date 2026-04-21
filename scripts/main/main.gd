@@ -30,7 +30,9 @@ func _register_existing_robots() -> void:
 			child.fell_into_void.connect(_on_robot_fell_into_void)
 			child.respawned.connect(_on_robot_respawned)
 			child.part_destroyed.connect(_on_robot_part_destroyed)
+			child.part_restored.connect(_on_robot_part_restored)
 			child.robot_disabled.connect(_on_robot_disabled)
+			child.robot_exploded.connect(_on_robot_exploded)
 
 
 func _report_startup_structure() -> void:
@@ -54,5 +56,21 @@ func _on_robot_part_destroyed(robot: RobotBase, part_name: String, _detached_par
 	ui.show_status("%s perdio %s" % [robot.display_name, RobotBase.get_part_display_name(part_name)])
 
 
+func _on_robot_part_restored(robot: RobotBase, part_name: String, restored_by: RobotBase) -> void:
+	if restored_by == robot:
+		ui.show_status("%s recupero %s" % [robot.display_name, RobotBase.get_part_display_name(part_name)])
+		return
+
+	ui.show_status("%s devolvio %s a %s" % [
+		restored_by.display_name,
+		RobotBase.get_part_display_name(part_name),
+		robot.display_name,
+	])
+
+
 func _on_robot_disabled(robot: RobotBase) -> void:
 	ui.show_status("%s quedo inutilizado" % robot.display_name)
+
+
+func _on_robot_exploded(robot: RobotBase) -> void:
+	ui.show_status("%s exploto tras quedar inutilizado" % robot.display_name)
