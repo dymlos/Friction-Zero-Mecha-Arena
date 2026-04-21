@@ -238,23 +238,27 @@
    - Si `RobotBase` pierde su ultima parte mientras `Overdrive` sigue activo, el cuerpo inutilizado conserva una bandera `inestable`; esa variante escala `radio/empuje/daño`, calienta mas el core del robot y `Main/MatchController` la exponen como `inestable` / `explosion inestable` en HUD y resumenes.
    - Motivo: cerrar la apuesta riesgo/recompensa del overdrive con una consecuencia espacial rara pero legible, reutilizando el loop de cuerpo inutilizado ya existente en vez de abrir otro hazard o una regla aparte.
 
-60. **El cierre de ronda se resume en la misma banda textual del HUD**
+60. **La explosion diferida se telegraphia en mundo con el mismo radio real**
+   - `RobotBase` ahora crea `DisabledWarningIndicator`, un anillo pegado al piso que solo aparece mientras el cuerpo sigue inutilizado; usa `disabled_explosion_radius` como escala base y reaplica el multiplicador `inestable` cuando corresponde.
+   - Motivo: el roster ya avisaba que el casco iba a explotar, pero faltaba mostrar sobre la arena la amenaza espacial real para sostener claridad en pantalla compartida sin otra UI.
+
+61. **El cierre de ronda se resume en la misma banda textual del HUD**
    - `MatchController` ahora guarda el orden de bajas de la ronda y solo lo expone como `Resumen | ...` cuando la ronda ya termino; al iniciar la siguiente, ese recap se limpia.
    - Motivo: reforzar la explicacion de “como termino esta ronda” sin abrir otra capa de post-ronda, sin esconder el combate activo bajo texto extra y reutilizando el contrato compacto ya establecido en `get_round_state_lines()`.
 
-61. **El detalle del HUD se controla desde `MatchConfig`, no con otra escena**
+62. **El detalle del HUD se controla desde `MatchConfig`, no con otra escena**
    - `MatchConfig.hud_detail_mode` alterna entre `EXPLICIT` y `CONTEXTUAL`, `RobotBase` expone `is_energy_balanced()` para que el filtro sepa cuando volver a mostrar energia, y `Main` sigue refrescando el mismo `MatchHud` sin branching adicional de escenas.
    - Motivo: sumar la configuracion pedida por el documento de UI con el menor cambio posible, manteniendo el codigo testeable por headless y sin duplicar layouts.
 
-62. **Primeros arquetipos como recursos de tuning, no como ramas de código separadas**
+63. **Primeros arquetipos como recursos de tuning, no como ramas de código separadas**
    - `RobotArchetypeConfig` encapsula multiplicadores simples y `RobotBase` los aplica al arrancar; el laboratorio usa `Ariete`, `Grua`, `Cizalla` y `Patin` sobre la misma escena base.
    - Motivo: cerrar la brecha de identidad del roster con el menor costo técnico posible, manteniendo el proyecto entendible para un principiante y dejando la puerta abierta a skills/pasivas propias solo si el tuning no alcanza.
 
-63. **El toggle runtime del HUD vive como override local, no en el recurso compartido**
+64. **El toggle runtime del HUD vive como override local, no en el recurso compartido**
    - `MatchController` conserva `MatchConfig.hud_detail_mode` como default de arranque, pero permite ciclar una sobreescritura de sesion; `Main` expone ese cambio con `F1` para playtests locales.
    - Motivo: comparar `explicito/contextual` dentro del mismo laboratorio sin ensuciar escenas nuevas ni mutar el `.tres` compartido entre instancias/tests.
 
-64. **La segunda capa de arquetipos reutiliza hooks ya existentes**
+65. **La segunda capa de arquetipos reutiliza hooks ya existentes**
    - `RobotArchetypeConfig` ahora agrega pasivas chicas sin escenas ni botones nuevos: `Ariete` baja el impulso externo recibido, `Grua` estabiliza otra pieza dañada al devolver una parte, `Cizalla` castiga mas una pieza ya tocada y `Patin` estira la duracion de los boosts de movilidad.
    - `RobotBase` las resuelve dentro de `apply_impulse`, `restore_part`, `receive_attack_hit_from_robot` / `receive_collision_hit_from_robot` y `apply_mobility_boost`, mientras `PulseBolt` tambien pasa el atacante para no romper la identidad de `Cizalla` fuera del melee.
    - Motivo: profundizar la identidad del roster sin abrir todavia skills activas, UI nueva ni ramas de codigo por robot; se apoya en sistemas que ya eran jugables y legibles en el laboratorio actual.

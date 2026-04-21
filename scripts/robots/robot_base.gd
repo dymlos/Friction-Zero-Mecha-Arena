@@ -278,6 +278,11 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export_range(0.0, 20.0, 0.5) var damaged_arm_pose_roll_degrees := 12.0
 @export_range(0.0, 20.0, 0.5) var damaged_leg_pose_pitch_degrees := 10.0
 @export_range(0.0, 15.0, 0.5) var damaged_part_pose_splay_degrees := 6.0
+@export_group("Prototype Disabled Explosion Readability")
+@export var disabled_warning_indicator_height := 0.03
+@export_range(0.01, 0.15, 0.01) var disabled_warning_indicator_thickness := 0.04
+@export_range(0.0, 0.2, 0.01) var disabled_warning_indicator_pulse_amount := 0.05
+@export_range(1.0, 12.0, 0.5) var disabled_warning_indicator_pulse_speed := 5.5
 @export var disabled_explosion_delay := 1.6
 @export var disabled_explosion_radius := 3.6
 @export var disabled_explosion_impulse := 12.0
@@ -320,6 +325,8 @@ var _carry_indicator: MeshInstance3D = null
 var _carry_indicator_animation_time := 0.0
 var _recovery_target_indicator: MeshInstance3D = null
 var _recovery_target_indicator_animation_time := 0.0
+var _disabled_warning_indicator: MeshInstance3D = null
+var _disabled_warning_indicator_animation_time := 0.0
 var _recoverable_detached_part_ids: Dictionary = {}
 var _last_indicator_payload_name := ""
 var _selected_energy_part_name := "left_arm"
@@ -864,6 +871,7 @@ func _ready() -> void:
 	_setup_damage_feedback_nodes()
 	_setup_carry_indicator()
 	_setup_recovery_target_indicator()
+	_setup_disabled_warning_indicator()
 	disabled_explosion_timer.wait_time = disabled_explosion_delay
 	_reset_control_pose()
 	reset_modular_state()
@@ -945,6 +953,7 @@ func _physics_process(delta: float) -> void:
 func _process(delta: float) -> void:
 	_refresh_recovery_target_indicator()
 	_update_recovery_target_indicator_animation(delta)
+	_update_disabled_warning_indicator(delta)
 
 
 func reset_modular_state() -> void:
@@ -1487,6 +1496,7 @@ func _enter_disabled_state() -> void:
 	_attack_cooldown_remaining = 0.0
 	_planar_velocity = Vector3.ZERO
 	disabled_explosion_timer.start(disabled_explosion_delay)
+	_refresh_disabled_warning_indicator()
 	robot_disabled.emit(self)
 
 
@@ -1497,6 +1507,7 @@ func _exit_disabled_state() -> void:
 	_is_disabled = false
 	_disabled_explosion_is_unstable = false
 	disabled_explosion_timer.stop()
+	_refresh_disabled_warning_indicator()
 
 
 func _spawn_detached_part(part_name: String, impact_direction: Vector3) -> void:
@@ -2090,6 +2101,7 @@ func _register_material_base_values(mesh_instance: MeshInstance3D) -> void:
 func _refresh_visual_state() -> void:
 	_refresh_carry_indicator()
 	_refresh_recovery_target_indicator()
+	_refresh_disabled_warning_indicator()
 	for part_name in BODY_PARTS:
 		_refresh_part_visual_state(part_name)
 
@@ -2204,6 +2216,32 @@ func _setup_recovery_target_indicator() -> void:
 	add_child(_recovery_target_indicator)
 
 
+func _setup_disabled_warning_indicator() -> void:
+	var indicator_mesh := CylinderMesh.new()
+	indicator_mesh.top_radius = 1.0
+	indicator_mesh.bottom_radius = 1.0
+	indicator_mesh.height = disabled_warning_indicator_thickness
+	indicator_mesh.radial_segments = 40
+	indicator_mesh.rings = 1
+
+	var indicator_material := StandardMaterial3D.new()
+	indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	indicator_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	indicator_material.albedo_color = Color(1.0, 0.48, 0.14, 0.32)
+	indicator_material.emission_enabled = true
+	indicator_material.emission = Color(1.0, 0.56, 0.18, 1.0)
+	indicator_material.emission_energy_multiplier = 1.2
+
+	_disabled_warning_indicator = MeshInstance3D.new()
+	_disabled_warning_indicator.name = "DisabledWarningIndicator"
+	_disabled_warning_indicator.mesh = indicator_mesh
+	_disabled_warning_indicator.material_override = indicator_material
+	_disabled_warning_indicator.position = Vector3(0.0, disabled_warning_indicator_height, 0.0)
+	_disabled_warning_indicator.visible = false
+	add_child(_disabled_warning_indicator)
+
+
 func _refresh_carry_indicator() -> void:
 	if _carry_indicator == null:
 		return
@@ -2226,6 +2264,21 @@ func _refresh_recovery_target_indicator() -> void:
 		return
 
 	_recovery_target_indicator.visible = has_recoverable_detached_parts() and not _is_respawning
+
+
+func _refresh_disabled_warning_indicator() -> void:
+	if _disabled_warning_indicator == null:
+		return
+
+	var should_show := _is_disabled and not _is_respawning and get_disabled_explosion_time_left() > 0.0
+	_disabled_warning_indicator.visible = should_show
+	if not should_show:
+		_disabled_warning_indicator.scale = Vector3.ONE
+		return
+
+	var explosion_radius := _get_disabled_explosion_radius_for_current_state()
+	_disabled_warning_indicator.position.y = disabled_warning_indicator_height
+	_disabled_warning_indicator.scale = Vector3(explosion_radius, 1.0, explosion_radius)
 
 
 func _refresh_carry_indicator_color(part_name: String) -> void:
@@ -2276,6 +2329,34 @@ func _update_recovery_target_indicator_animation(delta: float) -> void:
 	_recovery_target_indicator.scale = Vector3(pulse, 1.0, pulse)
 	_recovery_target_indicator.position.y = recovery_target_indicator_base_height + wave * recovery_target_indicator_bob_height
 	_recovery_target_indicator.rotation.y = fmod(_recovery_target_indicator.rotation.y + delta * 0.7, TAU)
+
+
+func _update_disabled_warning_indicator(delta: float) -> void:
+	if _disabled_warning_indicator == null:
+		return
+	if not _disabled_warning_indicator.visible:
+		_disabled_warning_indicator_animation_time = 0.0
+		_disabled_warning_indicator.scale.y = 1.0
+		return
+
+	_disabled_warning_indicator_animation_time += delta
+	var warning_progress := 0.0
+	if disabled_explosion_delay > 0.0:
+		warning_progress = 1.0 - clampf(get_disabled_explosion_time_left() / disabled_explosion_delay, 0.0, 1.0)
+	var wave := (sin(_disabled_warning_indicator_animation_time * disabled_warning_indicator_pulse_speed) + 1.0) * 0.5
+	var pulse_scale := 1.0 + wave * disabled_warning_indicator_pulse_amount
+	_disabled_warning_indicator.scale.y = pulse_scale
+
+	var material := _disabled_warning_indicator.material_override as StandardMaterial3D
+	if material == null:
+		return
+
+	var warning_color := Color(1.0, 0.48, 0.14, 0.3)
+	if is_disabled_explosion_unstable():
+		warning_color = Color(1.0, 0.28, 0.08, 0.38)
+	material.albedo_color = warning_color
+	material.emission = warning_color.lightened(0.18)
+	material.emission_energy_multiplier = 1.2 + wave * 0.4 + warning_progress * 1.3
 
 
 func _get_indicator_payload_name() -> String:
@@ -2811,6 +2892,14 @@ func _apply_disabled_explosion() -> void:
 		var distance_ratio := 1.0 - clampf(distance / explosion_radius, 0.0, 1.0)
 		other_robot.apply_impulse(direction * explosion_impulse * distance_ratio)
 		other_robot.receive_attack_hit(direction, explosion_damage * distance_ratio)
+
+
+func _get_disabled_explosion_radius_for_current_state() -> float:
+	var explosion_radius := disabled_explosion_radius
+	if is_disabled_explosion_unstable():
+		explosion_radius *= unstable_disabled_explosion_radius_multiplier
+
+	return explosion_radius
 
 
 func _start_disabled_respawn() -> void:

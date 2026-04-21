@@ -18,6 +18,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - foco en brazos mejora empuje/embestida y debilita movilidad
   - overdrive breve con recuperacion y cooldown no spameable
 - si un robot pierde su ultima parte con `Overdrive` activo, su explosion diferida pasa a una variante inestable con mayor radio/empuje/daño
+- el cuerpo inutilizado ahora tambien deja un anillo diegetico sobre la arena con el radio real de su explosion pendiente; si nace desde `Overdrive`, ese mismo telegraph crece con la variante `inestable`
 - soporte base de control Hard
   - el torso superior puede separarse del chasis con `UpperBodyPivot`
   - la orientacion de combate e impactos modulares en Hard usa esa referencia
@@ -74,6 +75,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - robots fuera conservan causa corta (`vacio`, `explosion` o `explosion inestable`)
   - el bloque superior recuerda la ultima baja con `Ultima baja | ...`
   - cuando la ronda ya cerro, el mismo bloque superior conserva `Resumen | ...` con el orden de bajas hasta el siguiente reset
+- lectura del cuerpo inutilizado mas completa:
+  - `RobotBase` suma `DisabledWarningIndicator`, un anillo pegado al piso que aparece solo mientras el robot sigue inutilizado
+  - su radio coincide con `disabled_explosion_radius` y escala tambien en `inestable`, para alinear lectura y gameplay
+  - el pulso vive en el propio marcador y se limpia al restaurar partes, explotar o respawnear
 - recap de cierre visible solo fuera del combate:
   - `MatchController` ahora expone un recap estructurado (`Decision`, `Marcador` y estado final por robot) para la ronda o partida cerrada
   - `MatchHud` lo dibuja en un `RecapPanel` lateral oculto durante la ronda activa, de modo que la pelea sigue limpia y el detalle aparece solo cuando ya importa entender por que se perdio
@@ -97,6 +102,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - validacion automatizada del cierre de partida reforzado: `match_completion_test.gd` ahora cubre tambien el panel final + stats simples + desgaste modular acumulado + linea `Reinicio | F5...`, `match_modular_loss_stats_test.gd` fuerza brazos/piernas perdidos por equipo para validar el nuevo resumen, y `match_manual_restart_test.gd` verifica reinicio manual inmediato con score limpio sobre `main.tscn`.
 - validacion automatizada FFA: `ffa_mode_bootstrap_test.gd`, `ffa_lab_scene_test.gd` y `ffa_round_resolution_test.gd` comprueban que el laboratorio libre no hereda alianzas falsas del setup 2v2, mantiene el marcador individual y resuelve una ronda completa con ganador por robot
 - validacion automatizada de explosion inestable: `robot_unstable_explosion_test.gd` compara la variante base contra la version nacida en `Overdrive`, y `match_unstable_explosion_readability_test.gd` verifica su lectura compacta en `main.tscn`
+- validacion automatizada del telegraph de explosion: `robot_disabled_warning_indicator_test.gd` comprueba que el anillo nace oculto, aparece al inutilizarse, refleja radio estable/inestable y desaparece al salir de ese estado
 
 ## Lo completado en esta iteracion
 
@@ -287,6 +293,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/hud_runtime_toggle_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_part_return_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_explosion_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_warning_indicator_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_unstable_explosion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_damage_feedback_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/detached_part_recovery_readability_test.gd`
