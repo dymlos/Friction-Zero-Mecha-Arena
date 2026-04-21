@@ -7,6 +7,8 @@ const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 
+@export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
+
 @onready var arena_root: Node3D = $ArenaRoot
 @onready var robot_root: Node3D = $RobotRoot
 @onready var systems: Node = $Systems
@@ -60,6 +62,7 @@ func _configure_playable_prototype() -> void:
 		var robot: RobotBase = robots[index]
 		robot.player_index = index + 1
 		robot.is_player_controlled = index < local_player_count
+		robot.control_mode = _resolve_control_mode_for_slot(robot.player_index)
 		_assign_default_local_inputs(robot, index)
 		if index < spawn_points.size():
 			var spawn_point: Marker3D = spawn_points[index]
@@ -119,6 +122,13 @@ func _get_active_arena() -> ArenaBase:
 			return child as ArenaBase
 
 	return null
+
+
+func _resolve_control_mode_for_slot(player_slot: int) -> RobotBase.ControlMode:
+	if hard_mode_player_slots.has(player_slot):
+		return RobotBase.ControlMode.HARD
+
+	return RobotBase.ControlMode.EASY
 
 
 func _apply_match_pressure_to_arena() -> void:

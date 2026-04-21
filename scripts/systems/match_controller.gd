@@ -201,14 +201,16 @@ func record_robot_elimination(robot: RobotBase, cause: EliminationCause) -> Stri
 func _build_robot_status_line(robot: RobotBase) -> String:
 	var control_label := "P%s" % robot.player_index if robot.is_player_controlled else "CPU"
 	var state_label := "Activo"
+	var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
 	if is_robot_eliminated(robot):
 		state_label = "Fuera"
 	elif robot.is_disabled_state():
 		state_label = "Inutilizado"
 
-	var line := "%s %s | %s | %s/4 partes" % [
+	var line := "%s %s | %s | %s | %s/4 partes" % [
 		control_label,
 		robot.display_name,
+		mode_label,
 		state_label,
 		robot.get_active_part_count(),
 	]
