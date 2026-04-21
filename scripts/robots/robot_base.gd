@@ -206,6 +206,10 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export_range(1.0, 2.0, 0.05) var mobility_pickup_drive_multiplier := 1.22
 @export_range(1.0, 2.0, 0.05) var mobility_pickup_control_multiplier := 1.18
 
+@export_group("Prototype Stability Pickup")
+@export_range(0.2, 3.0, 0.05) var stability_pickup_duration := 1.7
+@export_range(0.2, 1.0, 0.01) var stability_pickup_received_impulse_multiplier := 0.76
+
 @export_group("Prototype Energy")
 @export var focused_part_energy := 40.0
 @export var focused_pair_energy := 30.0
@@ -343,6 +347,8 @@ var _overdrive_cooldown_remaining := 0.0
 var _energy_surge_part_name := ""
 var _energy_surge_remaining := 0.0
 var _mobility_boost_remaining := 0.0
+var _stability_boost_remaining := 0.0
+var _stability_received_impulse_state_multiplier := 1.0
 var _core_skill_charges := 0
 var _core_skill_recharge_remaining := 0.0
 var _hard_torso_world_direction := Vector3.FORWARD
@@ -518,10 +524,11 @@ func get_effective_arm_power_multiplier() -> float:
 
 
 func get_received_impulse_multiplier() -> float:
-	if archetype_config == null:
-		return 1.0
+	var archetype_multiplier := 1.0
+	if archetype_config != null:
+		archetype_multiplier = maxf(archetype_config.received_impulse_multiplier, 0.1)
 
-	return maxf(archetype_config.received_impulse_multiplier, 0.1)
+	return archetype_multiplier * _get_stability_received_impulse_multiplier()
 
 
 func get_damaged_part_bonus_damage_multiplier() -> float:
@@ -565,6 +572,14 @@ func is_control_zone_suppressed() -> bool:
 	return _control_zone_suppression_remaining > 0.0
 
 
+func is_stability_boost_active() -> bool:
+	return _stability_boost_remaining > 0.0
+
+
+func get_stability_boost_time_left() -> float:
+	return maxf(_stability_boost_remaining, 0.0)
+
+
 func get_control_zone_suppression_time_left() -> float:
 	return maxf(_control_zone_suppression_remaining, 0.0)
 
@@ -578,6 +593,8 @@ func apply_control_zone_suppression(
 		return false
 	if _is_respawning or _is_disabled:
 		return false
+	if is_stability_boost_active():
+		return false
 
 	_control_zone_suppression_remaining = maxf(_control_zone_suppression_remaining, duration)
 	_control_zone_drive_state_multiplier = minf(
@@ -588,6 +605,31 @@ func apply_control_zone_suppression(
 		_control_zone_control_state_multiplier,
 		clampf(control_multiplier, 0.2, 1.0)
 	)
+	return true
+
+
+func apply_stability_boost(
+	duration: float,
+	received_impulse_multiplier: float = -1.0
+) -> bool:
+	if duration <= 0.0:
+		return false
+	if _is_respawning or _is_disabled:
+		return false
+
+	if received_impulse_multiplier <= 0.0:
+		received_impulse_multiplier = stability_pickup_received_impulse_multiplier
+
+	_clear_control_zone_suppression()
+	var previous_remaining := _stability_boost_remaining
+	_stability_boost_remaining = maxf(_stability_boost_remaining, duration)
+	_stability_received_impulse_state_multiplier = minf(
+		_stability_received_impulse_state_multiplier,
+		clampf(received_impulse_multiplier, 0.2, 1.0)
+	)
+	if _stability_boost_remaining > previous_remaining:
+		_refresh_visual_state()
+
 	return true
 
 
@@ -976,6 +1018,8 @@ func reset_modular_state() -> void:
 	_energy_surge_part_name = ""
 	_energy_surge_remaining = 0.0
 	_mobility_boost_remaining = 0.0
+	_stability_boost_remaining = 0.0
+	_stability_received_impulse_state_multiplier = 1.0
 	_reset_core_skill_state()
 	_clear_control_zone_suppression()
 	_clear_active_control_beacon()
@@ -1683,6 +1727,12 @@ func _update_temporary_boosts(delta: float) -> void:
 		if _mobility_boost_remaining == 0.0:
 			visuals_dirty = true
 
+	if _stability_boost_remaining > 0.0:
+		_stability_boost_remaining = maxf(_stability_boost_remaining - delta, 0.0)
+		if _stability_boost_remaining == 0.0:
+			_stability_received_impulse_state_multiplier = 1.0
+			visuals_dirty = true
+
 	if visuals_dirty:
 		_refresh_visual_state()
 
@@ -1868,6 +1918,13 @@ func _get_control_zone_control_multiplier() -> float:
 		return 1.0
 
 	return clampf(_control_zone_control_state_multiplier, 0.2, 1.0)
+
+
+func _get_stability_received_impulse_multiplier() -> float:
+	if not is_stability_boost_active():
+		return 1.0
+
+	return clampf(_stability_received_impulse_state_multiplier, 0.2, 1.0)
 
 
 func _get_arm_energy_multiplier() -> float:

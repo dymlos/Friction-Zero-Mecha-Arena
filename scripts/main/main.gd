@@ -15,6 +15,7 @@ const EdgeMobilityPickup = preload("res://scripts/pickups/edge_mobility_pickup.g
 const EdgeEnergyPickup = preload("res://scripts/pickups/edge_energy_pickup.gd")
 const EdgePulsePickup = preload("res://scripts/pickups/edge_pulse_pickup.gd")
 const EdgeChargePickup = preload("res://scripts/pickups/edge_charge_pickup.gd")
+const EdgeUtilityPickup = preload("res://scripts/pickups/edge_utility_pickup.gd")
 const PILOT_SUPPORT_SHIP_SCENE = preload("res://scenes/support/pilot_support_ship.tscn")
 const ARIETE_ARCHETYPE = preload("res://data/config/robots/ariete_archetype.tres")
 const GRUA_ARCHETYPE = preload("res://data/config/robots/grua_archetype.tres")
@@ -412,6 +413,16 @@ func _connect_arena_pickups() -> void:
 
 		charge_pickup.pickup_collected.connect(_on_edge_charge_pickup_collected)
 
+	for node in get_tree().get_nodes_in_group("edge_utility_pickups"):
+		if not (node is EdgeUtilityPickup):
+			continue
+
+		var utility_pickup := node as EdgeUtilityPickup
+		if utility_pickup.pickup_collected.is_connected(_on_edge_utility_pickup_collected):
+			continue
+
+		utility_pickup.pickup_collected.connect(_on_edge_utility_pickup_collected)
+
 
 func _build_startup_status() -> String:
 	var control_segments: Array[String] = []
@@ -547,6 +558,14 @@ func _on_edge_charge_pickup_collected(robot: RobotBase, restored_charges: int) -
 		robot.display_name,
 		skill_label,
 		restored_charges,
+	])
+
+
+func _on_edge_utility_pickup_collected(robot: RobotBase, stability_duration: float) -> void:
+	match_controller.record_edge_pickup_collection(robot)
+	ui.show_status("%s activo estabilidad de borde (%.1fs)" % [
+		robot.display_name,
+		stability_duration,
 	])
 
 

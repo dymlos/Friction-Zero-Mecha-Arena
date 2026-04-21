@@ -3,13 +3,14 @@ class_name ArenaBase
 
 const EDGE_PICKUP_LAYOUT_PROFILE_TEAMS := "teams"
 const EDGE_PICKUP_LAYOUT_PROFILE_FFA := "ffa"
-const DEFAULT_EDGE_PICKUP_ALLOWED_IDS := ["repair", "mobility", "energy", "pulse"]
+const DEFAULT_EDGE_PICKUP_ALLOWED_IDS := ["repair", "mobility", "energy", "pulse", "utility"]
 const EDGE_PICKUP_LABELS := {
 	"repair": "reparacion",
 	"mobility": "movilidad",
 	"energy": "energia",
 	"pulse": "pulso",
 	"charge": "municion",
+	"utility": "estabilidad",
 }
 const EDGE_PICKUP_LAYOUTS_BY_PROFILE := {
 	EDGE_PICKUP_LAYOUT_PROFILE_TEAMS: [
@@ -17,6 +18,8 @@ const EDGE_PICKUP_LAYOUTS_BY_PROFILE := {
 		["energy", "mobility"],
 		["repair", "pulse"],
 		["energy", "pulse"],
+		["repair", "utility"],
+		["mobility", "utility"],
 		["repair", "charge"],
 		["energy", "charge"],
 	],
@@ -25,6 +28,8 @@ const EDGE_PICKUP_LAYOUTS_BY_PROFILE := {
 		["repair", "energy", "pulse"],
 		["energy", "mobility", "pulse"],
 		["repair", "energy", "mobility"],
+		["repair", "pulse", "utility"],
+		["energy", "mobility", "utility"],
 		["repair", "pulse", "charge"],
 		["energy", "pulse", "charge"],
 		["mobility", "pulse", "charge"],
@@ -442,6 +447,8 @@ func _get_edge_pickup_layout_id(pickup: Node) -> String:
 		return "pulse"
 	if pickup.is_in_group("edge_charge_pickups"):
 		return "charge"
+	if pickup.is_in_group("edge_utility_pickups"):
+		return "utility"
 
 	return ""
 

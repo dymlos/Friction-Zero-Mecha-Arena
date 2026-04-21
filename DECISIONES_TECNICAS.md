@@ -353,6 +353,10 @@
    - `Main` calcula los tipos de pickup permitidos por ronda: en `FFA` exige al menos dos robots con skill propia; en `Equipos` exige que cada competidor tenga al menos una skill propia antes de habilitar layouts con `charge`.
    - Motivo: evitar que el laboratorio 2v2 base regale valor gratis a un solo bando y mantener el borde tactico sin crear pickups muertos para la configuracion principal.
 
+81. **La primera utility universal de borde es `estabilidad`, no otro daño**
+   - `EdgeUtilityPickup` llama a `RobotBase.apply_stability_boost()`: limpia `zona/interferencia`, bloquea nuevas supresiones por una ventana corta y baja un poco el impulso externo recibido; `MatchController` la resume como `estabilidad` en el roster.
+   - Motivo: el documento seguia pidiendo un tipo `utility`, pero abrir otro proyectil/hazard habria competido con el choque principal. Una respuesta anti-control reutiliza seams existentes, agrega contrajuego a `Baliza`/`interferencia` y sigue siendo legible en pantalla compartida.
+
 81. **El primer post-muerte real vive solo en `Teams` y reutiliza el input del eliminado**
    - `Main` ahora reserva `SupportRoot`, crea una `PilotSupportShip` cuando `record_robot_elimination()` deja a un aliado vivo en `Teams` y la limpia en cada `round_started`; `FFA` comparte la estructura base de escena pero no activa ese flujo.
    - Motivo: empezar a diferenciar Team vs Team sin romper la claridad del laboratorio libre ni abrir una segunda capa de reglas en el modo que todavia depende mas de supervivencia/oportunismo que de rescate coordinado.
