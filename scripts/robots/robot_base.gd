@@ -201,6 +201,10 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var carry_indicator_pulse_speed := 6.5
 @export var carry_indicator_pulse_amount := 0.18
 @export var carry_indicator_rotation_speed := 1.3
+@export_group("Prototype Damage Readability")
+@export_range(0.4, 1.0, 0.05) var damage_feedback_threshold := 0.8
+@export_range(0.1, 0.8, 0.05) var critical_damage_feedback_threshold := 0.45
+@export var damage_feedback_height := 0.24
 @export var disabled_explosion_delay := 1.6
 @export var disabled_explosion_radius := 3.6
 @export var disabled_explosion_impulse := 12.0
@@ -230,6 +234,7 @@ var _part_visual_nodes: Dictionary = {}
 var _part_flash_strength: Dictionary = {}
 var _core_visual_nodes: Array[MeshInstance3D] = []
 var _material_base_values: Dictionary = {}
+var _damage_feedback_nodes: Dictionary = {}
 var _collision_damage_ready_at: Dictionary = {}
 var _carried_part: DetachedPart = null
 var _carry_indicator: MeshInstance3D = null
@@ -399,6 +404,7 @@ func _ready() -> void:
 	add_to_group("robots")
 	_cache_visual_references()
 	_prepare_visual_materials()
+	_setup_damage_feedback_nodes()
 	_setup_carry_indicator()
 	disabled_explosion_timer.wait_time = disabled_explosion_delay
 	_reset_control_pose()
@@ -1192,6 +1198,66 @@ func _refresh_visual_state() -> void:
 	_refresh_core_visuals()
 
 
+func _setup_damage_feedback_nodes() -> void:
+	_damage_feedback_nodes.clear()
+	for part_name in BODY_PARTS:
+		var visuals: Array[MeshInstance3D] = _part_visual_nodes.get(part_name, [])
+		if visuals.is_empty():
+			continue
+
+		var anchor := visuals[0]
+		if anchor == null:
+			continue
+
+		var feedback_root := Node3D.new()
+		feedback_root.name = "DamageFeedback"
+		feedback_root.position = Vector3(0.0, damage_feedback_height, 0.0)
+		feedback_root.visible = false
+		anchor.add_child(feedback_root)
+
+		var smoke_mesh := CylinderMesh.new()
+		smoke_mesh.top_radius = 0.035
+		smoke_mesh.bottom_radius = 0.085
+		smoke_mesh.height = 0.24
+
+		var smoke_material := StandardMaterial3D.new()
+		smoke_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		smoke_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		smoke_material.albedo_color = Color(0.3, 0.3, 0.3, 0.65)
+
+		var smoke := MeshInstance3D.new()
+		smoke.name = "Smoke"
+		smoke.mesh = smoke_mesh
+		smoke.material_override = smoke_material
+		smoke.visible = false
+		feedback_root.add_child(smoke)
+
+		var spark_mesh := SphereMesh.new()
+		spark_mesh.radius = 0.045
+		spark_mesh.height = 0.09
+
+		var spark_material := StandardMaterial3D.new()
+		spark_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		spark_material.albedo_color = Color(1.0, 0.48, 0.12, 1.0)
+		spark_material.emission_enabled = true
+		spark_material.emission = Color(1.0, 0.4, 0.12, 1.0)
+		spark_material.emission_energy_multiplier = 1.6
+
+		var spark := MeshInstance3D.new()
+		spark.name = "Spark"
+		spark.mesh = spark_mesh
+		spark.material_override = spark_material
+		spark.position = Vector3(0.0, 0.15, 0.0)
+		spark.visible = false
+		feedback_root.add_child(spark)
+
+		_damage_feedback_nodes[part_name] = {
+			"root": feedback_root,
+			"smoke": smoke,
+			"spark": spark,
+		}
+
+
 func _setup_carry_indicator() -> void:
 	var indicator_mesh := SphereMesh.new()
 	indicator_mesh.radius = carry_indicator_radius
@@ -1274,6 +1340,62 @@ func _refresh_part_visual_state(part_name: String) -> void:
 		visual_node.visible = should_be_visible
 		if should_be_visible:
 			_apply_material_damage_tint(visual_node, health_ratio, flash_strength)
+
+	_refresh_part_damage_feedback(part_name)
+
+
+func _refresh_part_damage_feedback(part_name: String) -> void:
+	var feedback_nodes: Dictionary = _damage_feedback_nodes.get(part_name, {})
+	if feedback_nodes.is_empty():
+		return
+
+	var root := feedback_nodes.get("root") as Node3D
+	var smoke := feedback_nodes.get("smoke") as MeshInstance3D
+	var spark := feedback_nodes.get("spark") as MeshInstance3D
+	if smoke == null or spark == null:
+		return
+
+	var health_ratio := get_part_health_ratio(part_name)
+	var show_smoke := health_ratio > 0.0 and health_ratio < damage_feedback_threshold
+	var show_spark := health_ratio > 0.0 and health_ratio <= critical_damage_feedback_threshold
+
+	if root != null:
+		root.visible = show_smoke or show_spark
+
+	if not show_smoke and not show_spark:
+		smoke.visible = false
+		spark.visible = false
+		return
+
+	var damage_severity := 1.0 - clampf(health_ratio / maxf(damage_feedback_threshold, 0.01), 0.0, 1.0)
+	smoke.visible = show_smoke
+	smoke.scale = Vector3(
+		0.8 + damage_severity * 0.55,
+		0.95 + damage_severity * 1.15,
+		0.8 + damage_severity * 0.55
+	)
+	var smoke_material := smoke.material_override as StandardMaterial3D
+	if smoke_material != null:
+		smoke_material.albedo_color = Color(
+			0.26 + damage_severity * 0.18,
+			0.26 - damage_severity * 0.05,
+			0.26 - damage_severity * 0.08,
+			0.52 + damage_severity * 0.22
+		)
+
+	spark.visible = show_spark
+	if not show_spark:
+		return
+
+	var critical_severity := 1.0 - clampf(health_ratio / maxf(critical_damage_feedback_threshold, 0.01), 0.0, 1.0)
+	spark.position = Vector3(0.0, 0.15 + critical_severity * 0.08, 0.0)
+	spark.scale = Vector3.ONE * (0.85 + critical_severity * 0.95)
+	var spark_material := spark.material_override as StandardMaterial3D
+	if spark_material != null:
+		var spark_color := Color(1.0, 0.46 + critical_severity * 0.14, 0.12, 1.0)
+		spark_material.albedo_color = spark_color
+		spark_material.emission = spark_color
+		spark_material.emission_energy_multiplier = 1.6 + critical_severity * 2.0
 
 
 func _refresh_core_visuals() -> void:
