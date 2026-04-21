@@ -91,6 +91,33 @@ func _run() -> void:
 		"El progreso de recuperacion deberia reducirse mientras la pieza sigue tirada."
 	)
 
+	var picked_up := detached_part.try_pick_up(owner)
+	_assert(
+		picked_up,
+		"La pieza desprendida deberia poder cargarse para pausar su ventana de recuperacion."
+	)
+	if picked_up:
+		var carried_ratio := float(detached_part.call("get_cleanup_progress_ratio"))
+		await create_timer(0.12).timeout
+		var paused_ratio := float(detached_part.call("get_cleanup_progress_ratio"))
+		_assert(
+			absf(paused_ratio - carried_ratio) < 0.05,
+			"La ventana de recuperacion deberia pausarse mientras la pieza va cargada."
+		)
+
+		var launched := detached_part.throw_from(owner, Vector3.FORWARD, 5.0)
+		_assert(
+			launched,
+			"La pieza cargada deberia poder volver al piso sin romper su ciclo de recuperacion."
+		)
+		await process_frame
+		await physics_frame
+		var resumed_ratio := float(detached_part.call("get_cleanup_progress_ratio"))
+		_assert(
+			resumed_ratio <= paused_ratio + 0.05,
+			"La ventana de recuperacion no deberia reiniciarse al volver a tirar la pieza."
+		)
+
 	await create_timer(0.35).timeout
 	await process_frame
 

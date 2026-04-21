@@ -299,6 +299,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - cuerpo inutilizado con explosion diferida; si la explosion cierra la ronda, el robot espera el reset comun
 - feedback visual de transporte implementado con indicador diegetico en `RobotBase`
 - las partes tiradas ahora muestran una ventana de recuperacion diegetica sobre el suelo y exponen un hook `recovery_lost` para futuras lecturas compactas si hace falta
+- la ventana de `DetachedPart` ahora se drena en script mientras la pieza sigue en el piso, se pausa al cargarla y se reanuda al volver a lanzarla, evitando que frames de setup o un lift-and-drop regalen/consuman tiempo de recuperacion por fuera del gameplay
 - pendiente: validar por playtest si el combo `disco de recuperacion + aro de pertenencia + RecoveryTargetIndicator + CarryOwnerIndicator + CarryReturnIndicator` ya alcanza para rescate cooperativo en sesiones activas o si todavia falta reforzar radio de retorno/timer de negación en 2v2 con la nueva presión de ronda
 
 ## Etapa 8 - Primeros arquetipos jugables

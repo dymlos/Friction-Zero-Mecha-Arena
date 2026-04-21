@@ -238,6 +238,10 @@
    - `EdgePulsePickup` entrega una sola carga de `pulse_charge`; al usarla, `RobotBase` consume el item y dispara `PulseBolt`, un proyectil corto que empuja y daña al primer objetivo o cobertura física que encuentra.
    - Motivo: validar la tensión “choque vs influencia a distancia” sin abrir todavía un sistema completo de habilidades, munición por personaje ni HUD nuevo.
 
+55. **La ventana de recuperacion de `DetachedPart` ahora vive en script y se pausa al cargarla**
+   - `DetachedPart` ya no usa `LifetimeTimer.time_left` como fuente de verdad; `_cleanup_time_left` se reduce solo mientras la pieza sigue en el piso, y `throw_from()` reanuda el tiempo restante en vez de reiniciarlo.
+   - Motivo: el timer de pared podia agotarse durante frames de setup/headless y ademas contradecia el contrato esperado de “timer pausado mientras se transporta la pieza”.
+
 55. **Los edge pickups rotan por ronda en un mazo seedado de pares espejados**
    - `ArenaBase` define cuatro cruces base (`repair + mobility`, `repair + pulse`, `energy + mobility`, `energy + pulse`) y `activate_edge_pickup_layout_for_round(round_number)` deja activos solo dos pares espejados por ronda.
    - Motivo: cumplir el criterio de “pocos items, importantes y semialeatorios” sin romper justicia espacial, sin duplicar escenas y sin abrir todavía pesos complejos por mapa o respawns con cambio de tipo.

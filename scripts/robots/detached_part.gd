@@ -34,6 +34,7 @@ const PART_RECOVERY_COLORS := {
 var part_name := ""
 var original_robot: Node = null
 var carrier_robot: Node = null
+var _cleanup_time_left := 0.0
 var _starting_collision_layer := 1
 var _starting_collision_mask := 1
 var _pickup_ready_at := 0.0
@@ -46,9 +47,9 @@ func _ready() -> void:
 	_starting_collision_layer = collision_layer
 	_starting_collision_mask = collision_mask
 	_pickup_ready_at = Time.get_ticks_msec() / 1000.0 + pickup_delay
+	_cleanup_time_left = maxf(cleanup_time, 0.0)
 	_setup_recovery_indicator()
 	_notify_owner_recovery_tracking(true)
-	lifetime_timer.start(cleanup_time)
 	_refresh_recovery_indicator()
 
 
@@ -57,6 +58,7 @@ func _exit_tree() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	_update_cleanup_timer(_delta)
 	_refresh_recovery_indicator()
 	if carrier_robot == null or not is_instance_valid(carrier_robot):
 		return
@@ -96,10 +98,7 @@ func is_carried() -> bool:
 
 
 func get_cleanup_time_left() -> float:
-	if lifetime_timer == null or lifetime_timer.is_stopped():
-		return 0.0
-
-	return maxf(lifetime_timer.time_left, 0.0)
+	return maxf(_cleanup_time_left, 0.0)
 
 
 func get_cleanup_progress_ratio() -> float:
@@ -131,7 +130,6 @@ func try_pick_up(robot: Node) -> bool:
 	angular_velocity = Vector3.ZERO
 	collision_layer = 0
 	collision_mask = 0
-	lifetime_timer.stop()
 	set_physics_process(true)
 	_refresh_recovery_indicator()
 	return true
@@ -165,8 +163,6 @@ func throw_from(carrier: Node, throw_direction: Vector3, throw_speed: float = 6.
 	collision_layer = _starting_collision_layer
 	collision_mask = _starting_collision_mask
 	_pickup_ready_at = Time.get_ticks_msec() / 1000.0 + maxf(pickup_delay, throw_pickup_delay)
-	if lifetime_timer.is_stopped():
-		lifetime_timer.start(cleanup_time)
 	carrier_robot = null
 	set_physics_process(true)
 	_refresh_recovery_indicator()
@@ -329,7 +325,7 @@ func _refresh_recovery_indicator() -> void:
 	if _recovery_indicator == null:
 		return
 
-	var should_show := not is_carried() and not lifetime_timer.is_stopped() and cleanup_time > 0.0
+	var should_show := not is_carried() and get_cleanup_time_left() > 0.0 and cleanup_time > 0.0
 	_recovery_indicator.visible = should_show
 	if _ownership_indicator != null:
 		_ownership_indicator.visible = should_show
@@ -374,7 +370,24 @@ func _get_owner_identity_color() -> Color:
 	return PART_RECOVERY_COLORS.get(part_name, Color(0.95, 0.62, 0.18, 0.85))
 
 
-func _on_lifetime_timer_timeout() -> void:
+func _update_cleanup_timer(delta: float) -> void:
+	if cleanup_time <= 0.0 or is_carried():
+		return
+	if _cleanup_time_left <= 0.0:
+		return
+
+	_cleanup_time_left = maxf(_cleanup_time_left - maxf(delta, 0.0), 0.0)
+	if _cleanup_time_left > 0.0:
+		return
+
+	_expire_recovery_window()
+
+
+func _expire_recovery_window() -> void:
 	recovery_lost.emit(self, "timeout")
 	_notify_owner_recovery_tracking(false)
 	queue_free()
+
+
+func _on_lifetime_timer_timeout() -> void:
+	_expire_recovery_window()
