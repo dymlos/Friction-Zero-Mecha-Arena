@@ -184,6 +184,7 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var overdrive_cooldown := 2.0
 @export_range(0.2, 2.0, 0.05) var minimum_energy_multiplier := 0.55
 @export_range(0.2, 2.0, 0.05) var maximum_energy_multiplier := 1.35
+@export_range(1.0, 1.5, 0.05) var energy_pickup_pair_multiplier := 1.12
 
 @export_group("Prototype Combat")
 @export var passive_push_strength := 4.0
@@ -250,6 +251,8 @@ var _overdrive_part_name := ""
 var _overdrive_duration_remaining := 0.0
 var _overdrive_recovery_remaining := 0.0
 var _overdrive_cooldown_remaining := 0.0
+var _energy_surge_part_name := ""
+var _energy_surge_remaining := 0.0
 var _mobility_boost_remaining := 0.0
 var _hard_torso_world_direction := Vector3.FORWARD
 
@@ -369,6 +372,14 @@ func get_mobility_boost_time_left() -> float:
 	return maxf(_mobility_boost_remaining, 0.0)
 
 
+func is_energy_surge_active() -> bool:
+	return _energy_surge_remaining > 0.0
+
+
+func get_energy_surge_time_left() -> float:
+	return maxf(_energy_surge_remaining, 0.0)
+
+
 func get_input_hint() -> String:
 	if uses_keyboard_input():
 		var move_label := str(KEYBOARD_PROFILE_LABELS.get(keyboard_profile, "teclado"))
@@ -431,6 +442,22 @@ func apply_mobility_boost(duration: float) -> bool:
 	return true
 
 
+func apply_energy_surge(duration: float) -> bool:
+	if duration <= 0.0:
+		return false
+	if _is_respawning or _is_disabled:
+		return false
+	if is_overdrive_active():
+		return false
+
+	_overdrive_recovery_remaining = 0.0
+	_energy_surge_part_name = _selected_energy_part_name
+	_energy_surge_remaining = maxf(_energy_surge_remaining, duration)
+	_apply_focus_energy_distribution(_selected_energy_part_name)
+	_refresh_visual_state()
+	return true
+
+
 func _ready() -> void:
 	_spawn_transform = global_transform
 	_starting_collision_layer = collision_layer
@@ -477,6 +504,8 @@ func reset_modular_state() -> void:
 	_overdrive_duration_remaining = 0.0
 	_overdrive_recovery_remaining = 0.0
 	_overdrive_cooldown_remaining = 0.0
+	_energy_surge_part_name = ""
+	_energy_surge_remaining = 0.0
 	_mobility_boost_remaining = 0.0
 	for part_name in BODY_PARTS:
 		part_health[part_name] = max_part_health
@@ -959,11 +988,19 @@ func _update_energy_state(delta: float) -> void:
 
 
 func _update_temporary_boosts(delta: float) -> void:
-	if _mobility_boost_remaining <= 0.0:
-		return
+	var visuals_dirty := false
+	if _energy_surge_remaining > 0.0:
+		_energy_surge_remaining = maxf(_energy_surge_remaining - delta, 0.0)
+		if _energy_surge_remaining == 0.0:
+			_energy_surge_part_name = ""
+			visuals_dirty = true
 
-	_mobility_boost_remaining = maxf(_mobility_boost_remaining - delta, 0.0)
-	if _mobility_boost_remaining == 0.0:
+	if _mobility_boost_remaining > 0.0:
+		_mobility_boost_remaining = maxf(_mobility_boost_remaining - delta, 0.0)
+		if _mobility_boost_remaining == 0.0:
+			visuals_dirty = true
+
+	if visuals_dirty:
 		_refresh_visual_state()
 
 
@@ -1108,7 +1145,11 @@ func _get_pair_health_ratio(part_a: String, part_b: String) -> float:
 func _get_pair_energy_multiplier(part_a: String, part_b: String) -> float:
 	var part_a_multiplier := _get_part_energy_multiplier(part_a)
 	var part_b_multiplier := _get_part_energy_multiplier(part_b)
-	return clampf((part_a_multiplier + part_b_multiplier) * 0.5, minimum_energy_multiplier, maximum_energy_multiplier)
+	return clampf(
+		(part_a_multiplier + part_b_multiplier) * 0.5,
+		minimum_energy_multiplier,
+		maximum_energy_multiplier
+	) * _get_energy_surge_pair_multiplier(part_a, part_b)
 
 
 func _get_part_energy_multiplier(part_name: String) -> float:
@@ -1128,6 +1169,17 @@ func _is_energy_balanced() -> bool:
 			return false
 
 	return true
+
+
+func _get_energy_surge_pair_multiplier(part_a: String, part_b: String) -> float:
+	if not is_energy_surge_active():
+		return 1.0
+
+	var surged_pair: Array = ENERGY_LIMB_PAIRS.get(_energy_surge_part_name, [])
+	if surged_pair.has(part_a) or surged_pair.has(part_b):
+		return energy_pickup_pair_multiplier
+
+	return 1.0
 
 
 func _get_energy_focus_color() -> Color:
@@ -1478,19 +1530,22 @@ func _refresh_core_visuals() -> void:
 		var disabled_blend := 0.55 if _is_disabled else 0.0
 		var energy_color := _get_energy_focus_color()
 		var energy_blend := _get_energy_visual_blend()
+		var energy_surge_blend := 0.22 if is_energy_surge_active() else 0.0
 		var mobility_color := Color(0.2, 0.92, 0.78, 1.0)
 		var mobility_blend := 0.42 if is_mobility_boost_active() else 0.0
 		material.albedo_color = base_albedo.lerp(Color(0.09, 0.08, 0.08, 1.0), damage_blend + disabled_blend)
 		material.albedo_color = material.albedo_color.lerp(energy_color, energy_blend * 0.18)
+		material.albedo_color = material.albedo_color.lerp(Color(0.96, 0.97, 1.0, 1.0), energy_surge_blend * 0.12)
 		material.albedo_color = material.albedo_color.lerp(mobility_color, mobility_blend * 0.12)
 		if material.emission_enabled:
 			var warning_color := Color(1.0, 0.28, 0.12, 1.0)
 			material.emission = base_emission.lerp(warning_color, damage_blend + disabled_blend)
 			material.emission = material.emission.lerp(energy_color, energy_blend)
+			material.emission = material.emission.lerp(Color(0.96, 0.97, 1.0, 1.0), energy_surge_blend)
 			material.emission = material.emission.lerp(mobility_color, mobility_blend)
 			material.emission_energy_multiplier = maxf(
 				base_emission_energy,
-				0.12 + disabled_blend * 0.85 + energy_blend * 0.75 + mobility_blend * 0.7
+				0.12 + disabled_blend * 0.85 + energy_blend * 0.75 + energy_surge_blend * 0.55 + mobility_blend * 0.7
 			)
 
 

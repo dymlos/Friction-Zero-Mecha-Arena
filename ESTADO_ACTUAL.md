@@ -35,8 +35,9 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - presion final de arena: el piso y sus edge markers se contraen de forma progresiva segun el tiempo de ronda, y el HUD agrega una linea corta cuando empieza el cierre
 - incentivo real de borde: el arena blockout ahora tiene pickups de reparacion instantanea en los flancos; curan la parte activa mas dañada, obligan a exponerse cerca del vacio para estabilizarse y siguen el borde vivo cuando la arena se contrae
 - segundo incentivo de borde: el mismo arena ahora suma pickups de movilidad en norte/sur; activan una ventana corta de traccion/control reforzados, exponen al robot en bordes sin cobertura y siguen el borde vivo cuando la arena se contrae
+- tercer incentivo de borde: el mismo arena ahora suma pickups de energia en diagonales; cortan la recuperacion posterior al overdrive, refuerzan temporalmente el par energetico seleccionado y tambien siguen el borde vivo cuando la arena se contrae
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
-- HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia y si un robot transporta una parte
+- HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia, buffs temporales y si un robot transporta una parte
 - lectura de eliminacion compacta en el mismo HUD:
   - robots inutilizados muestran cuenta atras breve de explosion en el roster
   - robots fuera conservan causa corta (`vacio` o `explosion`)
@@ -51,6 +52,14 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 
 ## Lo completado en esta iteracion
 
+- Se agrego el pickup universal de energia que faltaba en el mapa:
+  - existe una escena nueva `edge_energy_pickup.tscn` con pedestal persistente, cooldown visible y contrato de activacion equivalente al resto de pickups de borde
+  - al tocarla, `RobotBase` corta la recuperacion post-overdrive, reaplica el foco energetico actual y activa una recarga breve sobre ese mismo par
+  - el roster compacto agrega `energia` mientras dura la ventana y `Main` publica una linea corta cuando alguien recarga en borde
+- Se integró esa recarga al laboratorio real sin abrir otra rama de items:
+  - `arena_blockout.tscn` suma dos pickups de energia en diagonales expuestas para complementar reparacion lateral + impulso norte/sur
+  - `ArenaBase` no necesitó código extra porque la escena nueva usa el mismo grupo `edge_pickups` y hereda el seguimiento con contracción ya existente
+  - `edge_energy_pickup_test.gd` cubre API del robot, telegraph de cooldown, integración en `main.tscn` y reposicionamiento con contracción
 - Se hizo visible el modo activo del laboratorio en el HUD de ronda:
   - `MatchController.get_round_state_lines()` ahora agrega `Modo | FFA` o `Modo | Equipos`
   - esto deja claro que `main_ffa.tscn` no es solo “la misma escena con otros scores”, sino un laboratorio libre ya legible desde el estado principal
@@ -168,12 +177,12 @@ Resultado: las diecinueve verificaciones dedicadas pasan y el proyecto sigue ini
 ## Limites actuales
 
 - La validacion automatica confirma integridad tecnica, no sensacion de movimiento ni calidad del combate.
-- El nuevo item universal sigue siendo deliberadamente simple: hoy solo existe reparacion instantanea e impulso corto; todavia no hay inventario, carga manual ni semialeatoriedad de spawns.
+- El nuevo item universal sigue siendo deliberadamente simple: hoy solo existen reparacion instantanea, impulso corto y recarga breve; todavia no hay inventario, carga manual ni semialeatoriedad de spawns.
 - El laboratorio FFA ya existe y ya evita alianzas accidentales, pero todavia falta playtestear si realmente transmite supervivencia, oportunismo y third-party sin sentirse demasiado caotico en teclado compartido.
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.
-- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay reparacion fija + impulso fijo; todavia faltan variacion semialeatoria, energia, utility y decidir si algun item debe pasar a “una carga en mano” en vez de activarse al tocarlo.
+- El incentivo de borde ya no es monotono, pero sigue siendo deliberadamente minimo: hoy hay reparacion fija + impulso fijo + energia fija; todavia faltan variacion semialeatoria, utility y decidir si algun item debe pasar a “una carga en mano” en vez de activarse al tocarlo.
 - La nueva cobertura de arena sigue siendo un primer paso: solo existen dos slabs fijos y dos pickups de reparacion ligados al borde vivo; faltan variacion de layout, rutas mas ricas y verificar por playtest que no se vuelvan “micro-fortalezas”.
 - El roster sigue siendo texto de estado; el indicador diegetico cubre la parte crítica de “carga visible” y reduce ambigüedad.
 - La nueva lectura de daño es deliberadamente simple: son marcadores geométricos sobrios, no partículas finales ni VFX de producción. Falta playtestear si alcanzan o si conviene reemplazarlos por humo/chispas más ricos sin perder claridad.
@@ -188,3 +197,7 @@ Resultado: las diecinueve verificaciones dedicadas pasan y el proyecto sigue ini
   - `ArenaBase` ahora sigue cualquier nodo del grupo `edge_pickups`, no solo `edge_repair_pickups`
   - el laboratorio principal suma dos pickups nuevos en norte/sur y los mueve junto al borde vivo durante la contracción
   - `Main` también reporta la activación del impulso en la misma línea breve de estado
+- Se completó el tercer tipo de pickup universal prioritario del documento:
+  - `EdgeEnergyPickup` reutiliza el mismo contrato de `edge_pickups`, pero su efecto cae sobre el sistema de energia ya existente en `RobotBase`
+  - la recarga no reemplaza el overdrive: solo corta la recuperacion, reaplica el foco actual y suma una ventana corta de par reforzado
+  - el coverage dedicado confirma que el nuevo incentivo no rompe roster, contracción ni la escena principal

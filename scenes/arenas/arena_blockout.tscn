@@ -1,8 +1,9 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/arenas/arena_base.gd" id="1_arena"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/edge_repair_pickup.tscn" id="2_pickup"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/edge_mobility_pickup.tscn" id="3_mobility_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/edge_energy_pickup.tscn" id="4_energy_pickup"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_platform"]
 size = Vector3(24, 0.6, 16)
@@ -124,3 +125,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 0.3, -6.3)
 
 [node name="SouthMobilityPickup" parent="." instance=ExtResource("3_mobility_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0.3, 6.3)
+
+[node name="NorthWestEnergyPickup" parent="." instance=ExtResource("4_energy_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.9, 0.3, -5.4)
+
+[node name="SouthEastEnergyPickup" parent="." instance=ExtResource("4_energy_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.9, 0.3, 5.4)

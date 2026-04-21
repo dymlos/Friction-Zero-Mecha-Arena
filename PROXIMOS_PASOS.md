@@ -38,6 +38,7 @@
    - decidir si el foco debe quedar en presets por arquetipo o en redistribucion libre mas adelante
    - ligar mejor la lectura diegetica del foco/overdrive con materiales o VFX sobrios
    - revisar valores de multiplicadores, duracion y recuperacion contra sensacion real en partida
+   - medir si `energy_pickup_pair_multiplier` y `surge_duration` hacen que la recarga de borde valga la pena sin comerse la identidad del overdrive
 
 8. **Mejorar validacion jugable**
    - sumar una escena/configuración de prueba pensada para reproducir rescates, negaciones y cierres de ronda/contraccion más rápido que en el match completo
@@ -50,7 +51,7 @@
    - mantener Easy como modo plenamente jugable y legible
 
 10. **Validar y tensionar el nuevo incentivo de borde**
-   - playtestear si `repair_amount`, `boost_duration` y sus `respawn_delay` vuelven los bordes realmente tentadores o si alguno de los dos incentivos domina demasiado.
-   - medir si las nuevas coberturas blockout, la reparacion lateral y el impulso norte/sur ya generan duelos más tácticos o si empiezan a volver algunos flancos demasiado seguros.
-   - decidir si el siguiente paso de items debe ser variacion semialeatoria sobre `edge_pickups`, un pickup de energia o un primer item de “una sola carga” en mano.
+   - playtestear si `repair_amount`, `boost_duration`, `surge_duration` y sus `respawn_delay` vuelven los bordes realmente tentadores o si alguno de los tres incentivos domina demasiado.
+   - medir si las nuevas coberturas blockout, la reparacion lateral, el impulso norte/sur y la energia diagonal ya generan duelos más tácticos o si empiezan a volver algunos flancos demasiado seguros.
+   - decidir si el siguiente paso de items debe ser variacion semialeatoria sobre `edge_pickups` o un primer item de “una sola carga” en mano.
    - mantener el centro limpio y legible, evitando saturar la arena con demasiados objetos.

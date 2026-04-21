@@ -17,6 +17,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Presion de endgame: el `arena_blockout` ahora reduce progresivamente su tamano durante la ronda, empujando el cierre hacia el centro sin agregar hazards extra.
 - Bordes con incentivo real: el laboratorio ahora suma pickups de reparacion instantanea en los flancos del arena; curan la parte activa mas dañada sin revivir piezas perdidas, fuerzan a exponerse cerca del vacio y ahora se recolocan con la misma escala del area segura para no quedar fuera del borde vivo durante la contraccion.
 - Incentivo universal de movilidad: el mismo arena ahora suma pickups de impulso en norte/sur; activan una ventana corta de traccion/control reforzados, se leen con glow turquesa sobre el robot y se recolocan con la misma logica de borde vivo para no convertirse en “premios muertos” durante la contraccion.
+- Incentivo universal de energia: el arena ahora suma pickups de recarga en diagonales; cortan la recuperacion post-overdrive, refuerzan por una ventana corta el par energetico seleccionado y reutilizan el mismo contrato de pedestal/cooldown visible + seguimiento del borde vivo.
 - Cobertura de borde minima: el `arena_blockout` ya suma dos slabs estaticos simples junto a los pickups de reparacion; se desplazan con la contraccion del mapa para mantener duel zones legibles y no dejar geometria “flotando” fuera del area viva.
 - Etapa 4: parcialmente implementada. El robot ya recibe danio modular por direccion de impacto, pierde brazos o piernas visualmente, desprende piezas y cambia su rendimiento segun las partes restantes.
 - Legibilidad modular reforzada: las partes dañadas ahora levantan marcadores sobrios sobre el propio robot (`Smoke` en daño relevante, `Spark` en daño critico) y se apagan al reparar o desprender la pieza.
@@ -29,7 +30,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Lectura visual: sigue sobria y funcional. El prototipo usa desgaste por materiales, partes ocultas/desprendidas, marcadores de humo/chispa por parte dañada, mensajes breves, foco energetico visible en el core y un HUD compacto con marcador de ronda + roster por robot para leer estado/carga/energia sin HUD pesado.
 - Lectura de eliminacion reforzada: el roster ahora deja visible `Inutilizado | explota Xs` mientras un casco deshabilitado espera su explosion, conserva `Fuera | vacio/explosion` tras la baja y el bloque superior de estado mantiene `Ultima baja | ...` para explicar por que se perdio una pieza clave sin sumar otra capa de UI.
 - Negacion de partes: ahora existe negacion activa; un jugador con parte en mano puede lanzarla para cortar el rescate oportuno y crear decisiones de riesgo.
-- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, si la explicacion compacta de bajas (`Ultima baja`, `Fuera | vacio/explosion`, `Inutilizado | explota`) alcanza para explicar derrotas sin HUD extra, si la combinacion reparacion + impulso vuelve los bordes más tácticos sin transformarlos en zonas seguras permanentes y si el laboratorio FFA ya produce supervivencia/oportunismo legibles en vez de caos opaco; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
+- Pendiente prioritario: playtestear si la nueva lectura de daño modular realmente se entiende en cámara compartida sin agregar ruido, si la explicacion compacta de bajas (`Ultima baja`, `Fuera | vacio/explosion`, `Inutilizado | explota`) alcanza para explicar derrotas sin HUD extra, si la combinacion reparacion + impulso + energia vuelve los bordes más tácticos sin transformarlos en zonas seguras permanentes y si el laboratorio FFA ya produce supervivencia/oportunismo legibles en vez de caos opaco; en paralelo confirmar si el first-to-3 + reinicio automatico deja buen ritmo y si rescate/negacion sigue siendo claro con rounds que ya importan de verdad.
 
 ## Principios de orden
 
@@ -318,8 +319,9 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - reparacion que alargue partidas sin tension
 
 **Estado actual del prototipo:**
-- existe un primer slice previo al sistema completo de items: pickups de reparacion instantanea, fijos y simetricos en los bordes del `arena_blockout`
-- curan solo la parte activa mas dañada y no reemplazan la devolucion de partes destruidas
+- existe un primer slice previo al sistema completo de items: pickups fijos y simetricos de reparacion, movilidad y energia distribuidos en los bordes del `arena_blockout`
+- reparacion cura solo la parte activa mas dañada y no reemplaza la devolucion de partes destruidas
+- movilidad refuerza traccion/control por una ventana corta; energia corta recuperacion post-overdrive y refuerza temporalmente el par energetico seleccionado
 - todavia no hay inventario, rareza, spawn semialeatorio ni competencia entre item transportado y parte cargada
 
 **Dependencias:** Etapas 3, 5, 7 y 8.

@@ -202,6 +202,14 @@
    - `ArenaBase` ya no recoloca solo `edge_repair_pickups`; ahora sigue cualquier nodo del grupo `edge_pickups`, incluyendo reparacion e impulso.
    - Motivo: permitir variedad minima de incentivos en los bordes sin duplicar logica de contraccion ni dejar nuevos pickups desfasados respecto del borde vivo.
 
+51. **Tercer incentivo de borde via pickup universal de energia**
+   - `EdgeEnergyPickup` activa una recarga breve sobre el par energetico seleccionado y reaparece tras cooldown, reutilizando el mismo contrato visible de pedestal + nucleo que reparacion e impulso.
+   - Motivo: completar el trio minimo de incentivos prioritarios del documento (`reparacion`, `movilidad`, `energia`) sin abrir todavia inventario, rareza ni items de una sola carga.
+
+52. **La recarga de energia estabiliza, no reemplaza el overdrive**
+   - Al recoger energia, `RobotBase` corta la recuperacion post-overdrive, reaplica el foco actual y suma una ventana corta de rendimiento extra sobre ese mismo par; no reactiva overdrive ni elimina todo el cooldown restante.
+   - Motivo: volver valioso el pickup de energia sin volverlo spam ni borrar la identidad de riesgo/recompensa del overdrive.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

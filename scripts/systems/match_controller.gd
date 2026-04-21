@@ -233,6 +233,8 @@ func _build_robot_status_line(robot: RobotBase) -> String:
 	if robot.is_player_controlled:
 		line += " | %s" % robot.get_input_hint()
 	line += " | %s" % robot.get_energy_state_summary()
+	if robot.is_energy_surge_active():
+		line += " | energia"
 	if robot.is_mobility_boost_active():
 		line += " | impulso"
 	if robot.is_carrying_part():
