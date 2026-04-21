@@ -349,6 +349,14 @@
    - `ArenaBase` ahora expone progreso/tangente/avance del support lane (`get_support_lane_progress_near()`, `get_support_lane_position_from_progress()`, `get_support_lane_tangent_from_progress()`, `advance_support_lane_progress()`), y `PilotSupportShip` guarda `_lane_progress` para moverse sobre ese recorrido continuo en vez de reproyectarse cada frame al borde mas cercano.
    - Motivo: el snap por lado mas cercano dejaba una nave funcional pero con poca sensacion de ruta externa; el loop perimetral mantiene la capa chica, acompaña la contraccion del arena y vuelve legible la decision de rodear esquinas sin meter todavia colisiones ni obstaculos propios.
 
+86. **La primera profundidad extra del carril externo entra como `gates` temporales**
+   - `arena_blockout.tscn` ahora suma tres `SupportLaneGate` discretos sobre el loop perimetral; `Main` los activa solo cuando existe soporte post-muerte y `ArenaBase.get_support_lane_blocking_gate_progress()` deja que `PilotSupportShip` detecte si el tramo que intenta recorrer cruza un gate cerrado.
+   - Motivo: Team vs Team necesitaba una primera decision de timing/ruta en la capa externa, pero meter colisiones fisicas, hazards ofensivos o pathfinding habria sobrecomplicado demasiado pronto el slice. Un gate binario, pequeño y legible agrega friccion real sin sacar a la nave del rol de apoyo.
+
+87. **La interferencia del carril se comunica en el mismo roster de apoyo**
+   - Si `PilotSupportShip` intenta cruzar un gate cerrado, entra en una ventana corta `interferido`; el glow vira a naranja y `get_status_summary()` agrega esa palabra al mismo estado compacto `apoyo ...`.
+   - Motivo: preservar la legibilidad de pantalla compartida sin abrir otra UI. El propio carril telegraphia el bloqueo y el roster confirma por que la ayuda se demoro.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

@@ -9,6 +9,7 @@ const DetachedPart = preload("res://scripts/robots/detached_part.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 const PilotSupportShip = preload("res://scripts/support/pilot_support_ship.gd")
 const PilotSupportPickup = preload("res://scripts/support/pilot_support_pickup.gd")
+const SupportLaneGate = preload("res://scripts/support/support_lane_gate.gd")
 const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
 const EdgeMobilityPickup = preload("res://scripts/pickups/edge_mobility_pickup.gd")
 const EdgeEnergyPickup = preload("res://scripts/pickups/edge_energy_pickup.gd")
@@ -575,7 +576,7 @@ func _clear_post_death_support() -> void:
 	if support_root != null:
 		for child in support_root.get_children():
 			child.queue_free()
-		_set_post_death_support_pickups_active(false, true)
+		_set_post_death_support_lane_active(false, true)
 
 	for robot in match_controller.registered_robots:
 		if not is_instance_valid(robot):
@@ -606,10 +607,10 @@ func _sync_post_death_support_state() -> void:
 				support_ship.get_status_summary()
 			)
 
-	_set_post_death_support_pickups_active(support_enabled)
+	_set_post_death_support_lane_active(support_enabled)
 
 
-func _set_post_death_support_pickups_active(is_active: bool, reset_pickups: bool = false) -> void:
+func _set_post_death_support_lane_active(is_active: bool, reset_pickups: bool = false) -> void:
 	for node in get_tree().get_nodes_in_group("pilot_support_pickups"):
 		if not (node is PilotSupportPickup):
 			continue
@@ -618,6 +619,14 @@ func _set_post_death_support_pickups_active(is_active: bool, reset_pickups: bool
 		support_pickup.set_support_active(is_active)
 		if reset_pickups:
 			support_pickup.reset_pickup()
+	for node in get_tree().get_nodes_in_group("support_lane_gates"):
+		if not (node is SupportLaneGate):
+			continue
+
+		var support_gate := node as SupportLaneGate
+		support_gate.set_support_active(is_active)
+		if reset_pickups:
+			support_gate.reset_gate()
 
 
 func _on_post_death_support_state_changed(support_ship: PilotSupportShip) -> void:

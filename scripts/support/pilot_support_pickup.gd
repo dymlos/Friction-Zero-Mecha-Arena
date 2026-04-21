@@ -22,6 +22,7 @@ var _collected := false
 
 func _ready() -> void:
 	add_to_group("pilot_support_pickups")
+	add_to_group("support_lane_nodes")
 	_duplicate_runtime_material(pedestal_visual)
 	_duplicate_runtime_material(core_visual)
 	_refresh_visual_state()

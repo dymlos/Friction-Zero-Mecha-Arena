@@ -55,6 +55,8 @@ var _cover_block_nodes: Array[Node3D] = []
 var _cover_block_original_positions: Dictionary = {}
 var _edge_pickup_nodes: Array[Node3D] = []
 var _edge_pickup_original_local_positions: Dictionary = {}
+var _support_lane_nodes: Array[Node3D] = []
+var _support_lane_original_local_positions: Dictionary = {}
 var _edge_pickup_layout_cycle: Array[PackedStringArray] = []
 var _edge_pickup_allowed_ids := PackedStringArray(DEFAULT_EDGE_PICKUP_ALLOWED_IDS)
 var _active_edge_pickup_layout := PackedStringArray()
@@ -65,6 +67,7 @@ func _ready() -> void:
 	_prepare_runtime_resources()
 	_cache_cover_block_positions()
 	_cache_edge_pickup_positions()
+	_cache_support_lane_node_positions()
 	_build_edge_pickup_layout_cycle()
 	_update_play_area_visuals()
 
@@ -269,6 +272,50 @@ func get_support_lane_perimeter_length() -> float:
 	return (lane_extents.x + lane_extents.y) * 4.0
 
 
+func get_support_lane_blocking_gate_progress(progress: float, signed_distance: float) -> float:
+	if signed_distance == 0.0:
+		return -1.0
+
+	var perimeter := get_support_lane_perimeter_length()
+	if perimeter <= 0.0:
+		return -1.0
+
+	var direction := 1.0 if signed_distance > 0.0 else -1.0
+	var travel_distance := absf(signed_distance)
+	var start_progress := fposmod(progress, perimeter)
+	var best_gate_progress := -1.0
+	var best_travel_to_gate := INF
+	for node in get_tree().get_nodes_in_group("support_lane_gates"):
+		if not (node is Node3D):
+			continue
+		if not is_ancestor_of(node):
+			continue
+		if not node.has_method("is_blocking") or not bool(node.call("is_blocking")):
+			continue
+		if not node.has_method("get_blocking_radius"):
+			continue
+
+		var gate_node := node as Node3D
+		var gate_progress := get_support_lane_progress_near(gate_node.global_position)
+		var gate_radius := maxf(float(node.call("get_blocking_radius")), 0.05)
+		var signed_delta_to_gate := _get_support_lane_signed_distance(start_progress, gate_progress)
+		if direction < 0.0:
+			signed_delta_to_gate *= -1.0
+		if signed_delta_to_gate < -gate_radius:
+			continue
+
+		var distance_to_gate := maxf(signed_delta_to_gate - gate_radius, 0.0)
+		if distance_to_gate > travel_distance:
+			continue
+		if distance_to_gate >= best_travel_to_gate:
+			continue
+
+		best_travel_to_gate = distance_to_gate
+		best_gate_progress = gate_progress
+
+	return best_gate_progress
+
+
 func _get_support_lane_extents() -> Vector2:
 	var half_size := get_safe_play_area_size() * 0.5
 	var edge_margin := maxf(support_lane_margin, 0.5)
@@ -314,6 +361,22 @@ func _cache_edge_pickup_positions() -> void:
 
 		_edge_pickup_nodes.append(pickup)
 		_edge_pickup_original_local_positions[pickup.get_instance_id()] = to_local(pickup.global_position)
+
+
+func _cache_support_lane_node_positions() -> void:
+	_support_lane_nodes.clear()
+	_support_lane_original_local_positions.clear()
+
+	for node in get_tree().get_nodes_in_group("support_lane_nodes"):
+		if not (node is Node3D):
+			continue
+
+		var lane_node := node as Node3D
+		if not is_ancestor_of(lane_node):
+			continue
+
+		_support_lane_nodes.append(lane_node)
+		_support_lane_original_local_positions[lane_node.get_instance_id()] = to_local(lane_node.global_position)
 
 
 func _build_edge_pickup_layout_cycle() -> void:
@@ -373,6 +436,7 @@ func _update_play_area_visuals() -> void:
 	east_edge.transform = Transform3D(Basis().scaled(Vector3(0.14, 1.0, current_size.y)), Vector3(half_width, edge_height, 0.0))
 	_update_cover_block_positions(current_size)
 	_update_edge_pickup_positions(current_size)
+	_update_support_lane_node_positions(current_size)
 
 
 func _update_cover_block_positions(current_size: Vector2) -> void:
@@ -410,3 +474,33 @@ func _update_edge_pickup_positions(current_size: Vector2) -> void:
 		var local_position := original_position as Vector3
 		var scaled_local_position := Vector3(local_position.x * width_ratio, local_position.y, local_position.z * depth_ratio)
 		pickup.global_position = to_global(scaled_local_position)
+
+
+func _update_support_lane_node_positions(current_size: Vector2) -> void:
+	if _support_lane_nodes.is_empty():
+		return
+
+	var width_ratio := current_size.x / maxf(safe_play_area_size.x, 0.01)
+	var depth_ratio := current_size.y / maxf(safe_play_area_size.y, 0.01)
+	for lane_node in _support_lane_nodes:
+		if not is_instance_valid(lane_node):
+			continue
+
+		var original_position: Variant = _support_lane_original_local_positions.get(lane_node.get_instance_id(), to_local(lane_node.global_position))
+		if not (original_position is Vector3):
+			continue
+
+		var local_position := original_position as Vector3
+		var scaled_local_position := Vector3(local_position.x * width_ratio, local_position.y, local_position.z * depth_ratio)
+		lane_node.global_position = to_global(scaled_local_position)
+
+
+func _get_support_lane_signed_distance(from_progress: float, to_progress: float) -> float:
+	var perimeter := get_support_lane_perimeter_length()
+	if perimeter <= 0.0:
+		return 0.0
+
+	var forward_distance := fposmod(to_progress - from_progress, perimeter)
+	if forward_distance > perimeter * 0.5:
+		return forward_distance - perimeter
+	return forward_distance

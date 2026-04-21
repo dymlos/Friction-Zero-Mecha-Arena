@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/arenas/arena_base.gd" id="1_arena"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/edge_repair_pickup.tscn" id="2_pickup"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/pickups/edge_pulse_pickup.tscn" id="5_pulse_pickup"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/edge_charge_pickup.tscn" id="6_charge_pickup"]
 [ext_resource type="PackedScene" path="res://scenes/support/pilot_support_pickup.tscn" id="7_support_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/support/support_lane_gate.tscn" id="8_support_gate"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_platform"]
 size = Vector3(24, 0.6, 16)
@@ -168,3 +169,14 @@ payload_name = "surge"
 [node name="EastSupportPickup" parent="." instance=ExtResource("7_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2, 0.45, 0)
 payload_name = "surge"
+
+[node name="NorthSupportGate" parent="." instance=ExtResource("8_support_gate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.8, 0.45, -10.8)
+
+[node name="EastSupportGate" parent="." instance=ExtResource("8_support_gate")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 13.2, 0.45, 4.4)
+phase_offset = 0.7
+
+[node name="SouthSupportGate" parent="." instance=ExtResource("8_support_gate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.8, 0.45, 10.8)
+phase_offset = 1.1

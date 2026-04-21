@@ -74,6 +74,8 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 		not support_pickups.is_empty(),
 		"El slice post-muerte deberia exponer pickups discretos para la nave de apoyo."
 	)
+	var arena := main.get_node_or_null("ArenaRoot/ArenaBlockout")
+	_assert(arena != null, "La escena principal deberia seguir exponiendo el arena para enrutar el carril externo.")
 	if support_ship != null and not support_pickups.is_empty():
 		robots[0].apply_damage_to_part("left_arm", robots[0].max_part_health * 0.35, Vector3.LEFT)
 		var arm_health_before := robots[0].get_part_health("left_arm")
@@ -179,6 +181,72 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 				_assert(
 					not roster_label.text.contains("apoyo movilidad"),
 					"Tras gastar la carga de movilidad, el roster deberia limpiar el payload pendiente."
+				)
+
+		var support_gates := get_nodes_in_group("support_lane_gates")
+		_assert(
+			not support_gates.is_empty(),
+			"El carril externo deberia sumar gates discretos para que la nave tenga decisiones de ruta."
+		)
+		if arena != null and not support_gates.is_empty():
+			var north_gate: Node3D = null
+			for gate in support_gates:
+				if not (gate is Node3D):
+					continue
+				var gate_node := gate as Node3D
+				if gate_node.global_position.z < 0.0:
+					north_gate = gate_node
+					break
+
+			_assert(
+				north_gate != null,
+				"El arena deberia ofrecer al menos un gate sobre el tramo norte del carril."
+			)
+			if north_gate != null:
+				_assert(
+					north_gate.has_method("set_forced_blocking_state"),
+					"Los gates del carril deberian poder fijar su estado para los tests."
+				)
+				var gate_progress := float(arena.call("get_support_lane_progress_near", north_gate.global_position))
+				var spawn_progress := float(arena.call("advance_support_lane_progress", gate_progress, -1.8))
+				var spawn_position := arena.call("get_support_lane_position_from_progress", spawn_progress) as Vector3
+				support_ship.call("configure", robots[1], robots[0], spawn_position, arena)
+				await _wait_frames(2)
+
+				if north_gate.has_method("set_forced_blocking_state"):
+					north_gate.call("set_forced_blocking_state", true)
+				var blocked_start_x := support_ship.global_position.x
+				Input.action_press("p2_move_right")
+				await _wait_physics_frames(8)
+				Input.action_release("p2_move_right")
+
+				_assert(
+					support_ship.global_position.x < north_gate.global_position.x - 0.2,
+					"Un gate cerrado deberia impedir que la nave cruce libremente el tramo bloqueado."
+				)
+				_assert(
+					support_ship.global_position.x <= blocked_start_x + 1.25,
+					"El gate cerrado deberia cortar el avance de la nave en vez de dejarla deslizar casi completo."
+				)
+				_assert(
+					roster_label.text.contains("interferido"),
+					"El roster deberia avisar cuando la nave queda interferida por un gate cerrado."
+				)
+
+				if north_gate.has_method("set_forced_blocking_state"):
+					north_gate.call("set_forced_blocking_state", false)
+				await _wait_physics_frames(45)
+				Input.action_press("p2_move_right")
+				await _wait_physics_frames(18)
+				Input.action_release("p2_move_right")
+
+				_assert(
+					support_ship.global_position.x > north_gate.global_position.x + 0.2,
+					"Cuando el gate se abre, la nave deberia poder completar el tramo y cruzarlo."
+				)
+				_assert(
+					not roster_label.text.contains("interferido"),
+					"Tras liberarse el carril, el roster deberia limpiar la interferencia de apoyo."
 				)
 
 	if roster_label != null:

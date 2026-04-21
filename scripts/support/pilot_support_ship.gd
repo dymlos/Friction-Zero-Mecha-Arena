@@ -11,12 +11,14 @@ signal state_changed(support_ship: PilotSupportShip)
 @export_range(0.05, 0.5, 0.01) var support_repair_ratio := 0.22
 @export_range(0.2, 3.0, 0.1) var support_energy_surge_duration := 1.6
 @export_range(0.2, 3.0, 0.1) var support_mobility_boost_duration := 1.9
+@export_range(0.1, 2.5, 0.1) var gate_disruption_duration := 0.65
 
 var owner_robot: RobotBase = null
 var allied_robot: RobotBase = null
 var arena: ArenaBase = null
 var _support_payload_name := ""
 var _lane_progress := 0.0
+var _gate_disruption_time_left := 0.0
 
 @onready var hull_visual: MeshInstance3D = $HullVisual
 @onready var glow_visual: MeshInstance3D = $GlowVisual
@@ -51,6 +53,8 @@ func belongs_to_owner(robot: RobotBase) -> bool:
 
 func get_status_summary() -> String:
 	var summary := "apoyo"
+	if is_gate_disrupted():
+		summary += " interferido"
 	var payload_label := get_support_payload_label()
 	if payload_label != "":
 		summary += " %s" % payload_label
@@ -107,10 +111,15 @@ func _physics_process(delta: float) -> void:
 	if not owner_robot.is_held_for_round_reset():
 		return
 
+	var was_gate_disrupted := is_gate_disrupted()
+	_gate_disruption_time_left = maxf(_gate_disruption_time_left - delta, 0.0)
 	_update_movement(delta)
 	_try_collect_support_pickup()
 	if owner_robot.is_player_support_action_just_pressed():
 		use_support_payload()
+	if was_gate_disrupted != is_gate_disrupted():
+		_refresh_visuals()
+		state_changed.emit(self)
 
 
 func _update_movement(delta: float) -> void:
@@ -126,7 +135,18 @@ func _update_movement(delta: float) -> void:
 	if absf(signed_input) <= 0.2:
 		return
 
-	_lane_progress = arena.advance_support_lane_progress(_lane_progress, signed_input * move_speed * delta)
+	if is_gate_disrupted():
+		return
+
+	var signed_distance := signed_input * move_speed * delta
+	var blocking_gate_progress := arena.get_support_lane_blocking_gate_progress(_lane_progress, signed_distance)
+	if blocking_gate_progress >= 0.0:
+		_gate_disruption_time_left = gate_disruption_duration
+		_refresh_visuals()
+		state_changed.emit(self)
+		return
+
+	_lane_progress = arena.advance_support_lane_progress(_lane_progress, signed_distance)
 	global_position = arena.get_support_lane_position_from_progress(_lane_progress)
 
 
@@ -175,7 +195,11 @@ func _refresh_visuals() -> void:
 
 	var hull_color := identity_color.darkened(0.32)
 	var glow_color := identity_color
-	if has_support_payload():
+	if is_gate_disrupted():
+		var disruption_color := Color(0.96, 0.4, 0.24, 1.0)
+		hull_color = hull_color.lerp(disruption_color.darkened(0.3), 0.52)
+		glow_color = glow_color.lerp(disruption_color, 0.8)
+	elif has_support_payload():
 		var payload_color := _get_support_payload_color()
 		hull_color = hull_color.lerp(payload_color.darkened(0.18), 0.42)
 		glow_color = glow_color.lerp(payload_color, 0.68)
@@ -217,3 +241,7 @@ func _duplicate_runtime_material(visual: MeshInstance3D) -> void:
 		return
 
 	visual.material_override = material.duplicate()
+
+
+func is_gate_disrupted() -> bool:
+	return _gate_disruption_time_left > 0.0
