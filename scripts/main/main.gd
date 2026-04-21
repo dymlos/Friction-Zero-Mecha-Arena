@@ -7,11 +7,14 @@ const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
+const PilotSupportShip = preload("res://scripts/support/pilot_support_ship.gd")
+const PilotSupportPickup = preload("res://scripts/support/pilot_support_pickup.gd")
 const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
 const EdgeMobilityPickup = preload("res://scripts/pickups/edge_mobility_pickup.gd")
 const EdgeEnergyPickup = preload("res://scripts/pickups/edge_energy_pickup.gd")
 const EdgePulsePickup = preload("res://scripts/pickups/edge_pulse_pickup.gd")
 const EdgeChargePickup = preload("res://scripts/pickups/edge_charge_pickup.gd")
+const PILOT_SUPPORT_SHIP_SCENE = preload("res://scenes/support/pilot_support_ship.tscn")
 const ARIETE_ARCHETYPE = preload("res://data/config/robots/ariete_archetype.tres")
 const GRUA_ARCHETYPE = preload("res://data/config/robots/grua_archetype.tres")
 const CIZALLA_ARCHETYPE = preload("res://data/config/robots/cizalla_archetype.tres")
@@ -38,6 +41,7 @@ const DEFAULT_LAB_ARCHETYPES := [
 
 @onready var arena_root: Node3D = $ArenaRoot
 @onready var robot_root: Node3D = $RobotRoot
+@onready var support_root: Node3D = $SupportRoot
 @onready var systems: Node = $Systems
 @onready var match_controller: MatchController = $Systems/MatchController
 @onready var ui: MatchHud = $UI/MatchHud
@@ -65,6 +69,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	_apply_match_pressure_to_arena()
+	_sync_post_death_support_state()
 	_refresh_hud()
 
 
@@ -409,6 +414,7 @@ func _on_robot_fell_into_void(robot: RobotBase) -> void:
 	var message := match_controller.record_robot_elimination(robot, MatchController.EliminationCause.VOID)
 	if message != "":
 		ui.show_status(message)
+	_spawn_post_death_support_if_needed(robot)
 
 
 func _on_robot_respawned(robot: RobotBase) -> void:
@@ -449,6 +455,7 @@ func _on_robot_exploded(robot: RobotBase) -> void:
 	var message := match_controller.record_robot_elimination(robot, cause)
 	if message != "":
 		ui.show_status(message)
+	_spawn_post_death_support_if_needed(robot)
 
 
 func _on_edge_repair_pickup_collected(robot: RobotBase, repaired_part_name: String) -> void:
@@ -501,10 +508,127 @@ func _on_edge_charge_pickup_collected(robot: RobotBase, restored_charges: int) -
 
 
 func _on_round_started(round_number: int) -> void:
+	_clear_post_death_support()
 	if _arena == null:
 		return
 
 	_arena.activate_edge_pickup_layout_for_round(round_number)
+
+
+func _spawn_post_death_support_if_needed(robot: RobotBase) -> void:
+	if robot == null:
+		return
+	if support_root == null:
+		return
+	if match_controller.match_mode != MatchController.MatchMode.TEAMS:
+		return
+	if _find_post_death_support_ship(robot) != null:
+		return
+
+	var allied_robot := _find_living_support_target(robot)
+	if allied_robot == null:
+		return
+
+	var scene_instance := PILOT_SUPPORT_SHIP_SCENE.instantiate()
+	if not (scene_instance is PilotSupportShip):
+		return
+
+	var support_ship := scene_instance as PilotSupportShip
+	support_root.add_child(support_ship)
+	var spawn_position := robot.global_position
+	if _arena != null:
+		spawn_position = _arena.get_support_lane_spawn_position_near(robot.global_position)
+	support_ship.configure(robot, allied_robot, spawn_position, _arena)
+	if not support_ship.state_changed.is_connected(_on_post_death_support_state_changed):
+		support_ship.state_changed.connect(_on_post_death_support_state_changed)
+	match_controller.set_robot_support_state(robot, support_ship.get_status_summary())
+
+
+func _find_living_support_target(robot: RobotBase) -> RobotBase:
+	for other_robot in match_controller.get_alive_robots():
+		if other_robot == robot:
+			continue
+		if not robot.is_ally_of(other_robot):
+			continue
+
+		return other_robot
+
+	return null
+
+
+func _find_post_death_support_ship(robot: RobotBase) -> PilotSupportShip:
+	if support_root == null or robot == null:
+		return null
+
+	for child in support_root.get_children():
+		if not (child is PilotSupportShip):
+			continue
+
+		var support_ship := child as PilotSupportShip
+		if support_ship.belongs_to_owner(robot):
+			return support_ship
+
+	return null
+
+
+func _clear_post_death_support() -> void:
+	if support_root != null:
+		for child in support_root.get_children():
+			child.queue_free()
+		_set_post_death_support_pickups_active(false, true)
+
+	for robot in match_controller.registered_robots:
+		if not is_instance_valid(robot):
+			continue
+
+		match_controller.clear_robot_support_state(robot)
+
+
+func _sync_post_death_support_state() -> void:
+	var support_enabled := match_controller.match_mode == MatchController.MatchMode.TEAMS and support_root != null and support_root.get_child_count() > 0
+	for robot in match_controller.registered_robots:
+		if not is_instance_valid(robot):
+			continue
+
+		match_controller.clear_robot_support_state(robot)
+
+	if support_enabled:
+		for child in support_root.get_children():
+			if not (child is PilotSupportShip):
+				continue
+
+			var support_ship := child as PilotSupportShip
+			if not is_instance_valid(support_ship.owner_robot):
+				continue
+
+			match_controller.set_robot_support_state(
+				support_ship.owner_robot,
+				support_ship.get_status_summary()
+			)
+
+	_set_post_death_support_pickups_active(support_enabled)
+
+
+func _set_post_death_support_pickups_active(is_active: bool, reset_pickups: bool = false) -> void:
+	for node in get_tree().get_nodes_in_group("pilot_support_pickups"):
+		if not (node is PilotSupportPickup):
+			continue
+
+		var support_pickup := node as PilotSupportPickup
+		support_pickup.set_support_active(is_active)
+		if reset_pickups:
+			support_pickup.reset_pickup()
+
+
+func _on_post_death_support_state_changed(support_ship: PilotSupportShip) -> void:
+	if support_ship == null or not is_instance_valid(support_ship.owner_robot):
+		return
+
+	match_controller.set_robot_support_state(
+		support_ship.owner_robot,
+		support_ship.get_status_summary()
+	)
+	_refresh_hud()
 
 
 func _get_selected_lab_robot() -> RobotBase:

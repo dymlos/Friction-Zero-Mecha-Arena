@@ -683,6 +683,14 @@ func get_input_hint() -> String:
 	return "joy slot %s" % max(player_index - 1, 0)
 
 
+func get_player_move_input_vector() -> Vector2:
+	return _get_move_input_vector()
+
+
+func is_player_support_action_just_pressed() -> bool:
+	return _is_throw_part_just_pressed()
+
+
 func apply_runtime_loadout(
 	next_archetype_config: RobotArchetypeConfig,
 	next_control_mode: ControlMode

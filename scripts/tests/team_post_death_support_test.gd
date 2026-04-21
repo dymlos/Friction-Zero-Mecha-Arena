@@ -1,0 +1,187 @@
+extends SceneTree
+
+const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const MatchController = preload("res://scripts/systems/match_controller.gd")
+
+var _failed := false
+
+
+func _init() -> void:
+	call_deferred("_run")
+
+
+func _run() -> void:
+	await _verify_support_ship_spawns_only_in_teams()
+	_finish()
+
+
+func _verify_support_ship_spawns_only_in_teams() -> void:
+	var main = MAIN_SCENE.instantiate()
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	var support_root := main.get_node_or_null("SupportRoot")
+	var robots := _get_scene_robots(main)
+	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
+	_assert(support_root != null, "El laboratorio Teams deberia reservar un SupportRoot para el soporte post-muerte.")
+	_assert(robots.size() >= 4, "La escena principal deberia seguir ofreciendo cuatro robots para Teams.")
+	if match_controller == null or support_root == null or robots.size() < 4:
+		await _cleanup_main(main)
+		return
+
+	_assert(
+		support_root.get_child_count() == 0,
+		"No deberia haber naves de apoyo activas antes de una eliminacion."
+	)
+
+	robots[1].fall_into_void()
+	await _wait_frames(4)
+
+	_assert(
+		support_root.get_child_count() == 1,
+		"Cuando un jugador cae en Teams y aun queda un aliado, deberia aparecer una nave de apoyo."
+	)
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
+	_assert(roster_label != null, "El HUD deberia seguir exponiendo el roster compacto.")
+	var support_ship := support_root.get_child(0) as Node3D
+	_assert(support_ship != null, "La nave de apoyo deberia existir como Node3D en escena.")
+	if support_ship != null:
+		var hull_visual := support_ship.get_node_or_null("HullVisual") as MeshInstance3D
+		var glow_visual := support_ship.get_node_or_null("GlowVisual") as MeshInstance3D
+		_assert(hull_visual != null, "La nave deberia exponer un casco visible.")
+		_assert(glow_visual != null, "La nave deberia exponer un glow visible.")
+		if hull_visual != null and glow_visual != null:
+			_assert(
+				hull_visual.material_override != glow_visual.material_override,
+				"Casco y glow deberian usar materiales independientes para no pisarse el color/emision."
+			)
+	if support_ship != null:
+		var start_position := support_ship.global_position
+		Input.action_press("p2_move_right")
+		await _wait_frames(3)
+		Input.action_release("p2_move_right")
+		_assert(
+			support_ship.global_position.distance_to(start_position) > 0.05,
+			"La nave de apoyo deberia moverse con el input del jugador eliminado."
+		)
+
+	var support_pickups := get_nodes_in_group("pilot_support_pickups")
+	_assert(
+		not support_pickups.is_empty(),
+		"El slice post-muerte deberia exponer pickups discretos para la nave de apoyo."
+	)
+	if support_ship != null and not support_pickups.is_empty():
+		robots[0].apply_damage_to_part("left_arm", robots[0].max_part_health * 0.35, Vector3.LEFT)
+		var arm_health_before := robots[0].get_part_health("left_arm")
+		var support_pickup := support_pickups[0] as Node3D
+		_assert(support_pickup != null, "Cada pickup de apoyo deberia vivir como Node3D.")
+		if support_pickup != null:
+			var pedestal_visual := support_pickup.get_node_or_null("PedestalVisual") as MeshInstance3D
+			var core_visual := support_pickup.get_node_or_null("CoreVisual") as MeshInstance3D
+			_assert(pedestal_visual != null, "El pickup deberia exponer un pedestal visible.")
+			_assert(core_visual != null, "El pickup deberia exponer un nucleo visible.")
+			if pedestal_visual != null and core_visual != null:
+				_assert(
+					pedestal_visual.material_override != core_visual.material_override,
+					"Pedestal y nucleo deberian usar materiales independientes para no perder contraste."
+				)
+			support_ship.global_position = support_pickup.global_position
+			await _wait_frames(3)
+
+			_assert(
+				roster_label.text.contains("estabilizador"),
+				"El roster deberia mostrar cuando la nave lleva una carga de apoyo."
+			)
+
+			Input.action_press("p2_throw_part")
+			await _wait_frames(2)
+			Input.action_release("p2_throw_part")
+			await _wait_frames(2)
+
+			_assert(
+				robots[0].get_part_health("left_arm") > arm_health_before,
+				"Usar la carga de apoyo deberia estabilizar al aliado vivo."
+			)
+			_assert(
+				not roster_label.text.contains("estabilizador"),
+				"Tras usar la carga, el roster deberia limpiar el estado de apoyo pendiente."
+			)
+
+	if roster_label != null:
+		_assert(
+			roster_label.text.contains("apoyo"),
+			"El roster deberia dejar visible que un jugador eliminado sigue activo como apoyo."
+		)
+
+	await _cleanup_main(main)
+
+	var ffa_scene := load("res://scenes/main/main_ffa.tscn")
+	_assert(ffa_scene is PackedScene, "El proyecto deberia seguir exponiendo la escena dedicada FFA.")
+	if not (ffa_scene is PackedScene):
+		return
+
+	var ffa_main = (ffa_scene as PackedScene).instantiate()
+	root.add_child(ffa_main)
+
+	await process_frame
+	await process_frame
+
+	var ffa_support_root := ffa_main.get_node_or_null("SupportRoot")
+	var ffa_robots := _get_scene_robots(ffa_main)
+	_assert(ffa_support_root != null, "La escena FFA deberia compartir la estructura base del laboratorio.")
+	_assert(ffa_robots.size() >= 4, "La escena FFA deberia seguir ofreciendo cuatro robots.")
+	if ffa_support_root == null or ffa_robots.size() < 4:
+		await _cleanup_main(ffa_main)
+		return
+
+	ffa_robots[0].fall_into_void()
+	await _wait_frames(4)
+
+	_assert(
+		ffa_support_root.get_child_count() == 0,
+		"FFA no deberia activar naves de apoyo post-muerte."
+	)
+
+	await _cleanup_main(ffa_main)
+
+
+func _get_scene_robots(main: Node) -> Array[RobotBase]:
+	var robots: Array[RobotBase] = []
+	var robot_root := main.get_node("RobotRoot")
+	for child in robot_root.get_children():
+		if child is RobotBase:
+			robots.append(child as RobotBase)
+
+	return robots
+
+
+func _assert(condition: bool, message: String) -> void:
+	if condition:
+		return
+
+	_failed = true
+	push_error(message)
+
+
+func _wait_frames(frame_count: int) -> void:
+	for _index in range(maxi(frame_count, 0)):
+		await process_frame
+
+
+func _cleanup_main(main: Node) -> void:
+	if not is_instance_valid(main):
+		return
+
+	var parent := main.get_parent()
+	if parent != null:
+		parent.remove_child(main)
+	main.free()
+	await process_frame
+
+
+func _finish() -> void:
+	quit(1 if _failed else 0)

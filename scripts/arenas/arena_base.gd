@@ -37,6 +37,7 @@ const EDGE_PICKUP_LAYOUTS_BY_PROFILE := {
 @export var safe_play_area_size := Vector2(24.0, 16.0)
 @export var lethal_edge_margin := 2.0
 @export var edge_pickup_layout_seed := 11
+@export_range(0.5, 6.0, 0.1) var support_lane_margin := 2.2
 
 @onready var platform_collision_shape: CollisionShape3D = $Platform/CollisionShape3D
 @onready var platform_visual: MeshInstance3D = $Platform/PlatformVisual
@@ -168,6 +169,29 @@ func is_position_inside_play_area(world_position: Vector3) -> bool:
 	var local_position := to_local(world_position)
 	var half_size := get_safe_play_area_size() * 0.5
 	return absf(local_position.x) <= half_size.x and absf(local_position.z) <= half_size.y
+
+
+func get_support_lane_spawn_position_near(world_position: Vector3) -> Vector3:
+	var local_position := to_local(world_position)
+	var half_size := get_safe_play_area_size() * 0.5
+	var edge_margin := maxf(support_lane_margin, 0.5)
+	var candidates: Array[Vector3] = [
+		Vector3(clampf(local_position.x, -half_size.x, half_size.x), 0.55, -half_size.y - edge_margin),
+		Vector3(clampf(local_position.x, -half_size.x, half_size.x), 0.55, half_size.y + edge_margin),
+		Vector3(-half_size.x - edge_margin, 0.55, clampf(local_position.z, -half_size.y, half_size.y)),
+		Vector3(half_size.x + edge_margin, 0.55, clampf(local_position.z, -half_size.y, half_size.y)),
+	]
+	var best_local_position: Vector3 = candidates[0]
+	var best_distance_squared := INF
+	for candidate in candidates:
+		var candidate_distance := Vector2(candidate.x - local_position.x, candidate.z - local_position.z).length_squared()
+		if candidate_distance >= best_distance_squared:
+			continue
+
+		best_distance_squared = candidate_distance
+		best_local_position = candidate
+
+	return to_global(best_local_position)
 
 
 func _prepare_runtime_resources() -> void:

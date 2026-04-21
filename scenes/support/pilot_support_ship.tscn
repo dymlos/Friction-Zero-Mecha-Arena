@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/support/pilot_support_ship.gd" id="1_support_ship"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_hull"]
+radius = 0.22
+mid_height = 0.42
+
+[sub_resource type="SphereMesh" id="SphereMesh_glow"]
+radius = 0.18
+height = 0.36
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_support"]
+albedo_color = Color(0.24, 0.3, 0.36, 1)
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.3, 0.72, 0.88, 1)
+emission_energy_multiplier = 1.2
+
+[node name="PilotSupportShip" type="Node3D"]
+script = ExtResource("1_support_ship")
+
+[node name="HullVisual" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_hull")
+material_override = SubResource("StandardMaterial3D_support")
+
+[node name="GlowVisual" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.65, 0, 0, 0, 0.24, 0, 0, 0, 0.65, 0, 0.18, 0)
+mesh = SubResource("SphereMesh_glow")
+material_override = SubResource("StandardMaterial3D_support")

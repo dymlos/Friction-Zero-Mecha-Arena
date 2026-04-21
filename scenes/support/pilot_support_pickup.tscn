@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/support/pilot_support_pickup.gd" id="1_pickup"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pedestal"]
+top_radius = 0.18
+bottom_radius = 0.24
+height = 0.18
+
+[sub_resource type="SphereMesh" id="SphereMesh_core"]
+radius = 0.14
+height = 0.28
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pickup"]
+albedo_color = Color(0.9, 0.72, 0.2, 1)
+roughness = 0.25
+emission_enabled = true
+emission = Color(0.96, 0.76, 0.18, 1)
+emission_energy_multiplier = 1.4
+
+[node name="PilotSupportPickup" type="Node3D"]
+script = ExtResource("1_pickup")
+visible = false
+
+[node name="PedestalVisual" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_pedestal")
+material_override = SubResource("StandardMaterial3D_pickup")
+
+[node name="CoreVisual" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.72, 0, 0, 0, 0.72, 0, 0, 0, 0.72, 0, 0.18, 0)
+mesh = SubResource("SphereMesh_core")
+material_override = SubResource("StandardMaterial3D_pickup")

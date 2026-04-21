@@ -329,6 +329,14 @@
    - `Main` calcula los tipos de pickup permitidos por ronda: en `FFA` exige al menos dos robots con skill propia; en `Equipos` exige que cada competidor tenga al menos una skill propia antes de habilitar layouts con `charge`.
    - Motivo: evitar que el laboratorio 2v2 base regale valor gratis a un solo bando y mantener el borde tactico sin crear pickups muertos para la configuracion principal.
 
+81. **El primer post-muerte real vive solo en `Teams` y reutiliza el input del eliminado**
+   - `Main` ahora reserva `SupportRoot`, crea una `PilotSupportShip` cuando `record_robot_elimination()` deja a un aliado vivo en `Teams` y la limpia en cada `round_started`; `FFA` comparte la estructura base de escena pero no activa ese flujo.
+   - Motivo: empezar a diferenciar Team vs Team sin romper la claridad del laboratorio libre ni abrir una segunda capa de reglas en el modo que todavia depende mas de supervivencia/oportunismo que de rescate coordinado.
+
+82. **La primera ayuda post-muerte es `estabilizador`, no interferencia ofensiva**
+   - `PilotSupportShip` se mantiene en un carril externo derivado de `ArenaBase.get_support_lane_spawn_position_near()`, recoge `PilotSupportPickup` ocultos hasta que exista soporte activo y, al gastar `throw_part`, repara la parte activa mas dañada del aliado vivo; el roster solo agrega `apoyo` / `apoyo estabilizador`.
+   - Motivo: Team vs Team necesitaba una primera accion util para el eliminado, pero empezar con daño externo o crowd-control sobre rivales habria aumentado mucho el riesgo de ruido visual y de “me gano un muerto”. Reusar `repair_most_damaged_part()` da comeback y rescate sin competir con el choque principal.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

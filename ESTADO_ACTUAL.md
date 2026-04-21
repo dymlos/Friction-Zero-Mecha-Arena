@@ -35,6 +35,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - bootstrap local que deja cuatro robots humanos activos por defecto desde `main.tscn`
 - perfiles de input separados por slot local para evitar compartir teclado/joypad por accidente
 - escenario base 2v2 en `main.tscn` con dos equipos (pares por `team_id`) y 4 slots locales activos para validar rescate aliado y handoff en campo.
+- primer slice de post-muerte para `Teams`:
+  - cuando un robot queda fuera y aun sobrevive un aliado, `Main` crea una `PilotSupportShip` discreta bajo `SupportRoot`; usa el mismo input del jugador eliminado, se proyecta sobre un carril externo ligado al tamaño vivo del arena y no participa del tracking de la camara
+  - esa nave puede recoger pickups `estabilizador` ocultos hasta que exista soporte activo; el payload queda visible en el roster como `apoyo estabilizador` y repara la parte activa mas dañada del aliado vivo al gastar la accion de utilidad
+  - `FFA` mantiene la misma estructura base pero nunca instancia naves ni activa esos pickups, para no contaminar su identidad de supervivencia/oportunismo
 - laboratorio FFA dedicado en `scenes/main/main_ffa.tscn`, reutilizando la misma arena/shared screen pero con `match_mode=FFA` y bootstrap que neutraliza las alianzas del layout 2v2 para que cada robot compita por su cuenta; ese mismo laboratorio ahora reemplaza los slots de `Grua` y `Cizalla` por `Aguja` y `Ancla` para probar poke + control/zona sin romper el 2v2 base
 - primera capa de identidad de arquetipos apoyada sobre sistemas ya existentes, mas tres skills propias repartidas entre 2v2 y FFA:
   - `Ariete`: mas vida/empuje y tambien mas resistencia al impulso externo para validar pusher/tank
@@ -301,6 +305,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/hard_mode_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_hard_keyboard_aim_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_hard_control_mode_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/team_post_death_support_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 5`
 - `git diff --check`
 
@@ -315,6 +320,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
   - hoy combinan tuning + pasivas chicas, y `Grua/Aguja/Ancla` abren la primera tanda real de skills propias; todavia no hay selección runtime ni una segunda capa mas profunda de reglas por arquetipo
   - si `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` siguen sintiéndose demasiado parecidos en playtest, el siguiente paso debera reforzar lectura/rango/ritmo de esas skills o sumar otra regla visible por rol, no solo más multiplicadores
 - El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
+- El nuevo post-muerte de `Teams` ya existe como slice jugable, pero sigue siendo deliberadamente minimo: hoy solo expone una `PilotSupportShip` discreta y un payload `estabilizador`; todavia faltan una segunda ayuda liviana, rutas/obstaculos externos reales y decidir por playtest si la capa externa aporta comeback sin robar lectura al combate principal.
 - La energia ya es jugable, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - La explosion inestable ya conecta overdrive con la ruta de destruccion total, pero todavia falta playtestear si sus multiplicadores vuelven especial esa apuesta sin convertirla en el cierre dominante del match.
 - Ring-out y destruccion total hoy puntuan igual a nivel de ronda y match; sigue pendiente decidir si algun modo deberia diferenciarlos en scoring o feedback.

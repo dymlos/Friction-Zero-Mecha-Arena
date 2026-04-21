@@ -30,6 +30,7 @@ var _competitor_labels: Dictionary = {}
 var _competitor_archetype_labels: Dictionary = {}
 var _competitor_match_stats: Dictionary = {}
 var _competitor_order: Array[String] = []
+var _robot_support_state: Dictionary = {}
 var _last_elimination_summary := ""
 var _round_status_line := ""
 var _round_elapsed_seconds := 0.0
@@ -86,6 +87,7 @@ func start_match() -> void:
 	_competitor_archetype_labels.clear()
 	_competitor_match_stats.clear()
 	_competitor_order.clear()
+	_robot_support_state.clear()
 
 	for robot in registered_robots:
 		if is_instance_valid(robot):
@@ -326,6 +328,29 @@ func get_match_restart_prompt_line() -> String:
 	return "Reinicio | F5 ahora o %.1fs" % snappedf(get_match_restart_time_left(), 0.1)
 
 
+func set_robot_support_state(robot: RobotBase, state_label: String) -> void:
+	if robot == null:
+		return
+
+	var robot_id := robot.get_instance_id()
+	if state_label == "":
+		_robot_support_state.erase(robot_id)
+		return
+
+	_robot_support_state[robot_id] = state_label
+
+
+func clear_robot_support_state(robot: RobotBase) -> void:
+	set_robot_support_state(robot, "")
+
+
+func get_robot_support_state(robot: RobotBase) -> String:
+	if robot == null:
+		return ""
+
+	return str(_robot_support_state.get(robot.get_instance_id(), ""))
+
+
 func request_match_restart() -> bool:
 	if not _match_over:
 		return false
@@ -448,6 +473,9 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		segments.append("item %s" % robot.get_carried_item_display_name())
 	if robot.is_carrying_part():
 		segments.append("carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name()))
+	var support_state := get_robot_support_state(robot)
+	if support_state != "":
+		segments.append(support_state)
 
 	return "%s %s | %s" % [control_label, robot.get_roster_display_name(), " | ".join(segments)]
 
@@ -776,6 +804,7 @@ func _reset_round() -> void:
 	_round_elimination_order_by_robot_id.clear()
 	_round_elimination_recap_entries.clear()
 	_last_elimination_summary = ""
+	_robot_support_state.clear()
 	_round_number += 1
 	_round_active = true
 	_round_reset_pending = false
