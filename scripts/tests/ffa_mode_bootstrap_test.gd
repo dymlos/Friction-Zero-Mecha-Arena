@@ -75,7 +75,7 @@ func _run() -> void:
 	)
 
 	var round_lines := match_controller.get_round_state_lines()
-	var score_line := round_lines[2] if round_lines.size() > 2 else ""
+	var score_line := _find_line_with_prefix(round_lines, "Marcador |")
 	_assert(score_line.contains("Player 1"), "El marcador FFA deberia listar a cada robot por nombre.")
 	_assert(not score_line.contains("Equipo"), "El marcador FFA no deberia agrupar competidores por equipo.")
 
@@ -100,6 +100,14 @@ func _get_only_detached_part() -> DetachedPart:
 		return null
 
 	return detached_parts[0] as DetachedPart
+
+
+func _find_line_with_prefix(lines: Array[String], prefix: String) -> String:
+	for line in lines:
+		if line.begins_with(prefix):
+			return line
+
+	return ""
 
 
 func _assert(condition: bool, message: String) -> void:

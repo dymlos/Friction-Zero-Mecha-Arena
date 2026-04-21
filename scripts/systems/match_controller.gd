@@ -101,6 +101,7 @@ func get_team_score(team_id: int) -> int:
 func get_round_state_lines() -> Array[String]:
 	var lines: Array[String] = []
 	lines.append(get_round_status_line())
+	lines.append("Modo | %s" % get_match_mode_label())
 	lines.append("Objetivo | Primero a %s" % get_rounds_to_win())
 	var score_line := _build_score_summary_line()
 	if score_line != "":
@@ -122,6 +123,10 @@ func get_rounds_to_win() -> int:
 		return 1
 
 	return max(1, match_config.rounds_to_win)
+
+
+func get_match_mode_label() -> String:
+	return "FFA" if match_mode == MatchMode.FFA else "Equipos"
 
 
 func get_current_play_area_scale() -> float:

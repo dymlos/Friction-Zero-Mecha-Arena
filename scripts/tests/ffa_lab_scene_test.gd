@@ -37,7 +37,7 @@ func _run() -> void:
 	_assert(not robots[2].is_ally_of(robots[3]), "La escena FFA no deberia conservar alianzas entre Player 3 y Player 4.")
 
 	var round_lines := match_controller.get_round_state_lines()
-	var score_line := round_lines[2] if round_lines.size() > 2 else ""
+	var score_line := _find_line_with_prefix(round_lines, "Marcador |")
 	_assert(score_line.contains("Player 1"), "El marcador FFA deberia listar jugadores individuales.")
 	_assert(score_line.contains("Player 4"), "El marcador FFA deberia incluir a todos los competidores visibles.")
 	_assert(not score_line.contains("Equipo"), "La escena FFA no deberia presentar marcador por equipos.")
@@ -61,6 +61,14 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 			robots.append(child as RobotBase)
 
 	return robots
+
+
+func _find_line_with_prefix(lines: Array[String], prefix: String) -> String:
+	for line in lines:
+		if line.begins_with(prefix):
+			return line
+
+	return ""
 
 
 func _assert(condition: bool, message: String) -> void:
