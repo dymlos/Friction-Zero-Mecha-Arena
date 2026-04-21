@@ -28,6 +28,7 @@ var _respawn_time_left := 0.0
 @onready var core_visual: MeshInstance3D = $CoreVisual
 @onready var pedestal_visual: MeshInstance3D = $PedestalVisual
 var _respawn_visual: MeshInstance3D = null
+var _payload_accent_visual: MeshInstance3D = null
 
 
 func _ready() -> void:
@@ -36,7 +37,9 @@ func _ready() -> void:
 	_duplicate_runtime_material(pedestal_visual)
 	_duplicate_runtime_material(core_visual)
 	_ensure_respawn_visual()
+	_ensure_payload_accent_visual()
 	_duplicate_runtime_material(_respawn_visual)
+	_duplicate_runtime_material(_payload_accent_visual)
 	_refresh_visual_state()
 
 
@@ -100,6 +103,8 @@ func _refresh_visual_state() -> void:
 		pedestal_visual.visible = should_show
 	if core_visual != null:
 		core_visual.visible = should_show and not _collected
+	if _payload_accent_visual != null:
+		_payload_accent_visual.visible = should_show
 	if _respawn_visual != null:
 		_respawn_visual.visible = should_show and _collected
 		if _respawn_visual.visible:
@@ -125,6 +130,7 @@ func _refresh_visual_state() -> void:
 
 func _apply_payload_colors() -> void:
 	var accent_color := _get_payload_accent_color()
+	_apply_payload_accent_shape()
 	if pedestal_visual != null:
 		var pedestal_material := pedestal_visual.material_override as StandardMaterial3D
 		if pedestal_material != null:
@@ -140,6 +146,16 @@ func _apply_payload_colors() -> void:
 			core_material.emission = accent_color
 			core_material.emission_energy_multiplier = 1.45
 			core_material.roughness = 0.2
+	if _payload_accent_visual != null:
+		var accent_material := _payload_accent_visual.material_override as StandardMaterial3D
+		if accent_material != null:
+			var silhouette_color := accent_color.lightened(0.12)
+			accent_material.albedo_color = silhouette_color
+			accent_material.emission_enabled = true
+			accent_material.emission = silhouette_color
+			accent_material.emission_energy_multiplier = 0.85
+			accent_material.roughness = 0.18
+			accent_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 
 
 func _ensure_respawn_visual() -> void:
@@ -165,6 +181,57 @@ func _ensure_respawn_visual() -> void:
 	respawn_visual.material_override = material
 	add_child(respawn_visual)
 	_respawn_visual = respawn_visual
+
+
+func _ensure_payload_accent_visual() -> void:
+	if get_node_or_null("PayloadAccentVisual") != null:
+		_payload_accent_visual = get_node("PayloadAccentVisual") as MeshInstance3D
+		return
+
+	var accent_visual := MeshInstance3D.new()
+	accent_visual.name = "PayloadAccentVisual"
+	accent_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.emission_enabled = true
+	accent_visual.material_override = material
+	add_child(accent_visual)
+	_payload_accent_visual = accent_visual
+
+
+func _apply_payload_accent_shape() -> void:
+	if _payload_accent_visual == null:
+		return
+
+	var accent_mesh: PrimitiveMesh = BoxMesh.new()
+	var accent_scale := Vector3.ONE
+	var accent_rotation := Vector3.ZERO
+	var accent_position := Vector3(0.0, 0.36, 0.0)
+
+	match payload_name:
+		PAYLOAD_SURGE:
+			accent_mesh = BoxMesh.new()
+			accent_scale = Vector3(0.42, 0.08, 0.08)
+			accent_position = Vector3(0.0, 0.32, 0.0)
+		PAYLOAD_MOBILITY:
+			accent_mesh = BoxMesh.new()
+			accent_scale = Vector3(0.34, 0.06, 0.14)
+			accent_rotation = Vector3(0.0, 0.0, 30.0)
+			accent_position = Vector3(0.0, 0.34, 0.0)
+		PAYLOAD_INTERFERENCE:
+			accent_mesh = SphereMesh.new()
+			accent_scale = Vector3(0.22, 0.22, 0.22)
+			accent_position = Vector3(0.0, 0.4, 0.0)
+		_:
+			accent_mesh = CylinderMesh.new()
+			accent_scale = Vector3(0.18, 0.34, 0.18)
+			accent_position = Vector3(0.0, 0.36, 0.0)
+
+	_payload_accent_visual.mesh = accent_mesh
+	_payload_accent_visual.scale = accent_scale
+	_payload_accent_visual.rotation_degrees = accent_rotation
+	_payload_accent_visual.position = accent_position
 
 
 func _get_payload_accent_color() -> Color:

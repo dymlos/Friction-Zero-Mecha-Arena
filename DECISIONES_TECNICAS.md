@@ -453,6 +453,10 @@
    - `PilotSupportShip` ahora centraliza `_refresh_support_target_visuals()` y lo invoca al configurar la nave, guardar/gastar payload y cambiar target seleccionado.
    - Motivo: el estado logico del soporte podia quedar un frame por delante de `SupportTargetIndicator`, `SupportTargetFloorIndicator` e `InterferenceRangeIndicator`, dejando telegraphs stale en tests headless y reinicios cortos. Sincronizarlos en el mismo punto donde cambia el estado corrige la causa real sin sumar timers ni waits artificiales.
 
+97. **Los pickups del soporte distinguen payload por silueta, no solo por color**
+   - `PilotSupportPickup` ahora crea `PayloadAccentVisual` runtime con material propio y una firma sobria por carga: cilindro vertical para `estabilizador`, barra horizontal para `energia`, barra inclinada para `movilidad` y esfera compacta para `interferencia`.
+   - Motivo: en pantalla compartida el respawn/pedestal ya explicaban “aca hay pickup”, pero el tipo seguia dependiendo demasiado del color. Separar la silueta mantiene la lectura diegetica del carril para jugador eliminado y espectador sin abrir otro HUD ni texto flotante.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

@@ -21,6 +21,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await _verify_support_pickup_respawns_with_readable_timing()
+	await _verify_support_pickup_payloads_have_distinct_world_silhouettes()
 	_finish()
 
 
@@ -113,6 +114,69 @@ func _verify_support_pickup_respawns_with_readable_timing() -> void:
 
 	pickup.queue_free()
 	ship.queue_free()
+	await process_frame
+
+
+func _verify_support_pickup_payloads_have_distinct_world_silhouettes() -> void:
+	var payloads := [
+		"stabilizer",
+		"surge",
+		"mobility",
+		"interference",
+	]
+	var silhouette_signatures: Dictionary = {}
+	var unique_signatures: Dictionary = {}
+	var pickups: Array[Node3D] = []
+
+	for payload_name in payloads:
+		var pickup = PICKUP_SCENE.instantiate()
+		pickup.set("payload_name", payload_name)
+		root.add_child(pickup)
+		pickup.call("set_support_active", true)
+		pickups.append(pickup)
+
+	await process_frame
+
+	for pickup in pickups:
+		var payload_name := str(pickup.get("payload_name"))
+		var accent_visual := pickup.get_node_or_null("PayloadAccentVisual") as MeshInstance3D
+		_assert(
+			accent_visual != null,
+			"Cada payload de soporte deberia exponer un acento/silueta propia en mundo, no solo color."
+		)
+		if accent_visual == null:
+			continue
+
+		var mesh := accent_visual.mesh
+		var material := accent_visual.material_override as StandardMaterial3D
+		var signature := "%s|%s|%s" % [
+			mesh.get_class() if mesh != null else "null",
+			accent_visual.scale,
+			accent_visual.rotation_degrees,
+		]
+		silhouette_signatures[payload_name] = signature
+		unique_signatures[signature] = true
+		_assert(
+			material != null,
+			"El acento de payload deberia tener un material propio para sostener contraste sin pisar el nucleo."
+		)
+		if material != null:
+			_assert(
+				material.emission_enabled,
+				"El acento de payload deberia seguir siendo legible a distancia con emision sobria."
+			)
+
+	_assert(
+		silhouette_signatures.size() == payloads.size(),
+		"Cada pickup probado deberia registrar su firma visual."
+	)
+	_assert(
+		unique_signatures.size() == silhouette_signatures.size(),
+		"Los payloads del soporte deberian diferenciarse por silueta, no compartir la misma firma visual."
+	)
+
+	for pickup in pickups:
+		pickup.queue_free()
 	await process_frame
 
 
