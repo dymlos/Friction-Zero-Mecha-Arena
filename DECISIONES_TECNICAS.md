@@ -280,11 +280,15 @@
    - `main_ffa.tscn` reemplaza el slot de `Grua` por `Aguja`, mientras `main.tscn` conserva `Ariete/Grua/Cizalla/Patin` para seguir priorizando rescate aliado en equipos.
    - Motivo: FFA gana oportunismo y poke legible sin debilitar el laboratorio 2v2 que hoy valida mejor asistencia/recuperacion.
 
-69. **`Ancla` completa Control/Zona con una baliza persistente corta**
+69. **La skill propia lista se lee en el cuerpo; el item cargado sigue arriba del robot**
+   - `RobotBase` ahora usa un pulso cian sobrio sobre `LeftCoreLight/RightCoreLight` cuando quedan cargas de skill propia, y apaga ese extra al vaciarse; el `CarryIndicator` dorado sigue reservado para `pulse_charge` o partes cargadas.
+   - Motivo: `Aguja` ya tenía roster `skill Pulso x/y`, pero en cámara compartida seguía faltando distinguir rápido “tiene su skill lista” de “levantó un item universal de pulso”; reutilizar las luces del core preserva legibilidad sin abrir otro marcador flotante.
+
+70. **`Ancla` completa Control/Zona con una baliza persistente corta**
    - `RobotArchetypeConfig.CoreSkillType` ahora tambien puede ser `CONTROL_BEACON`, y `RobotBase` lo resuelve desplegando `ControlBeacon`, una zona breve que ralentiza drive/control de rivales dentro del area.
    - Motivo: cerrar el sexto arquetipo documentado con el cambio mas chico posible, reutilizando la misma accion de utilidad y manteniendo el efecto claramente subordinado al combate de choque.
 
-70. **Solo una baliza activa por robot para proteger la claridad**
+71. **Solo una baliza activa por robot para proteger la claridad**
    - Al redeplegar `Baliza`, `RobotBase` libera la anterior antes de crear la nueva; `main_ffa.tscn` expone `Ancla` en lugar de `Cizalla`, manteniendo el 2v2 base intacto.
    - Motivo: evitar stack de hazards, mantener la lectura limpia en pantalla compartida y abrir el sexto rol principalmente donde FFA gana mas con control y oportunismo.
 

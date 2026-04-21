@@ -17,6 +17,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_poke_archetype_exposes_a_charge_skill()
 	await _validate_charge_skill_spends_and_recovers_ammo()
+	await _validate_core_skill_readability_stays_on_robot_body()
 	await _validate_ffa_lab_exposes_the_new_archetype_identity()
 	await process_frame
 	await process_frame
@@ -101,6 +102,70 @@ func _validate_charge_skill_spends_and_recovers_ammo() -> void:
 	await _cleanup_group("temporary_projectiles")
 	await _cleanup_node(target)
 	await _cleanup_node(source)
+
+
+func _validate_core_skill_readability_stays_on_robot_body() -> void:
+	var config := load(AGUJA_CONFIG_PATH)
+	_assert(config is RobotArchetypeConfig, "La prueba de lectura diegetica necesita el recurso Aguja.")
+	if not (config is RobotArchetypeConfig):
+		return
+
+	var tuned_config := (config as RobotArchetypeConfig).duplicate(true) as RobotArchetypeConfig
+	tuned_config.set("core_skill_recharge_seconds", 99.0)
+	var robot := await _spawn_robot(tuned_config)
+	var target := await _spawn_robot(null)
+
+	robot.global_position = Vector3.ZERO
+	target.global_position = Vector3(0.0, 0.8, -2.1)
+
+	var left_core := robot.get_node_or_null("UpperBodyPivot/LeftCoreLight") as MeshInstance3D
+	var carry_indicator := robot.get_node_or_null("CarryIndicator") as MeshInstance3D
+	_assert(left_core != null, "Aguja deberia seguir exponiendo su luz de core para lectura en mundo.")
+	_assert(carry_indicator != null, "El robot deberia seguir exponiendo el indicador de carga compartido.")
+	if left_core == null or carry_indicator == null:
+		await _cleanup_node(target)
+		await _cleanup_node(robot)
+		return
+
+	var core_material := left_core.material_override as StandardMaterial3D
+	_assert(core_material != null, "La luz del core deberia poder reforzar la lectura de la skill propia.")
+	if core_material == null:
+		await _cleanup_node(target)
+		await _cleanup_node(robot)
+		return
+
+	var ready_energy := core_material.emission_energy_multiplier
+	_assert(
+		not carry_indicator.visible,
+		"Aguja no deberia necesitar el indicador de carga cuando solo tiene su skill propia lista."
+	)
+
+	var first_use := robot.use_core_skill()
+	var second_use := robot.use_core_skill()
+	_assert(first_use and second_use, "La skill propia deberia poder gastarse hasta vaciar sus cargas.")
+	await _await_seconds(0.05)
+
+	var drained_energy := core_material.emission_energy_multiplier
+	_assert(
+		robot.get_core_skill_charge_count() == 0,
+		"La prueba de lectura necesita dejar a Aguja sin cargas."
+	)
+	_assert(
+		drained_energy < ready_energy,
+		"Cuando Aguja se queda sin `Pulso`, la luz del core deberia perder intensidad para no confundirse con una carga lista."
+	)
+
+	var stored := robot.store_carried_item("pulse_charge")
+	_assert(stored, "Tras vaciar la skill propia, Aguja deberia poder recoger un item universal de pulso.")
+	await process_frame
+	_assert(
+		carry_indicator.visible,
+		"El item `pulse_charge` deberia seguir leyendose con el indicador de carga compartido, separado de la skill propia."
+	)
+
+	await _cleanup_group("temporary_projectiles")
+	await _cleanup_node(target)
+	await _cleanup_node(robot)
 
 
 func _validate_ffa_lab_exposes_the_new_archetype_identity() -> void:

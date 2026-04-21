@@ -262,6 +262,9 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var carry_indicator_pulse_speed := 6.5
 @export var carry_indicator_pulse_amount := 0.18
 @export var carry_indicator_rotation_speed := 1.3
+@export var core_skill_ready_pulse_speed := 4.2
+@export var core_skill_ready_pulse_amount := 0.18
+@export var core_skill_ready_emission_boost := 0.28
 @export_group("Prototype Recovery Target Readability")
 @export var recovery_target_indicator_radius := 0.22
 @export var recovery_target_indicator_base_height := 1.18
@@ -329,6 +332,7 @@ var _disabled_warning_indicator: MeshInstance3D = null
 var _disabled_warning_indicator_animation_time := 0.0
 var _recoverable_detached_part_ids: Dictionary = {}
 var _last_indicator_payload_name := ""
+var _core_skill_visual_time := 0.0
 var _selected_energy_part_name := "left_arm"
 var _energy_shift_cooldown_remaining := 0.0
 var _overdrive_part_name := ""
@@ -954,6 +958,7 @@ func _process(delta: float) -> void:
 	_refresh_recovery_target_indicator()
 	_update_recovery_target_indicator_animation(delta)
 	_update_disabled_warning_indicator(delta)
+	_update_core_skill_readiness_visuals(delta)
 
 
 func reset_modular_state() -> void:
@@ -2531,10 +2536,13 @@ func _refresh_core_visuals() -> void:
 		var energy_surge_blend := 0.22 if is_energy_surge_active() else 0.0
 		var mobility_color := Color(0.2, 0.92, 0.78, 1.0)
 		var mobility_blend := 0.42 if is_mobility_boost_active() else 0.0
+		var core_skill_color := Color(0.22, 0.88, 1.0, 1.0)
+		var core_skill_blend := _get_core_skill_visual_blend(visual_node)
 		material.albedo_color = base_albedo.lerp(Color(0.09, 0.08, 0.08, 1.0), damage_blend + disabled_blend)
 		material.albedo_color = material.albedo_color.lerp(energy_color, energy_blend * 0.18)
 		material.albedo_color = material.albedo_color.lerp(Color(0.96, 0.97, 1.0, 1.0), energy_surge_blend * 0.12)
 		material.albedo_color = material.albedo_color.lerp(mobility_color, mobility_blend * 0.12)
+		material.albedo_color = material.albedo_color.lerp(core_skill_color, core_skill_blend * 0.1)
 		material.albedo_color = material.albedo_color.lerp(Color(1.0, 0.62, 0.18, 1.0), unstable_blend * 0.18)
 		if material.emission_enabled:
 			var warning_color := Color(1.0, 0.28, 0.12, 1.0)
@@ -2542,10 +2550,16 @@ func _refresh_core_visuals() -> void:
 			material.emission = material.emission.lerp(energy_color, energy_blend)
 			material.emission = material.emission.lerp(Color(0.96, 0.97, 1.0, 1.0), energy_surge_blend)
 			material.emission = material.emission.lerp(mobility_color, mobility_blend)
+			material.emission = material.emission.lerp(core_skill_color, core_skill_blend)
 			material.emission = material.emission.lerp(Color(1.0, 0.66, 0.18, 1.0), unstable_blend)
 			material.emission_energy_multiplier = maxf(
-				base_emission_energy,
-				0.12 + disabled_blend * 0.85 + energy_blend * 0.75 + energy_surge_blend * 0.55 + mobility_blend * 0.7 + unstable_blend * 0.8
+				base_emission_energy + core_skill_blend * core_skill_ready_emission_boost,
+				0.12
+				+ disabled_blend * 0.85
+				+ energy_blend * 0.75
+				+ energy_surge_blend * 0.55
+				+ mobility_blend * 0.7
+				+ unstable_blend * 0.8
 			)
 
 
@@ -2560,6 +2574,22 @@ func _get_identity_visual_strength(visual_node: MeshInstance3D) -> float:
 			return 1.0
 
 	return 0.0
+
+
+func _get_core_skill_visual_blend(visual_node: MeshInstance3D) -> float:
+	if visual_node == null:
+		return 0.0
+	if not has_core_skill():
+		return 0.0
+	if get_core_skill_charge_count() <= 0 or get_core_skill_max_charges() <= 0:
+		return 0.0
+	if visual_node.name != "LeftCoreLight" and visual_node.name != "RightCoreLight":
+		return 0.0
+
+	var charge_ratio := clampf(float(get_core_skill_charge_count()) / float(get_core_skill_max_charges()), 0.0, 1.0)
+	var wave := (sin(_core_skill_visual_time * core_skill_ready_pulse_speed) + 1.0) * 0.5
+	var pulse := 1.0 + (wave - 0.5) * core_skill_ready_pulse_amount * 2.0
+	return clampf(charge_ratio * pulse, 0.0, 1.0)
 
 
 func _apply_material_damage_tint(mesh_instance: MeshInstance3D, health_ratio: float, flash_strength: float) -> void:
@@ -2593,6 +2623,17 @@ func _update_damage_visual_feedback(delta: float) -> void:
 
 	if any_flash_updated:
 		_refresh_visual_state()
+
+
+func _update_core_skill_readiness_visuals(delta: float) -> void:
+	if not has_core_skill() or get_core_skill_charge_count() <= 0:
+		if _core_skill_visual_time != 0.0:
+			_core_skill_visual_time = 0.0
+			_refresh_core_visuals()
+		return
+
+	_core_skill_visual_time += delta
+	_refresh_core_visuals()
 
 
 func _update_control_mode_orientation(delta: float) -> void:
