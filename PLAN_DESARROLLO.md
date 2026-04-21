@@ -11,7 +11,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - Etapa 2v2: laboratorio 2v2 preparado con 4 robots por escena y `local_player_count=4`, incluyendo equipos por parejas para validar rescate aliado.
 - Laboratorio FFA expuesto: `scenes/main/main_ffa.tscn` ahora hereda el laboratorio principal pero arranca con `MatchMode.FFA`; `Main` neutraliza los `team_id` del layout 2v2 cuando corresponde para que rescate/negacion y scoring traten a cada robot como competidor individual.
 - Validacion 2v2: el loop de rescate/negacion ya tiene cobertura headless en `main.tscn`, incluyendo indicador de carga visible y ventana de `throw_pickup_delay`.
-- Validacion FFA: el prototipo ya cubre headless tanto el bootstrap libre sobre `main.tscn` como la escena dedicada `main_ffa.tscn`, evitando que el laboratorio 2v2 filtre alianzas falsas al modo todos-contra-todos.
+- Validacion FFA: el prototipo ya cubre headless tanto el bootstrap libre sobre `main.tscn` como la escena dedicada `main_ffa.tscn`, incluyendo cierre de ronda individual y una linea de estado que deja visible si el laboratorio actual corre en `FFA` o `Equipos`.
 - Scoreboard minimo: `MatchController` ya registra bajas por vacio o explosion, suma ronda al ultimo contendiente en pie y reinicia todos los robots juntos tras una pausa corta.
 - Cierre de match base: el laboratorio ya juega a first-to-3 por defecto; cuando un equipo alcanza el objetivo, `MatchController` anuncia ganador de partida, congela la ronda y reinicia el match completo tras una pausa corta.
 - Presion de endgame: el `arena_blockout` ahora reduce progresivamente su tamano durante la ronda, empujando el cierre hacia el centro sin agregar hazards extra.

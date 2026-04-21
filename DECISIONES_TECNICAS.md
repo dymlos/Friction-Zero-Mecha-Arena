@@ -186,6 +186,10 @@
    - `Main` pone `team_id = 0` en los robots si `MatchController` arranca en `FFA`, antes de registrarlos.
    - Motivo: el layout 2v2 conserva parejas en escena para `main.tscn`; sin neutralizar eso en FFA, `is_ally_of` permitia rescates/devoluciones falsas entre rivales.
 
+47. **El HUD de estado siempre explicita el modo de match**
+   - `MatchController.get_round_state_lines()` agrega `Modo | FFA` o `Modo | Equipos` antes del objetivo y el marcador.
+   - Motivo: una vez que `main.tscn` y `main_ffa.tscn` comparten casi toda la escena, la lectura tiene que dejar visible el modo activo sin depender del nombre del archivo o del contexto externo del playtest.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

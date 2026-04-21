@@ -35,17 +35,24 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - presion final de arena: el piso y sus edge markers se contraen de forma progresiva segun el tiempo de ronda, y el HUD agrega una linea corta cuando empieza el cierre
 - incentivo real de borde: el arena blockout ahora tiene pickups de reparacion instantanea en los flancos; curan la parte activa mas dañada, obligan a exponerse cerca del vacio para estabilizarse y siguen el borde vivo cuando la arena se contrae
 - cobertura blockout de borde: el mismo arena ahora suma dos slabs simples junto a esos pickups; ayudan a preparar duelos y siguen el nuevo borde util cuando la arena se contrae
-- HUD minimo con estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia y si un robot transporta una parte
+- HUD minimo con modo de match + estado de ronda + objetivo del match + marcador compacto y roster por robot para leer estado, energia y si un robot transporta una parte
 - negacion por lanzamiento: un jugador que lleva una parte puede lanzarla para negarla sin esperar una caída al vacio
 - ritmo de duelo 2P ajustado: movimiento más estable al corregir, empuje/presión de impacto más claros para favorecer el ciclo de tanteo->choque->castigo sin spam de contactos frágiles.
 - indicador de carga visible en mundo: un estado de "parte en mano" se muestra con indicador pulso-orbital por parte.
 - lectura diegética de daño modular: cada extremidad ya puede mostrar `Smoke` cuando está dañada y `Spark` cuando entra en estado crítico; ambos marcadores viven sobre la pieza, no en el HUD, y desaparecen al repararla o perderla.
 - validacion 2v2 automatizada del loop de rescate/negacion: `main.tscn` ya se cubre con un test que comprueba pickup aliado, color/visibilidad del indicador y bloqueo temporal tras lanzamiento.
 - validacion automatizada del cierre de ronda: `main.tscn` ya comprueba victorias por vacio y por destruccion total con reset de ronda y scoreboard.
-- validacion automatizada FFA: `ffa_mode_bootstrap_test.gd` y `ffa_lab_scene_test.gd` comprueban que el laboratorio libre no hereda alianzas falsas del setup 2v2 y que el marcador sigue siendo individual
+- validacion automatizada FFA: `ffa_mode_bootstrap_test.gd`, `ffa_lab_scene_test.gd` y `ffa_round_resolution_test.gd` comprueban que el laboratorio libre no hereda alianzas falsas del setup 2v2, mantiene el marcador individual y resuelve una ronda completa con ganador por robot
 
 ## Lo completado en esta iteracion
 
+- Se hizo visible el modo activo del laboratorio en el HUD de ronda:
+  - `MatchController.get_round_state_lines()` ahora agrega `Modo | FFA` o `Modo | Equipos`
+  - esto deja claro que `main_ffa.tscn` no es solo “la misma escena con otros scores”, sino un laboratorio libre ya legible desde el estado principal
+- Se cubrió el cierre real de ronda FFA en la escena dedicada:
+  - `ffa_round_resolution_test.gd` elimina tres robots en `main_ffa.tscn`
+  - valida ganador individual, marcador por robot y persistencia de la línea `Modo | FFA`
+  - además drena los timers de ring-out antes del teardown para no dejar warnings/leaks engañosos
 - Se expuso un laboratorio FFA real sin duplicar logica de bootstrap:
   - `scenes/main/main_ffa.tscn` hereda el laboratorio principal y solo fija `MatchController.MatchMode.FFA`
   - `Main` ahora neutraliza `team_id` de los robots cuando el match arranca en FFA, evitando que el rescate/negacion trate a rivales como aliados por reutilizar el layout 2v2
@@ -130,6 +137,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/edge_repair_pickup_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_mode_bootstrap_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_lab_scene_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/ffa_round_resolution_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_part_return_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_explosion_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_damage_feedback_test.gd`
@@ -145,7 +153,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_hard_control_mode_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --quit-after 5`
 
-Resultado: las diecisiete verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
+Resultado: las dieciocho verificaciones dedicadas pasan y el proyecto sigue iniciando sin errores de parseo ni referencias rotas en ejecucion headless.
 
 ## Limites actuales
 
