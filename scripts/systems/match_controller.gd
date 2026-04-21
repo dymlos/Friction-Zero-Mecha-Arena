@@ -7,7 +7,7 @@ const RobotBase = preload("res://scripts/robots/robot_base.gd")
 signal round_started(round_number: int)
 
 enum MatchMode { FFA, TEAMS }
-enum EliminationCause { VOID, EXPLOSION }
+enum EliminationCause { VOID, EXPLOSION, UNSTABLE_EXPLOSION }
 
 @export var match_mode: MatchMode = MatchMode.FFA
 @export var match_config: MatchConfig
@@ -221,6 +221,8 @@ func _build_robot_status_line(robot: RobotBase) -> String:
 		var explosion_time_left := robot.get_disabled_explosion_time_left()
 		if explosion_time_left > 0.0:
 			state_detail = "explota %.1fs" % snappedf(explosion_time_left, 0.1)
+			if robot.is_disabled_explosion_unstable():
+				state_detail = "inestable | %s" % state_detail
 
 	var state_segment := state_label
 	if state_detail != "":
@@ -291,7 +293,11 @@ func _get_competitor_label_from_key(competitor_key: String) -> String:
 
 
 func _build_elimination_summary(robot: RobotBase, cause: EliminationCause) -> String:
-	var cause_label := "cayo al vacio" if cause == EliminationCause.VOID else "explosiono tras quedar inutilizado"
+	var cause_label := "cayo al vacio"
+	if cause == EliminationCause.EXPLOSION:
+		cause_label = "explosiono tras quedar inutilizado"
+	elif cause == EliminationCause.UNSTABLE_EXPLOSION:
+		cause_label = "exploto en sobrecarga"
 	return "%s %s" % [robot.display_name, cause_label]
 
 
@@ -309,6 +315,8 @@ func _get_elimination_cause_label(cause: int) -> String:
 		return "vacio"
 	if cause == EliminationCause.EXPLOSION:
 		return "explosion"
+	if cause == EliminationCause.UNSTABLE_EXPLOSION:
+		return "explosion inestable"
 
 	return ""
 

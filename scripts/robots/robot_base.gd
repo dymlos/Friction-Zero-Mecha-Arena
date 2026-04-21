@@ -232,6 +232,9 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var disabled_explosion_radius := 3.6
 @export var disabled_explosion_impulse := 12.0
 @export var disabled_explosion_damage := 24.0
+@export_range(1.0, 2.0, 0.05) var unstable_disabled_explosion_radius_multiplier := 1.2
+@export_range(1.0, 2.0, 0.05) var unstable_disabled_explosion_impulse_multiplier := 1.35
+@export_range(1.0, 2.0, 0.05) var unstable_disabled_explosion_damage_multiplier := 1.35
 
 @export_group("Prototype Void")
 @export var void_fall_y := -6.0
@@ -274,6 +277,8 @@ var _energy_surge_part_name := ""
 var _energy_surge_remaining := 0.0
 var _mobility_boost_remaining := 0.0
 var _hard_torso_world_direction := Vector3.FORWARD
+var _disabled_explosion_is_unstable := false
+var _last_disabled_explosion_was_unstable := false
 
 @onready var disabled_explosion_timer: Timer = $DisabledExplosionTimer
 @onready var upper_body_pivot: Node3D = $UpperBodyPivot
@@ -312,6 +317,14 @@ func get_disabled_explosion_time_left() -> float:
 		return 0.0
 
 	return maxf(disabled_explosion_timer.time_left, 0.0)
+
+
+func is_disabled_explosion_unstable() -> bool:
+	return _is_disabled and _disabled_explosion_is_unstable
+
+
+func was_last_disabled_explosion_unstable() -> bool:
+	return _last_disabled_explosion_was_unstable
 
 
 func is_carrying_part() -> bool:
@@ -577,6 +590,8 @@ func reset_modular_state() -> void:
 	_energy_surge_part_name = ""
 	_energy_surge_remaining = 0.0
 	_mobility_boost_remaining = 0.0
+	_disabled_explosion_is_unstable = false
+	_last_disabled_explosion_was_unstable = false
 	_carried_item_name = ""
 	for part_name in BODY_PARTS:
 		part_health[part_name] = max_part_health
@@ -968,6 +983,7 @@ func _enter_disabled_state() -> void:
 		return
 
 	_is_disabled = true
+	_disabled_explosion_is_unstable = is_overdrive_active()
 	_attack_cooldown_remaining = 0.0
 	_planar_velocity = Vector3.ZERO
 	disabled_explosion_timer.start(disabled_explosion_delay)
@@ -979,6 +995,7 @@ func _exit_disabled_state() -> void:
 		return
 
 	_is_disabled = false
+	_disabled_explosion_is_unstable = false
 	disabled_explosion_timer.stop()
 
 
@@ -1652,6 +1669,7 @@ func _refresh_core_visuals() -> void:
 		var base_emission_energy: float = float(base_values["emission_energy"])
 		var damage_blend := (1.0 - intact_ratio) * 0.4
 		var disabled_blend := 0.55 if _is_disabled else 0.0
+		var unstable_blend := 0.35 if is_disabled_explosion_unstable() else 0.0
 		var energy_color := _get_energy_focus_color()
 		var energy_blend := _get_energy_visual_blend()
 		var energy_surge_blend := 0.22 if is_energy_surge_active() else 0.0
@@ -1661,15 +1679,17 @@ func _refresh_core_visuals() -> void:
 		material.albedo_color = material.albedo_color.lerp(energy_color, energy_blend * 0.18)
 		material.albedo_color = material.albedo_color.lerp(Color(0.96, 0.97, 1.0, 1.0), energy_surge_blend * 0.12)
 		material.albedo_color = material.albedo_color.lerp(mobility_color, mobility_blend * 0.12)
+		material.albedo_color = material.albedo_color.lerp(Color(1.0, 0.62, 0.18, 1.0), unstable_blend * 0.18)
 		if material.emission_enabled:
 			var warning_color := Color(1.0, 0.28, 0.12, 1.0)
 			material.emission = base_emission.lerp(warning_color, damage_blend + disabled_blend)
 			material.emission = material.emission.lerp(energy_color, energy_blend)
 			material.emission = material.emission.lerp(Color(0.96, 0.97, 1.0, 1.0), energy_surge_blend)
 			material.emission = material.emission.lerp(mobility_color, mobility_blend)
+			material.emission = material.emission.lerp(Color(1.0, 0.66, 0.18, 1.0), unstable_blend)
 			material.emission_energy_multiplier = maxf(
 				base_emission_energy,
-				0.12 + disabled_blend * 0.85 + energy_blend * 0.75 + energy_surge_blend * 0.55 + mobility_blend * 0.7
+				0.12 + disabled_blend * 0.85 + energy_blend * 0.75 + energy_surge_blend * 0.55 + mobility_blend * 0.7 + unstable_blend * 0.8
 			)
 
 
@@ -1967,12 +1987,21 @@ func _on_disabled_explosion_timer_timeout() -> void:
 		return
 
 	_deny_carried_part_if_any()
+	_last_disabled_explosion_was_unstable = _disabled_explosion_is_unstable
 	_apply_disabled_explosion()
 	robot_exploded.emit(self)
 	_start_disabled_respawn()
 
 
 func _apply_disabled_explosion() -> void:
+	var explosion_radius := disabled_explosion_radius
+	var explosion_impulse := disabled_explosion_impulse
+	var explosion_damage := disabled_explosion_damage
+	if _last_disabled_explosion_was_unstable:
+		explosion_radius *= unstable_disabled_explosion_radius_multiplier
+		explosion_impulse *= unstable_disabled_explosion_impulse_multiplier
+		explosion_damage *= unstable_disabled_explosion_damage_multiplier
+
 	for node in get_tree().get_nodes_in_group("robots"):
 		if not (node is RobotBase):
 			continue
@@ -1984,16 +2013,16 @@ func _apply_disabled_explosion() -> void:
 		var offset := other_robot.global_position - global_position
 		offset.y = 0.0
 		var distance := offset.length()
-		if distance > disabled_explosion_radius:
+		if distance > explosion_radius:
 			continue
 
 		var direction := Vector3.FORWARD
 		if distance > 0.001:
 			direction = offset / distance
 
-		var distance_ratio := 1.0 - clampf(distance / disabled_explosion_radius, 0.0, 1.0)
-		other_robot.apply_impulse(direction * disabled_explosion_impulse * distance_ratio)
-		other_robot.receive_attack_hit(direction, disabled_explosion_damage * distance_ratio)
+		var distance_ratio := 1.0 - clampf(distance / explosion_radius, 0.0, 1.0)
+		other_robot.apply_impulse(direction * explosion_impulse * distance_ratio)
+		other_robot.receive_attack_hit(direction, explosion_damage * distance_ratio)
 
 
 func _start_disabled_respawn() -> void:

@@ -286,11 +286,16 @@ func _on_robot_part_restored(robot: RobotBase, part_name: String, restored_by: R
 
 
 func _on_robot_disabled(robot: RobotBase) -> void:
+	if robot.is_disabled_explosion_unstable():
+		ui.show_status("%s quedo inutilizado y sobrecargado" % robot.display_name)
+		return
+
 	ui.show_status("%s quedo inutilizado" % robot.display_name)
 
 
 func _on_robot_exploded(robot: RobotBase) -> void:
-	var message := match_controller.record_robot_elimination(robot, MatchController.EliminationCause.EXPLOSION)
+	var cause := MatchController.EliminationCause.UNSTABLE_EXPLOSION if robot.was_last_disabled_explosion_unstable() else MatchController.EliminationCause.EXPLOSION
+	var message := match_controller.record_robot_elimination(robot, cause)
 	if message != "":
 		ui.show_status(message)
 
