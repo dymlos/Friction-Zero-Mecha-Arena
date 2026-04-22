@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## El cierre final ya explicita la causa decisiva y sus puntos (2026-04-22)
+
+- Estado: recap y panel `Partida cerrada` ya no dejan al playtest inferir cual fue la causa exacta que clincheo el match; ahora publican `Cierre decisivo | <causa> (+N)` junto a `Cierres | ...` y `Puntos cierre | ...`.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` persiste `_last_round_closing_cause` al cerrar la ronda ganadora y expone `_build_decisive_closing_line()`.
+  - la nueva linea solo aparece con `_match_over`, reutilizada por `get_round_recap_panel_lines()` y `get_match_result_lines()` para no ensuciar HUD vivo ni recap intermedio.
+  - `scripts/tests/match_closing_cause_summary_test.gd` amplia la regresion de `Teams` y `FFA`: ahora exige la combinacion completa `Cierres | ...` + `Puntos cierre | ...` + `Cierre decisivo | ...`.
+- Resultado:
+  - el playtest corto de score/cierre ya puede leer dentro del propio prototipo no solo que causas cerraron el match y cuanto vale cada una, sino tambien cual ruta otorgo los puntos decisivos de la ronda final.
+  - `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd`, `godot --headless --path . -s res://scripts/tests/match_elimination_victory_weights_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 82 tests`).
+
 ## Apertura `Teams` ahora mira hacia el carril central (2026-04-22)
 
 - Estado: el bootstrap `Teams` ya no deja a los robots arrancar con la misma orientacion heredada del marker o de la escena; ambos equipos inician mirando hacia dentro desde su mitad del arena.

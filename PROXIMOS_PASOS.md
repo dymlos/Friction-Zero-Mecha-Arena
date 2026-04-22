@@ -90,6 +90,11 @@
  - Si se retocan `_build_closing_points_profile_line()`, `get_round_recap_panel_lines()`, `get_match_result_lines()` o los campos de score en `MatchConfig`, mantener `match_closing_cause_summary_test.gd`; ahora la misma fixture fija tanto `Cierres | ...` como `Puntos cierre | ...` en `Teams` y `FFA`.
  - Reabrir solo si el score por causa deja de ser visible en el cierre o si se mueve explicitamente a otra capa de lectura igual de accesible para playtest corto.
 
+0. **No volver a esconder que causa dio los puntos decisivos del match**
+ - `MatchController` ya persiste `_last_round_closing_cause` y publica `Cierre decisivo | <causa> (+N)` solo cuando `_match_over`; esa linea acompaña a `Cierres | ...` y `Puntos cierre | ...`, no los reemplaza.
+ - Si se retocan `_finish_round_with_winner(...)`, `_build_decisive_closing_line()`, `get_round_recap_panel_lines()` o `get_match_result_lines()`, mantener `match_closing_cause_summary_test.gd`; la fixture actual exige esa lectura tanto en `Teams` como en `FFA`.
+ - Reabrir solo si el cierre deja de ponderarse por causa o si la lectura decisiva se mueve a otra capa igual de visible para playtest corto.
+
 0. **No volver a dejar que `MatchConfig.new()` derive del recurso base**
  - `scripts/tests/match_config_defaults_test.gd` ya fija que los defaults runtime de `scripts/systems/match_config.gd` coincidan con `data/config/default_match_config.tres` en `local_player_count`, intros por modo y score por causa.
  - Si cambia el perfil base del laboratorio, actualizar `match_config.gd` y `default_match_config.tres` en el mismo cambio; no aceptar que uno quede viejo “solo para tests”.
@@ -126,6 +131,7 @@
   - Definir el ajuste final del peso de cierre por causa con base en sesiones reales:
     - `ring_out`, `destruccion total`, `explosion inestable`.
     - objetivo: mantener riesgo/recompensa sin hacer dominante ninguna ruta de victoria.
+  - usar ahora la trilogia del cierre (`Cierres | ...`, `Puntos cierre | ...`, `Cierre decisivo | ...`) para distinguir entre mezcla acumulada del match, perfil configurado y la ruta exacta que clincheo cada partida.
   - Mantener la validación técnica en `match_elimination_victory_weights_test.gd` y reforzar cobertura por modo (Teams/FFA) tras cualquier cambio.
   - Archivos objetivo: `data/config/default_match_config.tres`, `data/config/ffa_validation_match_config.tres`, `data/config/teams_validation_match_config.tres`, `scripts/tests/match_elimination_victory_weights_test.gd`.
 

@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Cierre decisivo legible dentro del propio prototipo:
+  - recap y `Partida cerrada` ahora publican `Cierre decisivo | <causa> (+N)` ademas de `Cierres | ...` y `Puntos cierre | ...`.
+  - `MatchController` persiste la causa que clinchea la ronda final en `_last_round_closing_cause` y la reutiliza solo en el cierre final, sin sumar ruido al HUD vivo.
+  - validacion: `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd`, `godot --headless --path . -s res://scripts/tests/match_elimination_victory_weights_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - Apertura `Teams` mas legible sin tocar layout:
   - `Main._get_bootstrap_spawn_transforms()` ya no hereda la base arbitraria de los markers en `Teams`; ahora conserva las posiciones del arena y recompone la orientacion de spawn para que cada lado mire hacia su carril central.
   - el ajuste se resolvio en runtime, no duplicando datos en escenas, para mantener un solo seam de bootstrap entre `main.tscn` y `main_teams_validation.tscn`.

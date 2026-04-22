@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **El cierre final debe decir tambien que causa clincheo la partida y cuantos puntos dio**
+ - `MatchController` ya mostraba `Cierres | ...` (mezcla acumulada del match) y `Puntos cierre | ...` (perfil runtime del config), pero faltaba el dato concreto de la ronda decisiva final.
+ - `_finish_round_with_winner(...)` ahora persiste `_last_round_closing_cause`, y `get_round_recap_panel_lines()` / `get_match_result_lines()` publican `Cierre decisivo | ring-out/destruccion total/explosion inestable (+N)` solo cuando `_match_over`.
+ - `match_closing_cause_summary_test.gd` ya fija en `Teams` y `FFA` que recap/resultado final muestren la trilogia completa `Cierres | ...` + `Puntos cierre | ...` + `Cierre decisivo | ...`.
+ - Motivo: el foco actual de playtest no es solo balancear pesos por causa en abstracto, sino leer rapido dentro del propio prototipo que ruta dio efectivamente los puntos que cerraron la partida.
+
 1. **El bootstrap `Teams` debe corregir orientacion de apertura en runtime y no depender de bases manuales por escena**
  - `Main._get_bootstrap_spawn_transforms()` ahora delega en `_build_team_spawn_transform(...)` para `Teams`: conserva la posicion del marker del arena y recompone la base mirando hacia el carril central desde la mitad izquierda/derecha.
  - `teams_spawn_coordination_test.gd` ya no congela solo la distancia aliado-vs-rival; tambien exige que cada robot arranque mirando hacia dentro en `main.tscn` y `main_teams_validation.tscn`.

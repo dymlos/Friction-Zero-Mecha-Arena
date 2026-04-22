@@ -52,6 +52,10 @@ func _verify_match_closing_cause_summary(
 		return
 
 	var expected_points_line := _build_expected_closing_points_line(match_controller)
+	var expected_decisive_line := _build_expected_decisive_closing_line(
+		match_controller,
+		MatchController.EliminationCause.UNSTABLE_EXPLOSION
+	)
 	match_controller.match_config.rounds_to_win = 6
 	match_controller.match_config.round_intro_duration_ffa = 0.0
 	match_controller.match_config.round_intro_duration_teams = 0.0
@@ -96,6 +100,14 @@ func _verify_match_closing_cause_summary(
 	_assert(
 		_has_line(match_controller.get_match_result_lines(), expected_points_line),
 		"%s: el panel final deberia repetir el perfil activo de puntos por causa." % label
+	)
+	_assert(
+		_has_line(match_controller.get_round_recap_panel_lines(), expected_decisive_line),
+		"%s: el recap final deberia decir que causa cerro la ronda decisiva y cuantos puntos otorgo." % label
+	)
+	_assert(
+		_has_line(match_controller.get_match_result_lines(), expected_decisive_line),
+		"%s: el panel final deberia repetir la causa decisiva del cierre con su puntaje real." % label
 	)
 
 	await _cleanup_main(main)
@@ -157,6 +169,25 @@ func _build_expected_closing_points_line(match_controller: MatchController) -> S
 		match_config.destruction_elimination_round_points,
 		match_config.unstable_elimination_round_points,
 	]
+
+
+func _build_expected_decisive_closing_line(
+	match_controller: MatchController,
+	cause: MatchController.EliminationCause
+) -> String:
+	return "Cierre decisivo | %s (+%s)" % [
+		_get_cause_label(cause),
+		match_controller.match_config.get_round_victory_points_for_cause(int(cause)),
+	]
+
+
+func _get_cause_label(cause: MatchController.EliminationCause) -> String:
+	if cause == MatchController.EliminationCause.VOID:
+		return "ring-out"
+	if cause == MatchController.EliminationCause.EXPLOSION:
+		return "destruccion total"
+
+	return "explosion inestable"
 
 
 func _assert(condition: bool, message: String) -> void:

@@ -59,6 +59,7 @@ var _match_decided_rounds := 0
 var _match_decided_rounds_with_support := 0
 var _transition_timer: Timer = null
 var _pending_transition := ""
+var _last_round_closing_cause := -1
 
 
 func _ready() -> void:
@@ -124,6 +125,7 @@ func start_match() -> void:
 	_match_decided_rounds_with_support = 0
 	_competitor_order.clear()
 	_robot_support_state.clear()
+	_last_round_closing_cause = -1
 
 	for robot in registered_robots:
 		if is_instance_valid(robot):
@@ -381,6 +383,9 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var closing_points_line := _build_closing_points_profile_line()
 	if closing_points_line != "":
 		lines.append(closing_points_line)
+	var decisive_closing_line := _build_decisive_closing_line()
+	if decisive_closing_line != "":
+		lines.append(decisive_closing_line)
 	var elimination_cause_line := _build_round_elimination_cause_summary_line()
 	if elimination_cause_line != "":
 		lines.append(elimination_cause_line)
@@ -431,6 +436,9 @@ func get_match_result_lines() -> Array[String]:
 	var closing_points_line := _build_closing_points_profile_line()
 	if closing_points_line != "":
 		lines.append(closing_points_line)
+	var decisive_closing_line := _build_decisive_closing_line()
+	if decisive_closing_line != "":
+		lines.append(decisive_closing_line)
 	var elimination_cause_line := _build_round_elimination_cause_summary_line()
 	if elimination_cause_line != "":
 		lines.append(elimination_cause_line)
@@ -965,6 +973,18 @@ func _build_closing_points_profile_line() -> String:
 		match_config.void_elimination_round_points,
 		match_config.destruction_elimination_round_points,
 		match_config.unstable_elimination_round_points,
+	]
+
+
+func _build_decisive_closing_line() -> String:
+	if not _match_over:
+		return ""
+	if _last_round_closing_cause < 0:
+		return ""
+
+	return "Cierre decisivo | %s (+%s)" % [
+		_get_match_closing_cause_label(_last_round_closing_cause),
+		_get_round_victory_points_for_cause(_last_round_closing_cause),
 	]
 
 
@@ -1509,6 +1529,7 @@ func _get_remaining_competitor_keys() -> Array[String]:
 func _finish_round_with_winner(winner_key: String, finishing_cause: EliminationCause) -> void:
 	_round_active = false
 	_round_reset_pending = true
+	_last_round_closing_cause = int(finishing_cause)
 	_match_closing_cause_counts[int(finishing_cause)] = int(_match_closing_cause_counts.get(int(finishing_cause), 0)) + 1
 	_match_decided_rounds += 1
 	if _round_support_usage_by_competitor.has(winner_key):
@@ -1589,6 +1610,7 @@ func _reset_round() -> void:
 	_round_support_usage_by_competitor.clear()
 	_round_support_highlight_by_competitor.clear()
 	_robot_support_state.clear()
+	_last_round_closing_cause = -1
 	_round_number += 1
 	_round_active = true
 	_round_reset_pending = false
@@ -1686,3 +1708,14 @@ func _get_highest_losing_score(winner_key: String) -> int:
 		highest_score = max(highest_score, int(_competitor_scores.get(competitor_key, 0)))
 
 	return highest_score
+
+
+func _get_match_closing_cause_label(cause: int) -> String:
+	if cause == EliminationCause.VOID:
+		return "ring-out"
+	if cause == EliminationCause.EXPLOSION:
+		return "destruccion total"
+	if cause == EliminationCause.UNSTABLE_EXPLOSION:
+		return "explosion inestable"
+
+	return ""
