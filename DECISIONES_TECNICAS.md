@@ -2,6 +2,10 @@
 
 ## Decisiones vigentes
 
+1. **La atribucion de bajas vive estrictamente por ronda**
+   - `MatchController._reset_round()` ahora limpia `_round_elimination_source_robot_ids` junto con recap/orden/cierre.
+   - Motivo: `Ultima baja` usa el agresor del evento actual, pero `RecapPanel` y `MatchResultPanel` reconstruyen `por Player X` leyendo ese mapa; si no se limpiaba al reset, una baja sin agresor en la ronda nueva heredaba autoria vieja y rompia la explicacion de derrota.
+
 1. **Daño modular por direccion en vez de hitboxes complejos**
    - Se calcula la parte afectada segun la direccion del golpe respecto al robot impactado.
    - Motivo: valida rapido la fantasia de brazos al frente y piernas atras sin introducir una malla fisica dificil de mantener.

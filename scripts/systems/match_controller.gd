@@ -1099,6 +1099,7 @@ func _reset_round() -> void:
 		robot.reset_to_spawn()
 
 	_round_eliminated_robot_ids.clear()
+	_round_elimination_source_robot_ids.clear()
 	_round_elimination_order_by_robot_id.clear()
 	_round_elimination_recap_entries.clear()
 	_round_elimination_highlight_entries.clear()
