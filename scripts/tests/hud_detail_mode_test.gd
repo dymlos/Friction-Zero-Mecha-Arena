@@ -44,8 +44,11 @@ func _run() -> void:
 
 	var explicit_round := round_label.text
 	var explicit_roster := roster_label.text
+	var explicit_score_line := _find_line_with_prefix(explicit_round, "Marcador |")
 	_assert(explicit_round.contains("Modo |"), "El HUD explicito deberia dejar visible el modo de match.")
 	_assert(explicit_round.contains("Objetivo |"), "El HUD explicito deberia dejar visible el objetivo del match.")
+	_assert(explicit_round.contains("Lab |"), "El HUD explicito deberia dejar visible la metadata del laboratorio.")
+	_assert(explicit_round.contains("Control P1 |"), "El HUD explicito deberia dejar visible la referencia compacta del slot seleccionado.")
 	_assert(explicit_roster.contains("4/4 partes"), "El roster explicito deberia mostrar partes activas incluso si no hubo daño.")
 	_assert(explicit_roster.contains("Eq"), "El roster explicito deberia mostrar el estado energetico balanceado.")
 	_assert(explicit_roster.contains("WASD"), "El roster explicito deberia mantener visible la referencia de controles.")
@@ -55,58 +58,44 @@ func _run() -> void:
 
 	var contextual_round := round_label.text
 	var contextual_roster := roster_label.text
+	_assert(contextual_round.contains(match_controller.get_round_status_line()), "El HUD contextual deberia seguir mostrando el estado actual de la ronda.")
+	if explicit_score_line != "":
+		_assert(contextual_round.contains(explicit_score_line), "El HUD contextual deberia conservar la lectura persistente del marcador.")
 	_assert(not contextual_round.contains("Modo |"), "El HUD contextual deberia ocultar el modo fijo para reducir ruido.")
 	_assert(not contextual_round.contains("Objetivo |"), "El HUD contextual deberia ocultar el objetivo fijo mientras nada cambie.")
-	_assert(not contextual_roster.contains("4/4 partes"), "El roster contextual deberia ocultar partes intactas.")
-	_assert(not contextual_roster.contains("Eq"), "El roster contextual deberia ocultar energia balanceada.")
-	_assert(not contextual_roster.contains("WASD"), "El roster contextual deberia ocultar hints de control persistentes.")
-	_assert(contextual_roster.contains("Activo"), "El roster contextual deberia seguir indicando si el robot esta activo.")
+	_assert(not contextual_round.contains("HUD |"), "El HUD contextual no deberia seguir mostrando su propia metadata runtime.")
+	_assert(not contextual_round.contains("Lab |"), "El HUD contextual deberia ocultar la metadata del selector runtime.")
+	_assert(not contextual_round.contains("Control P1 |"), "El HUD contextual deberia ocultar la referencia compacta del slot seleccionado.")
+	_assert(not contextual_round.contains("Borde |"), "El HUD contextual deberia ocultar la metadata de pickups de borde.")
+	_assert(contextual_roster == "", "El HUD contextual deberia ocultar por completo el roster vivo.")
 
 	robots[0].set_energy_focus("left_leg")
 	robots[0].store_carried_item("pulse_charge")
 	main.call("_refresh_hud")
 	await process_frame
 
-	var contextual_focus_roster := roster_label.text
+	var contextual_focus_round := round_label.text
 	_assert(
-		contextual_focus_roster.contains("Foco pierna izquierda"),
-		"El roster contextual deberia volver a mostrar redistribucion cuando deja de estar balanceada."
+		contextual_focus_round == contextual_round,
+		"El HUD contextual no deberia volver a poblar texto tactico accesorio al cambiar energia o item."
 	)
-	_assert(
-		contextual_focus_roster.contains("item pulso"),
-		"El roster contextual deberia mostrar items cargados porque son informacion tactica inmediata."
-	)
+	_assert(roster_label.text == "", "El roster deberia seguir oculto aunque el robot tenga foco e item.")
 
 	robots[0].apply_damage_to_part("left_arm", robots[0].max_part_health + 5.0, Vector3.LEFT)
 	main.call("_refresh_hud")
 	await process_frame
 
-	var contextual_damage_roster := roster_label.text
 	_assert(
-		contextual_damage_roster.contains("3/4 partes"),
-		"El roster contextual deberia volver a mostrar partes cuando el robot ya no esta intacto."
+		roster_label.text == "",
+		"El HUD contextual deberia seguir ocultando el roster aun cuando haya daño modular."
 	)
 
 	robots[0].fall_into_void()
 	await _wait_frames(4)
 
-	var contextual_support_roster := roster_label.text
-	var support_line := _find_line_containing(contextual_support_roster, robots[0].display_name)
 	_assert(
-		support_line.contains("Apoyo activo"),
-		"El roster contextual deberia seguir marcando cuando un jugador eliminado continua aportando desde la nave de apoyo."
-	)
-	_assert(
-		support_line.contains(robots[0].get_support_input_hint()),
-		"El roster contextual deberia conservar el hint accionable de la nave de apoyo."
-	)
-	_assert(
-		support_line.contains("sin carga"),
-		"El roster contextual deberia seguir explicando si la nave de apoyo todavia no lleva payload."
-	)
-	_assert(
-		not support_line.contains("vacio"),
-		"En HUD contextual, `Apoyo activo` no deberia repetir la causa de baja si el jugador ya tiene una accion nueva mas relevante."
+		roster_label.text == "",
+		"El HUD contextual deberia seguir ocultando el roster incluso si el slot seleccionado ya entro en apoyo."
 	)
 
 	# HUD: validar defaults por modo desde MatchConfig (sin override runtime).
@@ -167,9 +156,9 @@ func _has_property(target: Object, property_name: String) -> bool:
 	return false
 
 
-func _find_line_containing(text: String, fragment: String) -> String:
+func _find_line_with_prefix(text: String, prefix: String) -> String:
 	for line in text.split("\n"):
-		if line.contains(fragment):
+		if line.begins_with(prefix):
 			return line
 
 	return ""

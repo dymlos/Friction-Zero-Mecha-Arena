@@ -154,6 +154,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func cycle_hud_detail_mode() -> void:
 	match_controller.cycle_hud_detail_mode()
+	_sync_lab_selector_visuals()
 	ui.show_status(_build_hud_toggle_status())
 	_refresh_hud()
 
@@ -616,8 +617,12 @@ func _apply_match_pressure_to_arena() -> void:
 
 
 func _refresh_hud() -> void:
+	_sync_lab_selector_visuals()
 	ui.show_round_state(_build_round_state_lines())
-	ui.show_roster(match_controller.get_robot_status_lines())
+	var roster_lines: Array[String] = []
+	if not match_controller.is_contextual_hud_enabled():
+		roster_lines = match_controller.get_robot_status_lines()
+	ui.show_roster(roster_lines)
 	ui.show_recap(
 		match_controller.get_round_recap_panel_title(),
 		match_controller.get_round_recap_panel_lines()
@@ -756,6 +761,9 @@ func _build_hud_toggle_status() -> String:
 
 func _build_round_state_lines() -> Array[String]:
 	var lines := match_controller.get_round_state_lines()
+	if match_controller.is_contextual_hud_enabled():
+		return lines
+
 	lines.append(get_lab_scene_variant_summary_line())
 	lines.append(get_lab_hud_mode_summary_line())
 	var lab_selector_line := get_lab_selector_summary_line()
@@ -1287,11 +1295,16 @@ func _sync_lab_selector_visuals() -> void:
 	if robots.is_empty():
 		return
 
+	var should_show_selection_visuals := (
+		lab_runtime_selector_enabled
+		and match_controller != null
+		and not match_controller.is_contextual_hud_enabled()
+	)
 	var selected_robot := _get_selected_lab_robot()
 	var selected_support_ship := _find_post_death_support_ship(selected_robot)
 	for robot in robots:
 		robot.set_lab_selected(
-			lab_runtime_selector_enabled
+			should_show_selection_visuals
 			and robot == selected_robot
 			and selected_support_ship == null
 		)
@@ -1304,7 +1317,7 @@ func _sync_lab_selector_visuals() -> void:
 
 		var support_ship := child as PilotSupportShip
 		support_ship.set_lab_selected(
-			lab_runtime_selector_enabled
+			should_show_selection_visuals
 			and support_ship == selected_support_ship
 		)
 

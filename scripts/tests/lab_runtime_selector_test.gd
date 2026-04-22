@@ -14,6 +14,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await _validate_lab_selector_cycles_roster_and_control_mode()
+	await _validate_contextual_hud_hides_lab_selection_readability()
 	await _validate_lab_selected_controls_follow_support_ship()
 	await _validate_lab_selector_cycles_between_robot_and_active_support_slots()
 	await _validate_lab_runtime_loadout_reset_clears_support_immediately()
@@ -138,6 +139,84 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 		robots[1].get_archetype_label() == "Cizalla",
 		"Cada slot deberia poder recibir un arquetipo nuevo sin editar la escena."
 	)
+
+	await _cleanup_node(main)
+
+
+func _validate_contextual_hud_hides_lab_selection_readability() -> void:
+	var main := MAIN_SCENE.instantiate()
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller != null:
+		match_controller.round_intro_duration = 0.0
+		if match_controller.match_config != null:
+			match_controller.match_config.round_intro_duration_teams = 0.0
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	_assert(main.has_method("cycle_hud_detail_mode"), "Main deberia poder alternar el HUD runtime para validar la limpieza contextual.")
+	if not main.has_method("cycle_hud_detail_mode"):
+		await _cleanup_node(main)
+		return
+
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel") as Label
+	var robots := _get_scene_robots(main)
+	_assert(round_label != null, "El laboratorio Teams deberia seguir exponiendo RoundLabel para validar la limpieza contextual.")
+	_assert(roster_label != null, "El laboratorio Teams deberia seguir exponiendo RosterLabel para validar la limpieza contextual.")
+	_assert(robots.size() >= 1, "La escena principal deberia seguir exponiendo al menos un robot seleccionable.")
+	if round_label == null or roster_label == null or robots.is_empty():
+		await _cleanup_node(main)
+		return
+
+	var robot_selection_indicator := robots[0].get_node_or_null("LabSelectionIndicator") as MeshInstance3D
+	_assert(robot_selection_indicator != null, "El robot seleccionado deberia arrancar con la pista diegetica disponible en HUD explicito.")
+	if robot_selection_indicator != null:
+		_assert(robot_selection_indicator.visible, "En HUD explicito la pista diegetica del selector deberia estar visible.")
+
+	main.call("cycle_hud_detail_mode")
+	await process_frame
+	await process_frame
+
+	_assert(not round_label.text.contains("Lab |"), "En HUD contextual deberia desaparecer el resumen del selector runtime.")
+	_assert(not round_label.text.contains("Control P1 |"), "En HUD contextual deberia desaparecer la referencia compacta del slot seleccionado.")
+	_assert(String(main.call("get_lab_selector_summary_line")).contains("P1 Ariete Easy"), "Cambiar el HUD no deberia perder el slot runtime seleccionado.")
+	_assert(roster_label.text == "", "En HUD contextual el roster del laboratorio deberia ocultarse por completo.")
+	if robot_selection_indicator != null:
+		_assert(not robot_selection_indicator.visible, "En HUD contextual la pista diegetica del robot seleccionado no deberia mostrarse.")
+
+	robots[0].fall_into_void()
+	await process_frame
+	await process_frame
+	await process_frame
+	await process_frame
+
+	var support_root := main.get_node_or_null("SupportRoot")
+	var support_ship: Node = support_root.get_child(0) if support_root != null and support_root.get_child_count() > 0 else null
+	_assert(support_ship != null, "La baja del slot seleccionado deberia seguir creando una nave de apoyo para validar la limpieza contextual.")
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("Apoyo activo"),
+		"En contextual el selector runtime deberia conservar el estado del slot aunque el round-state lo oculte."
+	)
+	_assert(not round_label.text.contains("Apoyo P1 |"), "En HUD contextual el round-state no deberia mostrar la linea accionable del apoyo seleccionado.")
+	var support_selection_indicator := support_ship.get_node_or_null("LabSelectionIndicator") as MeshInstance3D if support_ship != null else null
+	_assert(support_selection_indicator != null, "La nave de apoyo deberia seguir exponiendo su pista diegetica runtime.")
+	if support_ship != null:
+		_assert(not bool(support_ship.call("is_lab_selected")), "En HUD contextual la nave de apoyo no deberia quedar resaltada aunque siga siendo el slot seleccionado.")
+	if support_selection_indicator != null:
+		_assert(not support_selection_indicator.visible, "En HUD contextual la pista diegetica del apoyo seleccionado no deberia mostrarse.")
+
+	main.call("cycle_hud_detail_mode")
+	await process_frame
+	await process_frame
+
+	_assert(round_label.text.contains("Control P1 | usa C | objetivo Q/E"), "Al volver a explicito deberia reaparecer la referencia real del apoyo seleccionado.")
+	_assert(round_label.text.contains("Apoyo P1 | sin carga"), "Al volver a explicito deberia reaparecer la linea accionable del apoyo seleccionado.")
+	if support_ship != null:
+		_assert(bool(support_ship.call("is_lab_selected")), "Al volver a explicito la nave de apoyo deberia recuperar su marca de seleccion.")
+	if support_selection_indicator != null:
+		_assert(support_selection_indicator.visible, "Al volver a explicito la pista diegetica del apoyo deberia reaparecer.")
 
 	await _cleanup_node(main)
 

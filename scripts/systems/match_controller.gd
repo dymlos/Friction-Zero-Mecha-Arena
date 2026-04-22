@@ -228,6 +228,9 @@ func get_round_state_lines() -> Array[String]:
 	var tiebreaker_line := _build_ffa_tiebreaker_line()
 	if tiebreaker_line != "":
 		lines.append(tiebreaker_line)
+	if contextual_hud:
+		return lines
+
 	var restart_prompt_line := get_match_restart_prompt_line()
 	if restart_prompt_line != "":
 		lines.append(restart_prompt_line)

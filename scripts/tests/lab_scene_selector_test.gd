@@ -236,8 +236,12 @@ func _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants() -
 		"Antes del salto de escena, F1 deberia haber movido el HUD al modo contextual."
 	)
 	_assert(
-		round_label.text.contains("HUD | contextual | F1 cambia"),
-		"Tras alternar con F1, el round-state deberia anunciar en forma persistente el modo HUD activo."
+		not round_label.text.contains("HUD |"),
+		"Tras alternar con F1, el round-state contextual no deberia seguir mostrando metadata del HUD."
+	)
+	_assert(
+		not round_label.text.contains("Escena |"),
+		"Tras alternar con F1, el round-state contextual no deberia seguir mostrando metadata del laboratorio."
 	)
 	_assert(
 		status_label.text.contains("HUD contextual"),
@@ -267,8 +271,12 @@ func _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants() -
 		"Tras cambiar de escena con F6, el override runtime del HUD deberia seguir en contextual."
 	)
 	_assert(
-		reloaded_round_label.text.contains("HUD | contextual | F1 cambia"),
-		"Tras cambiar de escena con F6, la referencia persistente del modo HUD deberia conservarse en el round-state."
+		not reloaded_round_label.text.contains("HUD |"),
+		"Tras cambiar de escena con F6, el round-state contextual no deberia volver a poblar metadata del HUD."
+	)
+	_assert(
+		not reloaded_round_label.text.contains("Escena |"),
+		"Tras cambiar de escena con F6, el round-state contextual no deberia recuperar metadata del laboratorio."
 	)
 	_assert(
 		reloaded_status_label.text.contains("HUD contextual"),
