@@ -24,7 +24,7 @@
    - medir si `Aguja` realmente introduce poke/skillshot legible ahora que `Pulso` ya tiene lectura diegetica sobre `CoreLight`, o si aun hace falta ajustar color/intensidad/ritmo del pulso para cámara compartida.
    - si se retocan `pulse_charge_spawn_distance`, velocidad o lifetime de `Pulso`, conservar la cobertura headless que hoy evita que el proyectil nazca solapado con su robot origen.
    - medir si `Ancla` realmente corta rutas/duelos con `Baliza` o si la supresion actual se siente demasiado sutil para justificar el rol de Control/Zona.
-   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Embestida/Iman/Pulso/Baliza x/y` + estados `embestida/zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad + `ArchetypeAccent` por rol) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
+   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Embestida/Iman/Pulso/Baliza x/y` + estados `embestida/zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad + `ArchetypeAccent` por rol + `StatusEffectIndicator` para `estabilidad/zona`) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
    - decidir si el selector runtime actual ya alcanza como flujo de laboratorio o si el siguiente paso debe ser persistencia/presets por escena, mas claridad visual o reforzar con otra skill/regla al arquetipo que siga borroso.
 
 3. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
@@ -96,6 +96,7 @@
    - mantener el centro limpio y legible, evitando saturar la arena con demasiados objetos.
    - validar si el gating actual de `municion` por roster alcanza o si algun modo necesita reglas propias mas explicitas para no dejar valor muerto o ventaja injusta.
    - medir si `estabilidad` realmente da contrajuego sano a `Baliza`/`interferencia` o si termina neutralizando demasiado la presion de control en FFA o post-muerte Teams.
+   - ajustar por playtest si el color/tamano del nuevo `StatusEffectIndicator` alcanza para leerse en camara compartida o si necesita mas contraste antes de sumar VFX distintos.
 
 13. **Validar el primer item de una carga en mano**
    - medir si compartir slot entre `pulse_charge` y `DetachedPart` genera la decisión correcta o si frustra demasiado rescates importantes.

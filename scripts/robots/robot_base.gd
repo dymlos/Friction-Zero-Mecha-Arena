@@ -289,6 +289,12 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export_range(0.05, 0.4, 0.01) var energy_focus_indicator_length := 0.18
 @export_range(0.0, 0.2, 0.01) var energy_focus_indicator_pulse_amount := 0.1
 @export_range(1.0, 12.0, 0.5) var energy_focus_indicator_pulse_speed := 5.0
+@export_group("Prototype Status Readability")
+@export_range(0.12, 0.8, 0.01) var status_effect_indicator_radius := 0.3
+@export_range(0.01, 0.12, 0.01) var status_effect_indicator_thickness := 0.04
+@export_range(0.2, 1.6, 0.05) var status_effect_indicator_height := 0.74
+@export_range(0.0, 0.2, 0.01) var status_effect_indicator_pulse_amount := 0.08
+@export_range(1.0, 12.0, 0.5) var status_effect_indicator_pulse_speed := 4.6
 @export_group("Prototype Damage Readability")
 @export_range(0.4, 1.0, 0.05) var damage_feedback_threshold := 0.8
 @export_range(0.1, 0.8, 0.05) var critical_damage_feedback_threshold := 0.45
@@ -356,6 +362,8 @@ var _lab_selection_indicator_animation_time := 0.0
 var _energy_readability_root: Node3D = null
 var _energy_focus_indicator_nodes: Dictionary = {}
 var _energy_focus_indicator_animation_time := 0.0
+var _status_effect_indicator: MeshInstance3D = null
+var _status_effect_indicator_animation_time := 0.0
 var _disabled_warning_indicator: MeshInstance3D = null
 var _disabled_warning_indicator_animation_time := 0.0
 var _recoverable_detached_part_ids: Dictionary = {}
@@ -664,6 +672,7 @@ func apply_control_zone_suppression(
 	if is_stability_boost_active():
 		return false
 
+	var previous_remaining := _control_zone_suppression_remaining
 	_control_zone_suppression_remaining = maxf(_control_zone_suppression_remaining, duration)
 	_control_zone_drive_state_multiplier = minf(
 		_control_zone_drive_state_multiplier,
@@ -673,6 +682,8 @@ func apply_control_zone_suppression(
 		_control_zone_control_state_multiplier,
 		clampf(control_multiplier, 0.2, 1.0)
 	)
+	if _control_zone_suppression_remaining > previous_remaining:
+		_refresh_visual_state()
 	return true
 
 
@@ -1030,6 +1041,7 @@ func _ready() -> void:
 	_setup_recovery_target_indicator()
 	_setup_lab_selection_indicator()
 	_setup_energy_focus_indicators()
+	_setup_status_effect_indicator()
 	_setup_disabled_warning_indicator()
 	disabled_explosion_timer.wait_time = disabled_explosion_delay
 	_reset_control_pose()
@@ -1116,6 +1128,7 @@ func _process(delta: float) -> void:
 	_update_recovery_target_indicator_animation(delta)
 	_update_lab_selection_indicator(delta)
 	_update_energy_focus_indicator_animation(delta)
+	_update_status_effect_indicator(delta)
 	_update_disabled_warning_indicator(delta)
 	_update_core_skill_readiness_visuals(delta)
 
@@ -2143,9 +2156,12 @@ func _reset_core_skill_state() -> void:
 
 
 func _clear_control_zone_suppression() -> void:
+	var had_suppression := _control_zone_suppression_remaining > 0.0
 	_control_zone_suppression_remaining = 0.0
 	_control_zone_drive_state_multiplier = 1.0
 	_control_zone_control_state_multiplier = 1.0
+	if had_suppression:
+		_refresh_visual_state()
 
 
 func _clear_active_control_beacon() -> void:
@@ -2536,6 +2552,7 @@ func _refresh_visual_state() -> void:
 	_refresh_recovery_target_indicator()
 	_refresh_lab_selection_indicator()
 	_refresh_energy_focus_indicators()
+	_refresh_status_effect_indicator()
 	_refresh_disabled_warning_indicator()
 	for part_name in BODY_PARTS:
 		_refresh_part_visual_state(part_name)
@@ -2791,6 +2808,34 @@ func _setup_disabled_warning_indicator() -> void:
 	add_child(_disabled_warning_indicator)
 
 
+func _setup_status_effect_indicator() -> void:
+	var indicator_mesh := CylinderMesh.new()
+	indicator_mesh.top_radius = 1.0
+	indicator_mesh.bottom_radius = 1.0
+	indicator_mesh.height = status_effect_indicator_thickness
+	indicator_mesh.radial_segments = 28
+	indicator_mesh.rings = 1
+
+	var indicator_material := StandardMaterial3D.new()
+	indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	indicator_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	indicator_material.no_depth_test = true
+	indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	indicator_material.albedo_color = Color(0.32, 0.96, 0.84, 0.26)
+	indicator_material.emission_enabled = true
+	indicator_material.emission = Color(0.26, 0.98, 0.88, 1.0)
+	indicator_material.emission_energy_multiplier = 0.95
+
+	_status_effect_indicator = MeshInstance3D.new()
+	_status_effect_indicator.name = "StatusEffectIndicator"
+	_status_effect_indicator.mesh = indicator_mesh
+	_status_effect_indicator.material_override = indicator_material
+	_status_effect_indicator.position = Vector3(0.0, status_effect_indicator_height, 0.0)
+	_status_effect_indicator.rotation_degrees = Vector3(90.0, 0.0, 0.0)
+	_status_effect_indicator.visible = false
+	upper_body_pivot.add_child(_status_effect_indicator)
+
+
 func _refresh_carry_indicator() -> void:
 	if _carry_indicator == null:
 		return
@@ -2882,6 +2927,44 @@ func _refresh_disabled_warning_indicator() -> void:
 	var explosion_radius := _get_disabled_explosion_radius_for_current_state()
 	_disabled_warning_indicator.position.y = disabled_warning_indicator_height
 	_disabled_warning_indicator.scale = Vector3(explosion_radius, 1.0, explosion_radius)
+
+
+func _refresh_status_effect_indicator() -> void:
+	if _status_effect_indicator == null:
+		return
+
+	var show_stability := is_stability_boost_active() and not _is_respawning and not _is_disabled
+	var show_suppression := is_control_zone_suppressed() and not _is_respawning and not _is_disabled
+	var should_show := show_stability or show_suppression
+	_status_effect_indicator.visible = should_show
+	if not should_show:
+		_status_effect_indicator.scale = Vector3.ONE
+		_status_effect_indicator.position.y = status_effect_indicator_height
+		return
+
+	var material := _status_effect_indicator.material_override as StandardMaterial3D
+	if material == null:
+		return
+
+	var cue_color := Color(0.24, 0.98, 0.86, 1.0)
+	var alpha := 0.24
+	var emission_boost := 0.92
+	if show_suppression:
+		cue_color = Color(1.0, 0.4, 0.24, 1.0)
+		alpha = 0.2
+		emission_boost = 0.72
+
+	material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, alpha)
+	material.emission = cue_color
+	material.emission_energy_multiplier = emission_boost
+
+	var radius_multiplier := 1.0 if show_stability else 0.82
+	_status_effect_indicator.position.y = status_effect_indicator_height
+	_status_effect_indicator.scale = Vector3(
+		status_effect_indicator_radius * 2.0 * radius_multiplier,
+		1.0,
+		status_effect_indicator_radius * 2.0 * radius_multiplier
+	)
 
 
 func _refresh_carry_indicator_color(part_name: String) -> void:
@@ -3101,6 +3184,42 @@ func _update_disabled_warning_indicator(delta: float) -> void:
 	material.albedo_color = warning_color
 	material.emission = warning_color.lightened(0.18)
 	material.emission_energy_multiplier = 1.2 + wave * 0.4 + warning_progress * 1.3
+
+
+func _update_status_effect_indicator(delta: float) -> void:
+	if _status_effect_indicator == null:
+		return
+	if not _status_effect_indicator.visible:
+		_status_effect_indicator_animation_time = 0.0
+		_status_effect_indicator.scale.y = 1.0
+		_status_effect_indicator.position.y = status_effect_indicator_height
+		return
+
+	_status_effect_indicator_animation_time += delta
+	var wave := (sin(_status_effect_indicator_animation_time * status_effect_indicator_pulse_speed) + 1.0) * 0.5
+	var pulse_scale := 1.0 + (wave - 0.5) * status_effect_indicator_pulse_amount * 2.0
+	var show_stability := is_stability_boost_active() and not _is_respawning and not _is_disabled
+	var radius_multiplier := 1.0 if show_stability else 0.82
+	_status_effect_indicator.scale.x = status_effect_indicator_radius * 2.0 * radius_multiplier * pulse_scale
+	_status_effect_indicator.scale.z = status_effect_indicator_radius * 2.0 * radius_multiplier * pulse_scale
+	_status_effect_indicator.scale.y = 1.0 + wave * 0.08
+	_status_effect_indicator.position.y = status_effect_indicator_height + wave * 0.018
+
+	var material := _status_effect_indicator.material_override as StandardMaterial3D
+	if material == null:
+		return
+
+	var cue_color := Color(0.24, 0.98, 0.86, 1.0)
+	var base_alpha := 0.24
+	var base_emission := 0.92
+	if is_control_zone_suppressed():
+		cue_color = Color(1.0, 0.4, 0.24, 1.0)
+		base_alpha = 0.2
+		base_emission = 0.72
+
+	material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, base_alpha + wave * 0.08)
+	material.emission = cue_color
+	material.emission_energy_multiplier = base_emission + wave * 0.4
 
 
 func _get_indicator_payload_name() -> String:

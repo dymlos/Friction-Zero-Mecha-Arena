@@ -45,10 +45,22 @@ func _validate_robot_stability_boost_behavior() -> void:
 	_assert(applied, "La estabilidad utility deberia activarse cuando el robot sigue operativo.")
 	await process_frame
 
+	var status_indicator := robot.get_node_or_null("UpperBodyPivot/StatusEffectIndicator") as MeshInstance3D
+	_assert(
+		status_indicator != null,
+		"El robot deberia crear un indicador diegetico para estados de estabilidad/supresion."
+	)
+
 	_assert(
 		bool(robot.call("is_stability_boost_active")),
 		"El robot deberia entrar en estado de estabilidad tras recoger utility."
 	)
+	if status_indicator != null:
+		_assert(
+			status_indicator.visible,
+			"La estabilidad utility deberia leerse tambien sobre el cuerpo del robot, no solo en el roster."
+		)
+
 	_assert(
 		not robot.is_control_zone_suppressed(),
 		"La estabilidad utility deberia limpiar una supresion de zona/interferencia que ya estaba activa."
@@ -70,6 +82,11 @@ func _validate_robot_stability_boost_behavior() -> void:
 		not bool(robot.call("is_stability_boost_active")),
 		"La estabilidad utility no deberia quedar permanente tras expirar su ventana."
 	)
+	if status_indicator != null:
+		_assert(
+			not status_indicator.visible,
+			"Al terminar la estabilidad utility, el indicador diegetico deberia apagarse."
+		)
 	_assert(
 		is_equal_approx(robot.get_received_impulse_multiplier(), baseline_impulse_multiplier),
 		"Al terminar la estabilidad, la resistencia a empuje deberia volver a su base previa."
@@ -112,8 +129,18 @@ func _validate_pickup_cooldown_telegraph() -> void:
 
 	var base_mesh := pickup.get_node_or_null("Visuals/Base")
 	var core_mesh := pickup.get_node_or_null("Visuals/Core")
+	var status_indicator := robot.get_node_or_null("UpperBodyPivot/StatusEffectIndicator") as MeshInstance3D
 	_assert(base_mesh is MeshInstance3D, "El pickup utility deberia conservar un pedestal visible.")
 	_assert(core_mesh is MeshInstance3D, "El pickup utility deberia conservar un nucleo visible para su estado activo.")
+	_assert(
+		status_indicator != null,
+		"El robot deberia exponer el indicador diegetico de estabilidad tambien en el camino del pickup."
+	)
+	if status_indicator != null:
+		_assert(
+			status_indicator.visible,
+			"Recoger utility en escena deberia prender el indicador diegetico de estabilidad."
+		)
 	if base_mesh is MeshInstance3D:
 		_assert(
 			(base_mesh as MeshInstance3D).is_visible_in_tree(),
@@ -192,10 +219,15 @@ func _validate_main_scene_utility_pickups() -> void:
 		robot.global_position = active_pickup.global_position
 		active_pickup.call("_on_body_entered", robot)
 		await process_frame
+		var status_indicator := robot.get_node_or_null("UpperBodyPivot/StatusEffectIndicator") as MeshInstance3D
 		var roster_lines := (match_controller as MatchController).get_robot_status_lines()
 		_assert(
 			roster_lines.any(func(line: String) -> bool: return line.contains(robot.display_name) and line.contains("estabilidad")),
 			"El roster compacto deberia dejar visible cuando un robot tiene utility de estabilidad activa."
+		)
+		_assert(
+			status_indicator != null and status_indicator.visible,
+			"El robot que asegura utility deberia mostrar tambien un cue diegetico de estabilidad."
 		)
 		var status_message := String(main.ui.status_label.text)
 		_assert(

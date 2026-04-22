@@ -74,6 +74,11 @@ func _validate_zone_skill_spawns_single_beacon_and_suppresses_enemy() -> void:
 
 	await _await_seconds(0.05)
 
+	var status_indicator := target.get_node_or_null("UpperBodyPivot/StatusEffectIndicator") as MeshInstance3D
+	_assert(
+		status_indicator != null,
+		"El robot objetivo deberia exponer un indicador diegetico para estados de control/estabilidad."
+	)
 	_assert(
 		_count_group_nodes(CONTROL_BEACON_GROUP) == 1,
 		"Baliza deberia dejar una sola baliza activa en escena para mantener la lectura limpia."
@@ -83,6 +88,11 @@ func _validate_zone_skill_spawns_single_beacon_and_suppresses_enemy() -> void:
 			bool(target.call("is_control_zone_suppressed")),
 			"Un rival dentro del area de Baliza deberia entrar en estado de zona de control."
 		)
+		if status_indicator != null:
+			_assert(
+				status_indicator.visible,
+				"La supresion de Baliza deberia tener una pista diegetica sobre el cuerpo del rival."
+			)
 	if target.has_method("get_control_zone_suppression_time_left"):
 		_assert(
 			float(target.call("get_control_zone_suppression_time_left")) > 0.0,

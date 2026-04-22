@@ -434,6 +434,10 @@
    - `EdgeUtilityPickup` llama a `RobotBase.apply_stability_boost()`: limpia `zona/interferencia`, bloquea nuevas supresiones por una ventana corta y baja un poco el impulso externo recibido; `MatchController` la resume como `estabilidad` en el roster.
    - Motivo: el documento seguia pidiendo un tipo `utility`, pero abrir otro proyectil/hazard habria competido con el choque principal. Una respuesta anti-control reutiliza seams existentes, agrega contrajuego a `Baliza`/`interferencia` y sigue siendo legible en pantalla compartida.
 
+88. **`estabilidad` y `zona` comparten un solo cue diegético sobre el torso**
+   - `RobotBase` ahora crea `StatusEffectIndicator` bajo `UpperBodyPivot`: se enciende en verde agua mientras `apply_stability_boost()` siga activo y en naranja cuando `apply_control_zone_suppression()` logra entrar; el mismo indicador se refresca al aplicar, expirar o limpiar cada estado.
+   - Motivo: el contrajuego entre `utility` y control ya existia en gameplay y roster, pero no en mundo. Reusar un solo anillo corporal mantiene la lectura clara para pantalla compartida y evita abrir otra capa de HUD o sumar efectos distintos para cada estado.
+
 81. **El primer post-muerte real vive solo en `Teams` y reutiliza el input del eliminado**
    - `Main` ahora reserva `SupportRoot`, crea una `PilotSupportShip` cuando `record_robot_elimination()` deja a un aliado vivo en `Teams` y la limpia en cada `round_started`; `FFA` comparte la estructura base de escena pero no activa ese flujo.
    - Motivo: empezar a diferenciar Team vs Team sin romper la claridad del laboratorio libre ni abrir una segunda capa de reglas en el modo que todavia depende mas de supervivencia/oportunismo que de rescate coordinado.
