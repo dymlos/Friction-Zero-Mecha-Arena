@@ -279,6 +279,10 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var recovery_target_indicator_bob_height := 0.06
 @export var recovery_target_indicator_pulse_speed := 4.8
 @export var recovery_target_indicator_pulse_amount := 0.12
+@export var recovery_target_floor_indicator_height := 0.04
+@export var recovery_target_floor_indicator_radius := 0.58
+@export_range(0.01, 0.12, 0.01) var recovery_target_floor_indicator_thickness := 0.03
+@export_range(0.0, 0.2, 0.01) var recovery_target_floor_indicator_pulse_amount := 0.08
 @export_group("Prototype Lab Readability")
 @export var lab_selection_indicator_radius := 0.88
 @export var lab_selection_indicator_height := 0.04
@@ -359,6 +363,7 @@ var _carry_owner_indicator: MeshInstance3D = null
 var _carry_return_indicator: MeshInstance3D = null
 var _carry_indicator_animation_time := 0.0
 var _recovery_target_indicator: MeshInstance3D = null
+var _recovery_target_floor_indicator: MeshInstance3D = null
 var _recovery_target_indicator_animation_time := 0.0
 var _lab_selection_indicator: MeshInstance3D = null
 var _lab_selection_indicator_animation_time := 0.0
@@ -1030,7 +1035,7 @@ func _prune_recoverable_detached_part_ids() -> void:
 	var stale_ids: Array[int] = []
 	for detached_part_id in _recoverable_detached_part_ids.keys():
 		var detached_part := instance_from_id(int(detached_part_id))
-		if detached_part is DetachedPart:
+		if detached_part != null and is_instance_valid(detached_part):
 			continue
 		stale_ids.append(int(detached_part_id))
 
@@ -1792,9 +1797,9 @@ func _spawn_detached_part(part_name: String, impact_direction: Vector3) -> void:
 	if detach_parent == null:
 		return
 
+	detached_part.configure_from_visuals(self, part_name, source_visuals, initial_velocity)
 	detach_parent.add_child(detached_part)
 	detached_part.global_transform = global_transform
-	detached_part.configure_from_visuals(self, part_name, source_visuals, initial_velocity)
 	part_destroyed.emit(self, part_name, detached_part)
 
 
@@ -2825,6 +2830,32 @@ func _setup_recovery_target_indicator() -> void:
 	_recovery_target_indicator.visible = false
 	add_child(_recovery_target_indicator)
 
+	var floor_indicator_mesh := CylinderMesh.new()
+	floor_indicator_mesh.top_radius = recovery_target_floor_indicator_radius
+	floor_indicator_mesh.bottom_radius = recovery_target_floor_indicator_radius
+	floor_indicator_mesh.height = recovery_target_floor_indicator_thickness
+	floor_indicator_mesh.radial_segments = 28
+	floor_indicator_mesh.rings = 1
+
+	var floor_indicator_material := StandardMaterial3D.new()
+	floor_indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	floor_indicator_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	floor_indicator_material.no_depth_test = true
+	floor_indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	floor_indicator_material.albedo_color = Color(identity_color.r, identity_color.g, identity_color.b, 0.28)
+	floor_indicator_material.emission_enabled = true
+	floor_indicator_material.emission = identity_color
+	floor_indicator_material.emission_energy_multiplier = 0.82
+
+	_recovery_target_floor_indicator = MeshInstance3D.new()
+	_recovery_target_floor_indicator.name = "RecoveryTargetFloorIndicator"
+	_recovery_target_floor_indicator.mesh = floor_indicator_mesh
+	_recovery_target_floor_indicator.material_override = floor_indicator_material
+	_recovery_target_floor_indicator.position = Vector3(0.0, recovery_target_floor_indicator_height, 0.0)
+	_recovery_target_floor_indicator.visible = false
+	add_child(_recovery_target_floor_indicator)
+	_refresh_recovery_target_indicator()
+
 
 func _setup_lab_selection_indicator() -> void:
 	var indicator_mesh := CylinderMesh.new()
@@ -2966,7 +2997,10 @@ func _refresh_recovery_target_indicator() -> void:
 	if _recovery_target_indicator == null:
 		return
 
-	_recovery_target_indicator.visible = has_recoverable_detached_parts() and not _is_respawning
+	var should_show := has_recoverable_detached_parts() and not _is_respawning
+	_recovery_target_indicator.visible = should_show
+	if _recovery_target_floor_indicator != null:
+		_recovery_target_floor_indicator.visible = should_show
 
 
 func _refresh_lab_selection_indicator() -> void:
@@ -3196,6 +3230,10 @@ func _update_recovery_target_indicator_animation(delta: float) -> void:
 		_recovery_target_indicator.scale = Vector3.ONE
 		_recovery_target_indicator.rotation = Vector3.ZERO
 		_recovery_target_indicator.position.y = recovery_target_indicator_base_height
+		if _recovery_target_floor_indicator != null:
+			_recovery_target_floor_indicator.scale = Vector3.ONE
+			_recovery_target_floor_indicator.rotation = Vector3.ZERO
+			_recovery_target_floor_indicator.position.y = recovery_target_floor_indicator_height
 		return
 
 	_recovery_target_indicator_animation_time += delta
@@ -3204,6 +3242,20 @@ func _update_recovery_target_indicator_animation(delta: float) -> void:
 	_recovery_target_indicator.scale = Vector3(pulse, 1.0, pulse)
 	_recovery_target_indicator.position.y = recovery_target_indicator_base_height + wave * recovery_target_indicator_bob_height
 	_recovery_target_indicator.rotation.y = fmod(_recovery_target_indicator.rotation.y + delta * 0.7, TAU)
+	if _recovery_target_floor_indicator != null:
+		var floor_pulse := 1.0 + (wave - 0.5) * recovery_target_floor_indicator_pulse_amount * 2.0
+		_recovery_target_floor_indicator.scale = Vector3(floor_pulse, 1.0, floor_pulse)
+		_recovery_target_floor_indicator.position.y = recovery_target_floor_indicator_height
+		_recovery_target_floor_indicator.rotation.y = fmod(
+			_recovery_target_floor_indicator.rotation.y - delta * 0.45,
+			TAU
+		)
+		var floor_material := _recovery_target_floor_indicator.material_override as StandardMaterial3D
+		if floor_material != null:
+			var identity_color := get_identity_color()
+			floor_material.albedo_color = Color(identity_color.r, identity_color.g, identity_color.b, 0.22 + wave * 0.12)
+			floor_material.emission = identity_color
+			floor_material.emission_energy_multiplier = 0.72 + wave * 0.26
 
 
 func _update_lab_selection_indicator(delta: float) -> void:

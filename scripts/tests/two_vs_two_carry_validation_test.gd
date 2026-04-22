@@ -93,6 +93,25 @@ func _run() -> void:
 		carry_return_indicator is MeshInstance3D,
 		"El portador deberia exponer una pista diegetica de retorno para leer adonde llevar la pieza."
 	)
+	var owner_return_floor_indicator := owner.get_node_or_null("RecoveryTargetFloorIndicator")
+	_assert(
+		owner_return_floor_indicator is MeshInstance3D,
+		"El robot dueño deberia reforzar el retorno con una marca de piso tambien durante el transporte aliado."
+	)
+	if owner_return_floor_indicator is MeshInstance3D:
+		_assert(
+			owner.has_recoverable_detached_parts(),
+			"El dueño deberia seguir considerando recuperable la pieza mientras un aliado la transporta."
+		)
+		await process_frame
+		_assert(
+			(owner_return_floor_indicator as MeshInstance3D).visible,
+			"La marca de piso del dueño deberia seguir visible mientras la pieza viaja en manos aliadas."
+		)
+		_assert(
+			(owner_return_floor_indicator as MeshInstance3D).global_position.distance_to(owner.global_position) < 0.2,
+			"La marca de piso del dueño deberia seguir pegada a su robot durante el transporte."
+		)
 	if carry_return_indicator is MeshInstance3D:
 		await process_frame
 		_assert(
@@ -125,6 +144,16 @@ func _run() -> void:
 		_assert(
 			not (carry_return_indicator as MeshInstance3D).visible,
 			"La pista de retorno deberia ocultarse al soltar la pieza."
+		)
+	if owner_return_floor_indicator is MeshInstance3D:
+		_assert(
+			owner.has_recoverable_detached_parts(),
+			"El dueño deberia seguir considerando recuperable la pieza despues de que vuelva al piso."
+		)
+		await process_frame
+		_assert(
+			(owner_return_floor_indicator as MeshInstance3D).visible,
+			"La marca de piso del dueño deberia seguir visible mientras la pieza siga recuperable en el piso."
 		)
 
 	owner.global_position = detached_part.global_position

@@ -544,6 +544,10 @@
    - `MatchController` agrega `Desempate | score igual -> mejor cierre de la ronda final` junto a `Posiciones | ...` en recap/resultado final, pero solo si detecta al menos dos competidores con el mismo score acumulado.
    - Motivo: el ranking FFA ya usaba supervivencia de la ronda final como criterio secundario, pero el HUD no lo decía y los empates parecían arbitrarios. Explicitarlo solo en ese caso aclara el cierre sin meter otra pantalla ni ruido permanente.
 
+100. **Las `DetachedPart` deben configurarse antes de entrar al tree**
+   - `RobotBase._spawn_detached_part()` ahora llama `configure_from_visuals(...)` antes de `add_child(...)`, y el dueño refuerza el retorno con `RecoveryTargetFloorIndicator` ademas del marker alto ya existente.
+   - Motivo: en el flujo real de `main.tscn`, `_ready()` de `DetachedPart` podia correr con `original_robot == null`, perdiendo el registro como pieza recuperable y apagando la lectura del objetivo de retorno justo cuando un aliado la cargaba o relanzaba. Corregir el orden arregla el hook real y permite sostener la nueva marca de piso sin trackers paralelos.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

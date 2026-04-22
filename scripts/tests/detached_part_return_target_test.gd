@@ -33,10 +33,24 @@ func _run() -> void:
 		return_indicator is MeshInstance3D,
 		"El robot con una pieza recuperable deberia marcarse como objetivo de retorno."
 	)
+	var return_floor_indicator := owner.get_node_or_null("RecoveryTargetFloorIndicator")
+	_assert(
+		return_floor_indicator is MeshInstance3D,
+		"El robot dueño deberia reforzar el retorno con una marca sobria a nivel piso."
+	)
 	if return_indicator is MeshInstance3D:
 		_assert(
 			(return_indicator as MeshInstance3D).visible,
 			"La marca de retorno deberia verse mientras exista una pieza propia recuperable."
+		)
+	if return_floor_indicator is MeshInstance3D:
+		_assert(
+			(return_floor_indicator as MeshInstance3D).visible,
+			"La marca de piso deberia verse mientras exista una pieza propia recuperable."
+		)
+		_assert(
+			(return_floor_indicator as MeshInstance3D).global_position.distance_to(owner.global_position) < 0.2,
+			"La marca de piso deberia quedar pegada al robot dueño, no flotando aparte."
 		)
 
 	detached_part.deny_to_void()
@@ -47,6 +61,11 @@ func _run() -> void:
 		_assert(
 			not (return_indicator as MeshInstance3D).visible,
 			"La marca de retorno deberia ocultarse cuando la pieza ya no puede recuperarse."
+		)
+	if return_floor_indicator is MeshInstance3D:
+		_assert(
+			not (return_floor_indicator as MeshInstance3D).visible,
+			"La marca de piso deberia ocultarse cuando la pieza ya no puede recuperarse."
 		)
 
 	await _cleanup_owner(owner)

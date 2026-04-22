@@ -36,6 +36,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - transporte de partes que bloquea el ataque prototipo
 - negacion basica de partes si el portador cae al vacio
 - lectura diegetica de recuperacion modular: cada parte desprendida ahora muestra un disco de recuperacion sobre el suelo que se achica segun `cleanup_time`; el prototipo tambien expone `recovery_lost` para distinguir timeout/vacio sin acoplar todavia otra UI
+- el robot dueño de una pieza recuperable ahora refuerza ese retorno con dos cues diegeticos complementarios: `RecoveryTargetIndicator` sobre chasis y `RecoveryTargetFloorIndicator` a nivel piso; ademas, `RobotBase` corrige el order-of-operations al spawnear `DetachedPart` para que ese tracking tambien quede vivo en `main.tscn` mientras un aliado transporta o relanza la pieza
 - las negaciones exitosas al vacio ya tambien quedan acreditadas en el cierre: `DetachedPart` conserva el ultimo portador al perderse por `void`, `Main` lo traduce a `negaciones N` solo si quien la niega es rival del dueño original y `MatchController` reutiliza ese dato tanto en `RecapPanel` como en `MatchResultPanel`
 - robot inutilizado al perder las cuatro partes, empujable y con explosion diferida antes de quedar fuera de ronda o reiniciar
 - bootstrap local que deja cuatro robots humanos activos por defecto desde `main.tscn`
