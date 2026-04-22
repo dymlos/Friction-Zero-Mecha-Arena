@@ -208,6 +208,10 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 		round_label.text.contains("Control P1 | mueve WASD | ataca Space | energia Q/E | overdrive R | suelta C"),
 		"Antes de una baja, la referencia compacta deberia seguir mostrando los controles normales del slot seleccionado."
 	)
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Ariete Easy"),
+		"Antes de una baja, el resumen del selector runtime deberia seguir describiendo el robot seleccionado."
+	)
 
 	robots[0].fall_into_void()
 	await process_frame
@@ -222,6 +226,14 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 	_assert(
 		not round_label.text.contains("Control P1 | mueve WASD"),
 		"Cuando el jugador ya esta en la nave de apoyo, la referencia compacta no deberia seguir mostrando los controles del robot caido."
+	)
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("Apoyo activo"),
+		"Si el slot seleccionado ya paso a la nave post-muerte, el resumen `Lab | ...` deberia dejar visible ese estado y no solo el loadout previo."
+	)
+	_assert(
+		not String(main.call("get_lab_selector_summary_line")).contains("Ariete Easy"),
+		"Si el slot seleccionado ya esta en `Apoyo activo`, el resumen del laboratorio no deberia seguir anunciandolo como si controlara el robot original."
 	)
 
 	await _cleanup_node(main)

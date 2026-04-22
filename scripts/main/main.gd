@@ -1153,6 +1153,10 @@ func _get_lab_robot_brief(robot: RobotBase) -> String:
 	if robot == null:
 		return "sin slot"
 
+	var support_ship := _find_post_death_support_ship(robot)
+	if support_ship != null:
+		return "P%s Apoyo activo" % robot.player_index
+
 	var archetype_label := robot.get_archetype_label()
 	if archetype_label == "":
 		archetype_label = "Base"

@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No volver a dejar stale el resumen `Lab | ...` cuando el slot entra en `Apoyo activo`**
+ - `Main._get_lab_robot_brief()` ya prioriza `_find_post_death_support_ship(robot)` y cambia de `Pn Ariete Easy/Hard` a `Pn Apoyo activo` cuando el slot seleccionado ya no controla su robot sino la nave post-muerte en `Teams`.
+ - Si se retocan `get_lab_selector_summary_line()`, `_get_lab_robot_brief()`, el lifecycle del soporte o el round-state del laboratorio, mantener `lab_runtime_selector_test.gd`: ahora cubre en el mismo flujo la transicion real `Lab | P1 Ariete Easy ...` -> `Lab | P1 Apoyo activo ...`.
+ - Reabrir solo si el selector runtime deja de usar una sola línea compacta para describir el slot seleccionado o si el soporte post-muerte cambia de identidad/wording en HUD.
+
 0. **No volver a dejar stale la línea `Control Pn | ...` cuando el slot entra en `Apoyo activo`**
  - `Main.get_lab_selected_controls_summary_line()` ya consulta `_find_post_death_support_ship(robot)` y cambia de `robot.get_control_reference_hint()` a `robot.get_support_input_hint()` cuando el slot seleccionado cayó y sigue jugando desde la nave de apoyo.
  - Si se retoca el selector runtime, el lifecycle del soporte o el round-state del laboratorio, mantener `lab_runtime_selector_test.gd`: ahora cubre el cambio real `controles de robot -> controles de soporte` para `P1` sin depender solo del roster.

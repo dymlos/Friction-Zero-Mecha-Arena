@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El resumen `Lab | ...` del laboratorio debe seguir el estado jugable real del slot seleccionado**
+ - `Main._get_lab_robot_brief()` ya no resume siempre `P<n> <Arquetipo> <Easy/Hard>`; antes consulta `_find_post_death_support_ship(robot)` y, si el slot ya juega desde la nave `Teams`, pasa a devolver `P<n> Apoyo activo`.
+ - `lab_runtime_selector_test.gd` fija el contrato junto con la chuleta `Control Pn | ...`: antes de la baja el resumen sigue mostrando `P1 Ariete Easy`, y tras pasar al soporte exige `Apoyo activo` sin conservar el texto stale del robot caído.
+ - Motivo: la iteración anterior había corregido la línea de controles, pero el selector adyacente seguía mintiendo sobre quién estaba realmente en juego. Priorizar el estado jugable actual mantiene el round-state coherente sin abrir otra UI ni duplicar estado.
+
 1. **La referencia `Control Pn | ...` del laboratorio debe seguir el soporte post-muerte**
  - `Main.get_lab_selected_controls_summary_line()` sigue publicando la chuleta del slot seleccionado, pero antes de usar `RobotBase.get_control_reference_hint()` consulta `_find_post_death_support_ship(robot)`.
  - Si el jugador ya tiene una `PilotSupportShip` activa, la línea pasa a `robot.get_support_input_hint()` (`usa ... | objetivo ...`) en vez de seguir mostrando los controles de combate del robot caído.

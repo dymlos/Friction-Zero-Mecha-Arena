@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Resumen `Lab | ...` alineado con `Apoyo activo` (2026-04-22)
+
+- Estado: el resumen persistente del selector runtime ya no sigue anunciando `P1 Ariete Easy/Hard` cuando ese slot seleccionado cae en `Teams` y pasa a jugar desde la nave de soporte.
+- Corrección aplicada:
+  - `scripts/main/main.gd` ahora hace que `_get_lab_robot_brief(robot)` consulte `_find_post_death_support_ship(robot)` antes de resumir arquetipo/modo.
+  - si el slot sigue controlando su robot, la línea mantiene `P1 Ariete Easy/Hard` como antes.
+  - si el jugador ya tiene una `PilotSupportShip` activa, la línea cambia a `P1 Apoyo activo`, alineada con la jugabilidad real del frame.
+  - `scripts/tests/lab_runtime_selector_test.gd` fija la regresión: primero exige el resumen normal del robot y, tras la baja, exige `Apoyo activo` y la ausencia del texto stale `Ariete Easy`.
+- Resultado:
+  - el round-state del laboratorio deja dos líneas consistentes entre sí durante el slice post-muerte `Teams`: `Lab | P1 Apoyo activo ...` y `Control P1 | usa C | objetivo Q/E`.
+  - `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan.
+
 ## Referencia compacta de controles alineada con `Apoyo activo` (2026-04-22)
 
 - Estado: la línea persistente `Control Pn | ...` del laboratorio ya no queda stale cuando el slot seleccionado pasa de robot activo a nave de soporte en `Teams`.

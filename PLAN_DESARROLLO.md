@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El resumen `Lab | ...` del slot seleccionado ya no queda stale cuando ese jugador pasa a `Apoyo activo` en `Teams`: la misma línea que antes seguía anunciando `P1 Ariete Easy/Hard` ahora cambia a `P1 Apoyo activo`, alineada con los controles reales del soporte post-muerte.
+- La corrección vive en `Main._get_lab_robot_brief()`: antes de resumir arquetipo/modo consulta `_find_post_death_support_ship(robot)` y, si la nave existe, prioriza el estado jugable actual del slot en vez del loadout del robot caído.
+- `lab_runtime_selector_test.gd` fija el seam junto al hint de controles: arranca con `Lab | P1 Ariete Easy ...`, tras la baja del slot seleccionado exige `Apoyo activo` dentro del resumen runtime y también verifica que desaparezca el texto stale `Ariete Easy`.
+- Validacion focalizada: `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - La referencia persistente `Control Pn | ...` del laboratorio ya sigue tambien el soporte post-muerte en `Teams`: cuando el slot seleccionado cae y pasa a `Apoyo activo`, la linea deja de mostrar los controles del robot caido y migra a `usa ... | objetivo ...`, alineada con la nave real.
 - La correccion vive en `Main.get_lab_selected_controls_summary_line()`: el selector runtime sigue usando `RobotBase.get_control_reference_hint()` para robots activos, pero consulta `_find_post_death_support_ship(robot)` antes de publicar la chuleta y, si el soporte existe, reutiliza `robot.get_support_input_hint()` en vez del hint de combate.
 - `lab_runtime_selector_test.gd` fija este seam dentro del mismo flujo de laboratorio: `P1` arranca con `mueve/ataca/energia/...`, cae al vacio en `Teams` y la referencia persistente pasa a `Control P1 | usa C | objetivo Q/E` sin arrastrar `mueve WASD`.
