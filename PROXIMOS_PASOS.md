@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No reabrir el reset automático del selector runtime cuando el slot viene de `Apoyo activo`**
+ - `lab_runtime_selector_test.gd` ahora cubre el flujo `P1 Grua Hard -> Apoyo activo -> ronda cerrada -> Ronda 2`; el contrato es que tras el reset automático vuelvan `Lab | P1 Grua Hard`, los controles de robot, la pista diegética sobre el robot y desaparezca `Apoyo P1 | ...`.
+ - Si se retocan `_on_round_started()`, `_clear_post_death_support()`, `_sync_post_death_support_state()`, `_sync_lab_selector_visuals()` o el lifecycle del soporte post-muerte, mantener esa fixture.
+ - Reabrir solo si el laboratorio deja de usar el selector runtime/round-state como referencia persistente del slot seleccionado o si cambia explícitamente el actor jugable post-muerte.
+
 0. **No volver a dejar `LabSelectionIndicator` pegado al robot cuando el slot entra en `Apoyo activo`**
  - `PilotSupportShip` ya expone `set_lab_selected()/is_lab_selected()` y crea su propio `LabSelectionIndicator`; `Main._sync_lab_selector_visuals()` ahora apaga la marca del robot seleccionado si ya existe soporte activo para ese owner y la pasa a la nave.
  - Si se retocan `_sync_lab_selector_visuals()`, `_sync_post_death_support_state()`, el lifecycle de `PilotSupportShip` o la visual runtime del selector, mantener `lab_runtime_selector_test.gd`: ahora fija robot marcado antes de la baja y nave marcada después de `Apoyo activo`.

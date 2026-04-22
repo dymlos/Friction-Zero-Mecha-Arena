@@ -15,6 +15,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_lab_selector_cycles_roster_and_control_mode()
 	await _validate_lab_selected_controls_follow_support_ship()
+	await _validate_lab_selector_recovers_from_support_after_round_reset()
 	await _validate_lab_selector_recovers_from_support_after_manual_restart()
 	await _validate_ffa_scoreboard_refreshes_after_runtime_loadout_change()
 	_finish()
@@ -373,6 +374,108 @@ func _validate_lab_selector_recovers_from_support_after_manual_restart() -> void
 		not round_label.text.contains("Apoyo P1 |"),
 		"Tras F5, el round-state no deberia conservar la linea accionable del soporte seleccionado."
 	)
+
+	await _cleanup_node(main)
+
+
+func _validate_lab_selector_recovers_from_support_after_round_reset() -> void:
+	var main := MAIN_SCENE.instantiate()
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller != null:
+		match_controller.round_intro_duration = 0.0
+		match_controller.round_reset_delay = 0.15
+		if match_controller.match_config != null:
+			match_controller.match_config.round_intro_duration_teams = 0.0
+			match_controller.match_config.rounds_to_win = 2
+			match_controller.match_config.void_elimination_round_points = 1
+			match_controller.match_config.destruction_elimination_round_points = 1
+			match_controller.match_config.unstable_elimination_round_points = 1
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var robots := _get_scene_robots(main)
+	_assert(round_label != null, "El HUD deberia seguir exponiendo RoundLabel para validar el reset automatico del selector runtime.")
+	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController para validar el reset automatico.")
+	_assert(robots.size() >= 4, "La escena principal deberia seguir exponiendo cuatro robots para validar el reset automatico del selector runtime.")
+	if round_label == null or match_controller == null or robots.size() < 4:
+		await _cleanup_node(main)
+		return
+
+	main.call("cycle_selected_lab_archetype")
+	await process_frame
+	await process_frame
+	main.call("toggle_selected_lab_control_mode")
+	await process_frame
+	await process_frame
+
+	for robot in robots:
+		robot.void_fall_y = -100.0
+
+	robots[0].fall_into_void()
+	await process_frame
+	await process_frame
+	await process_frame
+	await process_frame
+
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Apoyo activo"),
+		"Antes del reset automatico, el selector runtime deberia seguir al slot seleccionado si entro en `Apoyo activo`."
+	)
+	_assert(
+		round_label.text.contains("Control P1 | usa C | objetivo Q/E"),
+		"Antes del reset automatico, la referencia compacta deberia seguir mostrando los controles reales del soporte seleccionado."
+	)
+	_assert(
+		round_label.text.contains("Apoyo P1 | sin carga"),
+		"Antes del reset automatico, el round-state deberia seguir exponiendo el estado accionable del soporte seleccionado."
+	)
+
+	robots[2].fall_into_void()
+	robots[3].fall_into_void()
+	await create_timer(match_controller.round_reset_delay + 0.2).timeout
+	await process_frame
+	await process_frame
+
+	_assert(
+		match_controller.is_round_active(),
+		"Tras cerrar una ronda no final, el match deberia volver a una ronda activa."
+	)
+	_assert(
+		match_controller.get_round_status_line().contains("Ronda 2"),
+		"Tras el reset automatico, la partida deberia avanzar a la siguiente ronda."
+	)
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Grua Hard"),
+		"Tras el reset automatico, el selector runtime deberia volver a mostrar el robot/loadout runtime del slot seleccionado."
+	)
+	_assert(
+		not String(main.call("get_lab_selector_summary_line")).contains("Apoyo activo"),
+		"Tras el reset automatico, el selector runtime no deberia arrastrar `Apoyo activo` de la ronda anterior."
+	)
+	_assert(
+		round_label.text.contains("Control P1 | mueve WASD | aim TFGX | ataca Space | energia Q/E | overdrive R | suelta C"),
+		"Tras el reset automatico, la referencia compacta deberia volver a los controles reales del robot seleccionado."
+	)
+	_assert(
+		not round_label.text.contains("Apoyo P1 |"),
+		"Tras el reset automatico, el round-state no deberia arrastrar la linea de apoyo del slot seleccionado."
+	)
+	var support_root := main.get_node_or_null("SupportRoot")
+	var support_ship := support_root.get_child(0) if support_root != null and support_root.get_child_count() > 0 else null
+	_assert(
+		support_ship == null,
+		"Tras el reset automatico, no deberia quedar una nave de apoyo runtime para el slot seleccionado."
+	)
+	var robot_selection_indicator := robots[0].get_node_or_null("LabSelectionIndicator") as MeshInstance3D
+	_assert(robot_selection_indicator != null, "El robot seleccionado deberia seguir exponiendo la pista diegetica del laboratorio tras el reset automatico.")
+	if robot_selection_indicator != null:
+		_assert(
+			robot_selection_indicator.visible,
+			"Tras el reset automatico, la pista diegetica deberia volver al robot seleccionado."
+		)
 
 	await _cleanup_node(main)
 

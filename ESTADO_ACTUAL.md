@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Reset automático del selector runtime tras `Apoyo activo` cubierto (2026-04-22)
+
+- Estado: el laboratorio ya tiene regresión headless también para el camino normal `slot seleccionado -> Apoyo activo -> cierre de ronda -> nueva ronda`; no solo para `F5` y `F6`.
+- Cobertura aplicada:
+  - `scripts/tests/lab_runtime_selector_test.gd` ahora recorre el flujo `P1 Grua Hard -> P1 Apoyo activo -> ronda cerrada -> Ronda 2`.
+  - antes del reset exige `Lab | P1 Apoyo activo`, `Control P1 | usa C | objetivo Q/E` y `Apoyo P1 | sin carga`.
+  - tras el reset automático exige que el selector runtime vuelva a `P1 Grua Hard`, que la referencia compacta retome los controles del robot, que desaparezca `Apoyo P1 | ...`, que no quede una `PilotSupportShip` stale y que la pista diegética vuelva al robot.
+  - la revisión confirmó que no hacía falta tocar producción: `Main._on_round_started()` ya limpiaba soporte post-muerte y `Main._sync_lab_selector_visuals()` ya reaplicaba bien el actor jugable real.
+- Resultado:
+  - queda congelado el seam entre lifecycle normal de ronda y selector runtime del laboratorio para evitar que futuras iteraciones arreglen solo `F5`/`F6` y dejen sin cobertura el reset común.
+  - `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan.
+
 ## Pista diegética del selector runtime alineada con `Apoyo activo` (2026-04-22)
 
 - Estado: cuando el slot seleccionado del laboratorio cae en `Teams` y pasa a `Apoyo activo`, la pista diegética `LabSelectionIndicator` ya no queda pegada al robot caído; ahora migra a la nave `PilotSupportShip`, alineada con `Lab | P1 Apoyo activo`, `Control P1 | usa C | objetivo Q/E` y `Apoyo P1 | ...`.

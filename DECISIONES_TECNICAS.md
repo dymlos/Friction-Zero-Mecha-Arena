@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El reset automático de ronda también debe dejar el selector runtime limpio tras `Apoyo activo`**
+ - `Main._on_round_started()` ya ejecuta `_clear_post_death_support()` antes de reactivar la ronda, y `_sync_post_death_support_state()` + `_sync_lab_selector_visuals()` ya devolvían correctamente el actor seleccionado al robot/loadout runtime.
+ - El gap real estaba en cobertura: `lab_runtime_selector_test.gd` ahora congela el flujo `P1 Grua Hard -> Apoyo activo -> ronda cerrada -> Ronda 2`, exigiendo antes del reset las tres líneas de soporte seleccionado y, después, el retorno a `Lab | P1 Grua Hard`, controles de robot, ausencia de `Apoyo P1 | ...`, sin `PilotSupportShip` stale y con `LabSelectionIndicator` otra vez sobre el robot.
+ - Motivo: `F5` manual y `F6` entre laboratorios ya estaban cubiertos, pero faltaba el camino más común del lifecycle normal de ronda. Congelarlo evita regresiones silenciosas en el seam más cotidiano del laboratorio `Teams`.
+
 1. **La pista diegética del selector runtime debe seguir al actor jugable real, también en `Apoyo activo`**
  - `PilotSupportShip` ahora expone `set_lab_selected()/is_lab_selected()` y crea su propio `LabSelectionIndicator`, con color derivado del `owner_robot`, para no dejar la legibilidad del selector atada solo a `RobotBase`.
  - `Main._sync_lab_selector_visuals()` ya no marca siempre al robot seleccionado: si `_find_post_death_support_ship(selected_robot)` devuelve una nave activa, apaga la marca del robot y la mueve a esa `PilotSupportShip`; `_sync_post_death_support_state()` reejecuta ese sync al cambiar el lifecycle del soporte.

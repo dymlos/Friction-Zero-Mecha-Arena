@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El reset automático de ronda del laboratorio ahora también queda congelado explícitamente cuando el slot seleccionado venía de `Apoyo activo`: no solo `F5` y `F6`, también el path normal `cierre de ronda -> nueva ronda` devuelve el selector runtime al robot/loadout real.
+- La revisión confirmó que la producción ya estaba bien resuelta entre `Main._on_round_started()`, `_clear_post_death_support()` y `_sync_lab_selector_visuals()`; el trabajo de esta iteración fue agregar la red headless que faltaba.
+- `lab_runtime_selector_test.gd` ahora fija el flujo `P1 Grua Hard -> Apoyo activo -> ronda cerrada -> Ronda 2`, exigiendo antes del reset `Lab | P1 Apoyo activo`, `Control P1 | usa C | objetivo Q/E`, `Apoyo P1 | sin carga`, y después del reset `Lab | P1 Grua Hard`, controles de robot, ausencia de `Apoyo P1 | ...`, sin `PilotSupportShip` stale y `LabSelectionIndicator` de vuelta en el robot.
+- Validación focalizada: `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - La pista diegética `LabSelectionIndicator` del laboratorio ya sigue también al actor jugable real cuando el slot seleccionado cae en `Teams` y pasa a `Apoyo activo`: el anillo deja de quedarse pegado al robot caído y migra a `PilotSupportShip`.
 - La corrección se resolvió sin abrir otra UI: `PilotSupportShip` ahora expone `set_lab_selected()/is_lab_selected()` y crea su propio anillo runtime, mientras `Main._sync_lab_selector_visuals()` apaga la marca del robot si existe soporte activo para ese owner y la reaplica a la nave.
 - `lab_runtime_selector_test.gd` fija el seam completo: antes de la baja exige anillo visible en el robot seleccionado; después de `fall_into_void()` exige anillo apagado en el robot, `is_lab_selected()` verdadero en la nave y `LabSelectionIndicator` visible en `PilotSupportShip`.
