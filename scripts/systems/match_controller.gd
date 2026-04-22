@@ -590,6 +590,7 @@ func _build_robot_recap_panel_line(robot: RobotBase) -> String:
 	if robot == null:
 		return ""
 
+	var robot_label := robot.get_roster_display_name()
 	var robot_id := robot.get_instance_id()
 	if _round_eliminated_robot_ids.has(robot_id):
 		var cause_label := _get_elimination_cause_label(_get_robot_elimination_cause(robot))
@@ -598,7 +599,7 @@ func _build_robot_recap_panel_line(robot: RobotBase) -> String:
 		if source_suffix != "":
 			cause_label += source_suffix
 		return "%s | baja %s | %s | %s" % [
-			robot.display_name,
+			robot_label,
 			elimination_order,
 			cause_label,
 			_build_robot_part_state_summary(robot),
@@ -608,9 +609,9 @@ func _build_robot_recap_panel_line(robot: RobotBase) -> String:
 		var detail := "inutilizado"
 		if robot.is_disabled_explosion_unstable():
 			detail = "inutilizado | inestable"
-		return "%s | %s | %s" % [robot.display_name, detail, _build_robot_part_state_summary(robot)]
+		return "%s | %s | %s" % [robot_label, detail, _build_robot_part_state_summary(robot)]
 
-	return "%s | sigue en pie | %s" % [robot.display_name, _build_robot_part_state_summary(robot)]
+	return "%s | sigue en pie | %s" % [robot_label, _build_robot_part_state_summary(robot)]
 
 
 func _build_robot_part_state_summary(robot: RobotBase) -> String:

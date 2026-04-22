@@ -51,23 +51,23 @@ func _run() -> void:
 	_assert(
 		_has_line_containing(
 			match_controller.get_round_recap_panel_lines(),
-			"Player 1 | sigue en pie | 3/4 partes | sin brazo izquierdo"
+			"Player 1 / Ariete | sigue en pie | 3/4 partes | sin brazo izquierdo"
 		),
-		"El recap lateral deberia explicar con cuantas extremidades sobrevivio cada robot."
+		"El recap lateral deberia conservar tambien el arquetipo del robot al explicar con cuantas extremidades sobrevivio."
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_round_recap_panel_lines(),
-			"Player 3 | baja 1 | vacio | 2/4 partes | sin pierna izquierda, pierna derecha"
+			"Player 3 / Cizalla | baja 1 | vacio | 2/4 partes | sin pierna izquierda, pierna derecha"
 		),
-		"El recap lateral deberia explicar que extremidades le faltaban al robot eliminado."
+		"El recap lateral deberia conservar tambien el arquetipo al explicar que extremidades le faltaban al robot eliminado."
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_match_result_lines(),
-			"Player 4 | baja 2 | vacio | 3/4 partes | sin brazo derecho"
+			"Player 4 / Patin | baja 2 | vacio | 3/4 partes | sin brazo derecho"
 		),
-		"El panel final deberia repetir el estado final de extremidades del robot derrotado."
+		"El panel final deberia repetir el estado final de extremidades sin perder la identidad de arquetipo del robot derrotado."
 	)
 
 	await _cleanup_main(main)

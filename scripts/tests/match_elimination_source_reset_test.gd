@@ -63,19 +63,19 @@ func _run() -> void:
 	await create_timer(0.05).timeout
 
 	_assert(
-		recap_label.text.contains("Player 3 | baja 1 | vacio"),
+		recap_label.text.contains("Player 3 / Cizalla | baja 1 | vacio"),
 		"El recap de la ronda nueva deberia seguir mostrando la baja actual del robot sin agresor."
 	)
 	_assert(
-		not recap_label.text.contains("Player 3 | baja 1 | vacio por Player 1"),
+		not recap_label.text.contains("Player 3 / Cizalla | baja 1 | vacio por Player 1"),
 		"La atribucion de una ronda anterior no deberia sobrevivir en el recap cuando la nueva baja no tiene agresor."
 	)
 	_assert(
-		match_result_label.text.contains("Player 3 | baja 1 | vacio"),
+		match_result_label.text.contains("Player 3 / Cizalla | baja 1 | vacio"),
 		"El resultado final deberia conservar la baja sin agresor de la ronda nueva."
 	)
 	_assert(
-		not match_result_label.text.contains("Player 3 | baja 1 | vacio por Player 1"),
+		not match_result_label.text.contains("Player 3 / Cizalla | baja 1 | vacio por Player 1"),
 		"La atribucion stale tampoco deberia sobrevivir en el resultado final."
 	)
 

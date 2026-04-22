@@ -104,7 +104,7 @@ func _run() -> void:
 		"El recap deberia dejar visible el resultado final del match."
 	)
 	_assert(
-		recap_label.text.contains("Player 3 | baja 1 | vacio"),
+		recap_label.text.contains("Player 3 / Cizalla | baja 1 | vacio"),
 		"El recap final deberia seguir explicando las bajas que cerraron la partida."
 	)
 	_assert(match_result_panel.visible, "Al cerrar la partida deberia aparecer una presentacion dedicada del resultado final.")
@@ -125,7 +125,7 @@ func _run() -> void:
 		"El panel final deberia distinguir la causa acumulada de las bajas del rival a lo largo del match."
 	)
 	_assert(
-		match_result_label.text.contains("Player 3 | baja 1 | vacio"),
+		match_result_label.text.contains("Player 3 / Cizalla | baja 1 | vacio"),
 		"El panel final deberia repetir el detalle compacto por robot para explicar como cayo cada rival sin depender del recap lateral."
 	)
 	_assert(

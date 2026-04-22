@@ -64,11 +64,11 @@ func _run() -> void:
 		"El recap deberia reiterar la decision de la ronda."
 	)
 	_assert(
-		recap_label.text.contains("Player 3 | baja 1 | vacio"),
+		recap_label.text.contains("Player 3 / Cizalla | baja 1 | vacio"),
 		"El recap deberia explicar la primera baja con orden y causa."
 	)
 	_assert(
-		recap_label.text.contains("Player 4 | baja 2 | vacio"),
+		recap_label.text.contains("Player 4 / Patin | baja 2 | vacio"),
 		"El recap deberia explicar la segunda baja con orden y causa."
 	)
 

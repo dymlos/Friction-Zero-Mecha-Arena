@@ -50,10 +50,10 @@ func _run() -> void:
 
 	var recap_lines := match_controller.get_round_recap_panel_lines()
 	var match_result_lines := match_controller.get_match_result_lines()
-	var winner_detail_a := "%s | sigue en pie | 4/4 partes" % robots[2].display_name
-	var winner_detail_b := "%s | sigue en pie | 4/4 partes" % robots[3].display_name
-	var loser_detail_a := "%s | baja 1 | vacio | 4/4 partes" % robots[0].display_name
-	var loser_detail_b := "%s | baja 2 | vacio | 4/4 partes" % robots[1].display_name
+	var winner_detail_a := "%s / Cizalla | sigue en pie | 4/4 partes" % robots[2].display_name
+	var winner_detail_b := "%s / Patin | sigue en pie | 4/4 partes" % robots[3].display_name
+	var loser_detail_a := "%s / Ariete | baja 1 | vacio | 4/4 partes" % robots[0].display_name
+	var loser_detail_b := "%s / Grua | baja 2 | vacio | 4/4 partes" % robots[1].display_name
 	var winner_stats := "Stats | Equipo 2 | bajas sufridas 0"
 	var loser_stats := "Stats | Equipo 1 | bajas sufridas 2 (2 vacio)"
 

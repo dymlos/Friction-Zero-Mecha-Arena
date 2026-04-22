@@ -103,11 +103,11 @@ func _run() -> void:
 		"El estado de ronda deberia exponer tambien la ultima baja por vacio junto con el rival responsable."
 	)
 	_assert(
-		recap_label.text.contains("Player 3 | baja 1 | explosion por Player 1"),
+		recap_label.text.contains("Player 3 / Cizalla | baja 1 | explosion por Player 1"),
 		"El recap lateral deberia conservar la atribucion del rival que forzo la explosion."
 	)
 	_assert(
-		recap_label.text.contains("Player 4 | baja 2 | vacio por Player 2"),
+		recap_label.text.contains("Player 4 / Patin | baja 2 | vacio por Player 2"),
 		"El recap lateral deberia conservar la atribucion del rival que forzo la caida al vacio."
 	)
 	_assert(
