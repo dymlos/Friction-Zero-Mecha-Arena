@@ -17,6 +17,7 @@ func _run() -> void:
 	await _verify_surge_warns_when_target_already_has_full_boost_window()
 	await _verify_mobility_warns_when_target_already_has_full_boost_window()
 	await _verify_interference_warns_when_target_has_stability()
+	await _verify_interference_target_markers_dim_when_target_has_stability()
 	_finish()
 
 
@@ -244,6 +245,91 @@ func _verify_interference_warns_when_target_has_stability() -> void:
 	_assert(
 		not roster_label.text.contains("estable"),
 		"Cuando la ventana de `estabilidad` termina, la advertencia de inmunidad deberia limpiarse sola."
+	)
+
+	await _cleanup_main(main)
+
+
+func _verify_interference_target_markers_dim_when_target_has_stability() -> void:
+	var main := await _instantiate_main_scene()
+	var support_root := main.get_node_or_null("SupportRoot")
+	var robots := _get_scene_robots(main)
+	_assert(support_root != null, "La escena Teams deberia seguir exponiendo SupportRoot.")
+	_assert(robots.size() >= 4, "La escena Teams deberia seguir ofreciendo cuatro robots.")
+	if support_root == null or robots.size() < 4:
+		await _cleanup_main(main)
+		return
+
+	robots[1].fall_into_void()
+	await _wait_frames(4)
+
+	var support_ship := support_root.get_child(0) as PilotSupportShip
+	_assert(support_ship != null, "La nave de apoyo deberia existir para validar marcadores diegeticos.")
+	if support_ship == null:
+		await _cleanup_main(main)
+		return
+
+	var interference_pickup := _find_support_pickup("interference")
+	_assert(interference_pickup != null, "El carril deberia seguir ofreciendo un pickup `interference`.")
+	if interference_pickup == null:
+		await _cleanup_main(main)
+		return
+
+	var stable_enemy := robots[2]
+	var fresh_enemy := robots[3]
+	support_ship.global_position = interference_pickup.global_position
+	var ship_position := Vector3(support_ship.global_position.x, support_ship.global_position.y, support_ship.global_position.z)
+	stable_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.1)
+	fresh_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.9)
+	stable_enemy.apply_stability_boost(1.5)
+	await _wait_support_spawn_grace(support_ship)
+	await _wait_frames(2)
+
+	var target_indicator := support_ship.get_node_or_null("SupportTargetIndicator") as MeshInstance3D
+	var target_floor_indicator := support_ship.get_node_or_null("SupportTargetFloorIndicator") as MeshInstance3D
+	_assert(target_indicator != null, "La nave deberia seguir exponiendo un marcador diegetico sobre el target.")
+	_assert(target_floor_indicator != null, "La nave deberia seguir exponiendo una marca diegetica a nivel piso.")
+	if target_indicator == null or target_floor_indicator == null:
+		await _cleanup_main(main)
+		return
+
+	var valid_target_material := target_indicator.material_override as StandardMaterial3D
+	var valid_floor_material := target_floor_indicator.material_override as StandardMaterial3D
+	_assert(valid_target_material != null, "El marcador superior deberia seguir usando material legible para validar su intensidad.")
+	_assert(valid_floor_material != null, "La marca de piso deberia seguir usando material legible para validar su intensidad.")
+	if valid_target_material == null or valid_floor_material == null:
+		await _cleanup_main(main)
+		return
+
+	_assert(
+		support_ship.get_selected_target_robot() == fresh_enemy,
+		"Con un rival estable y otro afectable ambos en rango, el target inicial deberia quedar sobre el rival realmente util."
+	)
+	var valid_target_emission := valid_target_material.emission_energy_multiplier
+	var valid_floor_emission := valid_floor_material.emission_energy_multiplier
+
+	Input.action_press("p2_energy_next")
+	await _wait_frames(2)
+	Input.action_release("p2_energy_next")
+	await _wait_frames(2)
+
+	_assert(
+		support_ship.get_selected_target_robot() == stable_enemy,
+		"El test deberia poder ciclar hasta el rival estable para comparar la lectura diegetica del mismo payload."
+	)
+	var stable_target_material := target_indicator.material_override as StandardMaterial3D
+	var stable_floor_material := target_floor_indicator.material_override as StandardMaterial3D
+	if stable_target_material == null or stable_floor_material == null:
+		await _cleanup_main(main)
+		return
+
+	_assert(
+		stable_target_material.emission_energy_multiplier < valid_target_emission,
+		"Si el rival seleccionado esta inmune por `estabilidad`, el marcador superior deberia perder intensidad frente a un objetivo realmente afectable."
+	)
+	_assert(
+		stable_floor_material.emission_energy_multiplier < valid_floor_emission,
+		"Si el rival seleccionado esta inmune por `estabilidad`, la marca de piso tambien deberia verse menos comprometida que sobre un objetivo realmente util."
 	)
 
 	await _cleanup_main(main)

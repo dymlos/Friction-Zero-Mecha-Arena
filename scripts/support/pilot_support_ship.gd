@@ -320,6 +320,23 @@ func _get_payload_availability_label() -> String:
 	return "fuera de rango"
 
 
+func _is_payload_actionable_on_target(target_robot: RobotBase) -> bool:
+	if target_robot == null:
+		return false
+
+	match _support_payload_name:
+		PilotSupportPickup.PAYLOAD_STABILIZER:
+			return _get_total_missing_active_part_health(target_robot) > 0.0
+		PilotSupportPickup.PAYLOAD_SURGE:
+			return not _would_surge_payload_be_redundant(target_robot)
+		PilotSupportPickup.PAYLOAD_MOBILITY:
+			return not _would_mobility_payload_be_redundant(target_robot)
+		PilotSupportPickup.PAYLOAD_INTERFERENCE:
+			return _is_target_in_interference_range(target_robot) and not _is_target_immune_to_interference(target_robot)
+		_:
+			return false
+
+
 func _would_surge_payload_be_redundant(target_robot: RobotBase) -> bool:
 	return _get_surge_payload_useful_window(target_robot) <= 0.0
 
@@ -666,14 +683,14 @@ func _update_target_indicator(delta: float) -> void:
 	indicator.rotation_degrees = Vector3(0.0, 45.0 + rad_to_deg(_target_indicator_phase) * 0.12, 45.0)
 
 	var accent_color := _get_support_payload_color()
-	var in_range := _support_payload_name != PilotSupportPickup.PAYLOAD_INTERFERENCE or _is_target_in_interference_range(target_robot)
+	var is_actionable := _is_payload_actionable_on_target(target_robot)
 	var material := indicator.material_override as StandardMaterial3D
 	if material == null:
 		return
 
 	var indicator_color := accent_color
 	var emission_boost := 1.3
-	if not in_range:
+	if not is_actionable:
 		indicator_color = accent_color.darkened(0.38)
 		indicator_color.a = 0.65
 		emission_boost = 0.45
@@ -704,10 +721,10 @@ func _update_target_floor_indicator() -> void:
 	)
 
 	var accent_color := _get_support_payload_color()
-	var in_range := _support_payload_name != PilotSupportPickup.PAYLOAD_INTERFERENCE or _is_target_in_interference_range(target_robot)
+	var is_actionable := _is_payload_actionable_on_target(target_robot)
 	var indicator_color := accent_color.darkened(0.15)
 	var emission_boost := 0.78
-	if in_range:
+	if is_actionable:
 		indicator_color = accent_color.lightened(0.08)
 		emission_boost = 1.12
 
@@ -715,10 +732,10 @@ func _update_target_floor_indicator() -> void:
 	if material == null:
 		return
 
-	indicator_color.a = 0.26 if in_range else 0.12
+	indicator_color.a = 0.26 if is_actionable else 0.12
 	material.albedo_color = indicator_color
 	material.emission = accent_color
-	material.emission_energy_multiplier = emission_boost if in_range else 0.3
+	material.emission_energy_multiplier = emission_boost if is_actionable else 0.3
 
 
 func _update_interference_range_indicator() -> void:

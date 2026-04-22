@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Marcadores diegéticos del soporte alineados con payloads útiles (2026-04-22)
+
+- Estado: la nave de apoyo `Teams` ya no deja el marcador superior ni la marca de piso en modo “listo” cuando el payload seleccionado no tendría efecto real.
+- Corrección aplicada:
+  - `PilotSupportShip` suma `_is_payload_actionable_on_target(...)` y reutiliza la utilidad real del payload para `stabilizer`, `surge`, `movilidad` e `interferencia`.
+  - `SupportTargetIndicator` y `SupportTargetFloorIndicator` siguen visibles mientras hay target, pero ahora bajan intensidad cuando el caso ya cae en `sin daño`, `ya activo` o `estable`, igual que antes hacían para `fuera de rango`.
+  - `support_payload_availability_readability_test.gd` fija el caso de `interferencia` con dos rivales en rango: default sobre el rival afectable y atenuación clara al ciclar al rival inmune por `estabilidad`.
+- Resultado:
+  - el carril ya no contradice al jugador entre HUD y mundo; la explicación compacta y la lectura diegética del objetivo usan la misma noción de “payload útil ahora”.
+  - `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 78 tests`).
+
 ## Interferencia inmune por `estabilidad` visible en roster (2026-04-22)
 
 - Estado: el soporte post-muerte `Teams` ya no sugiere presión útil de `interferencia` sobre un rival que sigue protegido por `estabilidad`.
