@@ -29,6 +29,15 @@ func _run() -> void:
 
 	match_controller.match_mode = MatchController.MatchMode.TEAMS
 	match_controller.round_reset_delay = 0.2
+	var void_round_points := 1
+	var explosion_round_points := 1
+	if match_controller.match_config != null:
+		void_round_points = match_controller.match_config.get_round_victory_points_for_cause(
+			int(MatchController.EliminationCause.VOID)
+		)
+		explosion_round_points = match_controller.match_config.get_round_victory_points_for_cause(
+			int(MatchController.EliminationCause.EXPLOSION)
+		)
 
 	for robot in robots:
 		robot.void_fall_y = -100.0
@@ -55,7 +64,10 @@ func _run() -> void:
 		match_controller.get_round_status_line().contains("Equipo 1"),
 		"El estado de ronda deberia anunciar al equipo ganador."
 	)
-	_assert(match_controller.get_team_score(1) == 1, "El equipo ganador deberia sumar un punto.")
+	_assert(
+		match_controller.get_team_score(1) == void_round_points,
+		"El equipo ganador deberia sumar los puntos configurados para una baja por vacio."
+	)
 	_assert(match_controller.get_team_score(2) == 0, "El equipo rival no deberia sumar puntos.")
 
 	await create_timer(match_controller.round_reset_delay + 0.25).timeout
@@ -79,7 +91,10 @@ func _run() -> void:
 		match_controller.get_last_elimination_summary().contains("explosion"),
 		"Las bajas por destruccion total deberian registrarse como explosion."
 	)
-	_assert(match_controller.get_team_score(1) == 2, "La segunda ronda ganada deberia reflejarse en el scoreboard.")
+	_assert(
+		match_controller.get_team_score(1) == void_round_points + explosion_round_points,
+		"La segunda ronda ganada deberia acumular los puntos configurados por causa de cierre."
+	)
 
 	await create_timer(0.8).timeout
 	await _cleanup_main(main)

@@ -10,6 +10,23 @@
   - `main_ffa_validation.tscn` y `main_teams_validation.tscn` mantienen overrides de arena y `MatchConfig` correctos para su modo de trabajo.
 - Riesgo de seguimiento: no se ejecutó arranque/compilado de estas escenas en esta pasada, por lo que la validación final queda para el siguiente ciclo junto con pruebas de sensibilidad de combate.
 
+## Validación de sensibilidad de combate (2026-04-22)
+
+- Estado: `robot_base.gd` no necesitó ajuste en esta pasada.
+- Hallazgo principal: `match_round_resolution_test.gd` y `match_completion_test.gd` estaban desalineados con el contrato actual de score por causa (`ring_out=2`, `destruccion=1`, `inestable=4`) y por eso daban falso rojo al validar cierre de ronda/partida.
+- Corrección aplicada:
+  - `match_round_resolution_test.gd` ahora deriva los puntos esperados desde `MatchConfig`.
+  - `match_completion_test.gd` fija explícitamente los puntos de ronda a `1` para seguir validando lifecycle `first-to-X` y no balance por causa.
+  - `robot_collision_pacing_test.gd` agrega cobertura headless del glide corto y del umbral de daño por choque en `RobotBase`.
+- Resultado: las tres validaciones (`robot_collision_pacing_test.gd`, `match_round_resolution_test.gd`, `match_completion_test.gd`) pasan con Godot headless.
+
+## Mini-check documental (2026-04-22)
+
+- Estado: revisión rápida contra `Documentación/01-10` sin contradicción crítica activa.
+- Gaps todavía deliberados:
+  - `FFA` sigue sin post-muerte definitivo; esto coincide con `Documentación/05_modos-de-juego.md`, donde esa regla permanece abierta.
+  - el laboratorio sigue optimizado para 4 jugadores locales aunque la visión final contemple hasta 8; se mantiene así para proteger claridad y velocidad de iteración del núcleo de choque/rescate.
+
 El proyecto ya tiene una base jugable en Godot 4.6 con:
 
 - soporte post-muerte Teams tambien consistente en identidad textual: la `PilotSupportShip` ya no vuelve a `Player X` pelado cuando resume el objetivo seleccionado; `apoyo ... > <objetivo>` reutiliza el mismo `Player / Arquetipo` del roster vivo para aliados y rivales

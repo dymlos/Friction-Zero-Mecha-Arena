@@ -2,7 +2,17 @@
 
 Este plan ordena el desarrollo para validar primero la identidad real del juego: robots industriales que patinan con inercia, chocan con peso, se desarman por partes y obligan a leer el espacio antes de comprometerse. No propone un MVP generico: cada etapa debe dejar una version jugable que preserve la fantasia de "patinar y chocar con precision", aunque todavia falten capas avanzadas.
 
-## Checkpoint actual - 2026-04-21
+## Checkpoint actual - 2026-04-22
+
+- Validación de sensibilidad de combate cerrada sin retocar `RobotBase`: el rojo de `match_round_resolution_test.gd` y `match_completion_test.gd` venía de supuestos viejos de score fijo (`+1`) y no de una regresión en movimiento/choque. La cobertura nueva `robot_collision_pacing_test.gd` fija glide corto tras soltar input y daño de choque solo por encima de `collision_damage_threshold`.
+- Mini-check documental cerrado: no apareció una contradicción crítica entre `Documentación/` y el prototipo actual. Los gaps más visibles siguen siendo deliberados de etapa temprana (`FFA` sin sistema post-muerte definitivo y laboratorios todavía concentrados en 4 jugadores locales para preservar claridad del núcleo).
+- Auditoría de consistencia de escenas completada: se revisaron `main.tscn`, `main_ffa.tscn`, `main_teams_validation.tscn` y `main_ffa_validation.tscn` sin hallazgos de referencias rotas; el siguiente paso sigue siendo validar el comportamiento de combate en sesiones cortas (2v2 y FFA) antes de ajustar `RobotBase`.
+- `MatchConfig` y `MatchController` ahora separan la duración del intro de ronda por modo: `round_intro_duration_ffa` y `round_intro_duration_teams` permiten ajustar el ritmo inicial de `Equipos` y `FFA` sin tocar escenas ni bloquear cambios de combate.
+
+- Cierre por causa y telemetría de soporte finalizado para soporte de decisión:
+  - El sistema de cierre por ronda ahora pondera causa (`ring_out`, `destruccion total`, `explosion inestable`) via `MatchConfig`; el test principal valida perfiles de peso en Teams y FFA en un mismo ciclo controlado.
+  - `MatchStats` ahora incluye soporte por rondas decisivas (`support_rounds_decided`) y desglose de `support_payload_use_*` para medir impacto real del soporte post-muerte en Teams sin tocar loops de combate.
+  - El estado/documentación se alinea con el contrato vigente: texto de cierre y recap explicitan causa, desempate real y contribución de soporte.
 
 - El soporte post-muerte Teams ya no rompe identidad al nombrar objetivos: `PilotSupportShip.get_status_summary()` ahora reutiliza `RobotBase.get_roster_display_name()` para el aliado/rival seleccionado, de modo que `apoyo estabilizador > Player X / Ariete` e `interferencia > Player Y / Ancla` mantengan la misma continuidad `Player / Arquetipo` que el roster vivo y el cierre. `team_post_death_support_test.gd` fija esa regresion.
 - El handoff de rescate ya tambien avisa cuando la devolucion esta realmente lista: `RobotBase` ahora expone `is_carried_part_return_ready()`, intensifica `CarryReturnIndicator` cuando el portador entra en radio real del dueño y hace que `RecoveryTargetFloorIndicator` tambien suba de intensidad si un aliado ya puede completar el retorno. `carried_part_return_readiness_test.gd` fija ese contrato junto con `detached_part_return_target_test.gd`, `robot_part_return_test.gd`, `two_vs_two_carry_validation_test.gd` y `teams_validation_lab_scene_test.gd`.

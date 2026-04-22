@@ -50,6 +50,9 @@ func _run() -> void:
 		return
 
 	match_controller.match_config.rounds_to_win = 2
+	match_controller.match_config.void_elimination_round_points = 1
+	match_controller.match_config.destruction_elimination_round_points = 1
+	match_controller.match_config.unstable_elimination_round_points = 1
 	match_controller.round_reset_delay = 0.15
 	match_controller.match_restart_delay = 0.2
 

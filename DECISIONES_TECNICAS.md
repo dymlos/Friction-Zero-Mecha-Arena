@@ -2,6 +2,15 @@
 
 ## Decisiones vigentes
 
+1. **Los tests de cierre deben distinguir score por causa vs lifecycle de match**
+ - `MatchController._finish_round_with_winner()` suma score usando `MatchConfig.get_round_victory_points_for_cause(...)`, así que los tests ya no pueden asumir `+1` fijo por victoria.
+ - `match_round_resolution_test.gd` valida el contrato real del score por causa; `match_completion_test.gd` fuerza `void/destruction/unstable = 1` porque su objetivo es validar el ciclo `first-to-X`.
+ - Motivo: separar “balance de score” de “lifecycle de match” evita falsos rojos y permite seguir tuneando pesos por causa sin romper tests de reinicio/cierre.
+
+1. **La sensibilidad base de `RobotBase` queda congelada hasta que falle una prueba de pacing o un playtest corto**
+ - La nueva cobertura `robot_collision_pacing_test.gd` fija dos seams del núcleo: glide corto al soltar input y daño modular de choque solo cuando la velocidad de cierre supera `collision_damage_threshold`.
+ - Motivo: la tarea abierta pedía revisar sensación de choque/control, pero la evidencia actual no justificó retocar `move_acceleration`, `glide_damping`, `passive_push_strength` ni `collision_damage_scale`; mover esos valores sin rojo reproducible habría sido tuning por intuición.
+
 1. **La base de escena principal y sus variantes de laboratorio no muestran referencias rotas**
  - Estado al 2026-04-22: se verificó que `main.tscn`, `main_ffa.tscn`, `main_teams_validation.tscn` y `main_ffa_validation.tscn` tienen rutas de recursos coherentes y disponibles en disco.
  - Hallazgo residual: esta auditoría no sustituye un chequeo runtime completo; la validación de carga y sensación se realiza en la siguiente tarea de sensibilidad de combate de ambos modos de laboratorio.
