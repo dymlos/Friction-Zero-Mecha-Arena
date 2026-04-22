@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **El countdown de intro tambien debe congelarse sobre las escenas `base` y `validation`, no solo sobre `main.tscn`**
+ - `round_intro_countdown_test.gd` ahora recorre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+ - La fixture ya no asume que `round_intro_duration` manda siempre: cuando hay `MatchConfig`, ajusta `round_intro_duration_teams` y `round_intro_duration_ffa`; el campo del nodo queda como fallback para escenas sin config.
+ - No hubo cambio de produccion: el gap real era de cobertura y de setup del test, no del lifecycle runtime del intro.
+ - Motivo: el opening compartido ya tenia regresiones sobre HUD neutral, telegraph `Teams` y lock de pickups del borde. Faltaba congelar tambien el seam base `input bloqueado + cue diegetico + countdown -> en juego` en las cuatro escenas jugables.
+
 1. **Los contratos de opening neutral deben congelarse sobre las escenas `base` y `validation`, no solo sobre una**
  - `teams_live_scoreboard_opening_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`; `ffa_live_standings_hud_test.gd` recorre `main_ffa.tscn` y `main_ffa_validation.tscn`; `teams_opening_intro_telegraph_test.gd` ya fija tambien que `main_ffa_validation.tscn` mantenga oculto el telegraph de carriles.
  - No hubo cambio de produccion: la correccion fue ampliar la red sobre las escenas que el repo ya trata como laboratorios equivalentes.

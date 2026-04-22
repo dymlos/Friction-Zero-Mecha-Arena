@@ -14,6 +14,11 @@
  - Si se retocan openings, HUD inicial o escenas de laboratorio, tocar siempre la pareja `base/validation` como una misma superficie contractual y mantener estas tres regresiones.
  - Reabrir solo si se decide separar deliberadamente el comportamiento de opening entre laboratorio base y rapido.
 
+0. **No volver a dejar el countdown del intro congelado solo en `main.tscn`**
+ - `round_intro_countdown_test.gd` ya recorre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`, fijando el mismo contrato `input bloqueado + RoundIntroIndicator visible + wording correcto por modo + liberacion del control`.
+ - La fixture ya ajusta `MatchConfig.round_intro_duration_teams/_ffa` cuando existe; si se retoca otra vez este test o el wiring del intro, no volver a asumir que `round_intro_duration` del nodo pisa configs activas por si solo.
+ - Reabrir solo si se decide separar deliberadamente el intro entre escenas `base/validation` o si `MatchController` cambia la precedencia entre config y fallback runtime.
+
 0. **No volver a dejar los pickups de borde recogibles durante el intro**
  - `Main` ya sincroniza `set_collection_enabled(false)` sobre `edge_pickups` mientras `MatchController.is_round_intro_active()` siga activo, y el HUD del laboratorio ahora deja explicita esa ventana como `Borde | ... | abre en Xs`.
  - `edge_pickup_intro_lock_test.gd` congela el contrato minimo en `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`: un pickup de reparacion activo no debe recogerse durante el intro y debe volver a funcionar cuando termina el countdown.

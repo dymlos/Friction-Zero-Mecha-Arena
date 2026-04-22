@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## El contrato del intro de ronda ya esta congelado tambien en `base` y `validation` de ambos modos (2026-04-22)
+
+- Estado: el countdown de apertura ya no depende solo de `main.tscn`; ahora la red tambien cubre `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `scripts/tests/round_intro_countdown_test.gd` ahora recorre las cuatro escenas jugables y valida el mismo seam scene-level.
+  - la fixture deja explicito que el intro se configura desde `MatchConfig` cuando existe y usa `round_intro_duration` solo como fallback, evitando falsos verdes por asumir que el override del nodo mandaba siempre.
+  - el contrato congelado es el mismo en las cuatro escenas: input bloqueado durante el intro, `RoundIntroIndicator` visible, wording de apertura correcto por modo (`carriles` en `Teams`, neutral en `FFA`) y liberacion real de movimiento/cue al terminar el countdown.
+- Resultado:
+  - el intro deja de tener otro punto ciego entre laboratorios base y rapidos; si una escena pierde el countdown, el lock de control o el telegraph diegetico, la suite lo detecta antes de runtime.
+
 ## El lock del borde durante el intro ya esta congelado tambien en `base` y `validation` de ambos modos (2026-04-22)
 
 - Estado: el contrato `pickup visible pero bloqueado + HUD Borde | ... | abre en Xs + desbloqueo al terminar el countdown` ya no depende solo de `main.tscn`; ahora queda cubierto tambien en `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.

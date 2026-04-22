@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El contrato del intro de ronda ya queda congelado tambien en escenas `base` y `validation` de `Teams/FFA`:
+  - la revision estricta encontro otro hueco de mantenimiento en el opening: `round_intro_countdown_test.gd` seguia validando bloqueo de input, telegraph diegetico y liberacion post-countdown solo sobre `main.tscn`, dejando drift posible en `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+  - no hizo falta tocar produccion; la correccion vive en la regresion, que ahora recorre las cuatro escenas y respeta la fuente real del intro (`MatchConfig` cuando existe, `round_intro_duration` como fallback).
+  - decision operativa: tratar tambien el countdown/base de control bloqueado como contrato compartido entre laboratorios `base/validation`, no solo el HUD neutral, el telegraph `Teams` y el lock del borde.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/round_intro_countdown_test.gd`.
+
 - El lock de pickups de borde durante el intro ya queda congelado tambien en las escenas `base` y `validation` de `Teams/FFA`:
   - la revision estricta encontro otro hueco de mantenimiento en el opening: el contrato `pickup visible pero no cobrable + HUD Borde | ... | abre en Xs + desbloqueo al terminar el countdown` estaba cubierto solo en `main.tscn`, dejando drift posible en `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
   - no hizo falta tocar produccion; `Main` y los pickups ya estaban alineados. La correccion vive en `scripts/tests/edge_pickup_intro_lock_test.gd`, que ahora recorre las cuatro escenas y verifica el mismo seam scene-level.
