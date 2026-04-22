@@ -600,9 +600,10 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 	var control_label := "P%s" % robot.player_index if robot.is_player_controlled else "CPU"
 	var support_state := get_robot_support_state(robot)
 	var has_active_support := match_mode == MatchMode.TEAMS and support_state != ""
+	var is_eliminated := is_robot_eliminated(robot)
 	var state_label := "Activo"
 	var state_detail := ""
-	if is_robot_eliminated(robot):
+	if is_eliminated:
 		state_label = "Apoyo activo" if has_active_support else "Fuera"
 		state_detail = _get_elimination_cause_label(_get_robot_elimination_cause(robot))
 	elif robot.is_disabled_state():
@@ -618,41 +619,49 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		state_segment += " | %s" % state_detail
 
 	var segments: Array[String] = [state_segment]
+	var can_show_robot_combat_state := not is_eliminated and not robot.is_disabled_state()
 	if contextual_hud:
-		if robot.control_mode == RobotBase.ControlMode.HARD:
-			segments.append("Hard")
-		if robot.get_active_part_count() < RobotBase.BODY_PARTS.size():
+		if can_show_robot_combat_state:
+			if robot.control_mode == RobotBase.ControlMode.HARD:
+				segments.append("Hard")
+			if robot.get_active_part_count() < RobotBase.BODY_PARTS.size():
+				segments.append("%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()])
+			if not robot.is_energy_balanced():
+				segments.append(robot.get_energy_state_summary())
+		elif robot.is_disabled_state():
 			segments.append("%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()])
-		if not robot.is_energy_balanced():
-			segments.append(robot.get_energy_state_summary())
 	else:
-		var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
-		segments = [mode_label, state_segment, "%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()]]
-		if robot.is_player_controlled and not has_active_support:
-			segments.append(robot.get_input_hint())
-		segments.append(robot.get_energy_state_summary())
-	var core_skill_summary := robot.get_core_skill_status_summary()
-	if core_skill_summary != "":
-		segments.append(core_skill_summary)
-	var passive_summary := robot.get_passive_status_summary()
-	if passive_summary != "":
-		segments.append(passive_summary)
-	if robot.is_energy_surge_active():
-		segments.append("energia")
-	if robot.is_mobility_boost_active():
-		segments.append("impulso")
-	if robot.has_method("is_mobility_skill_active") and robot.is_mobility_skill_active():
-		segments.append("derrape")
-	if robot.is_stability_boost_active():
-		segments.append("estabilidad")
-	if robot.is_ram_skill_active():
-		segments.append("embestida")
-	if robot.is_control_zone_suppressed():
-		segments.append("zona")
-	if robot.has_carried_item():
-		segments.append("item %s" % robot.get_carried_item_display_name())
-	if robot.is_carrying_part():
-		segments.append("carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name()))
+		if can_show_robot_combat_state:
+			var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
+			segments = [mode_label, state_segment, "%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()]]
+			if robot.is_player_controlled and not has_active_support:
+				segments.append(robot.get_input_hint())
+			segments.append(robot.get_energy_state_summary())
+		elif robot.is_disabled_state():
+			segments.append("%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()])
+	if can_show_robot_combat_state:
+		var core_skill_summary := robot.get_core_skill_status_summary()
+		if core_skill_summary != "":
+			segments.append(core_skill_summary)
+		var passive_summary := robot.get_passive_status_summary()
+		if passive_summary != "":
+			segments.append(passive_summary)
+		if robot.is_energy_surge_active():
+			segments.append("energia")
+		if robot.is_mobility_boost_active():
+			segments.append("impulso")
+		if robot.has_method("is_mobility_skill_active") and robot.is_mobility_skill_active():
+			segments.append("derrape")
+		if robot.is_stability_boost_active():
+			segments.append("estabilidad")
+		if robot.is_ram_skill_active():
+			segments.append("embestida")
+		if robot.is_control_zone_suppressed():
+			segments.append("zona")
+		if robot.has_carried_item():
+			segments.append("item %s" % robot.get_carried_item_display_name())
+		if robot.is_carrying_part():
+			segments.append("carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name()))
 	if support_state != "":
 		segments.append(support_state)
 

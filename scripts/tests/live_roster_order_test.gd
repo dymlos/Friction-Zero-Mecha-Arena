@@ -17,6 +17,7 @@ func _run() -> void:
 	await _validate_teams_live_roster_prioritizes_surviving_teammate()
 	await _validate_teams_live_roster_marks_support_active_players()
 	await _validate_teams_live_roster_uses_support_controls_only_for_support_active_players()
+	await _validate_teams_live_roster_hides_stale_robot_combat_state_during_active_support()
 	_finish()
 
 
@@ -161,6 +162,52 @@ func _validate_teams_live_roster_uses_support_controls_only_for_support_active_p
 	_assert(
 		not player_one_line.contains(robots[0].get_input_hint()),
 		"El roster vivo Teams no deberia mezclar el hint del robot caido con el de la nave de apoyo activa."
+	)
+
+	await _cleanup_node(main)
+
+
+func _validate_teams_live_roster_hides_stale_robot_combat_state_during_active_support() -> void:
+	var main := MAIN_SCENE.instantiate()
+	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller_preload != null:
+		match_controller_preload.round_intro_duration = 0.0
+		if match_controller_preload.match_config != null:
+			match_controller_preload.match_config.round_intro_duration_teams = 0.0
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	var robots := _get_scene_robots(main)
+	_assert(match_controller != null, "La escena Teams deberia exponer MatchController.")
+	_assert(robots.size() >= 4, "La escena Teams deberia ofrecer cuatro robots para validar el estado compacto de apoyo.")
+	if match_controller == null or robots.size() < 4:
+		await _cleanup_node(main)
+		return
+
+	var eliminated_robot := robots[0]
+	eliminated_robot.store_carried_item("pulse_charge")
+	eliminated_robot.apply_energy_surge(3.0)
+	var stale_core_skill_summary := eliminated_robot.get_core_skill_status_summary()
+	var stale_energy_summary := eliminated_robot.get_energy_state_summary()
+
+	eliminated_robot.fall_into_void()
+	await _wait_frames(4)
+
+	var player_line := _find_line_containing(match_controller.get_robot_status_lines(), eliminated_robot.display_name)
+	_assert(
+		not player_line.contains("item pulso"),
+		"El roster vivo Teams no deberia seguir mostrando items del robot caido cuando el jugador ya esta en `Apoyo activo`."
+	)
+	_assert(
+		not player_line.contains(stale_core_skill_summary),
+		"El roster vivo Teams no deberia seguir mostrando la skill del robot caido cuando el jugador ya esta en `Apoyo activo`."
+	)
+	_assert(
+		not player_line.contains(stale_energy_summary),
+		"El roster vivo Teams no deberia seguir mostrando el estado energetico del robot caido cuando el jugador ya esta en `Apoyo activo`."
 	)
 
 	await _cleanup_node(main)

@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Roster `Apoyo activo` sin estado stale del robot caído (2026-04-22)
+
+- Estado: en `Teams`, la línea de un jugador en `Apoyo activo` ya no conserva datos de combate del robot que acaba de quedar fuera.
+- Corrección aplicada:
+  - `MatchController._build_robot_status_line()` ahora corta `skill ...`, foco/resumen de energía, buffs temporales, `item ...` y otras banderas de combate cuando el robot está eliminado o inutilizado.
+  - si el jugador sigue aportando desde `PilotSupportShip`, la línea conserva solo `Apoyo activo | <causa>` y el `support_state` vigente (`usa ...`, `interferido`, `payload > objetivo`).
+  - `live_roster_order_test.gd` fija la regresión creando adrede un robot caído con `pulse_charge`, `energy surge` y `core skill` todavía activos para asegurar que esos segmentos no vuelvan al roster.
+- Resultado:
+  - el roster vivo ya no mezcla “qué podía hacer el robot muerto” con “qué puede hacer la nave ahora”, reforzando lectura táctica sin otra UI.
+  - `godot --headless --path . -s res://scripts/tests/live_roster_order_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 76 tests`).
+
 ## Controles del soporte en roster explicito (2026-04-22)
 
 - Estado: en `Teams`, una baja con `PilotSupportShip` ya no deja dos hints de control contradictorios en la misma linea del roster explicito.

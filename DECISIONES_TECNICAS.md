@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **`Apoyo activo` solo debe mostrar informacion accionable del soporte**
+ - `MatchController._build_robot_status_line()` corta estados de combate del robot cuando este ya está eliminado o inutilizado: no deja `skill ...`, foco/resumen de energía, buffs, `item ...` ni `carga ...` de un cuerpo que ya no puede actuar.
+ - Si existe `support_state`, ese bloque queda como única fuente de información dinámica del jugador eliminado (`usa ...`, `interferido`, `payload > objetivo`).
+ - Motivo: en Teams, seguir mostrando el estado interno del robot caído mezclaba dos actores distintos en una sola línea y degradaba la legibilidad del soporte post-muerte.
+
 1. **El roster explicito no debe mezclar controles del robot caido con los del soporte activo**
  - `MatchController._build_robot_status_line()` mantiene `robot.get_input_hint()` solo si el jugador sigue controlando su robot y no tiene `support_state` activo.
  - El hint valido del slice post-muerte sigue viniendo de `PilotSupportShip.get_status_summary()`, que entra al roster via `Main._sync_post_death_support_state()`.
