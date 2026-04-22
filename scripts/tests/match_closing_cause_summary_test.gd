@@ -1,9 +1,29 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
-const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const SCENE_SPECS := [
+	{
+		"label": "Teams base",
+		"path": "res://scenes/main/main.tscn",
+		"mode": MatchController.MatchMode.TEAMS,
+	},
+	{
+		"label": "Teams validation",
+		"path": "res://scenes/main/main_teams_validation.tscn",
+		"mode": MatchController.MatchMode.TEAMS,
+	},
+	{
+		"label": "FFA base",
+		"path": "res://scenes/main/main_ffa.tscn",
+		"mode": MatchController.MatchMode.FFA,
+	},
+	{
+		"label": "FFA validation",
+		"path": "res://scenes/main/main_ffa_validation.tscn",
+		"mode": MatchController.MatchMode.FFA,
+	},
+]
 
 var _failed := false
 
@@ -13,29 +33,18 @@ func _init() -> void:
 
 
 func _run() -> void:
-	await _verify_match_closing_cause_summary(
-		"Teams",
-		MAIN_SCENE,
-		MatchController.MatchMode.TEAMS,
-	)
-	await _verify_match_closing_cause_summary(
-		"FFA",
-		FFA_SCENE,
-		MatchController.MatchMode.FFA,
-	)
+	for scene_spec in SCENE_SPECS:
+		await _verify_match_closing_cause_summary(scene_spec)
 	_finish()
 
 
-func _verify_match_closing_cause_summary(
-	label: String,
-	scene_resource: PackedScene,
-	test_mode: MatchController.MatchMode
-) -> void:
-	var main = scene_resource.instantiate()
-	root.add_child(main)
-
-	await process_frame
-	await process_frame
+func _verify_match_closing_cause_summary(scene_spec: Dictionary) -> void:
+	var label := String(scene_spec.get("label", "Escena"))
+	var scene_path := String(scene_spec.get("path", ""))
+	var test_mode := int(scene_spec.get("mode", MatchController.MatchMode.TEAMS))
+	var main := await _instantiate_scene(scene_path)
+	if main == null:
+		return
 
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
 	var robots := _get_scene_robots(main)
@@ -123,6 +132,19 @@ func _verify_match_closing_cause_summary(
 	)
 
 	await _cleanup_main(main)
+
+
+func _instantiate_scene(scene_path: String) -> Node:
+	var packed_scene := load(scene_path)
+	_assert(packed_scene is PackedScene, "La escena %s deberia seguir existiendo." % scene_path)
+	if not (packed_scene is PackedScene):
+		return null
+
+	var main := (packed_scene as PackedScene).instantiate()
+	root.add_child(main)
+	await process_frame
+	await process_frame
+	return main
 
 
 func _eliminate_team_two_by_void(robots: Array[RobotBase]) -> void:

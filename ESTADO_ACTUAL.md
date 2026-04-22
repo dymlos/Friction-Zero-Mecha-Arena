@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Los contratos de cierre ya quedan congelados tambien en escenas `base` y `validation` de `Teams/FFA` (2026-04-22)
+
+- Estado: las superficies de cierre (`RecapPanel`, `MatchResultPanel`, score final, objetivo, posiciones y perfil de puntos por causa) ya no dependen solo de `main.tscn` o `main_ffa.tscn`; la red ahora tambien cubre `main_teams_validation.tscn` y `main_ffa_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `MatchController` y las escenas ya respetaban el contrato tambien en validacion; el gap real era de cobertura scene-level.
+  - `scripts/tests/match_completion_test.gd` ahora valida el cierre `Teams` en `main.tscn` y `main_teams_validation.tscn`.
+  - `scripts/tests/ffa_match_result_standings_test.gd` ahora valida el cierre/ranking `FFA` en `main_ffa.tscn` y `main_ffa_validation.tscn`.
+  - `scripts/tests/match_closing_cause_summary_test.gd` ahora congela `Cierres | ...`, `Puntos cierre | ...` y `Cierre decisivo | ...` en las cuatro escenas jugables.
+- Resultado:
+  - recap y resultado final dejan de tener otro punto ciego entre laboratorio base y rapido; si una escena hermana pierde objetivo, posiciones o perfil de cierre, la suite lo detecta antes de runtime.
+
 ## El contrato del intro de ronda ya esta congelado tambien en `base` y `validation` de ambos modos (2026-04-22)
 
 - Estado: el countdown de apertura ya no depende solo de `main.tscn`; ahora la red tambien cubre `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.

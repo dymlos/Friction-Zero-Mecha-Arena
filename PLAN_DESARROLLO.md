@@ -4,6 +4,15 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los contratos de cierre ya quedan congelados tambien en escenas `base` y `validation` de `Teams/FFA`:
+  - la revision estricta encontro otro hueco scene-level: varias lecturas de cierre (`Partida cerrada`, `Objetivo | ...`, `Posiciones | ...`, `Puntos cierre | ...`, `Cierre decisivo | ...`) seguian fijas solo en `main.tscn` o `main_ffa.tscn`, dejando drift posible en `main_teams_validation.tscn` y `main_ffa_validation.tscn`.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion:
+    - `scripts/tests/match_completion_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
+    - `scripts/tests/ffa_match_result_standings_test.gd` ahora recorre `main_ffa.tscn` y `main_ffa_validation.tscn`.
+    - `scripts/tests/match_closing_cause_summary_test.gd` ahora congela el mismo perfil de cierre en las cuatro escenas jugables.
+  - decision operativa: tratar recap/resultado final igual que openings y locks del borde, como contratos compartidos entre laboratorio `base/validation`, no como asserts de una sola escena representativa.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/match_completion_test.gd`, `ffa_match_result_standings_test.gd` y `match_closing_cause_summary_test.gd`.
+
 - El contrato del intro de ronda ya queda congelado tambien en escenas `base` y `validation` de `Teams/FFA`:
   - la revision estricta encontro otro hueco de mantenimiento en el opening: `round_intro_countdown_test.gd` seguia validando bloqueo de input, telegraph diegetico y liberacion post-countdown solo sobre `main.tscn`, dejando drift posible en `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
   - no hizo falta tocar produccion; la correccion vive en la regresion, que ahora recorre las cuatro escenas y respeta la fuente real del intro (`MatchConfig` cuando existe, `round_intro_duration` como fallback).

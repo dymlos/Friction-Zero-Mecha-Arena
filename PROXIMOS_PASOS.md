@@ -8,6 +8,11 @@
 2. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 
+0. **No volver a dejar drift entre escenas `base` y `validation` del cierre final**
+ - `match_completion_test.gd` ya congela el cierre `Teams` en `main.tscn` y `main_teams_validation.tscn`; `ffa_match_result_standings_test.gd` hace lo mismo con `main_ffa.tscn` y `main_ffa_validation.tscn`; `match_closing_cause_summary_test.gd` fija el perfil `Cierres | ...`, `Puntos cierre | ...` y `Cierre decisivo | ...` sobre las cuatro escenas jugables.
+ - Si se retocan `RecapPanel`, `MatchResultPanel`, wording de victoria, objetivo o score por causa, tocar siempre la pareja `base/validation` como una misma superficie contractual y mantener estas tres regresiones.
+ - Reabrir solo si se decide separar deliberadamente el cierre entre laboratorio base y rapido o si cambia la fuente de verdad de recap/resultado final.
+
 0. **No volver a dejar drift entre escenas `base` y `validation` del opening neutral**
  - `teams_live_scoreboard_opening_test.gd` ya congela el marcador neutro oculto en `main.tscn` y `main_teams_validation.tscn`; `ffa_live_standings_hud_test.gd` hace lo mismo con `Marcador |`, `Posiciones |` y `Desempate |` en `main_ffa.tscn` y `main_ffa_validation.tscn`.
  - `teams_opening_intro_telegraph_test.gd` ahora tambien fija que `main_ffa_validation.tscn` no herede `OpeningTelegraph` ni wording de `carriles`.

@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **Los contratos de cierre tambien deben congelarse sobre las escenas `base` y `validation`, no solo sobre una por modo**
+ - `match_completion_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`; `ffa_match_result_standings_test.gd` hace lo mismo con `main_ffa.tscn` y `main_ffa_validation.tscn`; `match_closing_cause_summary_test.gd` ya fija `Teams/FFA` sobre las cuatro escenas jugables.
+ - No hubo cambio de produccion: la revision estricta confirmo que `MatchController` y los laboratorios ya estaban alineados; el gap real era de cobertura scene-level en recap/resultado final.
+ - Motivo: opening, intro y borde ya estaban tratados como contratos compartidos entre `base/validation`; dejar el cierre final fuera de esa regla seguia permitiendo drift silencioso justo en la lectura mas importante del match.
+
 1. **El countdown de intro tambien debe congelarse sobre las escenas `base` y `validation`, no solo sobre `main.tscn`**
  - `round_intro_countdown_test.gd` ahora recorre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
  - La fixture ya no asume que `round_intro_duration` manda siempre: cuando hay `MatchConfig`, ajusta `round_intro_duration_teams` y `round_intro_duration_ffa`; el campo del nodo queda como fallback para escenas sin config.
