@@ -876,6 +876,9 @@ func _build_match_stats_lines() -> Array[String]:
 
 
 func _build_match_support_summary_line() -> String:
+	if match_mode != MatchMode.TEAMS:
+		return ""
+
 	if _match_decided_rounds <= 0:
 		return ""
 
