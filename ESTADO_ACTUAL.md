@@ -9,7 +9,7 @@
   - `PilotSupportShip` ahora guarda si el target actual proviene del default automático o de un ciclo manual del jugador.
   - `_refresh_target_selection()` resincroniza al nuevo mejor target solo cuando el actual sigue en modo automático y dejó de ser accionable mientras otro candidato sí lo es.
   - el ciclo manual sigue mandando: `_cycle_selected_target()` marca override manual para que la nave no “corrija” una elección hecha a propósito por el jugador.
-  - `team_post_death_support_targeting_test.gd` fija la regresión runtime con `interferencia`: target útil inicial, `estabilidad` sobre ese rival y salto automático al siguiente rival afectable.
+  - `team_post_death_support_targeting_test.gd` fija las dos caras del contrato con `interferencia`: target útil inicial + salto automático al siguiente rival afectable cuando el default envejece, y permanencia en el rival elegido por el jugador cuando la selección ya era manual.
 - Resultado:
   - el support slice ya no queda alineado con utilidad real solo al recoger payloads; también se mantiene coherente cuando el estado de los robots cambia en vivo.
   - `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 78 tests`).

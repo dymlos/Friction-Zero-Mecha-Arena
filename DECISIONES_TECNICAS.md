@@ -5,6 +5,7 @@
 1. **El auto-target del soporte debe seguir la utilidad real tambien cuando el estado cambia durante la ronda**
  - `PilotSupportShip` ahora distingue target default de override manual con `_manual_target_override`.
  - `_refresh_target_selection()` puede resincronizar al mejor default solo si el target actual seguia en auto-target y perdió accionabilidad mientras otro candidato sí la conserva.
+ - `team_post_death_support_targeting_test.gd` ya cubre ambos caminos: resincronización del default envejecido y preservación del override manual aunque el target elegido se vuelva un no-op.
  - Motivo: el slice ya habia alineado targeting inicial, roster y cues diegéticos, pero todavía podía quedarse clavado en un no-op envejecido tras un cambio runtime como `estabilidad` sobre el rival auto-seleccionado. Resolverlo dentro del targeting mantiene gameplay y lectura compacta consistentes sin auto-castear sobre un objetivo distinto al visible.
 
 1. **Los marcadores diegéticos del soporte deben degradarse con la misma regla de utilidad que ya usa el roster**
