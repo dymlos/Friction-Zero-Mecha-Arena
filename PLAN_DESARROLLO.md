@@ -4,6 +4,14 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los contratos Teams de resolucion de ronda, reset de atribucion y explosion inestable ya quedan congelados tambien en `main_teams_validation.tscn`:
+  - la revision estricta encontro otro hueco scene-level: `match_round_resolution_test.gd`, `match_elimination_source_reset_test.gd` y `match_unstable_explosion_readability_test.gd` seguian tratando `main.tscn` como unica escena representativa para un set de contratos `Teams` que tambien viven en el laboratorio rapido.
+  - `match_round_resolution_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`; hallazgo de fixture: la escena de validacion usa `rounds_to_win = 1`, asi que el test fija `match_config.rounds_to_win = 3` para validar el reset intermedio real y no un cierre final accidental.
+  - `match_elimination_source_reset_test.gd` ahora congela tambien en `main_teams_validation.tscn` que la atribucion `vacio por Player X` no sobreviva stale entre rondas.
+  - `match_unstable_explosion_readability_test.gd` ahora congela tambien en `main_teams_validation.tscn` la lectura `Inutilizado/inestable`, la salida del combate principal y `Ultima baja | Player 3 exploto en sobrecarga`.
+  - decision operativa: tratar tambien resolucion de ronda, reset de atribucion y explosion inestable como contratos compartidos entre laboratorios `Teams base/validation`, no como asserts de una sola escena.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/match_round_resolution_test.gd`, `match_elimination_source_reset_test.gd`, `match_unstable_explosion_readability_test.gd` y `test_runner.gd`.
+
 - Los contratos Teams de atribucion de bajas y condicion final por robot ya quedan congelados tambien en `main_teams_validation.tscn`:
   - la revision estricta encontro otro hueco scene-level: `match_elimination_readability_test.gd` y `match_robot_final_condition_summary_test.gd` seguian tratando `main.tscn` como escena representativa aunque `RecapPanel` y `MatchResultPanel` existen tambien en `main_teams_validation.tscn`.
   - no hizo falta tocar produccion; la correccion vive en la red de regresion:

@@ -8,6 +8,12 @@
 2. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 
+0. **No volver a dejar drift entre `main.tscn` y `main_teams_validation.tscn` en resolucion de ronda, reset de atribucion o explosion inestable**
+ - `match_round_resolution_test.gd`, `match_elimination_source_reset_test.gd` y `match_unstable_explosion_readability_test.gd` ya congelan esos tres seams sobre las dos escenas `Teams`.
+ - Si se retocan `MatchController`, `RecapPanel`, el lifecycle `round_reset_delay` o el wording de `explosion inestable`, tocar siempre `main.tscn` y `main_teams_validation.tscn` como una misma superficie contractual y mantener estas tres regresiones.
+ - No volver a asumir que ambas escenas comparten el mismo target de match: la fixture de resolucion ya fija `match_config.rounds_to_win = 3` porque `teams_validation_match_config.tres` usa `1`.
+ - Reabrir solo si se decide separar deliberadamente ese lifecycle/readability entre laboratorio base y rapido.
+
 0. **No volver a dejar drift entre `main.tscn` y `main_teams_validation.tscn` en los highlights/detalle final de `Teams`**
  - `match_highlight_moments_test.gd`, `support_decisive_highlight_test.gd` y `team_match_result_detail_order_test.gd` ya congelan `Resumen | ...`, `Momento inicial/final`, `Apoyo decisivo` y el orden real de stats/detalle en las dos escenas `Teams`.
  - Si se retocan `RecapPanel`, `MatchResultPanel`, `_build_round_highlight_lines()`, `record_support_payload_use(...)` o el orden del detalle final, tocar siempre `main.tscn` y `main_teams_validation.tscn` como una misma superficie contractual y mantener estas tres regresiones.

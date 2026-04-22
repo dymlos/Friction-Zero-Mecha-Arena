@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **La resolucion de ronda, el reset de atribucion y la lectura de explosion inestable en `Teams` tambien deben congelarse sobre `main.tscn` y `main_teams_validation.tscn`**
+ - `match_round_resolution_test.gd`, `match_elimination_source_reset_test.gd` y `match_unstable_explosion_readability_test.gd` ahora recorren `main.tscn` y `main_teams_validation.tscn`.
+ - Hallazgo de fixture: `teams_validation_match_config.tres` usa `rounds_to_win = 1`, asi que el test de resolucion fija `match_config.rounds_to_win = 3` para validar el reset de ronda intermedio y no un cierre final accidental.
+ - No hubo cambio de produccion: la revision estricta confirmo que `MatchController` y la escena de validacion ya estaban alineados; el gap real era de cobertura scene-level.
+ - Motivo: ya se habian congelado opening, recap y cierre `Teams` entre laboratorios `base/validation`, pero faltaba cubrir tambien el lifecycle de ronda y la legibilidad de una baja por explosion inestable, dos seams que tambien viven en la escena rapida.
+
 1. **La atribucion de bajas y la condicion final por robot en cierres `Teams` tambien deben congelarse sobre `main.tscn` y `main_teams_validation.tscn`**
  - `match_elimination_readability_test.gd` y `match_robot_final_condition_summary_test.gd` ahora recorren `main.tscn` y `main_teams_validation.tscn`.
  - No hubo cambio de produccion: la revision estricta confirmo que `MatchController` y la escena de validacion ya estaban alineados; el gap real era de cobertura scene-level en `RecapPanel` y `MatchResultPanel`.

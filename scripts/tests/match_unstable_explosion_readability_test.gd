@@ -1,6 +1,9 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const SCENE_PATHS := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
@@ -12,65 +15,67 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main = MAIN_SCENE.instantiate()
-	root.add_child(main)
+	for scene_path in SCENE_PATHS:
+		var scene_resource := load(scene_path) as PackedScene
+		var main = scene_resource.instantiate()
+		root.add_child(main)
 
-	await process_frame
-	await process_frame
+		await process_frame
+		await process_frame
 
-	var match_controller := main.get_node("Systems/MatchController") as MatchController
-	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena principal deberia exponer MatchController.")
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar lectura de explosion inestable.")
-	if match_controller == null or robots.size() < 4:
+		var match_controller := main.get_node("Systems/MatchController") as MatchController
+		var robots := _get_scene_robots(main)
+		_assert(match_controller != null, "%s deberia exponer MatchController." % scene_path)
+		_assert(robots.size() >= 4, "%s deberia ofrecer cuatro robots para validar lectura de explosion inestable." % scene_path)
+		if match_controller == null or robots.size() < 4:
+			await _cleanup_main(main)
+			_finish()
+			return
+
+		match_controller.match_mode = MatchController.MatchMode.TEAMS
+		match_controller.round_reset_delay = 0.45
+
+		for robot in robots:
+			robot.void_fall_y = -100.0
+
+		var unstable_robot := robots[2]
+		unstable_robot.set_energy_focus("right_arm")
+		unstable_robot.activate_overdrive()
+		unstable_robot.disabled_explosion_delay = 0.35
+		unstable_robot.disabled_explosion_timer.wait_time = 0.35
+		for part_name in unstable_robot.BODY_PARTS:
+			unstable_robot.apply_damage_to_part(part_name, unstable_robot.max_part_health + 10.0, Vector3.LEFT)
+
+		await create_timer(0.05).timeout
+
+		var disabled_line := _find_robot_status_line(match_controller, unstable_robot)
+		_assert(
+			disabled_line.contains("Inutilizado"),
+			"%s deberia seguir marcando al robot inutilizado antes de la explosion." % scene_path
+		)
+		_assert(
+			disabled_line.contains("inestable"),
+			"%s deberia avisar cuando la explosion pendiente nace de un overdrive." % scene_path
+		)
+
+		await create_timer(0.4).timeout
+
+		var exploded_line := _find_robot_status_line(match_controller, unstable_robot)
+		_assert(
+			exploded_line.contains("Fuera") or exploded_line.contains("Apoyo activo"),
+			"%s deberia dejar claro que el robot ya salio del combate principal tras explotar." % scene_path
+		)
+		_assert(
+			exploded_line.contains("explosion inestable"),
+			"%s deberia conservar la causa breve de eliminacion por explosion inestable." % scene_path
+		)
+		_assert(
+			_has_line_with_fragment(match_controller.get_round_state_lines(), "Ultima baja | Player 3 exploto en sobrecarga"),
+			"%s deberia dejar visible la ultima baja por explosion inestable." % scene_path
+		)
+
+		await create_timer(1.0).timeout
 		await _cleanup_main(main)
-		_finish()
-		return
-
-	match_controller.match_mode = MatchController.MatchMode.TEAMS
-	match_controller.round_reset_delay = 0.45
-
-	for robot in robots:
-		robot.void_fall_y = -100.0
-
-	var unstable_robot := robots[2]
-	unstable_robot.set_energy_focus("right_arm")
-	unstable_robot.activate_overdrive()
-	unstable_robot.disabled_explosion_delay = 0.35
-	unstable_robot.disabled_explosion_timer.wait_time = 0.35
-	for part_name in unstable_robot.BODY_PARTS:
-		unstable_robot.apply_damage_to_part(part_name, unstable_robot.max_part_health + 10.0, Vector3.LEFT)
-
-	await create_timer(0.05).timeout
-
-	var disabled_line := _find_robot_status_line(match_controller, unstable_robot)
-	_assert(
-		disabled_line.contains("Inutilizado"),
-		"El roster deberia seguir marcando al robot inutilizado antes de la explosion."
-	)
-	_assert(
-		disabled_line.contains("inestable"),
-		"El roster deberia avisar cuando la explosion pendiente nace de un overdrive."
-	)
-
-	await create_timer(0.4).timeout
-
-	var exploded_line := _find_robot_status_line(match_controller, unstable_robot)
-	_assert(
-		exploded_line.contains("Fuera") or exploded_line.contains("Apoyo activo"),
-		"Tras explotar, el roster deberia dejar claro que el robot ya salio del combate principal."
-	)
-	_assert(
-		exploded_line.contains("explosion inestable"),
-		"El roster deberia conservar la causa breve de eliminacion por explosion inestable."
-	)
-	_assert(
-		_has_line_with_fragment(match_controller.get_round_state_lines(), "Ultima baja | Player 3 exploto en sobrecarga"),
-		"El estado de ronda deberia dejar visible la ultima baja por explosion inestable."
-	)
-
-	await create_timer(1.0).timeout
-	await _cleanup_main(main)
 	_finish()
 
 

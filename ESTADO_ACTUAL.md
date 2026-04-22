@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Los contratos Teams de resolucion de ronda, reset de atribucion y explosion inestable ya quedan congelados tambien en `main_teams_validation.tscn` (2026-04-22)
+
+- Estado: tres seams `Teams` que seguian atados solo a `main.tscn` ahora tambien quedan cubiertos en el laboratorio rapido `main_teams_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `MatchController` y la escena de validacion ya respetaban los mismos contratos; el gap real era de cobertura scene-level.
+  - `scripts/tests/match_round_resolution_test.gd` ahora valida resolucion y reset de ronda en `main.tscn` y `main_teams_validation.tscn`; la fixture fija `match_config.rounds_to_win = 3` porque la config de validacion usa `1` y si no el test cierra el match en la primera ronda.
+  - `scripts/tests/match_elimination_source_reset_test.gd` ahora valida en ambas escenas que la atribucion `vacio por Player X` no sobreviva stale al pasar de una ronda a otra.
+  - `scripts/tests/match_unstable_explosion_readability_test.gd` ahora valida en ambas escenas la lectura `Inutilizado/inestable`, la salida del combate principal y `Ultima baja | Player 3 exploto en sobrecarga`.
+- Resultado:
+  - `Teams base/validation` deja de tener otro punto ciego en lifecycle de ronda y legibilidad de bajas; si una escena hermana pierde reset intermedio o lectura de explosion inestable, la suite lo detecta antes de runtime.
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa con `Suite OK: 85 tests`.
+
 ## Los contratos Teams de atribucion de bajas y condicion final por robot ya quedan congelados tambien en `main_teams_validation.tscn` (2026-04-22)
 
 - Estado: dos lecturas de cierre `Teams` ya no dependen solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`.
