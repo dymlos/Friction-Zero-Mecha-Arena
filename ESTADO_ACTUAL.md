@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Los contratos de recap entre rondas ya quedan congelados tambien en escenas `base` y `validation` de `Teams/FFA` (2026-04-22)
+
+- Estado: el recap intermedio ya no depende solo de `main.tscn` o `main_ffa.tscn`; la red ahora tambien cubre `main_teams_validation.tscn` y `main_ffa_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `MatchController` ya respetaba el contrato tambien en validacion; el gap real era de cobertura scene-level.
+  - `scripts/tests/match_round_recap_test.gd` ahora valida el recap `Teams` en `main.tscn` y `main_teams_validation.tscn`.
+  - `scripts/tests/match_round_draw_recap_test.gd` ahora valida el recap de empate `FFA` en `main_ffa.tscn` y `main_ffa_validation.tscn`.
+  - la fixture `Teams` ahora fuerza `match_config.rounds_to_win = 3` para no confundir el recap de ronda con un cierre final cuando la escena de validacion usa otro target de match.
+- Resultado:
+  - el recap entre rondas deja de tener otro punto ciego entre laboratorio base y rapido; si una escena pierde `Cierre de ronda`, `Objetivo | ...`, el detalle de bajas o `sin ganador (+0)`, la suite lo detecta antes de runtime.
+
 ## Los contratos de cierre ya quedan congelados tambien en escenas `base` y `validation` de `Teams/FFA` (2026-04-22)
 
 - Estado: las superficies de cierre (`RecapPanel`, `MatchResultPanel`, score final, objetivo, posiciones y perfil de puntos por causa) ya no dependen solo de `main.tscn` o `main_ffa.tscn`; la red ahora tambien cubre `main_teams_validation.tscn` y `main_ffa_validation.tscn`.

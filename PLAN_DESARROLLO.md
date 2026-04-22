@@ -4,6 +4,15 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los contratos de recap entre rondas ya quedan congelados tambien en escenas `base` y `validation` de `Teams/FFA`:
+  - la revision estricta encontro otro hueco scene-level: el recap entre rondas seguia fijado solo en `main.tscn` para `Teams` y en `main_ffa.tscn` para el empate `FFA`, dejando drift posible en `main_teams_validation.tscn` y `main_ffa_validation.tscn`.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion:
+    - `scripts/tests/match_round_recap_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
+    - `scripts/tests/match_round_draw_recap_test.gd` ahora recorre `main_ffa.tscn` y `main_ffa_validation.tscn`.
+  - hallazgo de setup: `main_teams_validation.tscn` no comparte el mismo `rounds_to_win` que `main.tscn`, asi que la fixture fuerza `match_config.rounds_to_win = 3` para validar recap intermedio y no un cierre final accidental.
+  - decision operativa: tratar tambien el recap entre rondas como contrato compartido entre laboratorios `base/validation`, no como comportamiento representativo de una sola escena.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd`, `match_round_draw_recap_test.gd` y `test_runner.gd`.
+
 - Los contratos de cierre ya quedan congelados tambien en escenas `base` y `validation` de `Teams/FFA`:
   - la revision estricta encontro otro hueco scene-level: varias lecturas de cierre (`Partida cerrada`, `Objetivo | ...`, `Posiciones | ...`, `Puntos cierre | ...`, `Cierre decisivo | ...`) seguian fijas solo en `main.tscn` o `main_ffa.tscn`, dejando drift posible en `main_teams_validation.tscn` y `main_ffa_validation.tscn`.
   - no hizo falta tocar produccion; la correccion vive en la red de regresion:

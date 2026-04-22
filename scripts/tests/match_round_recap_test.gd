@@ -1,6 +1,9 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const TEAM_SCENE_PATHS := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
@@ -12,29 +15,42 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main = MAIN_SCENE.instantiate()
+	for scene_path in TEAM_SCENE_PATHS:
+		await _assert_round_recap_contract(scene_path)
+
+	_finish()
+
+
+func _assert_round_recap_contract(scene_path: String) -> void:
+	var packed_scene := load(scene_path)
+	_assert(packed_scene is PackedScene, "La escena %s deberia seguir existiendo." % scene_path)
+	if not (packed_scene is PackedScene):
+		return
+
+	var main := (packed_scene as PackedScene).instantiate()
 	root.add_child(main)
 
 	await process_frame
 	await process_frame
 
-	var match_controller := main.get_node("Systems/MatchController") as MatchController
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
 	var recap_panel := main.get_node_or_null("UI/MatchHud/Root/RecapPanel") as Control
 	var recap_title_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapTitleLabel") as Label
 	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapLabel") as Label
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena principal deberia exponer MatchController.")
-	_assert(recap_panel != null, "El HUD deberia exponer un panel de recap de ronda.")
-	_assert(recap_title_label != null, "El recap deberia exponer un titulo legible.")
-	_assert(recap_label != null, "El recap deberia exponer un bloque de detalle legible.")
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar el resumen de ronda.")
+	_assert(match_controller != null, "La escena %s deberia exponer MatchController." % scene_path)
+	_assert(recap_panel != null, "La escena %s deberia exponer un panel de recap de ronda." % scene_path)
+	_assert(recap_title_label != null, "La escena %s deberia exponer un titulo legible en el recap." % scene_path)
+	_assert(recap_label != null, "La escena %s deberia exponer un bloque de detalle legible." % scene_path)
+	_assert(robots.size() >= 4, "La escena %s deberia ofrecer cuatro robots para validar el resumen de ronda." % scene_path)
 	if match_controller == null or recap_panel == null or recap_title_label == null or recap_label == null or robots.size() < 4:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	match_controller.match_mode = MatchController.MatchMode.TEAMS
 	match_controller.round_reset_delay = 0.45
+	if match_controller.match_config != null:
+		match_controller.match_config.rounds_to_win = 3
 	_assert(not recap_panel.visible, "Durante la ronda activa el recap no deberia tapar el combate.")
 	for robot in robots:
 		robot.void_fall_y = -100.0
@@ -89,7 +105,6 @@ func _run() -> void:
 	_assert(not recap_panel.visible, "Al iniciar la siguiente ronda el recap deberia ocultarse otra vez.")
 
 	await _cleanup_main(main)
-	_finish()
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:

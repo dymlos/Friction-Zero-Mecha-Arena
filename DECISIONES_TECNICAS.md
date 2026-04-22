@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **Los contratos de recap entre rondas tambien deben congelarse sobre las escenas `base` y `validation`, no solo sobre una por modo**
+ - `match_round_recap_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`; `match_round_draw_recap_test.gd` hace lo mismo con `main_ffa.tscn` y `main_ffa_validation.tscn`.
+ - No hubo cambio de produccion: la revision estricta confirmo que `MatchController` y las escenas ya estaban alineados; el gap real era de cobertura scene-level en el recap intermedio.
+ - Hallazgo de fixture: `main_teams_validation.tscn` no comparte el mismo target de match que `main.tscn`, asi que el test fija `match_config.rounds_to_win = 3` para validar `Cierre de ronda`, no `Partida cerrada`.
+ - Motivo: opening y cierre final ya estaban tratados como contratos compartidos entre `base/validation`; dejar afuera el recap intermedio seguia permitiendo drift silencioso justo en la superficie que conecta una ronda con la siguiente.
+
 1. **Los contratos de cierre tambien deben congelarse sobre las escenas `base` y `validation`, no solo sobre una por modo**
  - `match_completion_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`; `ffa_match_result_standings_test.gd` hace lo mismo con `main_ffa.tscn` y `main_ffa_validation.tscn`; `match_closing_cause_summary_test.gd` ya fija `Teams/FFA` sobre las cuatro escenas jugables.
  - No hubo cambio de produccion: la revision estricta confirmo que `MatchController` y los laboratorios ya estaban alineados; el gap real era de cobertura scene-level en recap/resultado final.

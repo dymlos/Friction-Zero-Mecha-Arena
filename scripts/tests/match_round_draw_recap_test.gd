@@ -1,6 +1,9 @@
 extends SceneTree
 
-const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
+const FFA_SCENE_PATHS := [
+	"res://scenes/main/main_ffa.tscn",
+	"res://scenes/main/main_ffa_validation.tscn",
+]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
@@ -12,7 +15,19 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main = FFA_SCENE.instantiate()
+	for scene_path in FFA_SCENE_PATHS:
+		await _assert_draw_recap_contract(scene_path)
+
+	_finish()
+
+
+func _assert_draw_recap_contract(scene_path: String) -> void:
+	var packed_scene := load(scene_path)
+	_assert(packed_scene is PackedScene, "La escena %s deberia seguir existiendo." % scene_path)
+	if not (packed_scene is PackedScene):
+		return
+
+	var main := (packed_scene as PackedScene).instantiate()
 	root.add_child(main)
 
 	await process_frame
@@ -22,13 +37,12 @@ func _run() -> void:
 	var recap_panel := main.get_node_or_null("UI/MatchHud/Root/RecapPanel") as Control
 	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapLabel") as Label
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena FFA deberia exponer MatchController.")
-	_assert(recap_panel != null, "El HUD deberia exponer el recap de ronda.")
-	_assert(recap_label != null, "El recap deberia exponer un bloque de detalle legible.")
-	_assert(robots.size() >= 4, "La escena FFA deberia ofrecer cuatro robots para forzar una ronda sin ganador.")
+	_assert(match_controller != null, "La escena %s deberia exponer MatchController." % scene_path)
+	_assert(recap_panel != null, "La escena %s deberia exponer el recap de ronda." % scene_path)
+	_assert(recap_label != null, "La escena %s deberia exponer un bloque de detalle legible." % scene_path)
+	_assert(robots.size() >= 4, "La escena %s deberia ofrecer cuatro robots para forzar una ronda sin ganador." % scene_path)
 	if match_controller == null or recap_panel == null or recap_label == null or robots.size() < 4:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	match_controller.match_mode = MatchController.MatchMode.FFA
@@ -57,7 +71,6 @@ func _run() -> void:
 	)
 
 	await _cleanup_main(main)
-	_finish()
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:
