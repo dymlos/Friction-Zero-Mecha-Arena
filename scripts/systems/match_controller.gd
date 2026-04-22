@@ -377,6 +377,9 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	var round_closing_line := _build_round_closing_line()
+	if round_closing_line != "":
+		lines.append(round_closing_line)
 	var match_closing_cause_line := _build_match_closing_cause_summary_line()
 	if match_closing_cause_line != "":
 		lines.append(match_closing_cause_line)
@@ -983,6 +986,20 @@ func _build_decisive_closing_line() -> String:
 		return ""
 
 	return "Cierre decisivo | %s (+%s)" % [
+		_get_match_closing_cause_label(_last_round_closing_cause),
+		_get_round_victory_points_for_cause(_last_round_closing_cause),
+	]
+
+
+func _build_round_closing_line() -> String:
+	if _round_active:
+		return ""
+	if _match_over:
+		return ""
+	if _last_round_closing_cause < 0:
+		return ""
+
+	return "Cierre ronda | %s (+%s)" % [
 		_get_match_closing_cause_label(_last_round_closing_cause),
 		_get_round_victory_points_for_cause(_last_round_closing_cause),
 	]

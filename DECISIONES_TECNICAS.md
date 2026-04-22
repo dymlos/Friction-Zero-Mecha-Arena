@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **Cada ronda decidida debe explicar su propia causa de cierre y su puntaje, no solo el match final**
+ - `MatchController` ya persistia `_last_round_closing_cause` para `Cierre decisivo | ...` al final del match; ahora reutiliza ese mismo dato en `_build_round_closing_line()` para publicar `Cierre ronda | <causa> (+N)` en `get_round_recap_panel_lines()` mientras la partida sigue abierta.
+ - La linea no aparece en HUD vivo ni en el cierre final: queda limitada al recap lateral entre rondas para reforzar lectura sin sumar otra capa permanente.
+ - `match_closing_cause_summary_test.gd` fija el contrato en `Teams` y `FFA`: tras una primera ronda por `ring-out`, el recap debe exponer la causa y los puntos aunque el match siga abierto.
+ - Motivo: el score ponderado por causa ya estaba bien definido tecnicamente, pero la lectura jugable seguia incompleta entre rounds. Mostrarlo justo en el recap mantiene claridad sobre riesgo/recompensa sin esperar a `Partida cerrada`.
+
 1. **La apertura `Teams` debe reforzarse con un telegraph diegético temporal, no con otra capa fija de HUD**
  - `MatchController._build_round_intro_status_line()` ahora solo en `Teams` dice `carriles listos`, para dejar claro que el primer beat sigue siendo una lectura por filas/lane antes de liberar control.
  - `Main._sync_opening_telegraph()` deriva dos filas por `team_id` desde las posiciones reales de los robots en espacio local del arena y delega el render a `ArenaBase.set_opening_lane_rows(...)`.

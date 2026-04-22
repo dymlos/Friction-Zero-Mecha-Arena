@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## El recap de ronda ya dice que causa la cerro y cuantos puntos dio (2026-04-22)
+
+- Estado: el score ponderado por causa ya no queda explicado solo en `Partida cerrada`; cada ronda decidida ahora publica `Cierre ronda | <causa> (+N)` mientras el match sigue abierto.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` agrega `_build_round_closing_line()` y la inyecta en `get_round_recap_panel_lines()` solo cuando la ronda termino, no hubo empate y la partida todavia no cerro.
+  - la lectura reutiliza `_last_round_closing_cause` y `get_round_victory_points_for_cause(...)`, manteniendo un solo seam de verdad para `ring-out`, `destruccion total` y `explosion inestable`.
+  - `scripts/tests/match_closing_cause_summary_test.gd` ahora exige esa linea tras la primera ronda en `Teams` y `FFA`, antes del reset y antes del cierre final.
+- Resultado:
+  - el playtest corto ya puede leer la recompensa real de cada ronda en el momento en que sucede, en vez de inferirla desde el marcador o esperar al panel final.
+  - `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd`, `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd`, `godot --headless --path . -s res://scripts/tests/match_elimination_victory_weights_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 83 tests`).
+
 ## La apertura `Teams` ahora telegraphia sus dos carriles durante el intro (2026-04-22)
 
 - Estado: la lectura del primer beat en `Teams` ya no depende solo del facing inward; mientras dura el intro aparece una pista diegética temporal en la arena y el estado de ronda explicita que la apertura arranca por carriles.

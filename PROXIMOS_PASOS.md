@@ -4,9 +4,14 @@
 
 ## Prioridad inmediata tras la revision estricta (2026-04-22)
 
-1. Validar `score` por causa en playtest corto y decidir si `2/1/4` sigue siendo el perfil correcto sin volver dominante ninguna ruta de cierre.
+1. Validar `score` por causa en playtest corto y decidir si `2/1/4` sigue siendo el perfil correcto sin volver dominante ninguna ruta de cierre, usando ahora `Cierre ronda | ...` para leer cada recompensa antes del final del match.
 2. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
+
+0. **No volver a esconder la causa y los puntos del cierre de ronda intermedio**
+ - `MatchController.get_round_recap_panel_lines()` ya publica `Cierre ronda | <causa> (+N)` cuando la ronda termino pero el match sigue abierto; la linea reutiliza `_last_round_closing_cause` y el score activo del `MatchConfig`.
+ - Si se retocan `get_round_recap_panel_lines()`, `_finish_round_with_winner(...)`, `_build_round_closing_line()` o el wording del recap, mantener `match_closing_cause_summary_test.gd`; ahora cubre `Teams` y `FFA` antes del reset de la primera ronda.
+ - Reabrir solo si el score por causa deja de leerse entre rondas o si otra capa igual de visible reemplaza explicitamente esa explicacion.
 
 0. **No reabrir la apertura `Teams` quitando el telegraph diegético o dejandolo persistente fuera del intro**
  - `Main._sync_opening_telegraph()` ya usa las filas reales por `team_id` y el mismo lifecycle del intro; no sumar otro timer ni otra fuente de datos mientras esa ruta siga vigente.

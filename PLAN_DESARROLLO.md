@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El recap de cada ronda decidida ya expone tambien la causa del cierre y sus puntos:
+  - `MatchController` ahora agrega `Cierre ronda | <causa> (+N)` en `get_round_recap_panel_lines()` cuando la ronda termino pero la partida sigue abierta.
+  - la linea reutiliza `_last_round_closing_cause` y el perfil activo de `MatchConfig`, evitando que el score ponderado solo se entienda al final del match.
+  - `match_closing_cause_summary_test.gd` amplia la regresion en `Teams` y `FFA`: tras la primera ronda por `ring-out` exige ese recap antes del reset.
+  - validacion: `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd`, `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd`, `godot --headless --path . -s res://scripts/tests/match_elimination_victory_weights_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - Apertura `Teams` reforzada durante el intro sin sumar HUD permanente:
   - `MatchController` ahora explicita `Ronda N | carriles listos | arranca en ...` solo en `Teams`.
   - `ArenaBase` crea un `OpeningTelegraph` runtime con dos bandas horizontales que siguen las filas reales por equipo y se apagan al liberar la ronda.
@@ -26,7 +32,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
   - no aparecio ningun rojo nuevo en soporte post-muerte, selector runtime, HUD dual, bootstrap de escenas ni pacing base de choque.
   - decision operativa: no seguir abriendo microajustes del slice `laboratorio + Apoyo activo` sin un fallo headless nuevo o evidencia runtime clara; la red actual ya cubre los seams recientes y el mayor retorno ahora esta en playtest corto de score/ritmo/cierre.
 - Siguiente foco recomendado tras esta revision:
-  - validar pesos de cierre por causa con sesiones cortas en `main.tscn` / `main_ffa.tscn`;
+  - validar pesos de cierre por causa con sesiones cortas en `main.tscn` / `main_ffa.tscn`, usando ahora tambien `Cierre ronda | ...` para leer la recompensa de cada ronda antes del final del match;
   - medir la apertura coordinada de `Teams` antes de volver a tocar HUD o selector;
   - mantener el soporte post-muerte en modo mantenimiento, no en expansion, salvo evidencia nueva.
 

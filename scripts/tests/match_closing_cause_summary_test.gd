@@ -52,6 +52,10 @@ func _verify_match_closing_cause_summary(
 		return
 
 	var expected_points_line := _build_expected_closing_points_line(match_controller)
+	var expected_round_closing_line := _build_expected_round_closing_line(
+		match_controller,
+		MatchController.EliminationCause.VOID
+	)
 	var expected_decisive_line := _build_expected_decisive_closing_line(
 		match_controller,
 		MatchController.EliminationCause.UNSTABLE_EXPLOSION
@@ -75,6 +79,10 @@ func _verify_match_closing_cause_summary(
 		_eliminate_team_two_by_void(robots)
 	await create_timer(0.12).timeout
 	_assert(not match_controller.is_match_over(), "%s: la primera ronda por ring-out no deberia cerrar el match." % label)
+	_assert(
+		_has_line(match_controller.get_round_recap_panel_lines(), expected_round_closing_line),
+		"%s: el recap de ronda deberia decir que causa la cerro y cuantos puntos otorgo aunque el match siga abierto." % label
+	)
 
 	await create_timer(match_controller.round_reset_delay + 0.2).timeout
 
@@ -176,6 +184,16 @@ func _build_expected_decisive_closing_line(
 	cause: MatchController.EliminationCause
 ) -> String:
 	return "Cierre decisivo | %s (+%s)" % [
+		_get_cause_label(cause),
+		match_controller.match_config.get_round_victory_points_for_cause(int(cause)),
+	]
+
+
+func _build_expected_round_closing_line(
+	match_controller: MatchController,
+	cause: MatchController.EliminationCause
+) -> String:
+	return "Cierre ronda | %s (+%s)" % [
 		_get_cause_label(cause),
 		match_controller.match_config.get_round_victory_points_for_cause(int(cause)),
 	]
