@@ -72,7 +72,7 @@
 9. **Pulir el cierre de match que ya existe**
   - playtestear si `rounds_to_win=3`, `match_restart_delay`, el panel `Partida cerrada` y el atajo `F5` dejan leer bien la victoria o si el resultado sigue pasando demasiado rápido.
   - decidir si el reinicio automático debe seguir siendo el fallback del laboratorio o si conviene pasar a una solución manual-only más adelante.
-  - definir si ring-out y destruccion total siguen puntuando igual o si alguno merece bonus/feedback diferencial.
+  - definir si conviene mantener el perfil actual (`ring-out=2`, `destruccion total=1`, `explosion inestable=4`) o retocar pesos/feedback por modo tras playtests cortos.
   - si vuelve a tocarse la linea `Stats | ...`, conservar la semantica actual: `_competitor_match_stats.eliminations` mide derrotas recibidas, asi que el cierre debe seguir rotulandolas como `bajas sufridas`, no como bajas infligidas.
   - si vuelve a tocarse el orden del bloque `Stats | ...`, conservar `ffa_match_result_standings_test.gd`, `team_match_result_detail_order_test.gd` y `match_completion_test.gd`: ahora tambien cierran el riesgo de mezclar ranking/resultado correctos con telemetria final en scene-order.
   - si vuelve a tocarse el wording superior del cierre, conservar la separacion por modo: `Equipos` puede resumirse como `A-B`, pero `FFA` ya necesita una frase tipo `Player X gana la partida con N punto(s)` porque el detalle multi-competidor vive debajo en `Marcador` / `Posiciones`.

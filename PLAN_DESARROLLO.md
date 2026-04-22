@@ -233,7 +233,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 - el arena ahora se contrae progresivamente en el tramo final de la ronda y vuelve a escala completa al reset
 - el piso ahora acompaña esa contraccion con bandas sobrias sobre los cuatro bordes vivos; se apagan fuera del cierre y se reescalan con el area segura para mantener el centro limpio
 - el arena blockout ahora ofrece ocho pedestales de borde, pero solo activa dos pares espejados por ronda mediante una rotacion semialeatoria controlada entre reparacion, movilidad, energia y pulso
-- pendiente: decidir si el reinicio automatico debe seguir conviviendo con `F5` como fallback del laboratorio o si conviene migrar a un cierre manual-only mas adelante, y si la puntuacion debe distinguir vacio vs destruccion
+- pendiente: decidir si el reinicio automatico debe seguir conviviendo con `F5` como fallback del laboratorio o si conviene migrar a un cierre manual-only mas adelante, y si el perfil actual de score por causa (`ring_out=2`, `destruccion total=1`, `explosion inestable=4`) necesita retocarse por modo o solo mejor feedback
 
 ## Etapa 4 - Danio modular por brazos y piernas
 
