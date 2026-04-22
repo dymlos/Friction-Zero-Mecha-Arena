@@ -605,7 +605,8 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 	var state_detail := ""
 	if is_eliminated:
 		state_label = "Apoyo activo" if has_active_support else "Fuera"
-		state_detail = _get_elimination_cause_label(_get_robot_elimination_cause(robot))
+		if not (contextual_hud and has_active_support):
+			state_detail = _get_elimination_cause_label(_get_robot_elimination_cause(robot))
 	elif robot.is_disabled_state():
 		state_label = "Inutilizado"
 		var explosion_time_left := robot.get_disabled_explosion_time_left()

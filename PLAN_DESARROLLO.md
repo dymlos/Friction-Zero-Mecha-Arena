@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El HUD contextual ya no arrastra la causa de baja dentro de `Apoyo activo`: cuando un jugador eliminado sigue activo desde `PilotSupportShip`, el roster limpio conserva `Apoyo activo` + hint/payload de soporte, pero deja la causa (`vacio`, etc.) para el HUD explicito y el cierre.
+- La poda vive solo en `MatchController._build_robot_status_line(...)`: si `contextual_hud` y `has_active_support` son verdaderos, `state_detail` deja de repetir la causa de eliminacion porque ya no es la informacion mas accionable de ese estado.
+- `hud_detail_mode_test.gd` ahora cubre explicitamente ese caso: en HUD contextual, una baja con soporte activo debe seguir mostrando `Apoyo activo`, `get_support_input_hint()` y `sin carga`, pero no la causa de baja.
+- Validación focalizada: `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd`, `godot --headless --path . -s res://scripts/tests/live_roster_order_test.gd` y `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd` pasan.
+
 - El soporte post-muerte `Teams` ahora vuelve solo al modo auto si el jugador cicla manualmente de regreso al mismo target que el default actual; desde ahi, si ese target envejece o se vuelve inmune, la nave puede resincronizar otra vez hacia el mejor objetivo útil.
 - La corrección vive en `_cycle_selected_target()`: al aterrizar sobre el mismo target que `_get_default_support_target(candidates)` ya elegiría, `PilotSupportShip` limpia `_manual_target_override` en vez de arrastrar un override stale.
 - `team_post_death_support_targeting_test.gd` ahora fija ese seam completo para `interferencia`: auto-target -> override manual al rival alternativo -> vuelta manual al default -> `estabilidad` sobre ese default -> salto automático de nuevo al rival útil.

@@ -46,6 +46,16 @@
   - el support slice ya no queda alineado con utilidad real solo al recoger payloads; también se mantiene coherente cuando el estado de los robots cambia en vivo.
   - `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 79 tests`).
 
+## HUD contextual limpia la causa vieja durante `Apoyo activo` (2026-04-22)
+
+- Estado: si un jugador eliminado sigue aportando desde `PilotSupportShip`, el roster contextual ya no repite `vacio` u otra causa de baja dentro de la misma linea.
+- Detalles:
+  - `MatchController._build_robot_status_line()` mantiene `Apoyo activo` como estado, pero en HUD contextual omite `state_detail` cuando el soporte sigue vivo; el hint y el payload del support siguen entrando por `support_state`.
+  - el HUD explicito conserva la causa de baja como hasta ahora, asi que el recorte solo limpia ruido en la variante contextual.
+  - `hud_detail_mode_test.gd` suma la regresion concreta: la linea contextual del jugador eliminado debe incluir `Apoyo activo`, `get_support_input_hint()` y `sin carga`, pero no `vacio`.
+- Validación:
+  - `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd`, `godot --headless --path . -s res://scripts/tests/live_roster_order_test.gd` y `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd` pasan.
+
 ## Marcadores diegéticos del soporte alineados con payloads útiles (2026-04-22)
 
 - Estado: la nave de apoyo `Teams` ya no deja el marcador superior ni la marca de piso en modo “listo” cuando el payload seleccionado no tendría efecto real.

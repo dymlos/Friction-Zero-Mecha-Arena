@@ -87,6 +87,28 @@ func _run() -> void:
 		"El roster contextual deberia volver a mostrar partes cuando el robot ya no esta intacto."
 	)
 
+	robots[0].fall_into_void()
+	await _wait_frames(4)
+
+	var contextual_support_roster := roster_label.text
+	var support_line := _find_line_containing(contextual_support_roster, robots[0].display_name)
+	_assert(
+		support_line.contains("Apoyo activo"),
+		"El roster contextual deberia seguir marcando cuando un jugador eliminado continua aportando desde la nave de apoyo."
+	)
+	_assert(
+		support_line.contains(robots[0].get_support_input_hint()),
+		"El roster contextual deberia conservar el hint accionable de la nave de apoyo."
+	)
+	_assert(
+		support_line.contains("sin carga"),
+		"El roster contextual deberia seguir explicando si la nave de apoyo todavia no lleva payload."
+	)
+	_assert(
+		not support_line.contains("vacio"),
+		"En HUD contextual, `Apoyo activo` no deberia repetir la causa de baja si el jugador ya tiene una accion nueva mas relevante."
+	)
+
 	# HUD: validar defaults por modo desde MatchConfig (sin override runtime).
 	var original_config := match_controller.match_config
 	var original_mode := match_controller.match_mode
@@ -143,6 +165,19 @@ func _has_property(target: Object, property_name: String) -> bool:
 			return true
 
 	return false
+
+
+func _find_line_containing(text: String, fragment: String) -> String:
+	for line in text.split("\n"):
+		if line.contains(fragment):
+			return line
+
+	return ""
+
+
+func _wait_frames(count: int) -> void:
+	for _step in range(count):
+		await process_frame
 
 
 func _assert(condition: bool, message: String) -> void:

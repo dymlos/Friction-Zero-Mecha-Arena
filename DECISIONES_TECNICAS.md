@@ -795,3 +795,10 @@
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
 - Mantener escenas y scripts chicos, faciles de leer para una persona con poca experiencia en Godot.
 - Evitar UI pesada: el robot comunica estado primero por el propio cuerpo.
+# 2026-04-22 - HUD contextual de soporte post-muerte
+
+- Decision: en `MatchController._build_robot_status_line()`, si el jugador esta en `Apoyo activo` y el HUD esta en modo contextual, no repetir la causa de eliminacion dentro de `state_detail`.
+- Rationale: en esa variante la causa de baja deja de ser la informacion accionable principal; lo útil pasa a ser el hint de la nave y el estado del payload. El HUD explicito y el cierre ya conservan la causa si se necesita reconstruir como murio.
+- Contrato de regresion:
+  - `hud_detail_mode_test.gd` fija que la linea contextual de `Apoyo activo` siga mostrando hint/payload del soporte pero no `vacio`.
+  - `live_roster_order_test.gd` sigue cubriendo el contrato explicito de `Apoyo activo | vacio` y el ocultamiento de estados stale del robot caido.
