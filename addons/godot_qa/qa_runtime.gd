@@ -261,6 +261,16 @@ func release_held_actions() -> Array[Dictionary]:
 	return failures
 
 
+func teardown() -> void:
+	if _assertions != null and _assertions.has_method("teardown"):
+		_assertions.call("teardown")
+	_assertions = null
+	_scene_root = null
+	_root_window = null
+	_runtime_errors = []
+	_held_actions = {}
+
+
 func _tap_action(action: String) -> Dictionary:
 	if not InputMap.has_action(action):
 		return _action_missing_error(action)

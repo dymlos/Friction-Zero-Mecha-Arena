@@ -172,7 +172,12 @@ static func errors_to_dict(runtime_errors: Array) -> Dictionary:
 	}
 
 static func save_viewport_screenshot(viewport: Viewport, path: String) -> int:
-	var image := viewport.get_texture().get_image()
+	if OS.has_feature("headless") or DisplayServer.get_name() == "headless":
+		return _write_fallback_screenshot(viewport, path)
+	var texture := viewport.get_texture()
+	if texture == null:
+		return _write_fallback_screenshot(viewport, path)
+	var image := texture.get_image()
 	if image == null:
 		return _write_fallback_screenshot(viewport, path)
 	if image.get_width() <= 0 or image.get_height() <= 0:

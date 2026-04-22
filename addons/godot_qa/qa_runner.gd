@@ -2,8 +2,8 @@ extends SceneTree
 
 const QaArgs = preload("res://addons/godot_qa/qa_args.gd")
 const QaProtocol = preload("res://addons/godot_qa/qa_protocol.gd")
-const QaRuntime = preload("res://addons/godot_qa/qa_runtime.gd")
 const QaSnapshot = preload("res://addons/godot_qa/qa_snapshot.gd")
+const QA_RUNTIME_SCRIPT_PATH := "res://addons/godot_qa/qa_runtime.gd"
 const SUPPORTED_STEP_TYPES: Array[String] = [
 	"wait_frames",
 	"snapshot",
@@ -55,10 +55,11 @@ func _initialize() -> void:
 		return
 
 	_started_at_msec = Time.get_ticks_msec()
-	await _run(request_path)
+	var exit_code := await _run(request_path)
+	quit(exit_code)
 
 
-func _run(request_path: String) -> void:
+func _run(request_path: String) -> int:
 	var request = _read_json_file(request_path)
 	if request == null:
 		print(JSON.stringify(QaProtocol.error(
@@ -66,8 +67,7 @@ func _run(request_path: String) -> void:
 			"qa_runner could not load request.json",
 			{"request_path": request_path},
 		)))
-		quit(1)
-		return
+		return 1
 
 	_scenario = request.get("scenario", {})
 	_artifacts = request.get("artifacts", {})
@@ -77,8 +77,7 @@ func _run(request_path: String) -> void:
 			"request.json must contain scenario and artifacts objects",
 			{"request_path": request_path},
 		)))
-		quit(1)
-		return
+		return 1
 
 	var scene_path := str(_scenario.get("scene", ""))
 	var packed_scene := load(scene_path)
@@ -93,10 +92,10 @@ func _run(request_path: String) -> void:
 				"actual": "missing_or_invalid",
 			},
 		))
-		await _finalize_and_quit()
-		return
+		return await _finalize_result()
 
 	_scene_instance = packed_scene.instantiate()
+	packed_scene = null
 	if _scene_instance == null:
 		_record_runtime_error("PackedScene.instantiate() returned null for %s" % scene_path)
 		_failures.append(_failure(
@@ -108,13 +107,26 @@ func _run(request_path: String) -> void:
 				"actual": "null",
 			},
 		))
-		await _finalize_and_quit()
-		return
+		return await _finalize_result()
 
 	get_root().add_child(_scene_instance)
 	await _apply_requested_viewport()
 	await process_frame
-	_runtime = QaRuntime.new(_scene_instance, get_root(), _runtime_errors, _held_actions)
+	var qa_runtime_script := load(QA_RUNTIME_SCRIPT_PATH)
+	if qa_runtime_script == null or not qa_runtime_script is GDScript:
+		_record_runtime_error("Unable to load QA runtime script %s" % QA_RUNTIME_SCRIPT_PATH)
+		_failures.append(_failure(
+			"runtime_load_failed",
+			"QA runtime script could not be loaded",
+			{
+				"target": QA_RUNTIME_SCRIPT_PATH,
+				"expected": "loadable GDScript runtime helper",
+				"actual": "missing_or_invalid",
+			},
+		))
+		return await _finalize_result()
+	_runtime = (qa_runtime_script as GDScript).new(_scene_instance, get_root(), _runtime_errors, _held_actions)
+	qa_runtime_script = null
 
 	for step in _scenario.get("steps", []):
 		await _run_step(step)
@@ -122,7 +134,7 @@ func _run(request_path: String) -> void:
 	for assertion in _scenario.get("assert", []):
 		await _run_assertion(assertion)
 
-	await _finalize_and_quit()
+	return await _finalize_result()
 
 
 func _apply_requested_viewport() -> void:
@@ -424,11 +436,12 @@ func _result_payload() -> Dictionary:
 	}
 
 
-func _finalize_and_quit() -> void:
+func _finalize_result() -> int:
 	if _runtime != null:
 		var release_failures: Array = await _runtime.release_held_actions()
 		for release_failure in release_failures:
 			_failures.append(_runtime_error_to_failure(release_failure))
+	await _teardown_runtime_scene()
 
 	var result_path := str(_artifacts.get("result", ""))
 	if result_path != "":
@@ -439,11 +452,27 @@ func _finalize_and_quit() -> void:
 				"qa_runner could not write result.json",
 				{"result_path": result_path},
 			)))
-			quit(1)
-			return
+			return 1
 
 	print(JSON.stringify(_result_payload()))
-	quit(0 if _failures.is_empty() else 1)
+	return 0 if _failures.is_empty() else 1
+
+
+func _teardown_runtime_scene() -> void:
+	if _runtime != null and _runtime.has_method("teardown"):
+		_runtime.call("teardown")
+	_runtime = null
+	_held_actions.clear()
+	if _scene_instance == null:
+		return
+
+	var scene_instance := _scene_instance
+	_scene_instance = null
+	var parent := scene_instance.get_parent()
+	if parent != null:
+		parent.remove_child(scene_instance)
+	scene_instance.free()
+	await process_frame
 
 
 func _read_json_file(path: String) -> Variant:

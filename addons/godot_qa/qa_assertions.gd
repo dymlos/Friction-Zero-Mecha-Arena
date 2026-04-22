@@ -58,6 +58,12 @@ func execute(command_name: String, params := {}) -> Dictionary:
 	)
 
 
+func teardown() -> void:
+	_runtime = null
+	_root_window = null
+	_runtime_errors = []
+
+
 func _assert_exists(target: String) -> Dictionary:
 	var resolution = _runtime.resolve_target(target)
 	if not bool(resolution.get("ok", false)):
