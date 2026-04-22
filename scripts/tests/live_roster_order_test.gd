@@ -16,6 +16,7 @@ func _run() -> void:
 	await _validate_ffa_live_roster_uses_standings_order()
 	await _validate_teams_live_roster_prioritizes_surviving_teammate()
 	await _validate_teams_live_roster_marks_support_active_players()
+	await _validate_teams_live_roster_uses_support_controls_only_for_support_active_players()
 	_finish()
 
 
@@ -124,6 +125,42 @@ func _validate_teams_live_roster_marks_support_active_players() -> void:
 	_assert(
 		player_one_line.contains("usa "),
 		"El roster vivo Teams deberia conservar el hint de uso mientras el apoyo post-muerte sigue activo."
+	)
+
+	await _cleanup_node(main)
+
+
+func _validate_teams_live_roster_uses_support_controls_only_for_support_active_players() -> void:
+	var main := MAIN_SCENE.instantiate()
+	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller_preload != null:
+		match_controller_preload.round_intro_duration = 0.0
+		if match_controller_preload.match_config != null:
+			match_controller_preload.match_config.round_intro_duration_teams = 0.0
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	var robots := _get_scene_robots(main)
+	_assert(match_controller != null, "La escena Teams deberia exponer MatchController.")
+	_assert(robots.size() >= 4, "La escena Teams deberia ofrecer cuatro robots para validar los hints de apoyo en roster.")
+	if match_controller == null or robots.size() < 4:
+		await _cleanup_node(main)
+		return
+
+	robots[0].fall_into_void()
+	await _wait_frames(4)
+
+	var player_one_line := _find_line_containing(match_controller.get_robot_status_lines(), robots[0].display_name)
+	_assert(
+		player_one_line.contains(robots[0].get_support_input_hint()),
+		"El roster vivo Teams deberia conservar el hint de controles de la nave de apoyo."
+	)
+	_assert(
+		not player_one_line.contains(robots[0].get_input_hint()),
+		"El roster vivo Teams no deberia mezclar el hint del robot caido con el de la nave de apoyo activa."
 	)
 
 	await _cleanup_node(main)

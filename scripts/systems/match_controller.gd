@@ -628,7 +628,7 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 	else:
 		var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
 		segments = [mode_label, state_segment, "%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()]]
-		if robot.is_player_controlled:
+		if robot.is_player_controlled and not has_active_support:
 			segments.append(robot.get_input_hint())
 		segments.append(robot.get_energy_state_summary())
 	var core_skill_summary := robot.get_core_skill_status_summary()

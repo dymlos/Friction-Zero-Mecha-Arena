@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El roster explicito no debe mezclar controles del robot caido con los del soporte activo**
+ - `MatchController._build_robot_status_line()` mantiene `robot.get_input_hint()` solo si el jugador sigue controlando su robot y no tiene `support_state` activo.
+ - El hint valido del slice post-muerte sigue viniendo de `PilotSupportShip.get_status_summary()`, que entra al roster via `Main._sync_post_death_support_state()`.
+ - Motivo: cuando una baja Teams sigue jugando desde la nave, repetir el hint base del robot ensucia la linea y contradice la accion disponible real. Resolverlo en el builder de roster mantiene claridad sin otra UI.
+
 1. **El roster vivo Teams debe marcar `Apoyo activo` cuando una baja sigue influyendo con la nave**
  - `MatchController._build_robot_status_line()` ya no deja `Fuera | ...` para un robot eliminado que todavía tiene `support_state`; en ese caso publica `Apoyo activo | <causa>`.
  - `PilotSupportShip.get_status_summary()` devuelve un resumen compacto (`usa ...`, `interferido`, `payload > objetivo`) para que el roster conserve hints y target sin repetir `apoyo` varias veces.

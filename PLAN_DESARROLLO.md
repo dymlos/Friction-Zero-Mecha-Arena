@@ -4,6 +4,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El roster explicito `Teams` ya no mezcla controles viejos del robot con controles de la nave cuando una baja sigue activa por soporte post-muerte: `MatchController` oculta `robot.get_input_hint()` en ese estado y deja solo el hint valido de `PilotSupportShip` dentro de `support_state`.
 - El roster vivo `Teams` ahora deja claro cuando un jugador eliminado sigue aportando desde la nave de apoyo: `MatchController` muestra `Apoyo activo | <causa>` en vez de mezclarlo con una baja ya cerrada, y `PilotSupportShip` compacta su resumen a hints/payload/objetivo sin repetir `apoyo` en cada segmento.
 - El cierre Teams ya no deja el soporte solo en agregado: `Main` reenvía el `target_robot` real de cada payload usado y `MatchController` ahora publica `Apoyo decisivo | <owner> <payload> > <objetivo>` dentro de recap/resultado final cuando esa ayuda acompañó la ronda ganadora.
 - La presión final del arena ya no aparece “de golpe”: `MatchController` suma `space_reduction_warning_seconds` y publica `Arena se cierra en Xs` antes de pasar a `Arena cerrandose | N%`.

@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Controles del soporte en roster explicito (2026-04-22)
+
+- Estado: en `Teams`, una baja con `PilotSupportShip` ya no deja dos hints de control contradictorios en la misma linea del roster explicito.
+- Correccion aplicada:
+  - `MatchController._build_robot_status_line()` deja de anexar `robot.get_input_hint()` cuando `has_active_support` es verdadero.
+  - el hint valido sigue entrando por `support_state`, armado desde `PilotSupportShip.get_status_summary()`.
+  - `live_roster_order_test.gd` ahora fija tambien que la linea del jugador eliminado conserve `get_support_input_hint()` y no vuelva a mostrar `get_input_hint()`.
+- Resultado:
+  - el roster explicito ya no mezcla “como manejaba el robot” con “como usa la nave de apoyo”, reforzando legibilidad sin abrir HUD nuevo.
+  - `godot --headless --path . -s res://scripts/tests/live_roster_order_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 76 tests`).
+
 ## Roster vivo de apoyo activo (2026-04-22)
 
 - Estado: en `Teams`, un jugador eliminado que sigue influyendo con `PilotSupportShip` ya no se lee como una baja completamente cerrada en el roster vivo.
