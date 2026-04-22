@@ -258,6 +258,10 @@
    - En `EXPLICIT`, `MatchController.get_round_state_lines()` agrega `Modo | FFA` o `Modo | Equipos` antes del objetivo y el marcador; en `CONTEXTUAL` esas lineas fijas se ocultan para priorizar el estado cambiante.
    - Motivo: mantener la claridad de laboratorio cuando hace falta depurar/configurar el setup, pero permitir una variante mas limpia que no repita informacion estable durante toda la ronda.
 
+48. **FFA reutiliza el mismo contrato de standings tanto vivo como en el cierre**
+   - `MatchController.get_round_state_lines()` ahora agrega `Posiciones | ...` y `Desempate | ...` llamando a `_build_ffa_standings_line()` y `_build_ffa_tiebreaker_line()`, los mismos helpers ya usados por recap y resultado final.
+   - Motivo: el gap real no era de calculo sino de visibilidad durante la ronda activa. Reutilizar el mismo builder evita dos criterios paralelos entre HUD vivo y cierre, y mantiene explicito el desempate mientras el combate sigue abierto.
+
 48. **La explicación de bajas vive en el HUD compacto existente**
    - `MatchController.get_robot_status_lines()` ahora usa el mismo roster para mostrar `Inutilizado | explota Xs` y `Fuera | vacio/explosion`, mientras `get_round_state_lines()` agrega `Ultima baja | ...`.
    - Motivo: mejora la lectura de derrota y amenaza inminente en pantalla compartida sin introducir una capa nueva de UI ni romper la prioridad por claridad.

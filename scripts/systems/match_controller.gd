@@ -189,6 +189,12 @@ func get_round_state_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	var standings_line := _build_ffa_standings_line()
+	if standings_line != "":
+		lines.append(standings_line)
+	var tiebreaker_line := _build_ffa_tiebreaker_line()
+	if tiebreaker_line != "":
+		lines.append(tiebreaker_line)
 	var restart_prompt_line := get_match_restart_prompt_line()
 	if restart_prompt_line != "":
 		lines.append(restart_prompt_line)
