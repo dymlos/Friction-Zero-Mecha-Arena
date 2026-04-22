@@ -14,13 +14,15 @@
   - `progressive_space_reduction_test.gd` y `team_post_death_support_test.gd` anulan `round_intro_duration_teams` en la config efectiva para no quedar presos del intro por modo.
 - Resultado: `godot --headless --path . -s res://scripts/tests/test_runner.gd` vuelve a pasar con `Suite OK: 72 tests`.
 
-## Auditoría de consistencia de escenas (2026-04-22)
+## Smoke runtime de escenas principales (2026-04-22)
 
-- Estado: se revisaron `main.tscn`, `main_ffa.tscn`, `main_teams_validation.tscn` y `main_ffa_validation.tscn`; todas sus dependencias de `ext_resource` principales existen en disco.
-- Hallazgos: no se detectaron referencias rotas en esta revisión.
-- Observación de continuidad:
-  - `main_ffa_validation.tscn` y `main_teams_validation.tscn` mantienen overrides de arena y `MatchConfig` correctos para su modo de trabajo.
-- Riesgo de seguimiento: no se ejecutó arranque/compilado de estas escenas en esta pasada, por lo que la validación final queda para el siguiente ciclo junto con pruebas de sensibilidad de combate.
+- Estado: las cuatro escenas jugables (`main.tscn`, `main_ffa.tscn`, `main_teams_validation.tscn`, `main_ffa_validation.tscn`) ahora tienen cobertura headless real de carga/instanciación vía `main_scene_runtime_smoke_test.gd`.
+- Contratos fijados:
+  - todas instancian `Main`, montan `MatchController`, `MatchHud`, un `ArenaBase` válido y exactamente cuatro robots jugables.
+  - todas arrancan ronda real al bootear y siguen exponiendo el selector runtime de laboratorio (`Lab | ...`, `Escena | ...`).
+  - `Teams` conserva parejas 2v2; `FFA` neutraliza `team_id` para no heredar alianzas falsas.
+  - las escenas base también cargan `MatchConfig` en runtime porque `scenes/systems/match_controller.tscn` ya referencia `default_match_config.tres`; las escenas de validación sólo sobreescriben ese recurso.
+- Resultado: la consistencia de escenas ya no depende sólo de revisar `ext_resource` en disco; hay una prueba de humo que captura wiring roto antes de llegar al editor o a playtests manuales.
 
 ## Validación de sensibilidad de combate (2026-04-22)
 

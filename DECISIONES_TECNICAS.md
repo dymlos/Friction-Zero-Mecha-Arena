@@ -39,6 +39,11 @@
  - Hallazgo residual: esta auditoría no sustituye un chequeo runtime completo; la validación de carga y sensación se realiza en la siguiente tarea de sensibilidad de combate de ambos modos de laboratorio.
  - Motivo: mantener estabilidad del loop antes de abrir más tuning, evitando tocar movimiento/choque sobre una base de escena que ya podía romperse por referencias.
 
+1. **Las cuatro escenas principales quedan cubiertas por smoke runtime y todas cargan `MatchConfig`**
+ - `scripts/tests/main_scene_runtime_smoke_test.gd` instancia `main.tscn`, `main_ffa.tscn`, `main_teams_validation.tscn` y `main_ffa_validation.tscn`, verificando `Main`, `MatchController`, `MatchHud`, arena válida, cuatro robots jugables, round boot real y wiring del selector runtime.
+ - Hallazgo relevante: las escenas base no corren “sin config”; heredan `default_match_config.tres` desde `scenes/systems/match_controller.tscn`, mientras las variantes de validación sólo lo sobreescriben.
+ - Motivo: convertir una auditoría de archivos en una garantía runtime mínima y fijar la fuente de verdad real del arranque de escenas para futuras iteraciones/tests.
+
 1. **El target textual del soporte post-muerte reutiliza tambien el nombre de roster**
    - `PilotSupportShip._get_selected_target_label()` ahora devuelve `target_robot.get_roster_display_name()` y no `display_name`.
    - Motivo: despues de corregir roster vivo y cierres para conservar `Player / Arquetipo`, dejar `apoyo ... > Player X` en la nave Teams seguia abriendo otra fuga de identidad justo en una capa de lectura tactica. Reusar el mismo helper mantiene continuidad sin sumar otro formato textual.
