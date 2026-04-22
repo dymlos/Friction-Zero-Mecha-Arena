@@ -8,6 +8,11 @@
 2. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 
+0. **No volver a dejar drift entre `main.tscn` y `main_teams_validation.tscn` en los highlights/detalle final de `Teams`**
+ - `match_highlight_moments_test.gd`, `support_decisive_highlight_test.gd` y `team_match_result_detail_order_test.gd` ya congelan `Resumen | ...`, `Momento inicial/final`, `Apoyo decisivo` y el orden real de stats/detalle en las dos escenas `Teams`.
+ - Si se retocan `RecapPanel`, `MatchResultPanel`, `_build_round_highlight_lines()`, `record_support_payload_use(...)` o el orden del detalle final, tocar siempre `main.tscn` y `main_teams_validation.tscn` como una misma superficie contractual y mantener estas tres regresiones.
+ - Reabrir solo si se decide separar deliberadamente los cierres `Teams` entre laboratorio base y rapido.
+
 0. **No volver a dejar drift entre escenas `base` y `validation` del recap entre rondas**
  - `match_round_recap_test.gd` ya congela el recap `Teams` en `main.tscn` y `main_teams_validation.tscn`; `match_round_draw_recap_test.gd` hace lo mismo con el empate `FFA` en `main_ffa.tscn` y `main_ffa_validation.tscn`.
  - Si se retocan `RecapPanel`, `RecapLabel`, wording `Cierre de ronda`, objetivo del match o limpieza post-reset, tocar siempre la pareja `base/validation` como una misma superficie contractual y mantener estas dos regresiones.

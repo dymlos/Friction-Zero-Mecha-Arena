@@ -4,6 +4,15 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los highlights/detalle final de `Teams` ya quedan congelados tambien en `main_teams_validation.tscn`:
+  - la revision estricta encontro otro hueco scene-level: `Resumen | ...`, `Momento inicial/final`, `Apoyo decisivo` y el orden del detalle/stats de cierre seguian fijados solo en `main.tscn`, dejando drift posible en `main_teams_validation.tscn`.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion:
+    - `scripts/tests/match_highlight_moments_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
+    - `scripts/tests/support_decisive_highlight_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
+    - `scripts/tests/team_match_result_detail_order_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
+  - decision operativa: tratar tambien los snippets/hints de cierre `Teams` como contratos compartidos entre laboratorio `base/validation`, igual que openings, recap intermedio y cierre final.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/match_highlight_moments_test.gd`, `support_decisive_highlight_test.gd`, `team_match_result_detail_order_test.gd` y `test_runner.gd`.
+
 - Los contratos de recap entre rondas ya quedan congelados tambien en escenas `base` y `validation` de `Teams/FFA`:
   - la revision estricta encontro otro hueco scene-level: el recap entre rondas seguia fijado solo en `main.tscn` para `Teams` y en `main_ffa.tscn` para el empate `FFA`, dejando drift posible en `main_teams_validation.tscn` y `main_ffa_validation.tscn`.
   - no hizo falta tocar produccion; la correccion vive en la red de regresion:

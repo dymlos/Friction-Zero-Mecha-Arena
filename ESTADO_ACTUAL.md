@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Los highlights/detalle final de `Teams` ya quedan congelados tambien en `main_teams_validation.tscn` (2026-04-22)
+
+- Estado: varios seams de cierre `Teams` ya no dependen solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `MatchController` y la escena de validacion ya respetaban el mismo contrato; el gap real era de cobertura scene-level.
+  - `scripts/tests/match_highlight_moments_test.gd` ahora valida `Resumen | ...` y `Momento inicial/final` en `main.tscn` y `main_teams_validation.tscn`.
+  - `scripts/tests/support_decisive_highlight_test.gd` ahora valida `Apoyo decisivo | ...` en `main.tscn` y `main_teams_validation.tscn`.
+  - `scripts/tests/team_match_result_detail_order_test.gd` ahora valida el orden de stats/detalle por resultado real tambien en `main_teams_validation.tscn`.
+- Resultado:
+  - el cierre `Teams` deja de tener otro punto ciego entre laboratorio base y rapido; si una escena hermana pierde highlights, apoyo decisivo o orden del detalle final, la suite lo detecta antes de runtime.
+
 ## Los contratos de recap entre rondas ya quedan congelados tambien en escenas `base` y `validation` de `Teams/FFA` (2026-04-22)
 
 - Estado: el recap intermedio ya no depende solo de `main.tscn` o `main_ffa.tscn`; la red ahora tambien cubre `main_teams_validation.tscn` y `main_ffa_validation.tscn`.

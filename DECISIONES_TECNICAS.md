@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **Los highlights/detalle final de `Teams` tambien deben congelarse sobre `main.tscn` y `main_teams_validation.tscn`, no solo sobre una escena**
+ - `match_highlight_moments_test.gd`, `support_decisive_highlight_test.gd` y `team_match_result_detail_order_test.gd` ahora recorren `main.tscn` y `main_teams_validation.tscn`.
+ - No hubo cambio de produccion: la revision estricta confirmo que `MatchController` y la escena de validacion ya estaban alineados; el gap real era de cobertura scene-level sobre snippets/hints de cierre.
+ - Motivo: opening, recap intermedio y cierre final ya estaban tratados como contratos compartidos entre `base/validation`; dejar afuera los highlights finales de `Teams` seguia permitiendo drift silencioso justo en la lectura que explica por que se cerro la partida.
+
 1. **Los contratos de recap entre rondas tambien deben congelarse sobre las escenas `base` y `validation`, no solo sobre una por modo**
  - `match_round_recap_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`; `match_round_draw_recap_test.gd` hace lo mismo con `main_ffa.tscn` y `main_ffa_validation.tscn`.
  - No hubo cambio de produccion: la revision estricta confirmo que `MatchController` y las escenas ya estaban alineados; el gap real era de cobertura scene-level en el recap intermedio.
