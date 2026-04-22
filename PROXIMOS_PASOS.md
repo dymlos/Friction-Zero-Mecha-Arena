@@ -3,7 +3,7 @@
 ## Siguiente iteracion recomendada
 
 0. **Validar legibilidad del nuevo estado `Apoyo activo`**
- - El roster vivo `Teams` ya distingue a la baja que sigue influyendo desde la nave de soporte, el HUD explicito ya no mezcla los controles del robot caido con los de la nave y la línea `Apoyo activo` ya no arrastra `skill`, energía ni `item` del robot muerto; la siguiente sesión corta debe confirmar si ese wording/hint compacto alcanza por sí solo o si todavía hace falta ajustar orden/contraste antes de sumar otra UI.
+ - El roster vivo `Teams` ya distingue a la baja que sigue influyendo desde la nave de soporte, el HUD explicito ya no mezcla los controles del robot caido con los de la nave, la línea `Apoyo activo` ya no arrastra `skill`, energía ni `item` del robot muerto y `interferencia` ahora explicita `fuera de rango` cuando el target seleccionado aún no entra en el radio real; la siguiente sesión corta debe confirmar si ese wording compacto alcanza por sí solo o si todavía hace falta ajustar orden/contraste antes de sumar otra UI.
  - Mantener `live_roster_order_test.gd` y `team_post_death_support_test.gd` como red mínima si se retoca `support_state`, `get_status_summary()` o el builder de roster.
  - Archivos objetivo: `scripts/systems/match_controller.gd`, `scripts/support/pilot_support_ship.gd`, `scripts/tests/live_roster_order_test.gd`, `scripts/tests/team_post_death_support_test.gd`.
 

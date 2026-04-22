@@ -251,6 +251,10 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					roster_label.text.contains("interferencia"),
 					"El roster deberia distinguir cuando la nave lleva una carga de interferencia."
 				)
+				_assert(
+					roster_label.text.contains("fuera de rango"),
+					"Si la interferencia aun no alcanza al rival seleccionado, el roster deberia decirlo explicitamente."
+				)
 				var interference_range_indicator := support_ship.get_node_or_null("InterferenceRangeIndicator") as MeshInstance3D
 				_assert(
 					interference_range_indicator != null,
@@ -324,6 +328,10 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					support_ship.has_method("get_status_summary")
 						and String(support_ship.call("get_status_summary")).contains(enemy_robot.get_roster_display_name()),
 					"El roster deberia dejar visible a que rival apunta la interferencia cargada sin perder la identidad `Player / Arquetipo`."
+				)
+				_assert(
+					not roster_label.text.contains("fuera de rango"),
+					"Cuando el rival seleccionado ya entro en el radio real, el roster deberia limpiar la advertencia de rango."
 				)
 
 				Input.action_press("p2_energy_next")

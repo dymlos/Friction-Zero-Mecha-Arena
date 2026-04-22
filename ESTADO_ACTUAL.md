@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Interferencia fuera de rango visible en roster (2026-04-22)
+
+- Estado: cuando `PilotSupportShip` lleva `interferencia` pero el rival seleccionado todavia no entra en `support_interference_range`, el HUD compacto ya explica por que el uso falla.
+- Correccion aplicada:
+  - `get_status_summary()` ahora agrega `fuera de rango` solo para ese caso puntual.
+  - la regla vive en `PilotSupportShip`, asi que el roster y cualquier snapshot de `support_state` reutilizan el mismo texto sin abrir otra UI.
+  - `team_post_death_support_test.gd` fija el contrato en dos pasos: advertencia presente mientras no hay rango real y advertencia ausente apenas el target entra en radio.
+- Resultado:
+  - la lectura de `interferencia` ya no depende solo del telegraph diegetico; el roster tambien explica el fallo de uso.
+  - `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 77 tests`).
+
 ## Nave de apoyo sin pickup gratis al aparecer (2026-04-22)
 
 - Estado: en `Teams`, `PilotSupportShip` ya no arranca con un payload inmediato por aparecer encima de un pickup del carril.

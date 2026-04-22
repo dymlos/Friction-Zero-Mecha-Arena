@@ -99,6 +99,9 @@ func get_status_summary() -> String:
 		var target_label := _get_selected_target_label()
 		if target_label != "":
 			payload_summary += " > %s" % target_label
+		var availability_label := _get_payload_availability_label()
+		if availability_label != "":
+			payload_summary += " | %s" % availability_label
 		segments.append(payload_summary)
 	else:
 		segments.append("sin carga")
@@ -289,6 +292,18 @@ func _get_selected_target_label() -> String:
 		return ""
 
 	return target_robot.get_roster_display_name()
+
+
+func _get_payload_availability_label() -> String:
+	var target_robot := get_selected_target_robot()
+	if target_robot == null:
+		return ""
+	if _support_payload_name != PilotSupportPickup.PAYLOAD_INTERFERENCE:
+		return ""
+	if _is_target_in_interference_range(target_robot):
+		return ""
+
+	return "fuera de rango"
 
 
 func _update_target_selection_from_input() -> bool:
