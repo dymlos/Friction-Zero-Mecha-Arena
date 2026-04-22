@@ -49,7 +49,12 @@ func _run_weighted_score_validation(
 
 	match_controller.match_mode = test_mode
 	match_controller.match_config.rounds_to_win = 20
+	match_controller.match_config.round_intro_duration_ffa = 0.0
+	match_controller.match_config.round_intro_duration_teams = 0.0
 	match_controller.round_reset_delay = 0.15
+	match_controller.round_intro_duration = 0.0
+	match_controller.start_match()
+	await process_frame
 
 	for robot in robots:
 		robot.void_fall_y = -100.0
@@ -58,7 +63,10 @@ func _run_weighted_score_validation(
 	_assert(match_controller.is_round_active(), "%s: la ronda debería arrancar activa." % label)
 	_assert(match_controller.get_round_status_line().contains("Ronda 1"), "%s: la ronda visible debe arrancar en Ronda 1." % label)
 
-	_eliminate_team_two_by_void(robots)
+	if test_mode == MatchController.MatchMode.FFA:
+		_eliminate_three_by_void(robots)
+	else:
+		_eliminate_team_two_by_void(robots)
 	await create_timer(0.12).timeout
 
 	if test_mode == MatchController.MatchMode.TEAMS:
@@ -90,6 +98,12 @@ func _run_weighted_score_validation(
 
 
 func _eliminate_team_two_by_void(robots: Array[RobotBase]) -> void:
+	robots[2].fall_into_void()
+	robots[3].fall_into_void()
+
+
+func _eliminate_three_by_void(robots: Array[RobotBase]) -> void:
+	robots[1].fall_into_void()
 	robots[2].fall_into_void()
 	robots[3].fall_into_void()
 

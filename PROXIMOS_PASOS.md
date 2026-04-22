@@ -20,12 +20,12 @@
   - Archivos objetivo: `scripts/systems/match_controller.gd`, `scenes/main/main.tscn`, `scenes/main/main_teams_validation.tscn`, `data/config/teams_validation_match_config.tres`.
 
 3. **Cerrar el ciclo documental de causa y ranking**
-  - Consolidar wording idéntico en `PLAN_DESARROLLO.md`, `ESTADO_ACTUAL.md`, `PROXIMOS_PASOS.md` y `DECISIONES_TECNICAS.md` para `cierre por causa`, `desempate` y `Stats | ...`.
+  - Consolidar wording idéntico en `PLAN_DESARROLLO.md`, `ESTADO_ACTUAL.md`, `PROXIMOS_PASOS.md` y `DECISIONES_TECNICAS.md` para `cierre por causa`, `desempate`, `1-8 modo` y `Stats | ...`.
   - Mantener el ajuste de `support_rounds_decided` y el bloque de apoyo dentro de `Stats` como único resumen de soporte hasta necesitar más capa de post-mortem.
   - Archivos objetivo: `PLAN_DESARROLLO.md`, `ESTADO_ACTUAL.md`, `DECISIONES_TECNICAS.md`, `PROXIMOS_PASOS.md`.
 
 4. **Validar el nuevo roster de arquetipos**
-   - usar `F2/F3/F4` para recorrer cruces reales entre `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` en `main.tscn` y `main_ffa.tscn` sin editar escenas entre partidas, validando tambien si el nuevo `LabSelectionIndicator` evita errores de slot en pantalla compartida.
+   - usar `1-8` junto con `F2/F3/F4` para recorrer cruces reales entre `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` en `main.tscn` y `main_ffa.tscn` sin editar escenas entre partidas, validando tambien si el nuevo `LabSelectionIndicator` evita errores de slot en pantalla compartida.
    - correr sesiones reales con `Ariete`, `Grua`, `Cizalla` y `Patin` en `main.tscn`, y con `Aguja` + `Ancla` en `main_ffa.tscn`, para decidir si la mezcla actual de pasivas + skills propias ya produce identidades claras.
    - medir si las pasivas/skills actuales se entienden por playtest sin otra capa de UI: `Ariete` activando `Embestida` para comprometer choques, `Grua` estabilizando rescates y usando `Iman`, `Cizalla` rematando partes tocadas con el nuevo combo `corte` + pulso corporal + `DismantleCue` sobre la pieza enemiga castigada y `Patin` activando `Derrape` para reposicionarse sin perder legibilidad.
    - calibrar si `Derrape` necesita mas/menos impulso inicial, duracion o control extra para sentirse como una decision de posicionamiento y no como otro `impulso` de mapa disfrazado.

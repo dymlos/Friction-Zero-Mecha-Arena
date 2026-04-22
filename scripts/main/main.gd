@@ -29,6 +29,8 @@ const LAB_SELECTOR_ARCHETYPE_KEY := KEY_F3
 const LAB_SELECTOR_CONTROL_KEY := KEY_F4
 const MATCH_RESTART_KEY := KEY_F5
 const LAB_SCENE_CYCLE_KEY := KEY_F6
+const LAB_PLAYER_SLOT_KEY_MIN := KEY_1
+const LAB_PLAYER_SLOT_KEY_MAX := KEY_8
 const DEFAULT_LAB_ARCHETYPES := [
 	ARIETE_ARCHETYPE,
 	GRUA_ARCHETYPE,
@@ -118,6 +120,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		cycle_lab_scene_variant()
 		get_viewport().set_input_as_handled()
 		return
+	var player_slot := _get_player_slot_from_lab_key(key_event.keycode)
+	if player_slot > 0:
+		toggle_lab_control_mode_for_player_slot(player_slot)
+		ui.show_status(_build_hud_toggle_status())
+		_refresh_hud()
+		get_viewport().set_input_as_handled()
+		return
 	if key_event.keycode != HUD_DETAIL_TOGGLE_KEY:
 		if key_event.keycode == LAB_SELECTOR_SLOT_KEY:
 			cycle_lab_selector_slot()
@@ -191,6 +200,26 @@ func toggle_selected_lab_control_mode() -> void:
 	_apply_lab_runtime_loadout(robot, robot.archetype_config, next_mode)
 
 
+func toggle_lab_control_mode_for_player_slot(player_slot: int) -> void:
+	if not lab_runtime_selector_enabled or player_slot <= 0:
+		return
+
+	var robot := _get_scene_robot_by_player_slot(player_slot)
+	if robot == null:
+		return
+
+	_lab_selected_player_slot = robot.player_index
+	var next_mode := RobotBase.ControlMode.HARD
+	if robot.control_mode == RobotBase.ControlMode.HARD:
+		next_mode = RobotBase.ControlMode.EASY
+
+	_apply_lab_runtime_loadout(
+		robot,
+		robot.archetype_config,
+		next_mode
+	)
+
+
 func get_lab_selector_summary_line() -> String:
 	if not lab_runtime_selector_enabled:
 		return ""
@@ -199,7 +228,7 @@ func get_lab_selector_summary_line() -> String:
 	if robot == null:
 		return ""
 
-	return "Lab | %s | F2 slot | F3 arquetipo | F4 modo" % _get_lab_robot_brief(robot)
+	return "Lab | %s | 1-8 modo | F2 slot | F3 arquetipo | F4 modo" % _get_lab_robot_brief(robot)
 
 
 func get_lab_scene_variant_summary_line() -> String:
@@ -970,6 +999,14 @@ func _apply_lab_runtime_loadout(
 	_refresh_hud()
 
 
+func _get_scene_robot_by_player_slot(player_slot: int) -> RobotBase:
+	for robot in _get_scene_robots():
+		if robot.player_index == player_slot:
+			return robot
+
+	return null
+
+
 func _set_lab_slot_control_mode(player_slot: int, control_mode: RobotBase.ControlMode) -> void:
 	var next_slots := PackedInt32Array()
 	for slot in hard_mode_player_slots:
@@ -995,6 +1032,13 @@ func _get_lab_robot_brief(robot: RobotBase) -> String:
 		archetype_label = "Base"
 	var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
 	return "P%s %s %s" % [robot.player_index, archetype_label, mode_label]
+
+
+func _get_player_slot_from_lab_key(keycode: int) -> int:
+	if keycode < LAB_PLAYER_SLOT_KEY_MIN or keycode > LAB_PLAYER_SLOT_KEY_MAX:
+		return 0
+
+	return keycode - LAB_PLAYER_SLOT_KEY_MIN + 1
 
 
 func _sync_lab_selector_visuals() -> void:

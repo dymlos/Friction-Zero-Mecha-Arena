@@ -15,6 +15,8 @@ enum HudDetailMode { EXPLICIT, CONTEXTUAL }
 @export_range(0, 12, 1) var void_elimination_round_points := 1
 @export_range(0, 12, 1) var destruction_elimination_round_points := 1
 @export_range(0, 12, 1) var unstable_elimination_round_points := 1
+@export_range(0.0, 3.0, 0.05) var round_intro_duration_ffa := 0.8
+@export_range(0.0, 3.0, 0.05) var round_intro_duration_teams := 0.8
 
 
 func get_default_hud_detail_mode(is_ffa_mode: bool) -> HudDetailMode:
@@ -22,6 +24,10 @@ func get_default_hud_detail_mode(is_ffa_mode: bool) -> HudDetailMode:
 		return hud_detail_mode_ffa
 
 	return hud_detail_mode_teams
+
+
+func get_round_intro_duration(is_ffa_mode: bool) -> float:
+	return round_intro_duration_ffa if is_ffa_mode else round_intro_duration_teams
 
 
 func get_round_victory_points_for_cause(cause: int) -> int:

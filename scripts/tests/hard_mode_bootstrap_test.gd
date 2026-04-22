@@ -29,6 +29,29 @@ func _run() -> void:
 	_assert(robots[1].control_mode == RobotBase.ControlMode.EASY, "P2 deberia permanecer en Easy si no esta listado.")
 	_assert(robots[2].control_mode == RobotBase.ControlMode.EASY, "P3 deberia permanecer en Easy si no esta listado.")
 	_assert(robots[3].control_mode == RobotBase.ControlMode.HARD, "P4 deberia quedar en Hard segun la configuracion de slots.")
+	_assert(main.hard_mode_player_slots.has(1), "El array global debe conservar P1 en modo Hard.")
+	_assert(main.hard_mode_player_slots.has(4), "El array global debe conservar P4 en modo Hard.")
+
+	var status_label := main.get_node_or_null("UI/MatchHud/Root/StatusLabel")
+	_assert(status_label is Label, "El HUD deberia exponer el estado inicial del laboratorio.")
+	if status_label is Label:
+		var startup_status_text := (status_label as Label).text
+		_assert(
+			startup_status_text.contains("TFGX"),
+			"El estado inicial deberia dejar visible el aim por teclado para el slot Hard del laboratorio."
+		)
+
+	main.toggle_lab_control_mode_for_player_slot(2)
+	await process_frame
+	await process_frame
+	_assert(main.hard_mode_player_slots.has(2), "El selector por slot debe habilitar Hard en el jugador elegido.")
+	_assert(robots[1].control_mode == RobotBase.ControlMode.HARD, "P2 debe pasar a Hard desde el selector de slot.")
+
+	main.toggle_lab_control_mode_for_player_slot(2)
+	await process_frame
+	await process_frame
+	_assert(not main.hard_mode_player_slots.has(2), "El selector por slot debe revertir a Easy si se vuelve a activar.")
+	_assert(robots[1].control_mode == RobotBase.ControlMode.EASY, "P2 debe volver a Easy tras otro toggle de mismo slot.")
 
 	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
 	_assert(roster_label is Label, "El HUD deberia seguir mostrando el roster compacto.")
@@ -44,14 +67,11 @@ func _run() -> void:
 			roster_text.contains("IJKL + aim stick derecho"),
 			"El roster deberia dejar explicito cuando un slot Hard local sigue siendo joypad-first para el aim."
 		)
-
-	var status_label := main.get_node_or_null("UI/MatchHud/Root/StatusLabel")
-	_assert(status_label is Label, "El HUD deberia exponer el estado inicial del laboratorio.")
 	if status_label is Label:
 		var status_text := (status_label as Label).text
 		_assert(
-			status_text.contains("TFGX"),
-			"El estado inicial deberia dejar visible el aim por teclado para el slot Hard del laboratorio."
+			status_text.contains("Lab: P2"),
+			"Tras alternar un slot, el estado deberia pasar a resumir el selector runtime del laboratorio."
 		)
 
 	await _cleanup_main(main)

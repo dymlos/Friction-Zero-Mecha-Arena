@@ -20,6 +20,8 @@ const SUPPORT_PAYLOAD_LABELS := {
 @export var match_config: MatchConfig
 @export_range(0.2, 6.0, 0.1) var round_reset_delay := 1.8
 @export_range(0.5, 8.0, 0.1) var match_restart_delay := 2.6
+# Nodo-level override used as fallback when this scene/binder does not provide MatchConfig.
+# Scenes that inherit this script can tune round intro directly en este campo.
 @export_range(0.0, 3.0, 0.05) var round_intro_duration := 0.0
 @export_range(0.0, 0.95, 0.05) var space_reduction_start_ratio := 0.55
 @export_range(0.35, 1.0, 0.05) var space_reduction_min_scale := 0.55
@@ -42,6 +44,7 @@ var _competitor_archetype_labels: Dictionary = {}
 var _competitor_match_stats: Dictionary = {}
 var _competitor_order: Array[String] = []
 var _robot_support_state: Dictionary = {}
+var _round_support_usage_by_competitor: Dictionary = {}
 var _last_elimination_summary := ""
 var _round_status_line := ""
 var _round_elapsed_seconds := 0.0
@@ -49,6 +52,8 @@ var _round_intro_remaining := 0.0
 var _hud_detail_mode_override := -1
 var _round_lifecycle_token := 0
 var _match_restart_deadline_msec := 0
+var _match_decided_rounds := 0
+var _match_decided_rounds_with_support := 0
 var _transition_timer: Timer = null
 var _pending_transition := ""
 
@@ -105,10 +110,13 @@ func start_match() -> void:
 	_round_elimination_recap_entries.clear()
 	_round_elimination_highlight_entries.clear()
 	_last_elimination_summary = ""
+	_round_support_usage_by_competitor.clear()
 	_competitor_scores.clear()
 	_competitor_labels.clear()
 	_competitor_archetype_labels.clear()
 	_competitor_match_stats.clear()
+	_match_decided_rounds = 0
+	_match_decided_rounds_with_support = 0
 	_competitor_order.clear()
 	_robot_support_state.clear()
 
@@ -117,7 +125,7 @@ func start_match() -> void:
 			_register_competitor(robot)
 
 	_round_elapsed_seconds = 0.0
-	_round_intro_remaining = maxf(round_intro_duration, 0.0)
+	_round_intro_remaining = _resolve_round_intro_duration()
 	_match_restart_deadline_msec = 0
 	_round_status_line = _build_round_intro_status_line() if is_round_intro_active() else "Ronda %s en juego" % _round_number
 	round_started.emit(_round_number)
@@ -496,6 +504,9 @@ func record_support_payload_use(robot: RobotBase, payload_name: String = "") -> 
 
 	_increment_robot_match_stat(robot, "support_uses")
 	_increment_support_payload_stat(robot, payload_name, "support_use")
+	var competitor_key := _get_competitor_key(robot)
+	if competitor_key != "":
+		_round_support_usage_by_competitor[competitor_key] = true
 
 
 func record_robot_elimination(
@@ -851,6 +862,9 @@ func _build_match_stats_lines() -> Array[String]:
 		return []
 
 	var lines: Array[String] = []
+	var support_summary := _build_match_support_summary_line()
+	if support_summary != "":
+		lines.append(support_summary)
 	for competitor_key in _get_match_stats_ordered_competitors():
 		var stats_line := _build_competitor_match_stats_line(competitor_key)
 		if stats_line == "":
@@ -859,6 +873,17 @@ func _build_match_stats_lines() -> Array[String]:
 		lines.append(stats_line)
 
 	return lines
+
+
+func _build_match_support_summary_line() -> String:
+	if _match_decided_rounds <= 0:
+		return ""
+
+	var support_decider_percent := int(round((float(_match_decided_rounds_with_support) / float(_match_decided_rounds)) * 100.0))
+	return "Aporte de apoyo | %s rondas (%s%%) decisivas con apoyo" % [
+		"%s/%s" % [_match_decided_rounds_with_support, _match_decided_rounds],
+		support_decider_percent,
+	]
 
 
 func _build_competitor_match_stats_line(competitor_key: String) -> String:
@@ -889,16 +914,32 @@ func _build_competitor_match_stats_line(competitor_key: String) -> String:
 func _build_support_stats_segment(stats: Dictionary) -> String:
 	var support_pickups := int(stats.get("support_pickups", 0))
 	var support_uses := int(stats.get("support_uses", 0))
+	var support_rounds_decided := int(stats.get("support_rounds_decided", 0))
 	if support_pickups <= 0 and support_uses <= 0:
 		return ""
 	if support_uses <= 0:
-		return "apoyo %s" % support_pickups
+		var round_support_segment := _build_support_round_segment(support_rounds_decided)
+		return "apoyo %s" % support_pickups if round_support_segment == "" else "apoyo %s | %s" % [support_pickups, round_support_segment]
 	var usage_label := _build_plural_segment(support_uses, "uso", "usos")
 	var payload_breakdown := _build_support_payload_breakdown(stats, "support_use")
+	var segments: Array[String] = []
 	if payload_breakdown.is_empty():
-		return "apoyo %s (%s)" % [support_pickups, usage_label]
+		segments.append("apoyo %s (%s)" % [support_pickups, usage_label])
+	else:
+		segments.append("apoyo %s (%s: %s)" % [support_pickups, usage_label, ", ".join(payload_breakdown)])
 
-	return "apoyo %s (%s: %s)" % [support_pickups, usage_label, ", ".join(payload_breakdown)]
+	var round_segment := _build_support_round_segment(support_rounds_decided)
+	if round_segment != "":
+		segments.append(round_segment)
+
+	return " | ".join(segments)
+
+
+func _build_support_round_segment(support_rounds_decided: int) -> String:
+	if _match_decided_rounds <= 0 or support_rounds_decided <= 0:
+		return ""
+	var support_rounds_percent := int(round((float(support_rounds_decided) / float(_match_decided_rounds)) * 100.0))
+	return "rondas decisivas por apoyo %s/%s (%s%%)" % [support_rounds_decided, _match_decided_rounds, support_rounds_percent]
 
 
 func _build_support_payload_breakdown(stats: Dictionary, stat_prefix: String) -> Array[String]:
@@ -1193,6 +1234,7 @@ func _ensure_competitor_match_stats(competitor_key: String) -> void:
 		"support_use_surge": 0,
 		"support_use_mobility": 0,
 		"support_use_interference": 0,
+		"support_rounds_decided": 0,
 		"parts_lost": 0,
 		"arms_lost": 0,
 		"legs_lost": 0,
@@ -1288,6 +1330,10 @@ func _get_remaining_competitor_keys() -> Array[String]:
 func _finish_round_with_winner(winner_key: String, finishing_cause: EliminationCause) -> void:
 	_round_active = false
 	_round_reset_pending = true
+	_match_decided_rounds += 1
+	if _round_support_usage_by_competitor.has(winner_key):
+		_match_decided_rounds_with_support += 1
+		_increment_competitor_match_stat(winner_key, "support_rounds_decided")
 	var round_points := _get_round_victory_points_for_cause(finishing_cause)
 	var winner_score := int(_competitor_scores.get(winner_key, 0)) + round_points
 	_competitor_scores[winner_key] = winner_score
@@ -1360,15 +1406,23 @@ func _reset_round() -> void:
 	_round_elimination_recap_entries.clear()
 	_round_elimination_highlight_entries.clear()
 	_last_elimination_summary = ""
+	_round_support_usage_by_competitor.clear()
 	_robot_support_state.clear()
 	_round_number += 1
 	_round_active = true
 	_round_reset_pending = false
 	_round_elapsed_seconds = 0.0
-	_round_intro_remaining = maxf(round_intro_duration, 0.0)
+	_round_intro_remaining = _resolve_round_intro_duration()
 	_match_restart_deadline_msec = 0
 	_round_status_line = _build_round_intro_status_line() if is_round_intro_active() else "Ronda %s en juego" % _round_number
 	round_started.emit(_round_number)
+
+
+func _resolve_round_intro_duration() -> float:
+	if match_config == null:
+		return maxf(round_intro_duration, 0.0)
+
+	return maxf(match_config.get_round_intro_duration(match_mode == MatchMode.FFA), 0.0)
 
 
 func _restart_match() -> void:

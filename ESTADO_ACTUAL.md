@@ -29,6 +29,9 @@
 
 El proyecto ya tiene una base jugable en Godot 4.6 con:
 
+- selector rápido de modo por slot dentro del laboratorio: `Main` ahora acepta `1-8` para alternar `Easy/Hard` del jugador correspondiente sin pasar antes por `F2`, y el estado del HUD cambia a `Lab: Pn ...` para confirmar el slot activo tras cada toggle
+- score de apoyo mejor aterrizado en cierre: recap y resultado final ahora incluyen una línea global `Aporte de apoyo | X/Y rondas ...` y, dentro de `Stats | Equipo ...`, el segmento `rondas decisivas por apoyo ...` además del desglose por payload
+- nueva línea base de tuning de arquetipos en recursos: `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` ajustan multiplicadores base de empuje/daño/movilidad/recuperación para que el próximo playtest corto mida identidad con menos ruido de balance viejo
 - soporte post-muerte Teams tambien consistente en identidad textual: la `PilotSupportShip` ya no vuelve a `Player X` pelado cuando resume el objetivo seleccionado; `apoyo ... > <objetivo>` reutiliza el mismo `Player / Arquetipo` del roster vivo para aliados y rivales
 - cierre de ronda/partida con pesos por causa validado para 2 modos:
   - `MatchController` suma puntos de ronda por causa (`ring_out`, `destruccion total`, `explosion inestable`) y `match_elimination_victory_weights_test.gd` valida ese contrato en sesiones cortas de `Teams` y `FFA`.

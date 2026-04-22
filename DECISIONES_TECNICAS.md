@@ -2,6 +2,20 @@
 
 ## Decisiones vigentes
 
+1. **El laboratorio admite toggle directo de `Easy/Hard` por slot con las teclas `1-8`**
+ - `Main._unhandled_input()` ahora traduce `KEY_1..KEY_8` a `player_slot` y delega en `toggle_lab_control_mode_for_player_slot()`, que reaprovecha `_apply_lab_runtime_loadout(...)` para cambiar modo sin reabrir escena.
+ - `F2/F3/F4` siguen como selector fino, pero el flujo corto de playtest ya no depende de recorrer slots uno por uno solo para comparar controles.
+ - Motivo: reducir fricción del laboratorio y validar mejor el soporte Hard sin meter otro menú ni persistencia prematura.
+
+1. **La telemetría de soporte distingue rondas decisivas y se publica en el mismo bloque de cierre**
+ - `MatchController.record_support_payload_use()` marca `_round_support_usage_by_competitor`; al cerrar la ronda, `_finish_round_with_winner()` incrementa `_match_decided_rounds`, `_match_decided_rounds_with_support` y `support_rounds_decided` del competidor ganador si hubo apoyo real en esa ronda.
+ - `get_match_result_lines()` y `get_round_recap_panel_lines()` ahora incluyen `Aporte de apoyo | X/Y rondas ...` y extienden `Stats | ...` con `rondas decisivas por apoyo ...`.
+ - Motivo: medir si el soporte Teams cambia cierres reales sin abrir otra telemetría separada ni inflar la UI post-partida.
+
+1. **El tuning actual de arquetipos se trata como línea base de laboratorio, no como balance final**
+ - Los recursos `ariete/grua/cizalla/patin/aguja/ancla_archetype.tres` reciben ajustes de multiplicadores sobre empuje, daño, movilidad, recuperación y timings de skill, pero sin crear sistemas nuevos.
+ - Motivo: el siguiente paso es playtest corto con identidades más marcadas; documentarlo como baseline evita leer estos números como cierre definitivo de balance.
+
 1. **Los tests de cierre deben distinguir score por causa vs lifecycle de match**
  - `MatchController._finish_round_with_winner()` suma score usando `MatchConfig.get_round_victory_points_for_cause(...)`, así que los tests ya no pueden asumir `+1` fijo por victoria.
  - `match_round_resolution_test.gd` valida el contrato real del score por causa; `match_completion_test.gd` fuerza `void/destruction/unstable = 1` porque su objetivo es validar el ciclo `first-to-X`.

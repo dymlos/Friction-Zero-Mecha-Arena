@@ -2,6 +2,7 @@ extends SceneTree
 
 const MAIN_SCENE := preload("res://scenes/main/main.tscn")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
+const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 var _failed := false
@@ -49,8 +50,7 @@ func _run() -> void:
 	_assert(explicit_roster.contains("Eq"), "El roster explicito deberia mostrar el estado energetico balanceado.")
 	_assert(explicit_roster.contains("WASD"), "El roster explicito deberia mantener visible la referencia de controles.")
 
-	match_controller.match_config.set("hud_detail_mode", 1)
-	main.call("_refresh_hud")
+	match_controller.cycle_hud_detail_mode()
 	await process_frame
 
 	var contextual_round := round_label.text
@@ -86,6 +86,39 @@ func _run() -> void:
 		contextual_damage_roster.contains("3/4 partes"),
 		"El roster contextual deberia volver a mostrar partes cuando el robot ya no esta intacto."
 	)
+
+	# HUD: validar defaults por modo desde MatchConfig (sin override runtime).
+	var original_config := match_controller.match_config
+	var original_mode := match_controller.match_mode
+	var teams_default_config := MatchConfig.new()
+	var ffa_default_config := MatchConfig.new()
+
+	teams_default_config.hud_detail_mode_ffa = MatchConfig.HudDetailMode.EXPLICIT
+	teams_default_config.hud_detail_mode_teams = MatchConfig.HudDetailMode.CONTEXTUAL
+	teams_default_config.hud_detail_mode = MatchConfig.HudDetailMode.EXPLICIT
+	ffa_default_config.hud_detail_mode_ffa = MatchConfig.HudDetailMode.CONTEXTUAL
+	ffa_default_config.hud_detail_mode_teams = MatchConfig.HudDetailMode.EXPLICIT
+	ffa_default_config.hud_detail_mode = MatchConfig.HudDetailMode.EXPLICIT
+
+	match_controller.match_config = teams_default_config
+	match_controller.match_mode = MatchController.MatchMode.TEAMS
+	match_controller.set("_hud_detail_mode_override", -1)
+	_assert(
+		match_controller.get_hud_detail_mode() == MatchConfig.HudDetailMode.CONTEXTUAL,
+		"Teams debe usar hud_detail_mode_teams como default de arranque."
+	)
+
+	match_controller.match_config = ffa_default_config
+	match_controller.match_mode = MatchController.MatchMode.FFA
+	match_controller.set("_hud_detail_mode_override", -1)
+	_assert(
+		match_controller.get_hud_detail_mode() == MatchConfig.HudDetailMode.CONTEXTUAL,
+		"FFA debe usar hud_detail_mode_ffa como default de arranque."
+	)
+
+	# Restaurar estado para no influir en el resto del test y el cleanup.
+	match_controller.match_config = original_config
+	match_controller.match_mode = original_mode
 
 	await _cleanup_main(main)
 	_finish()
