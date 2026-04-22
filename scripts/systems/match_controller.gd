@@ -1245,6 +1245,9 @@ func _on_transition_timer_timeout() -> void:
 
 
 func _build_score_summary_line() -> String:
+	if match_mode == MatchMode.FFA and not _should_show_live_ffa_standings():
+		return ""
+
 	var score_parts: Array[String] = []
 	var ordered_competitors := _competitor_order.duplicate()
 	if match_mode == MatchMode.FFA:

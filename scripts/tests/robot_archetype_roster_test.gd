@@ -103,8 +103,16 @@ func _validate_lab_hud_surfaces_the_roster_identity() -> void:
 	_assert(match_controller != null, "La escena FFA deberia seguir exponiendo MatchController para el marcador.")
 	if match_controller != null:
 		var score_line := _find_line_with_prefix(match_controller.get_round_state_lines(), "Marcador |")
-		_assert(score_line.contains("Ariete"), "El marcador FFA deberia exponer identidades de arquetipo, no solo slots.")
-		_assert(score_line.contains("Patin"), "El marcador FFA deberia mantener visible el roster de movilidad.")
+		_assert(
+			score_line == "",
+			"El opening neutral FFA no deberia reintroducir `Marcador | ...` solo para mostrar arquetipos."
+		)
+	var ffa_roster_label := ffa.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	_assert(ffa_roster_label is Label, "La escena FFA deberia conservar el roster compacto como lectura de identidad.")
+	if ffa_roster_label is Label:
+		var ffa_roster_text := (ffa_roster_label as Label).text
+		_assert(ffa_roster_text.contains("Ariete"), "El roster FFA deberia seguir exponiendo la identidad Ariete.")
+		_assert(ffa_roster_text.contains("Patin"), "El roster FFA deberia seguir exponiendo la identidad Patin.")
 
 	await _cleanup_node(ffa)
 

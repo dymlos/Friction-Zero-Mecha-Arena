@@ -2,6 +2,10 @@
 
 ## Decisiones vigentes
 
+1. **La apertura neutral FFA oculta tambien el score vivo**
+   - `MatchController._build_score_summary_line()` ahora reutiliza `_should_show_live_ffa_standings()` cuando el match corre en `FFA`, de modo que `Marcador | ...` desaparece junto con `Posiciones | ...` y `Desempate | ...` mientras todo sigue 0-0 y nadie fue eliminado.
+   - Motivo: el criterio anterior ya habia limpiado standings/desempate, pero dejar el score 4-way empatado en pantalla seguia metiendo ruido en el momento mas limpio de la ronda. Reusar el mismo gate mantiene el HUD coherente sin abrir otra regla.
+
 1. **El ranking vivo de FFA solo aparece cuando ya informa algo**
    - `MatchController` ahora deja `Posiciones | ...` y `Desempate | ...` fuera de `get_round_state_lines()` mientras la ronda sigue activa, nadie fue eliminado y todos los competidores continúan con el mismo score; en recap/resultado final se mantienen siempre, y durante la ronda reaparecen apenas hay score divergente o una baja que ya rompa la neutralidad.
    - Motivo: la lectura FFA en vivo era valiosa, pero imprimir una tabla 4-way empatada al arranque agregaba ruido justo en el momento mas limpio del match. El criterio nuevo preserva la informacion importante sin volver opaco el opening.

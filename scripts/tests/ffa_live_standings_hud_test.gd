@@ -34,6 +34,10 @@ func _run() -> void:
 
 	var opening_round_lines := match_controller.get_round_state_lines()
 	_assert(
+		not _has_prefix_line(opening_round_lines, "Marcador | "),
+		"El HUD vivo de FFA no deberia gastar una linea en un marcador totalmente empatado durante la apertura neutral."
+	)
+	_assert(
 		not _has_prefix_line(opening_round_lines, "Posiciones | "),
 		"El HUD vivo de FFA no deberia mostrar posiciones mientras toda la ronda sigue empatada y nadie fue eliminado."
 	)
@@ -50,6 +54,10 @@ func _run() -> void:
 	await create_timer(0.05).timeout
 
 	var round_lines := match_controller.get_round_state_lines()
+	_assert(
+		_has_prefix_line(round_lines, "Marcador | "),
+		"En cuanto la ronda FFA ya tiene score util, el HUD vivo deberia volver a mostrar el marcador."
+	)
 	var expected_standings := "Posiciones | 1. %s (1) | 2. %s (0) | 3. %s (0) | 4. %s (0)" % [
 		robots[3].display_name,
 		robots[2].display_name,

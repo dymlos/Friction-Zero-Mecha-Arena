@@ -133,9 +133,10 @@ func _validate_ffa_scoreboard_refreshes_after_runtime_loadout_change() -> void:
 	await process_frame
 
 	var match_controller := ffa.get_node_or_null("Systems/MatchController") as MatchController
+	var robots := _get_scene_robots(ffa)
 	_assert(match_controller != null, "La escena FFA deberia seguir exponiendo MatchController.")
 	_assert(ffa.has_method("cycle_selected_lab_archetype"), "El selector runtime deberia reutilizarse tambien en FFA.")
-	if match_controller == null or not ffa.has_method("cycle_selected_lab_archetype"):
+	if match_controller == null or not ffa.has_method("cycle_selected_lab_archetype") or robots.size() < 4:
 		await _cleanup_node(ffa)
 		return
 
@@ -143,14 +144,24 @@ func _validate_ffa_scoreboard_refreshes_after_runtime_loadout_change() -> void:
 	await process_frame
 	await process_frame
 
+	for robot in robots:
+		robot.void_fall_y = -100.0
+
+	robots[0].fall_into_void()
+	await create_timer(0.05).timeout
+	robots[2].fall_into_void()
+	await create_timer(0.05).timeout
+	robots[3].fall_into_void()
+	await create_timer(0.05).timeout
+
 	var score_line := _find_line_with_prefix(match_controller.get_round_state_lines(), "Marcador |")
 	_assert(
 		score_line.contains("[Grua]"),
-		"El marcador FFA deberia refrescar el arquetipo visible tras un cambio runtime."
+		"Cuando el marcador FFA reaparece tras una baja real, deberia refrescar el arquetipo visible despues de un cambio runtime."
 	)
 	_assert(
 		not score_line.contains("[Ariete]"),
-		"El marcador FFA no deberia conservar etiquetas stale despues del cambio runtime."
+		"Cuando el marcador FFA reaparece tras una baja real, no deberia conservar etiquetas stale despues del cambio runtime."
 	)
 	_assert(
 		String(ffa.call("get_lab_selector_summary_line")).contains("Grua"),

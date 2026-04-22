@@ -54,7 +54,7 @@
 6. **Validar la identidad del nuevo laboratorio FFA**
    - correr primero sesiones cortas en `scenes/main/main_ffa_validation.tscn` para calibrar oportunismo, third-party, cierres de ronda y rotacion de borde sin la duracion del laboratorio libre base.
    - usar despues `scenes/main/main_ffa.tscn` para comprobar si esa lectura compacta sigue sosteniendose en el laboratorio libre mas largo, ahora que el roster incluye a `Aguja` y `Ancla`.
-   - medir si el combo vivo `Marcador | ...` + `Posiciones | ...` + `Desempate | N pts: Player X > ...`, ahora oculto durante la apertura neutral, alcanza para explicar score y empates en FFA o si aun hace falta compactar/mejorar esa lectura cuando la ronda esta cargada.
+   - medir si el combo vivo `Marcador | ...` + `Posiciones | ...` + `Desempate | N pts: Player X > ...`, ahora oculto por completo durante la apertura neutral, alcanza para explicar score y empates en FFA o si aun hace falta compactar/mejorar esa lectura cuando la ronda esta cargada.
    - medir si el rescate/negacion sigue siendo entendible cuando nadie tiene aliados y decidir si FFA necesita valores o spawns propios, no solo otra bandera de match.
    - revisar si `Baliza` vuelve algunas diagonales/coberturas demasiado seguras o si realmente empuja rotacion y lectura espacial.
    - revisar si el marcador first-to-3 y la contraccion actual producen buen ritmo en FFA o si ese modo necesita objetivo/duracion distintos.

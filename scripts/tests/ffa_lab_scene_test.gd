@@ -40,9 +40,10 @@ func _run() -> void:
 
 	var round_lines := match_controller.get_round_state_lines()
 	var score_line := _find_line_with_prefix(round_lines, "Marcador |")
-	_assert(score_line.contains("Player 1"), "El marcador FFA deberia listar jugadores individuales.")
-	_assert(score_line.contains("Player 4"), "El marcador FFA deberia incluir a todos los competidores visibles.")
-	_assert(not score_line.contains("Equipo"), "La escena FFA no deberia presentar marcador por equipos.")
+	_assert(
+		score_line == "",
+		"La escena FFA deberia arrancar con un opening neutral limpio, sin `Marcador | ...` mientras nadie fue eliminado y todo sigue empatado."
+	)
 
 	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
 	_assert(roster_label is Label, "La escena FFA deberia conservar el roster compacto.")

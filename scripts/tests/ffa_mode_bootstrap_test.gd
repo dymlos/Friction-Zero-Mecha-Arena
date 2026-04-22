@@ -77,8 +77,10 @@ func _run() -> void:
 
 	var round_lines := match_controller.get_round_state_lines()
 	var score_line := _find_line_with_prefix(round_lines, "Marcador |")
-	_assert(score_line.contains("Player 1"), "El marcador FFA deberia listar a cada robot por nombre.")
-	_assert(not score_line.contains("Equipo"), "El marcador FFA no deberia agrupar competidores por equipo.")
+	_assert(
+		score_line == "",
+		"El bootstrap FFA deberia heredar el opening neutral limpio y no mostrar `Marcador | ...` mientras el score siga totalmente empatado."
+	)
 
 	await _cleanup_main(main)
 	_finish()
