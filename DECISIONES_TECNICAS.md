@@ -2,6 +2,10 @@
 
 ## Decisiones vigentes
 
+1. **El detalle por robot del cierre FFA reutiliza el mismo orden de standings**
+   - `get_round_recap_panel_lines()` y `get_match_result_lines()` ahora iteran `_get_recap_ordered_robots()`; en `FFA`, ese helper ordena los robots con `_compare_ffa_competitors_for_standings()` en vez de respetar `registered_robots`.
+   - Motivo: despues de ordenar `Marcador`, `Posiciones` y `Desempate`, dejar el breakdown final en scene-order seguia mezclando dos lecturas distintas del mismo cierre. Reusar el comparator existente mantiene consistencia sin inventar otra regla.
+
 1. **La apertura neutral FFA oculta tambien el score vivo**
    - `MatchController._build_score_summary_line()` ahora reutiliza `_should_show_live_ffa_standings()` cuando el match corre en `FFA`, de modo que `Marcador | ...` desaparece junto con `Posiciones | ...` y `Desempate | ...` mientras todo sigue 0-0 y nadie fue eliminado.
    - Motivo: el criterio anterior ya habia limpiado standings/desempate, pero dejar el score 4-way empatado en pantalla seguia metiendo ruido en el momento mas limpio de la ronda. Reusar el mismo gate mantiene el HUD coherente sin abrir otra regla.

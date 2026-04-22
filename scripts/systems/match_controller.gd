@@ -313,7 +313,7 @@ func get_round_recap_panel_lines() -> Array[String]:
 		lines.append_array(_build_match_stats_lines())
 	lines.append_array(_build_round_highlight_lines())
 
-	for robot in registered_robots:
+	for robot in _get_recap_ordered_robots():
 		if not is_instance_valid(robot):
 			continue
 
@@ -352,7 +352,7 @@ func get_match_result_lines() -> Array[String]:
 		lines.append(tiebreaker_line)
 	lines.append_array(_build_match_stats_lines())
 	lines.append_array(_build_round_highlight_lines())
-	for robot in registered_robots:
+	for robot in _get_recap_ordered_robots():
 		if not is_instance_valid(robot):
 			continue
 
@@ -629,6 +629,33 @@ func _build_robot_part_state_summary(robot: RobotBase) -> String:
 		segments.append("sin %s" % ", ".join(missing_parts))
 
 	return " | ".join(segments)
+
+
+func _get_recap_ordered_robots() -> Array[RobotBase]:
+	var ordered_robots: Array[RobotBase] = []
+	for robot in registered_robots:
+		if not is_instance_valid(robot):
+			continue
+
+		ordered_robots.append(robot)
+
+	if match_mode != MatchMode.FFA:
+		return ordered_robots
+
+	ordered_robots.sort_custom(_compare_ffa_robots_for_recap)
+	return ordered_robots
+
+
+func _compare_ffa_robots_for_recap(a: RobotBase, b: RobotBase) -> bool:
+	if a == null or b == null:
+		return is_instance_valid(a)
+
+	var competitor_a := _get_competitor_key(a)
+	var competitor_b := _get_competitor_key(b)
+	if competitor_a == competitor_b:
+		return registered_robots.find(a) < registered_robots.find(b)
+
+	return _compare_ffa_competitors_for_standings(competitor_a, competitor_b)
 
 
 func _register_competitor(robot: RobotBase) -> void:

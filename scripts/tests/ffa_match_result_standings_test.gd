@@ -121,6 +121,36 @@ func _run() -> void:
 		),
 		"El panel final FFA deberia dejar legible que jugadores ganan el desempate."
 	)
+	var winner_detail := "%s | sigue en pie | 4/4 partes" % robots[3].display_name
+	var third_place_detail := "%s | baja 3 | vacio | 4/4 partes" % robots[2].display_name
+	var fourth_place_detail := "%s | baja 2 | vacio | 4/4 partes" % robots[1].display_name
+	var fifth_place_detail := "%s | baja 1 | vacio | 4/4 partes" % robots[0].display_name
+	var recap_lines := match_controller.get_round_recap_panel_lines()
+	var match_result_lines := match_controller.get_match_result_lines()
+	_assert(
+		_line_index(recap_lines, winner_detail) < _line_index(recap_lines, third_place_detail),
+		"El recap FFA deberia ordenar el detalle por robot siguiendo la posicion final real."
+	)
+	_assert(
+		_line_index(recap_lines, third_place_detail) < _line_index(recap_lines, fourth_place_detail),
+		"El recap FFA deberia mantener el detalle de empates en el mismo orden real del cierre."
+	)
+	_assert(
+		_line_index(recap_lines, fourth_place_detail) < _line_index(recap_lines, fifth_place_detail),
+		"El recap FFA deberia dejar ultimo al primer eliminado cuando todos empatan en score."
+	)
+	_assert(
+		_line_index(match_result_lines, winner_detail) < _line_index(match_result_lines, third_place_detail),
+		"El resultado final FFA deberia ordenar el detalle por robot siguiendo la posicion final real."
+	)
+	_assert(
+		_line_index(match_result_lines, third_place_detail) < _line_index(match_result_lines, fourth_place_detail),
+		"El resultado final FFA deberia mantener el orden real del desempate tambien en el detalle por robot."
+	)
+	_assert(
+		_line_index(match_result_lines, fourth_place_detail) < _line_index(match_result_lines, fifth_place_detail),
+		"El resultado final FFA deberia dejar ultimo al primer eliminado cuando todos empatan en score."
+	)
 
 	await _cleanup_main(main)
 	_finish()
@@ -142,6 +172,14 @@ func _has_line(lines: Array[String], expected: String) -> bool:
 			return true
 
 	return false
+
+
+func _line_index(lines: Array[String], expected: String) -> int:
+	for index in range(lines.size()):
+		if lines[index] == expected:
+			return index
+
+	return 999
 
 
 func _assert(condition: bool, message: String) -> void:
