@@ -32,6 +32,16 @@ func _run() -> void:
 	for robot in robots:
 		robot.void_fall_y = -100.0
 
+	var opening_round_lines := match_controller.get_round_state_lines()
+	_assert(
+		not _has_prefix_line(opening_round_lines, "Posiciones | "),
+		"El HUD vivo de FFA no deberia mostrar posiciones mientras toda la ronda sigue empatada y nadie fue eliminado."
+	)
+	_assert(
+		not _has_prefix_line(opening_round_lines, "Desempate | "),
+		"El HUD vivo de FFA no deberia gastar una linea en el desempate mientras el ranking todavia no aporta informacion real."
+	)
+
 	robots[0].fall_into_void()
 	await create_timer(0.05).timeout
 	robots[1].fall_into_void()
@@ -72,6 +82,14 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 func _has_line(lines: Array[String], expected: String) -> bool:
 	for line in lines:
 		if line == expected:
+			return true
+
+	return false
+
+
+func _has_prefix_line(lines: Array[String], expected_prefix: String) -> bool:
+	for line in lines:
+		if line.begins_with(expected_prefix):
 			return true
 
 	return false

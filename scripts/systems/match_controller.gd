@@ -869,6 +869,8 @@ func _build_ffa_standings_line() -> String:
 		return ""
 	if _competitor_order.is_empty():
 		return ""
+	if not _should_show_live_ffa_standings():
+		return ""
 
 	var ordered_competitors := _competitor_order.duplicate()
 	ordered_competitors.sort_custom(_compare_ffa_competitors_for_standings)
@@ -887,10 +889,21 @@ func _build_ffa_standings_line() -> String:
 func _build_ffa_tiebreaker_line() -> String:
 	if match_mode != MatchMode.FFA:
 		return ""
+	if not _should_show_live_ffa_standings():
+		return ""
 	if not _ffa_standings_have_score_tie():
 		return ""
 
 	return "Desempate | score igual -> mejor cierre de la ronda final"
+
+
+func _should_show_live_ffa_standings() -> bool:
+	if not _round_active:
+		return true
+	if not _round_elimination_order_by_robot_id.is_empty():
+		return true
+
+	return _ffa_scores_have_difference()
 
 
 func _ffa_standings_have_score_tie() -> bool:
@@ -903,6 +916,18 @@ func _ffa_standings_have_score_tie() -> bool:
 		if seen_scores.has(score):
 			return true
 		seen_scores[score] = true
+
+	return false
+
+
+func _ffa_scores_have_difference() -> bool:
+	if _competitor_order.size() < 2:
+		return false
+
+	var baseline_score := int(_competitor_scores.get(_competitor_order[0], 0))
+	for competitor_key in _competitor_order:
+		if int(_competitor_scores.get(competitor_key, 0)) != baseline_score:
+			return true
 
 	return false
 
