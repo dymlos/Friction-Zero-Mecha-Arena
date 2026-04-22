@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El recap lateral y el panel final ahora son autosuficientes para leer el cierre:
+  - `MatchController` ya no deja la cadena compacta `Resumen | ...` solo en el bloque principal del HUD; `get_round_recap_panel_lines()` y `get_match_result_lines()` la reutilizan tambien dentro de `RecapPanel` y `MatchResultPanel`.
+  - la correccion se resolvio sin duplicar string-building: ambos cierres consumen `get_round_recap_line()` como unica fuente de verdad del recap textual.
+  - `match_highlight_moments_test.gd` ahora fija que el resumen compacto aparezca en el array del recap, en `RecapLabel` y en `MatchResultLabel`.
+  - validacion: `godot --headless --path . -s res://scripts/tests/match_highlight_moments_test.gd`, `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - Objetivo del match mas claro dentro del HUD explicito:
   - `MatchController` ya no rotula el target del match como `Primero a N` a secas; ahora publica `Objetivo | Primero a N pts`.
   - el cambio alinea la lectura fija del laboratorio con el score ponderado por causa (`ring-out/destruccion total/explosion inestable`) que ya vive en recap y cierre final.

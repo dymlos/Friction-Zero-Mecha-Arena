@@ -398,6 +398,9 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var tiebreaker_line := _build_ffa_tiebreaker_line()
 	if tiebreaker_line != "":
 		lines.append(tiebreaker_line)
+	var recap_line := get_round_recap_line()
+	if recap_line != "":
+		lines.append(recap_line)
 	if _match_over:
 		lines.append_array(_build_match_stats_lines())
 	lines.append_array(_build_round_highlight_lines())
@@ -451,6 +454,9 @@ func get_match_result_lines() -> Array[String]:
 	var tiebreaker_line := _build_ffa_tiebreaker_line()
 	if tiebreaker_line != "":
 		lines.append(tiebreaker_line)
+	var recap_line := get_round_recap_line()
+	if recap_line != "":
+		lines.append(recap_line)
 	lines.append_array(_build_match_stats_lines())
 	lines.append_array(_build_round_highlight_lines())
 	for robot in _get_recap_ordered_robots():

@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## Recap y resultado final ahora incluyen tambien el `Resumen | ...` compacto (2026-04-22)
+
+- Estado: `RecapPanel` y `MatchResultPanel` ya no dependen del bloque principal del HUD para explicar de un vistazo la secuencia de bajas que cerro la ronda/partida.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` reutiliza `get_round_recap_line()` dentro de `get_round_recap_panel_lines()` y `get_match_result_lines()`, manteniendo una sola fuente de verdad para la cadena `Resumen | ...`.
+  - `scripts/tests/match_highlight_moments_test.gd` ahora exige esa linea en el recap lateral, en el texto visible del recap y en el panel final, junto a `Momento inicial/final`.
+- Resultado:
+  - el cierre ya combina resumen compacto + snippets de momentos + detalle por robot dentro de cada panel, sin obligar a mirar otra zona del HUD para reconstruir la ronda.
+  - `godot --headless --path . -s res://scripts/tests/match_highlight_moments_test.gd`, `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 83 tests`).
+
 ## El HUD explicito ya aclara que el objetivo del match son puntos (2026-04-22)
 
 - Estado: la linea fija `Objetivo | ...` ya no queda ambigua frente al score ponderado por causa; ahora explicita `Primero a N pts`.

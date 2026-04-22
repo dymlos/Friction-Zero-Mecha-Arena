@@ -8,6 +8,11 @@
 2. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 
+0. **No volver a dejar `Resumen | ...` fuera de `RecapPanel` y `MatchResultPanel`**
+ - `MatchController` ya reutiliza `get_round_recap_line()` dentro de `get_round_recap_panel_lines()` y `get_match_result_lines()`; si se retocan esos builders, mantener una sola fuente de verdad para la cadena compacta del cierre.
+ - `match_highlight_moments_test.gd` ahora congela que el resumen aparezca en el array del recap y en los labels visibles del recap lateral y del panel final.
+ - Reabrir solo si el cierre abandona esos paneles o si otra capa igual de visible reemplaza explicitamente al resumen compacto.
+
 0. **No volver a dejar ambiguo que el objetivo del match son puntos**
  - `MatchController.get_round_state_lines()` ya publica `Objetivo | Primero a N pts`; mantener esa unidad mientras el match siga usando puntaje ponderado por causa.
  - `match_completion_test.gd` fija el wording exacto dentro del HUD explicito; si se retocan `get_round_state_lines()` o la terminologia del target, conservar esa fixture.

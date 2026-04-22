@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **Los paneles de cierre deben incluir tambien la cadena compacta `Resumen | ...`**
+ - `MatchController.get_round_recap_panel_lines()` y `get_match_result_lines()` ahora reutilizan `get_round_recap_line()` antes de `Momento inicial/final` y del detalle por robot.
+ - `match_highlight_moments_test.gd` fija el contrato en tres superficies: el array del recap, `RecapLabel` y `MatchResultLabel`.
+ - Motivo: la lectura de cierre ya tenia snippets y detalle por robot, pero el resumen compacto seguia viviendo solo en el bloque principal del HUD. Reutilizar la misma fuente de verdad vuelve autosuficientes a ambos paneles sin duplicar telemetria ni abrir otra UI.
+
 1. **El objetivo fijo del HUD debe nombrar puntos, no rondas, mientras el match use score ponderado**
  - `MatchController.get_round_state_lines()` ahora publica `Objetivo | Primero a N pts` en HUD explicito.
  - `match_completion_test.gd` fija el wording exacto para que el laboratorio no vuelva a ocultar la unidad del target.

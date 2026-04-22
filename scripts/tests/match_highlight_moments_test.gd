@@ -45,6 +45,13 @@ func _run() -> void:
 	await create_timer(0.05).timeout
 
 	_assert(
+		_has_line(
+			match_controller.get_round_recap_panel_lines(),
+			"Resumen | Player 3 cayo al vacio -> Player 4 cayo al vacio"
+		),
+		"El recap lateral deberia incluir tambien el resumen compacto de bajas para que el cierre se entienda de un vistazo."
+	)
+	_assert(
 		_has_line(match_controller.get_round_recap_panel_lines(), "Momento inicial | Player 3 cayo al vacio"),
 		"El recap deberia destacar la primera baja como snippet compacto del cierre."
 	)
@@ -53,12 +60,20 @@ func _run() -> void:
 		"El recap deberia destacar tambien la baja que cerro la ronda/partida."
 	)
 	_assert(
+		recap_label.text.contains("Resumen | Player 3 cayo al vacio -> Player 4 cayo al vacio"),
+		"El recap visible deberia incluir tambien el resumen compacto de bajas."
+	)
+	_assert(
 		recap_label.text.contains("Momento inicial | Player 3 cayo al vacio"),
 		"El recap visible deberia incluir el snippet del primer momento clave."
 	)
 	_assert(
 		recap_label.text.contains("Momento final | Player 4 cayo al vacio"),
 		"El recap visible deberia incluir el snippet del momento final."
+	)
+	_assert(
+		match_result_label.text.contains("Resumen | Player 3 cayo al vacio -> Player 4 cayo al vacio"),
+		"El panel final deberia reutilizar tambien el resumen compacto del cierre."
 	)
 	_assert(
 		match_result_label.text.contains("Momento inicial | Player 3 cayo al vacio"),
