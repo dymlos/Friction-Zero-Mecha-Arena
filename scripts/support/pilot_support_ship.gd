@@ -298,6 +298,10 @@ func _get_payload_availability_label() -> String:
 	var target_robot := get_selected_target_robot()
 	if target_robot == null:
 		return ""
+	if _support_payload_name == PilotSupportPickup.PAYLOAD_STABILIZER:
+		if _get_total_missing_active_part_health(target_robot) <= 0.0:
+			return "sin daño"
+		return ""
 	if _support_payload_name != PilotSupportPickup.PAYLOAD_INTERFERENCE:
 		return ""
 	if _is_target_in_interference_range(target_robot):

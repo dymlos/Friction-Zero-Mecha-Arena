@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## `Stabilizer` sin daño visible en roster (2026-04-22)
+
+- Estado: la nave de apoyo `Teams` ya explica cuando una carga `estabilizador` todavia no puede reparar nada porque su aliado objetivo sigue completamente sano.
+- Correccion aplicada:
+  - `PilotSupportShip.get_status_summary()` ahora agrega `sin daño` para `stabilizer` si el target seleccionado no tiene ninguna parte activa averiada.
+  - la regla reutiliza `_get_total_missing_active_part_health(...)`, asi que el warning se limpia solo cuando aparece una averia real y no abre otra UI.
+  - nuevo `support_payload_availability_readability_test.gd` fija el contrato completo: warning presente con aliado sano y ausente apenas ese mismo aliado recibe daño modular.
+- Resultado:
+  - el roster ya no deja un segundo caso de fallo silencioso dentro del carril post-muerte; ahora `interferencia` y `stabilizer` explican por que su payload aun no aporta valor real.
+  - `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 78 tests`).
+
 ## Interferencia fuera de rango visible en roster (2026-04-22)
 
 - Estado: cuando `PilotSupportShip` lleva `interferencia` pero el rival seleccionado todavia no entra en `support_interference_range`, el HUD compacto ya explica por que el uso falla.

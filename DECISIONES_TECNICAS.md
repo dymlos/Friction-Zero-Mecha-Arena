@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **`Stabilizer` tambien debe explicar cuando todavia no tiene nada que reparar**
+ - `PilotSupportShip.get_status_summary()` ahora agrega `sin daño` cuando la carga actual es `stabilizer`, existe un target seleccionado y ese aliado no tiene ninguna parte activa averiada.
+ - La disponibilidad se calcula reutilizando `_get_total_missing_active_part_health(...)`, asi que el warning desaparece en cuanto aparece una averia real sobre ese mismo target.
+ - Motivo: el slice de soporte ya habia resuelto el fallo silencioso de `interferencia`, pero `stabilizer` todavia podia quedar “armado” sobre un aliado sano sin explicar por que usarlo no aportaba nada. Mantener la regla en el summary conserva HUD y mundo alineados sin otra UI.
+
 1. **La interferencia del soporte debe decir cuando todavia esta fuera de rango**
  - `PilotSupportShip.get_status_summary()` ahora agrega `fuera de rango` si la carga actual es `interferencia`, hay un target seleccionado y ese rival aun no entra en `support_interference_range`.
  - Motivo: el support slice ya tenia telegraph diegetico de rango, pero el roster compacto seguia fallando “mudo” cuando el jugador intentaba usar la carga demasiado pronto. Resolverlo en el summary mantiene HUD y mundo alineados sin otra UI.
