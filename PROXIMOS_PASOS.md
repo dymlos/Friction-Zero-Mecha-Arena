@@ -2,13 +2,15 @@
 
 ## Siguiente iteracion recomendada
 
-0. **Sincronizacion documental aplicada (2026-04-22)**
- - Decisión operativa: mantener el estado alineado y pasar directamente a validar sensibilidad de núcleo de combate en `main.tscn` y `main_teams_validation.tscn` antes de cambios de balance.
- - Criterio de continuidad: el falso rojo de cierre ya quedó resuelto a nivel headless; ahora sí priorizar 3 partidas 2v2 y 3 partidas FFA cortas, buscando choques claros, sin spam de contacto y sin que skills dominen el primer impacto.
- - Ejecución reciente:
-   - `godot --headless --path . -s res://scripts/tests/robot_collision_pacing_test.gd` cubrió 4 escenas (`main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn`, `main_ffa_validation.tscn`) con 3 rondas cortas c/u.
-   - Los cierres ocurrieron en tiempos muy rápidos por lógica de forzado del test; no hubo fallos de aserción sobre daño de choque/telemetría.
-   - En esta pasada no hay ajuste de `RobotBase`; la siguiente ronda queda para validar choque con carga manual real y decidir si tocar solo `base_push_force`, `impact_force_multiplier` o `collision_damage_threshold`.
+0. **Validación runtime de choque cerrada (2026-04-22)**
+ - Decisión operativa: congelar el tuning reciente de `RobotBase` y mover el siguiente playtest a capas de cierre/legibilidad, no a otro ajuste de empuje por intuición.
+ - Evidencia nueva:
+   - `xvfb-run -a godot --path . -s res://scripts/tests/robot_collision_pacing_test.gd` ejecutó 3 rondas reales por escena sobre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+   - En las 12 rondas apareció `PACING | ... | choque_significativo=si` y en ninguna se registró `ring_out_antes_dano=si`.
+   - No hizo falta tocar `passive_push_strength`, `collision_damage_threshold`, `collision_damage_scale` ni `glide_damping` después de esa corrida.
+ - Siguiente criterio de continuidad:
+   - si vuelve a abrirse tuning de choque, debe partir de una nueva corrida runtime equivalente o de playtest manual claro; no volver a una prueba sintética aislada.
+   - el próximo foco ya puede pasar a pesos de cierre por causa, soporte post-muerte o legibilidad en sesiones cortas.
 
 1. **Afinar el perfil de cierre por causa con playtest corto**
   - Definir el ajuste final del peso de cierre por causa con base en sesiones reales:

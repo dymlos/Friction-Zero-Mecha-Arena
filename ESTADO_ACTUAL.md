@@ -26,13 +26,19 @@
 
 ## Validación de sensibilidad de combate (2026-04-22)
 
-- Estado: `robot_base.gd` no necesitó ajuste en esta pasada.
+- Estado: el ajuste mínimo reciente de `RobotBase` quedó validado también en runtime; no hizo falta una segunda pasada de tuning.
 - Hallazgo principal: `match_round_resolution_test.gd` y `match_completion_test.gd` estaban desalineados con el contrato actual de score por causa (`ring_out=2`, `destruccion=1`, `inestable=4`) y por eso daban falso rojo al validar cierre de ronda/partida.
 - Corrección aplicada:
   - `match_round_resolution_test.gd` ahora deriva los puntos esperados desde `MatchConfig`.
   - `match_completion_test.gd` fija explícitamente los puntos de ronda a `1` para seguir validando lifecycle `first-to-X` y no balance por causa.
-  - `robot_collision_pacing_test.gd` agrega cobertura headless del glide corto y del umbral de daño por choque en `RobotBase`.
-- Resultado: las tres validaciones (`robot_collision_pacing_test.gd`, `match_round_resolution_test.gd`, `match_completion_test.gd`) pasan con Godot headless.
+  - `robot_collision_pacing_test.gd` ahora cubre dos capas:
+    - glide corto + umbral de daño por choque en `RobotBase`;
+    - corrida runtime por 4 escenas con input programático real, log `PACING | ... | choque_significativo=...` y detección de `ring_out_antes_dano`.
+  - el settle del glide corto se ajustó de `24` a `26` pasos de `0.1s` para seguir validando el mismo contrato con `glide_damping = 2.9`.
+- Resultado:
+  - `xvfb-run -a godot --path . -s res://scripts/tests/robot_collision_pacing_test.gd` pasa.
+  - `xvfb-run -a godot --path . -s res://scripts/tests/main_scene_runtime_smoke_test.gd` pasa.
+  - las 12 rondas runtime registradas dieron `choque_significativo=si` y `ring_out_antes_dano=no`, así que no quedó evidencia para retocar más el núcleo de choque.
 
 ## Mini-check documental (2026-04-22)
 

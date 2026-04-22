@@ -207,7 +207,7 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export_group("Prototype Movement")
 @export var max_move_speed := 7.5
 @export var move_acceleration := 16.5
-@export var glide_damping := 3.1
+@export var glide_damping := 2.9
 @export var turn_speed := 10.0
 @export var torso_turn_speed := 12.0
 @export var gravity := 28.0
@@ -257,13 +257,13 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var recovery_skill_pickup_range := 3.0
 
 @export_group("Prototype Combat")
-@export var passive_push_strength := 4.0
+@export var passive_push_strength := 4.4
 @export var attack_impulse_strength := 11.0
 @export var attack_range := 2.3
 @export var attack_cooldown := 0.42
 @export var attack_damage := 28.0
-@export var collision_damage_threshold := 4.1
-@export var collision_damage_scale := 6.0
+@export var collision_damage_threshold := 3.9
+@export var collision_damage_scale := 6.3
 @export var collision_damage_cooldown := 0.3
 @export var detached_part_launch_speed := 5.2
 @export var detached_part_throw_speed := 8.0
