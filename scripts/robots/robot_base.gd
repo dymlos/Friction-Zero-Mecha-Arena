@@ -288,6 +288,12 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export var lab_selection_indicator_height := 0.04
 @export_range(0.0, 0.2, 0.01) var lab_selection_indicator_pulse_amount := 0.08
 @export_range(1.0, 10.0, 0.5) var lab_selection_indicator_pulse_speed := 4.0
+@export_group("Prototype Round Intro Readability")
+@export var round_intro_indicator_radius := 0.78
+@export var round_intro_indicator_height := 0.035
+@export_range(0.01, 0.12, 0.01) var round_intro_indicator_thickness := 0.03
+@export_range(0.0, 0.2, 0.01) var round_intro_indicator_pulse_amount := 0.07
+@export_range(1.0, 10.0, 0.5) var round_intro_indicator_pulse_speed := 4.6
 @export_group("Prototype Energy Readability")
 @export_range(0.02, 0.2, 0.01) var energy_focus_indicator_thickness := 0.05
 @export_range(0.05, 0.4, 0.01) var energy_focus_indicator_length := 0.18
@@ -367,6 +373,8 @@ var _recovery_target_floor_indicator: MeshInstance3D = null
 var _recovery_target_indicator_animation_time := 0.0
 var _lab_selection_indicator: MeshInstance3D = null
 var _lab_selection_indicator_animation_time := 0.0
+var _round_intro_indicator: MeshInstance3D = null
+var _round_intro_indicator_animation_time := 0.0
 var _energy_readability_root: Node3D = null
 var _energy_focus_indicator_nodes: Dictionary = {}
 var _energy_focus_indicator_animation_time := 0.0
@@ -1084,6 +1092,7 @@ func _ready() -> void:
 	_setup_carry_indicator()
 	_setup_recovery_target_indicator()
 	_setup_lab_selection_indicator()
+	_setup_round_intro_indicator()
 	_setup_energy_focus_indicators()
 	_setup_status_effect_indicator()
 	_setup_disabled_warning_indicator()
@@ -1173,6 +1182,7 @@ func _process(delta: float) -> void:
 	_refresh_disabled_warning_indicator()
 	_update_recovery_target_indicator_animation(delta)
 	_update_lab_selection_indicator(delta)
+	_update_round_intro_indicator(delta)
 	_update_energy_focus_indicator_animation(delta)
 	_update_status_effect_indicator(delta)
 	_update_disabled_warning_indicator(delta)
@@ -1252,6 +1262,7 @@ func refresh_input_setup() -> void:
 
 func set_round_intro_locked(value: bool) -> void:
 	_round_intro_locked = value
+	_refresh_visual_state()
 	if not _round_intro_locked:
 		return
 
@@ -2663,6 +2674,7 @@ func _refresh_visual_state() -> void:
 	_refresh_carry_return_indicator()
 	_refresh_recovery_target_indicator()
 	_refresh_lab_selection_indicator()
+	_refresh_round_intro_indicator()
 	_refresh_energy_focus_indicators()
 	_refresh_status_effect_indicator()
 	_refresh_disabled_warning_indicator()
@@ -2907,6 +2919,33 @@ func _setup_lab_selection_indicator() -> void:
 	add_child(_lab_selection_indicator)
 
 
+func _setup_round_intro_indicator() -> void:
+	var indicator_mesh := CylinderMesh.new()
+	indicator_mesh.top_radius = round_intro_indicator_radius
+	indicator_mesh.bottom_radius = round_intro_indicator_radius
+	indicator_mesh.height = round_intro_indicator_thickness
+	indicator_mesh.radial_segments = 32
+	indicator_mesh.rings = 1
+
+	var indicator_material := StandardMaterial3D.new()
+	indicator_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	indicator_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	indicator_material.no_depth_test = true
+	indicator_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	indicator_material.albedo_color = Color(0.94, 0.98, 1.0, 0.18)
+	indicator_material.emission_enabled = true
+	indicator_material.emission = Color(0.82, 0.94, 1.0, 1.0)
+	indicator_material.emission_energy_multiplier = 0.65
+
+	_round_intro_indicator = MeshInstance3D.new()
+	_round_intro_indicator.name = "RoundIntroIndicator"
+	_round_intro_indicator.mesh = indicator_mesh
+	_round_intro_indicator.material_override = indicator_material
+	_round_intro_indicator.position = Vector3(0.0, round_intro_indicator_height, 0.0)
+	_round_intro_indicator.visible = false
+	add_child(_round_intro_indicator)
+
+
 func _setup_energy_focus_indicators() -> void:
 	_energy_focus_indicator_nodes.clear()
 	if _energy_readability_root == null:
@@ -3045,6 +3084,27 @@ func _refresh_lab_selection_indicator() -> void:
 	indicator_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.28)
 	indicator_material.emission = cue_color
 	indicator_material.emission_energy_multiplier = 0.95
+
+
+func _refresh_round_intro_indicator() -> void:
+	if _round_intro_indicator == null:
+		return
+
+	var should_show := _round_intro_locked and not _is_respawning and not _is_disabled
+	_round_intro_indicator.visible = should_show
+	if not should_show:
+		_round_intro_indicator.scale = Vector3.ONE
+		_round_intro_indicator.position.y = round_intro_indicator_height
+		return
+
+	var indicator_material := _round_intro_indicator.material_override as StandardMaterial3D
+	if indicator_material == null:
+		return
+
+	var cue_color := get_identity_color().lerp(Color(0.96, 0.98, 1.0, 1.0), 0.35)
+	indicator_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.22)
+	indicator_material.emission = cue_color
+	indicator_material.emission_energy_multiplier = 0.78
 
 
 func _refresh_energy_focus_indicators() -> void:
@@ -3306,6 +3366,33 @@ func _update_lab_selection_indicator(delta: float) -> void:
 	indicator_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.22 + wave * 0.1)
 	indicator_material.emission = cue_color
 	indicator_material.emission_energy_multiplier = 0.95 + wave * 0.45
+
+
+func _update_round_intro_indicator(delta: float) -> void:
+	if _round_intro_indicator == null:
+		return
+	if not _round_intro_indicator.visible:
+		_round_intro_indicator_animation_time = 0.0
+		_round_intro_indicator.scale = Vector3.ONE
+		_round_intro_indicator.rotation = Vector3.ZERO
+		_round_intro_indicator.position.y = round_intro_indicator_height
+		return
+
+	_round_intro_indicator_animation_time += delta
+	var wave := (sin(_round_intro_indicator_animation_time * round_intro_indicator_pulse_speed) + 1.0) * 0.5
+	var pulse := 1.0 + (wave - 0.5) * round_intro_indicator_pulse_amount * 2.0
+	_round_intro_indicator.scale = Vector3(pulse, 1.0, pulse)
+	_round_intro_indicator.position.y = round_intro_indicator_height + wave * 0.01
+	_round_intro_indicator.rotation.y = fmod(_round_intro_indicator.rotation.y + delta * 0.6, TAU)
+
+	var indicator_material := _round_intro_indicator.material_override as StandardMaterial3D
+	if indicator_material == null:
+		return
+
+	var cue_color := get_identity_color().lerp(Color(0.96, 0.98, 1.0, 1.0), 0.35)
+	indicator_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.16 + wave * 0.1)
+	indicator_material.emission = cue_color
+	indicator_material.emission_energy_multiplier = 0.78 + wave * 0.38
 
 
 func _update_energy_focus_indicator_animation(delta: float) -> void:

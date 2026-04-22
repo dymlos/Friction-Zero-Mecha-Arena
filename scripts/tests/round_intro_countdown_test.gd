@@ -29,12 +29,22 @@ func _run() -> void:
 		return
 
 	var robot := robots[0]
+	var intro_indicator := robot.get_node_or_null("RoundIntroIndicator") as MeshInstance3D
 	_assert(match_controller.is_round_active(), "La ronda deberia seguir activa mientras corre el intro.")
 	_assert(match_controller.is_round_intro_active(), "El intro de ronda deberia quedar activo cuando se configura una duracion positiva.")
 	_assert(
 		match_controller.get_round_status_line().contains("arranca"),
 		"El estado visible deberia anunciar que la ronda todavia no libero el control."
 	)
+	_assert(
+		intro_indicator != null,
+		"El robot deberia exponer un telegraph diegetico para el intro de ronda en la propia escena jugable."
+	)
+	if intro_indicator != null:
+		_assert(
+			intro_indicator.visible,
+			"El telegraph diegetico del intro deberia verse mientras el control sigue bloqueado."
+		)
 
 	var locked_origin := _get_planar_position(robot)
 	Input.action_press("p1_move_forward", 1.0)
@@ -54,6 +64,11 @@ func _run() -> void:
 		match_controller.get_round_status_line().contains("en juego"),
 		"Cuando termina el intro, el HUD deberia volver al estado normal de ronda en juego."
 	)
+	if intro_indicator != null:
+		_assert(
+			not intro_indicator.visible,
+			"Al liberar la ronda, el telegraph diegetico del intro deberia apagarse para no ensuciar la pelea."
+		)
 
 	var unlocked_origin := _get_planar_position(robot)
 	Input.action_press("p1_move_forward", 1.0)
