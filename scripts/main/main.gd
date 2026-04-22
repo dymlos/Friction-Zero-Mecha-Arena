@@ -898,12 +898,12 @@ func _on_post_death_support_payload_collected(support_ship: PilotSupportShip, pa
 func _on_post_death_support_payload_used(
 	support_ship: PilotSupportShip,
 	payload_name: String,
-	_target_robot: RobotBase
+	target_robot: RobotBase
 ) -> void:
 	if support_ship == null or not is_instance_valid(support_ship.owner_robot):
 		return
 
-	match_controller.record_support_payload_use(support_ship.owner_robot, payload_name)
+	match_controller.record_support_payload_use(support_ship.owner_robot, payload_name, target_robot)
 
 
 func _get_selected_lab_robot() -> RobotBase:

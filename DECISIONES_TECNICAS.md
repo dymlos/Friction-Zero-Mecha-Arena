@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El soporte decisivo debe quedar explicado en el cierre, no solo contado**
+ - `Main._on_post_death_support_payload_used(...)` ahora pasa el `target_robot` real a `MatchController.record_support_payload_use(...)`.
+ - `MatchController` conserva un solo highlight compacto por ronda/competidor (`Apoyo decisivo | <owner> <payload> > <objetivo>`) y lo expone solo en recap/resultado para el ganador Teams.
+ - Motivo: `support_rounds_decided` ya medía impacto agregado, pero el cierre seguía sin responder qué apoyo concreto inclinó la ronda. Resolverlo en la misma capa de highlights mantiene legibilidad sin abrir HUD nuevo ni otra telemetría post-mortem.
+
 1. **La presión final del arena debe avisar antes del shrink real**
  - `MatchController` mantiene la contracción real en `get_current_play_area_scale()`, pero ahora abre un warning separado con `space_reduction_warning_seconds`, `get_time_until_space_reduction()` y `get_space_reduction_warning_strength()`.
  - `Main` sigue siendo el cable fino entre match y arena: envía `set_play_area_scale(...)` para el shrink y `set_pressure_warning_strength(...)` para el preview.

@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Highlight de apoyo decisivo en el cierre (2026-04-22)
+
+- Estado: el soporte post-muerte Teams ya no queda solo como telemetría agregada; el cierre ahora explica qué acción concreta acompañó la ronda decisiva.
+- Corrección aplicada:
+  - `Main._on_post_death_support_payload_used(...)` ahora reenvía también el `target_robot` real hacia `MatchController`.
+  - `MatchController.record_support_payload_use(...)` conserva un highlight compacto por competidor y por ronda con formato `Apoyo decisivo | <owner> <payload> > <objetivo>`.
+  - `get_round_recap_panel_lines()` y `get_match_result_lines()` muestran ese highlight solo para el ganador de la ronda en `Teams`, sin añadirlo al HUD vivo.
+  - `support_decisive_highlight_test.gd` fija la regresión nueva y `support_match_stats_test.gd` / `match_highlight_moments_test.gd` siguen verdes con el contrato extendido.
+- Resultado:
+  - el cierre ya no dice solo “hubo apoyo”; también deja visible si la jugada decisiva fue, por ejemplo, `energia` o `estabilizador`, y sobre quién cayó.
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa con `Suite OK: 76 tests`.
+
 ## Warning previo de contracción (2026-04-22)
 
 - Estado: la presión final del arena ahora se lee también antes de que el borde vivo empiece a cerrarse.

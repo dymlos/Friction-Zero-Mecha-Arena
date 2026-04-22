@@ -46,6 +46,7 @@ var _competitor_match_stats: Dictionary = {}
 var _competitor_order: Array[String] = []
 var _robot_support_state: Dictionary = {}
 var _round_support_usage_by_competitor: Dictionary = {}
+var _round_support_highlight_by_competitor: Dictionary = {}
 var _last_elimination_summary := ""
 var _round_status_line := ""
 var _round_elapsed_seconds := 0.0
@@ -112,6 +113,7 @@ func start_match() -> void:
 	_round_elimination_highlight_entries.clear()
 	_last_elimination_summary = ""
 	_round_support_usage_by_competitor.clear()
+	_round_support_highlight_by_competitor.clear()
 	_competitor_scores.clear()
 	_competitor_labels.clear()
 	_competitor_archetype_labels.clear()
@@ -539,7 +541,7 @@ func record_support_pickup_collection(robot: RobotBase, payload_name: String = "
 	_increment_support_payload_stat(robot, payload_name, "support_pickup")
 
 
-func record_support_payload_use(robot: RobotBase, payload_name: String = "") -> void:
+func record_support_payload_use(robot: RobotBase, payload_name: String = "", target_robot: RobotBase = null) -> void:
 	if robot == null:
 		return
 	if not _round_active or _round_reset_pending:
@@ -550,6 +552,9 @@ func record_support_payload_use(robot: RobotBase, payload_name: String = "") -> 
 	var competitor_key := _get_competitor_key(robot)
 	if competitor_key != "":
 		_round_support_usage_by_competitor[competitor_key] = true
+		var support_highlight := _build_support_highlight_line(robot, payload_name, target_robot)
+		if support_highlight != "":
+			_round_support_highlight_by_competitor[competitor_key] = support_highlight
 
 
 func record_robot_elimination(
@@ -1088,10 +1093,14 @@ func _build_compact_elimination_summary(
 func _build_round_highlight_lines() -> Array[String]:
 	if _round_active:
 		return []
-	if _round_elimination_highlight_entries.is_empty():
-		return []
 
 	var lines: Array[String] = []
+	var support_highlight := _get_decisive_support_highlight_line()
+	if support_highlight != "":
+		lines.append(support_highlight)
+	if _round_elimination_highlight_entries.is_empty():
+		return lines
+
 	var first_highlight := str(_round_elimination_highlight_entries.front())
 	var last_highlight := str(_round_elimination_highlight_entries.back())
 	if first_highlight == last_highlight:
@@ -1101,6 +1110,29 @@ func _build_round_highlight_lines() -> Array[String]:
 	lines.append("Momento inicial | %s" % first_highlight)
 	lines.append("Momento final | %s" % last_highlight)
 	return lines
+
+
+func _get_decisive_support_highlight_line() -> String:
+	if match_mode != MatchMode.TEAMS:
+		return ""
+	if _round_active:
+		return ""
+
+	var winner_key := _get_round_winner_competitor_key()
+	if winner_key == "":
+		return ""
+
+	return str(_round_support_highlight_by_competitor.get(winner_key, ""))
+
+
+func _get_round_winner_competitor_key() -> String:
+	if _match_over:
+		for competitor_key in _competitor_order:
+			if int(_competitor_scores.get(competitor_key, 0)) >= get_rounds_to_win():
+				return competitor_key
+		return ""
+
+	return _find_last_competitor_standing()
 
 
 func _build_ffa_standings_line() -> String:
@@ -1265,6 +1297,22 @@ func _get_elimination_cause_label(cause: int) -> String:
 		return "explosion inestable"
 
 	return ""
+
+
+func _build_support_highlight_line(robot: RobotBase, payload_name: String, target_robot: RobotBase) -> String:
+	var payload_label := str(SUPPORT_PAYLOAD_LABELS.get(payload_name, ""))
+	if payload_label == "":
+		return ""
+
+	var support_robot_label := robot.get_roster_display_name()
+	if is_instance_valid(target_robot):
+		return "Apoyo decisivo | %s %s > %s" % [
+			support_robot_label,
+			payload_label,
+			target_robot.get_roster_display_name(),
+		]
+
+	return "Apoyo decisivo | %s %s" % [support_robot_label, payload_label]
 
 
 func _ensure_competitor_match_stats(competitor_key: String) -> void:
@@ -1460,6 +1508,7 @@ func _reset_round() -> void:
 	_round_elimination_highlight_entries.clear()
 	_last_elimination_summary = ""
 	_round_support_usage_by_competitor.clear()
+	_round_support_highlight_by_competitor.clear()
 	_robot_support_state.clear()
 	_round_number += 1
 	_round_active = true

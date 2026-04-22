@@ -4,6 +4,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El cierre Teams ya no deja el soporte solo en agregado: `Main` reenvía el `target_robot` real de cada payload usado y `MatchController` ahora publica `Apoyo decisivo | <owner> <payload> > <objetivo>` dentro de recap/resultado final cuando esa ayuda acompañó la ronda ganadora.
 - La presión final del arena ya no aparece “de golpe”: `MatchController` suma `space_reduction_warning_seconds` y publica `Arena se cierra en Xs` antes de pasar a `Arena cerrandose | N%`.
 - `Main` sigue siendo el puente mínimo entre match y arena, pero ahora además de la escala real envía una intensidad previa al `PressureTelegraph`; `ArenaBase` reutiliza esas bandas de piso con alpha/emission más bajos para avisar el cierre sin achicar todavía el borde vivo.
 - El soporte post-muerte Teams ya no depende de `scene-order` cuando hay varios candidatos vivos: `PilotSupportShip` ahora prioriza objetivos segun utilidad del payload (`estabilizador` al aliado mas dañado, `surge`/`movilidad` evitando buffs redundantes, `interferencia` sobre rivales no suprimidos y en rango antes que reciclar el mismo objetivo).
