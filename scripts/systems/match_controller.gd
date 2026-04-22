@@ -33,6 +33,7 @@ var _match_over := false
 var _round_eliminated_robot_ids: Dictionary = {}
 var _round_elimination_source_robot_ids: Dictionary = {}
 var _round_elimination_order_by_robot_id: Dictionary = {}
+var _round_elimination_cause_counts: Dictionary = {}
 var _round_elimination_recap_entries: Array[String] = []
 var _round_elimination_highlight_entries: Array[String] = []
 var _competitor_scores: Dictionary = {}
@@ -100,6 +101,7 @@ func start_match() -> void:
 	_round_eliminated_robot_ids.clear()
 	_round_elimination_source_robot_ids.clear()
 	_round_elimination_order_by_robot_id.clear()
+	_round_elimination_cause_counts.clear()
 	_round_elimination_recap_entries.clear()
 	_round_elimination_highlight_entries.clear()
 	_last_elimination_summary = ""
@@ -155,7 +157,7 @@ func get_hud_detail_mode() -> MatchConfig.HudDetailMode:
 	if match_config == null:
 		return MatchConfig.HudDetailMode.EXPLICIT
 
-	return match_config.hud_detail_mode
+	return match_config.get_default_hud_detail_mode(match_mode == MatchMode.FFA)
 
 
 func get_hud_detail_mode_label() -> String:
@@ -203,6 +205,9 @@ func get_round_state_lines() -> Array[String]:
 		lines.append(recap_line)
 	if _last_elimination_summary != "":
 		lines.append("Ultima baja | %s" % _last_elimination_summary)
+	var elimination_cause_line := _build_round_elimination_cause_summary_line()
+	if elimination_cause_line != "":
+		lines.append(elimination_cause_line)
 	if is_space_reduction_active():
 		lines.append("Arena cerrandose | %s%%" % int(round(get_current_play_area_scale() * 100.0)))
 	return lines
@@ -303,6 +308,9 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	var elimination_cause_line := _build_round_elimination_cause_summary_line()
+	if elimination_cause_line != "":
+		lines.append(elimination_cause_line)
 	var standings_line := _build_ffa_standings_line()
 	if standings_line != "":
 		lines.append(standings_line)
@@ -344,6 +352,9 @@ func get_match_result_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	var elimination_cause_line := _build_round_elimination_cause_summary_line()
+	if elimination_cause_line != "":
+		lines.append(elimination_cause_line)
 	var standings_line := _build_ffa_standings_line()
 	if standings_line != "":
 		lines.append(standings_line)
@@ -505,6 +516,8 @@ func record_robot_elimination(
 	if is_instance_valid(source_robot) and source_robot != robot:
 		_round_elimination_source_robot_ids[robot_id] = source_robot.get_instance_id()
 	_round_elimination_order_by_robot_id[robot_id] = _round_elimination_order_by_robot_id.size() + 1
+	var cause_key := int(cause)
+	_round_elimination_cause_counts[cause_key] = int(_round_elimination_cause_counts.get(cause_key, 0)) + 1
 	_round_elimination_recap_entries.append(_build_compact_elimination_summary(robot, cause, source_robot))
 	_last_elimination_summary = _build_elimination_summary(robot, cause, source_robot)
 	_round_elimination_highlight_entries.append(_last_elimination_summary)
@@ -790,6 +803,25 @@ func _build_elimination_summary(
 		cause_label,
 		_get_elimination_source_suffix_for_robot(source_robot),
 	]
+
+
+func _build_round_elimination_cause_summary_line() -> String:
+	var void_count := int(_round_elimination_cause_counts.get(EliminationCause.VOID, 0))
+	var explosion_count := int(_round_elimination_cause_counts.get(EliminationCause.EXPLOSION, 0))
+	var unstable_count := int(_round_elimination_cause_counts.get(EliminationCause.UNSTABLE_EXPLOSION, 0))
+	var segments: Array[String] = []
+
+	if void_count > 0:
+		segments.append("ring-out %s" % void_count)
+	if explosion_count > 0:
+		segments.append("destruccion total %s" % explosion_count)
+	if unstable_count > 0:
+		segments.append("explosion inestable %s" % unstable_count)
+
+	if segments.is_empty():
+		return ""
+
+	return "Causa bajas | %s" % " | ".join(segments)
 
 
 func _get_elimination_source_suffix(robot: RobotBase) -> String:
@@ -1316,6 +1348,7 @@ func _reset_round() -> void:
 	_round_eliminated_robot_ids.clear()
 	_round_elimination_source_robot_ids.clear()
 	_round_elimination_order_by_robot_id.clear()
+	_round_elimination_cause_counts.clear()
 	_round_elimination_recap_entries.clear()
 	_round_elimination_highlight_entries.clear()
 	_last_elimination_summary = ""
