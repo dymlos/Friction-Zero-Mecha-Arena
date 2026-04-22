@@ -5,8 +5,13 @@
 ## Prioridad inmediata tras la revision estricta (2026-04-22)
 
 1. Validar `score` por causa en playtest corto y decidir si `2/1/4` sigue siendo el perfil correcto sin volver dominante ninguna ruta de cierre.
-2. Medir la apertura coordinada de `Teams` en `main.tscn` y `main_teams_validation.tscn` antes de reabrir HUD o selector runtime.
+2. Medir en playtest corto si la nueva orientacion inward de la apertura `Teams` mejora lectura de carril/primer choque en `main.tscn` y `main_teams_validation.tscn` o si todavia falta ajustar intro/telegraph.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
+
+0. **No volver a dejar que `Teams` herede una orientacion de spawn arbitraria**
+ - `Main._get_bootstrap_spawn_transforms()` ya recompone la base de `Teams` con `_build_team_spawn_transform(...)`: mantiene la posicion del marker y fuerza que la mitad izquierda mire hacia `+X` local y la derecha hacia `-X`.
+ - `teams_spawn_coordination_test.gd` ahora congela dos contratos en las escenas `Teams`: aliado mas cerca que rival y apertura mirando hacia el carril central.
+ - Si se retocan el bootstrap por modo, `ArenaBase.get_spawn_points()` o el layout de `main.tscn` / `main_teams_validation.tscn`, conservar esa fixture antes de volver a tocar HUD o escena.
 
 0. **No reabrir el `F2` del selector runtime al saltar entre un robot vivo y un slot ya en `Apoyo activo`**
  - `lab_runtime_selector_test.gd` ahora cubre el flujo `P1 Apoyo activo -> F2 -> P2 vivo -> wrap F2 -> P1 Apoyo activo`; el contrato es que `Lab | ...`, `Control Pn | ...`, `Apoyo Pn | ...` y la pista diegética cambien juntos en ambos sentidos.

@@ -485,9 +485,33 @@ func _get_bootstrap_spawn_transforms(robot_count: int) -> Array[Transform3D]:
 
 	var spawn_transforms: Array[Transform3D] = []
 	for spawn_point in _get_arena_spawn_points():
-		spawn_transforms.append(spawn_point.global_transform)
+		spawn_transforms.append(_build_team_spawn_transform(spawn_point))
 
 	return spawn_transforms
+
+
+func _build_team_spawn_transform(spawn_point: Marker3D) -> Transform3D:
+	var spawn_transform := spawn_point.global_transform
+	if _arena == null:
+		return spawn_transform
+
+	var local_position := _arena.to_local(spawn_transform.origin)
+	var lane_direction_local := Vector3.ZERO
+	if local_position.x < -0.05:
+		lane_direction_local = Vector3.RIGHT
+	elif local_position.x > 0.05:
+		lane_direction_local = Vector3.LEFT
+	else:
+		lane_direction_local = Vector3(local_position).normalized()
+		lane_direction_local.y = 0.0
+		lane_direction_local = -lane_direction_local
+
+	var lane_direction := _arena.global_transform.basis * lane_direction_local
+	lane_direction.y = 0.0
+	if lane_direction.length_squared() <= 0.0001:
+		return spawn_transform
+
+	return Transform3D(Basis.looking_at(lane_direction.normalized(), Vector3.UP), spawn_transform.origin)
 
 
 func _build_ffa_spawn_transforms(robot_count: int) -> Array[Transform3D]:

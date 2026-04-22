@@ -35,10 +35,12 @@ func _assert_scene_opens_with_coordinated_team_spawns(scene_path: String) -> voi
 	await process_frame
 
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	var arena := main.get_node_or_null("ArenaRoot").get_child(0)
 	var robots := _get_scene_robots(main)
 	_assert(match_controller != null, "La escena %s deberia montar MatchController." % scene_path)
+	_assert(arena != null, "La escena %s deberia montar un arena para validar la apertura Teams." % scene_path)
 	_assert(robots.size() == 4, "La escena %s deberia bootear con cuatro robots de Teams." % scene_path)
-	if match_controller == null or robots.size() != 4:
+	if match_controller == null or arena == null or robots.size() != 4:
 		await _cleanup_main(main)
 		return
 
@@ -53,6 +55,13 @@ func _assert_scene_opens_with_coordinated_team_spawns(scene_path: String) -> voi
 		_assert(
 			ally_distance + 0.01 < enemy_distance,
 			"La escena %s deberia dejar a %s mas cerca de su aliado que del rival mas cercano." % [
+				scene_path,
+				robot.display_name,
+			]
+		)
+		_assert(
+			_is_robot_facing_opening_lane(robot, arena),
+			"La escena %s deberia hacer que %s mire hacia el carril central al iniciar Teams." % [
 				scene_path,
 				robot.display_name,
 			]
@@ -92,6 +101,21 @@ func _get_nearest_enemy_distance(robot: RobotBase, robots: Array[RobotBase]) -> 
 		best_distance = minf(best_distance, robot.global_position.distance_to(other.global_position))
 
 	return best_distance
+
+
+func _is_robot_facing_opening_lane(robot: RobotBase, arena: Node3D) -> bool:
+	var local_position := arena.to_local(robot.global_position)
+	if absf(local_position.x) <= 0.05:
+		return true
+
+	var forward := -robot.global_transform.basis.z
+	forward.y = 0.0
+	if forward.length_squared() <= 0.0001:
+		return false
+
+	forward = forward.normalized()
+	var expected_forward := Vector3.RIGHT if local_position.x < 0.0 else Vector3.LEFT
+	return forward.dot(expected_forward) >= 0.8
 
 
 func _assert(condition: bool, message: String) -> void:

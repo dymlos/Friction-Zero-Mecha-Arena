@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Apertura `Teams` mas legible sin tocar layout:
+  - `Main._get_bootstrap_spawn_transforms()` ya no hereda la base arbitraria de los markers en `Teams`; ahora conserva las posiciones del arena y recompone la orientacion de spawn para que cada lado mire hacia su carril central.
+  - el ajuste se resolvio en runtime, no duplicando datos en escenas, para mantener un solo seam de bootstrap entre `main.tscn` y `main_teams_validation.tscn`.
+  - `teams_spawn_coordination_test.gd` dejo de validar solo "aliado mas cerca que rival" y ahora tambien congela que los cuatro robots arranquen mirando hacia dentro desde su mitad.
+  - validacion: `godot --headless --path . -s res://scripts/tests/teams_spawn_coordination_test.gd`, `godot --headless --path . -s res://scripts/tests/main_scene_runtime_smoke_test.gd`, `godot --headless --path . -s res://scripts/tests/teams_validation_lab_scene_test.gd`, `godot --headless --path . -s res://scripts/tests/test_runner.gd` (`Suite OK: 82 tests`).
+
 - Revision estricta de baseline cerrada:
   - `godot --headless --path . -s res://scripts/tests/test_runner.gd` vuelve a pasar completo con `Suite OK: 82 tests`.
   - no aparecio ningun rojo nuevo en soporte post-muerte, selector runtime, HUD dual, bootstrap de escenas ni pacing base de choque.

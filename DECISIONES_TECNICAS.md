@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El bootstrap `Teams` debe corregir orientacion de apertura en runtime y no depender de bases manuales por escena**
+ - `Main._get_bootstrap_spawn_transforms()` ahora delega en `_build_team_spawn_transform(...)` para `Teams`: conserva la posicion del marker del arena y recompone la base mirando hacia el carril central desde la mitad izquierda/derecha.
+ - `teams_spawn_coordination_test.gd` ya no congela solo la distancia aliado-vs-rival; tambien exige que cada robot arranque mirando hacia dentro en `main.tscn` y `main_teams_validation.tscn`.
+ - Motivo: la coordinacion espacial de `Teams` ya estaba resuelta por layout, pero la lectura inicial seguia floja porque los robots heredaban bases inconsistentes. Resolverlo en `Main` mantiene un unico seam compartido para cualquier arena `Teams` sin duplicar orientaciones manuales en escenas.
+
 1. **No reabrir el slice `laboratorio + Apoyo activo` sin rojo nuevo o evidencia runtime**
  - La revision estricta de 2026-04-22 volvio a pasar la suite completa (`godot --headless --path . -s res://scripts/tests/test_runner.gd` => `Suite OK: 82 tests`) despues de releer documentacion y revisar `Main`, `MatchController`, `PilotSupportShip`, HUD y escenas principales.
  - Decision operativa: tratar selector runtime, round-state del laboratorio y soporte post-muerte como una capa estabilizada. Si no aparece un fallo headless nuevo o una observacion runtime concreta, no seguir microajustando ese paquete por intuicion.

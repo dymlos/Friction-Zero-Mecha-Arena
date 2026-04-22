@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Apertura `Teams` ahora mira hacia el carril central (2026-04-22)
+
+- Estado: el bootstrap `Teams` ya no deja a los robots arrancar con la misma orientacion heredada del marker o de la escena; ambos equipos inician mirando hacia dentro desde su mitad del arena.
+- Correccion aplicada:
+  - `scripts/main/main.gd` ahora recompone los `spawn_transforms` de `Teams` con `_build_team_spawn_transform(...)`.
+  - el helper conserva la posicion original del marker, pero sustituye su base por una orientacion simple hacia `+X` o `-X` local del arena segun el lado en que aparezca el robot.
+  - `scripts/tests/teams_spawn_coordination_test.gd` amplia la regresion existente: ademas de exigir pares coordinados, ahora exige que cada robot mire hacia el carril central en `main.tscn` y `main_teams_validation.tscn`.
+- Resultado:
+  - la apertura de `Teams` gana lectura inmediata de emparejamiento/lane sin tocar spawns, HUD ni escenas duplicadas.
+  - `godot --headless --path . -s res://scripts/tests/teams_spawn_coordination_test.gd`, `godot --headless --path . -s res://scripts/tests/main_scene_runtime_smoke_test.gd`, `godot --headless --path . -s res://scripts/tests/teams_validation_lab_scene_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 82 tests`).
+
 ## Revision estricta del baseline cerrada (2026-04-22)
 
 - Estado: la base actual del prototipo sigue consistente despues de releer documentacion, revisar escenas/sistemas clave y correr la suite headless completa.
