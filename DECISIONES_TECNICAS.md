@@ -106,6 +106,10 @@
    - Mientras `is_mobility_skill_active()` dura, `RobotBase` sube el blend turquesa de core/accent y `MatchController._build_robot_status_line()` agrega `derrape` junto a `skill Derrape x/y`.
    - Motivo: la skill de movilidad necesitaba verse en pantalla compartida sin abrir HUD nuevo; repetir el mismo patron de estado temporal corto evita ruido y deja claro cuando el reposition viene del propio arquetipo y no solo de un pickup de `impulso`.
 
+90. **El castigo de `Cizalla` tambien marca la pieza victima, no solo al atacante**
+   - Cuando `apply_damage_to_part()` cobra el bonus contra una extremidad ya dañada, el robot impactado abre un `DamageFeedback/DismantleCue` corto en esa misma pieza; el cue usa el anchor runtime ya existente para humo/chispa y se apaga con la misma ventana `damaged_part_bonus_highlight_duration`.
+   - Motivo: el cue `corte` + pulso de `ArchetypeAccent` volvia legible al atacante, pero seguia faltando decir “que pieza del rival acaban de castigar”; colgar ese dato del mismo feedback por parte mantiene la lectura diegetica y evita otro HUD o escena paralela.
+
 16. **Ajuste de ritmo de duelo via parámetros exportados**
    - Se prefirió reajustar el duelo 2P ajustando `RobotBase` en lugar de agregar una mecánica nueva.
    - Motivo: el equilibrio de inercia, alcance/impulso y daño de choque define la sensación principal del prototipo sin comprometer la simplicidad técnica existente.

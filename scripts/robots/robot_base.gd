@@ -351,6 +351,7 @@ var _part_visual_base_transforms: Dictionary = {}
 var _damage_feedback_nodes: Dictionary = {}
 var _collision_damage_ready_at: Dictionary = {}
 var _damaged_part_bonus_remaining := 0.0
+var _damaged_part_bonus_cue_remaining: Dictionary = {}
 var _carried_part: DetachedPart = null
 var _carried_item_name := ""
 var _carry_indicator: MeshInstance3D = null
@@ -1178,6 +1179,7 @@ func reset_modular_state() -> void:
 	_part_flash_strength.clear()
 	_collision_damage_ready_at.clear()
 	_damaged_part_bonus_remaining = 0.0
+	_damaged_part_bonus_cue_remaining.clear()
 	_selected_energy_part_name = "left_arm"
 	_energy_shift_cooldown_remaining = 0.0
 	_overdrive_part_name = ""
@@ -1204,6 +1206,7 @@ func reset_modular_state() -> void:
 		part_health[part_name] = max_part_health
 		part_energy[part_name] = starting_energy_per_part
 		_part_flash_strength[part_name] = 0.0
+		_damaged_part_bonus_cue_remaining[part_name] = 0.0
 
 	_apply_balanced_energy_distribution()
 	_reset_control_pose()
@@ -1454,6 +1457,7 @@ func apply_damage_to_part(
 	if is_instance_valid(source_robot) and current_health < max_part_health:
 		effective_damage *= source_robot.get_damaged_part_bonus_damage_multiplier()
 		source_robot._trigger_damaged_part_bonus_feedback()
+		_trigger_damaged_part_bonus_victim_feedback(part_name)
 	_remember_recent_elimination_source(source_robot)
 
 	part_health[part_name] = maxf(current_health - effective_damage, 0.0)
@@ -2694,10 +2698,33 @@ func _setup_damage_feedback_nodes() -> void:
 		spark.visible = false
 		feedback_root.add_child(spark)
 
+		var dismantle_cue_mesh := BoxMesh.new()
+		dismantle_cue_mesh.size = Vector3(0.03, 0.16, 0.05)
+
+		var dismantle_cue_material := StandardMaterial3D.new()
+		dismantle_cue_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		dismantle_cue_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		dismantle_cue_material.no_depth_test = true
+		dismantle_cue_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+		dismantle_cue_material.albedo_color = Color(1.0, 0.52, 0.18, 0.72)
+		dismantle_cue_material.emission_enabled = true
+		dismantle_cue_material.emission = Color(1.0, 0.4, 0.12, 1.0)
+		dismantle_cue_material.emission_energy_multiplier = 1.4
+
+		var dismantle_cue := MeshInstance3D.new()
+		dismantle_cue.name = "DismantleCue"
+		dismantle_cue.mesh = dismantle_cue_mesh
+		dismantle_cue.material_override = dismantle_cue_material
+		dismantle_cue.position = Vector3(0.0, 0.18, 0.0)
+		dismantle_cue.rotation_degrees = Vector3(0.0, 0.0, -28.0 if part_name.begins_with("left") else 28.0)
+		dismantle_cue.visible = false
+		feedback_root.add_child(dismantle_cue)
+
 		_damage_feedback_nodes[part_name] = {
 			"root": feedback_root,
 			"smoke": smoke,
 			"spark": spark,
+			"dismantle_cue": dismantle_cue,
 		}
 
 
@@ -3438,19 +3465,23 @@ func _refresh_part_damage_feedback(part_name: String) -> void:
 	var root := feedback_nodes.get("root") as Node3D
 	var smoke := feedback_nodes.get("smoke") as MeshInstance3D
 	var spark := feedback_nodes.get("spark") as MeshInstance3D
-	if smoke == null or spark == null:
+	var dismantle_cue := feedback_nodes.get("dismantle_cue") as MeshInstance3D
+	if smoke == null or spark == null or dismantle_cue == null:
 		return
 
 	var health_ratio := get_part_health_ratio(part_name)
 	var show_smoke := health_ratio > 0.0 and health_ratio < damage_feedback_threshold
 	var show_spark := health_ratio > 0.0 and health_ratio <= critical_damage_feedback_threshold
+	var dismantle_cue_blend := _get_damaged_part_bonus_cue_blend(part_name)
+	var show_dismantle_cue := health_ratio > 0.0 and dismantle_cue_blend > 0.0
 
 	if root != null:
-		root.visible = show_smoke or show_spark
+		root.visible = show_smoke or show_spark or show_dismantle_cue
 
-	if not show_smoke and not show_spark:
+	if not show_smoke and not show_spark and not show_dismantle_cue:
 		smoke.visible = false
 		spark.visible = false
+		dismantle_cue.visible = false
 		return
 
 	var damage_severity := 1.0 - clampf(health_ratio / maxf(damage_feedback_threshold, 0.01), 0.0, 1.0)
@@ -3470,18 +3501,31 @@ func _refresh_part_damage_feedback(part_name: String) -> void:
 		)
 
 	spark.visible = show_spark
-	if not show_spark:
+	if show_spark:
+		var critical_severity := 1.0 - clampf(health_ratio / maxf(critical_damage_feedback_threshold, 0.01), 0.0, 1.0)
+		spark.position = Vector3(0.0, 0.15 + critical_severity * 0.08, 0.0)
+		spark.scale = Vector3.ONE * (0.85 + critical_severity * 0.95)
+		var spark_material := spark.material_override as StandardMaterial3D
+		if spark_material != null:
+			var spark_color := Color(1.0, 0.46 + critical_severity * 0.14, 0.12, 1.0)
+			spark_material.albedo_color = spark_color
+			spark_material.emission = spark_color
+			spark_material.emission_energy_multiplier = 1.6 + critical_severity * 2.0
+
+	dismantle_cue.visible = show_dismantle_cue
+	if not show_dismantle_cue:
 		return
 
-	var critical_severity := 1.0 - clampf(health_ratio / maxf(critical_damage_feedback_threshold, 0.01), 0.0, 1.0)
-	spark.position = Vector3(0.0, 0.15 + critical_severity * 0.08, 0.0)
-	spark.scale = Vector3.ONE * (0.85 + critical_severity * 0.95)
-	var spark_material := spark.material_override as StandardMaterial3D
-	if spark_material != null:
-		var spark_color := Color(1.0, 0.46 + critical_severity * 0.14, 0.12, 1.0)
-		spark_material.albedo_color = spark_color
-		spark_material.emission = spark_color
-		spark_material.emission_energy_multiplier = 1.6 + critical_severity * 2.0
+	var dismantle_wave := (sin(_carry_indicator_animation_time * 10.0) + 1.0) * 0.5
+	var cue_scale := 0.82 + dismantle_cue_blend * 0.35 + dismantle_wave * 0.08
+	dismantle_cue.scale = Vector3(1.0, cue_scale, 1.0 + dismantle_cue_blend * 0.3)
+	dismantle_cue.position.y = 0.18 + dismantle_wave * 0.03
+	var dismantle_cue_material := dismantle_cue.material_override as StandardMaterial3D
+	if dismantle_cue_material != null:
+		var cue_color := Color(1.0, 0.56 + dismantle_wave * 0.12, 0.18, 1.0)
+		dismantle_cue_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.42 + dismantle_cue_blend * 0.36)
+		dismantle_cue_material.emission = cue_color
+		dismantle_cue_material.emission_energy_multiplier = 1.2 + dismantle_cue_blend * 1.8
 
 
 func _apply_damaged_part_pose(mesh_instance: MeshInstance3D, part_name: String, health_ratio: float) -> void:
@@ -3537,11 +3581,21 @@ func _get_damaged_part_pose_severity(health_ratio: float) -> float:
 
 
 func _update_passive_status_state(delta: float) -> void:
-	if _damaged_part_bonus_remaining <= 0.0:
-		return
+	var should_refresh := false
+	if _damaged_part_bonus_remaining > 0.0:
+		_damaged_part_bonus_remaining = maxf(_damaged_part_bonus_remaining - delta, 0.0)
+		should_refresh = true
 
-	_damaged_part_bonus_remaining = maxf(_damaged_part_bonus_remaining - delta, 0.0)
-	_refresh_visual_state()
+	for part_name in BODY_PARTS:
+		var cue_remaining := float(_damaged_part_bonus_cue_remaining.get(part_name, 0.0))
+		if cue_remaining <= 0.0:
+			continue
+
+		_damaged_part_bonus_cue_remaining[part_name] = maxf(cue_remaining - delta, 0.0)
+		should_refresh = true
+
+	if should_refresh:
+		_refresh_visual_state()
 
 
 func _trigger_damaged_part_bonus_feedback() -> void:
@@ -3551,6 +3605,16 @@ func _trigger_damaged_part_bonus_feedback() -> void:
 	var previous_remaining := _damaged_part_bonus_remaining
 	_damaged_part_bonus_remaining = maxf(_damaged_part_bonus_remaining, damaged_part_bonus_highlight_duration)
 	if _damaged_part_bonus_remaining > previous_remaining:
+		_refresh_visual_state()
+
+
+func _trigger_damaged_part_bonus_victim_feedback(part_name: String) -> void:
+	if not BODY_PARTS.has(part_name):
+		return
+
+	var previous_remaining := float(_damaged_part_bonus_cue_remaining.get(part_name, 0.0))
+	_damaged_part_bonus_cue_remaining[part_name] = maxf(previous_remaining, damaged_part_bonus_highlight_duration)
+	if float(_damaged_part_bonus_cue_remaining.get(part_name, 0.0)) > previous_remaining:
 		_refresh_visual_state()
 
 
@@ -3667,6 +3731,19 @@ func _get_passive_accent_blend() -> float:
 	var time_ratio := clampf(_damaged_part_bonus_remaining / damaged_part_bonus_highlight_duration, 0.0, 1.0)
 	var wave := (sin(_carry_indicator_animation_time * 8.0) + 1.0) * 0.5
 	var pulse := 0.82 + wave * 0.18
+	return clampf(time_ratio * pulse, 0.0, 1.0)
+
+
+func _get_damaged_part_bonus_cue_blend(part_name: String) -> float:
+	var cue_remaining := float(_damaged_part_bonus_cue_remaining.get(part_name, 0.0))
+	if cue_remaining <= 0.0:
+		return 0.0
+	if damaged_part_bonus_highlight_duration <= 0.0:
+		return 1.0
+
+	var time_ratio := clampf(cue_remaining / damaged_part_bonus_highlight_duration, 0.0, 1.0)
+	var wave := (sin(_carry_indicator_animation_time * 9.0) + 1.0) * 0.5
+	var pulse := 0.86 + wave * 0.14
 	return clampf(time_ratio * pulse, 0.0, 1.0)
 
 

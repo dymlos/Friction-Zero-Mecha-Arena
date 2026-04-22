@@ -173,6 +173,21 @@ func _validate_cizalla_dismantle_window_surfaces_on_body_and_roster() -> void:
 	await process_frame
 	await physics_frame
 
+	var victim_cue := victim.get_node_or_null("UpperBodyPivot/RightArm/DamageFeedback/DismantleCue") as MeshInstance3D
+	_assert(
+		victim_cue != null,
+		"La pieza castigada deberia exponer un cue diegetico corto para leer el castigo de Cizalla sobre el rival."
+	)
+	if victim_cue == null:
+		await _cleanup_robot(cizalla)
+		await _cleanup_robot(victim)
+		return
+
+	_assert(
+		not victim_cue.visible,
+		"El cue de desarme no deberia arrancar visible mientras nadie haya castigado una pieza ya tocada."
+	)
+
 	_assert(
 		cizalla.has_method("get_passive_status_summary"),
 		"RobotBase deberia exponer un resumen corto para pasivas que necesitan leerse en el roster."
@@ -204,6 +219,18 @@ func _validate_cizalla_dismantle_window_surfaces_on_body_and_roster() -> void:
 		triggered_energy > baseline_energy + 0.08,
 		"El acento corporal de Cizalla deberia reforzarse brevemente cuando activa su castigo sobre una parte tocada."
 	)
+	_assert(
+		victim_cue.visible,
+		"La pieza enemiga castigada deberia mostrar un cue corto en cuerpo para que el desarme se lea tambien del lado del rival."
+	)
+
+	var cue_material := victim_cue.material_override as StandardMaterial3D
+	_assert(cue_material != null, "El cue de desarme deberia poder tintarse/pulsar para sostener la lectura en camara compartida.")
+	if cue_material != null:
+		_assert(
+			cue_material.emission_energy_multiplier > 1.0,
+			"El cue de desarme deberia emitir lo suficiente como para distinguirse del humo/chispa base."
+		)
 
 	await _cleanup_robot(cizalla)
 	await _cleanup_robot(victim)
