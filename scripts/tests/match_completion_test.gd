@@ -88,14 +88,15 @@ func _run() -> void:
 	_eliminate_team_two(robots)
 	await create_timer(0.05).timeout
 
+	var expected_team_match_decision := "Equipo 1 gana la partida por 2-0 pts"
 	_assert(match_controller.is_match_over(), "El match deberia cerrarse al alcanzar el score objetivo.")
 	_assert(
 		not match_controller.is_round_active(),
 		"Cuando el match termina no deberia arrancar otra ronda inmediatamente."
 	)
 	_assert(
-		match_controller.get_round_status_line().contains("gana la partida"),
-		"El estado visible deberia anunciar al ganador del match, no solo de la ronda."
+		match_controller.get_round_status_line() == expected_team_match_decision,
+		"El estado visible Teams deberia explicitar que el cierre final usa puntos, no solo un score ambiguo."
 	)
 	_assert(recap_panel.visible, "Al terminar el match deberia aparecer el recap dedicado.")
 	_assert(
@@ -103,8 +104,8 @@ func _run() -> void:
 		"El recap deberia distinguir un match cerrado de una ronda comun."
 	)
 	_assert(
-		recap_label.text.contains("Equipo 1 gana la partida 2-0"),
-		"El recap deberia dejar visible el resultado final del match."
+		recap_label.text.contains(expected_team_match_decision),
+		"El recap deberia dejar visible el resultado final Teams con unidad de puntos."
 	)
 	_assert(
 		_has_line(match_controller.get_round_recap_panel_lines(), "Objetivo | Primero a 2 pts"),
@@ -124,8 +125,8 @@ func _run() -> void:
 		"El panel final deberia diferenciarse claramente del recap lateral."
 	)
 	_assert(
-		match_result_label.text.contains("Equipo 1 gana la partida 2-0"),
-		"El panel final deberia reiterar el ganador del match."
+		match_result_label.text.contains(expected_team_match_decision),
+		"El panel final deberia reiterar el ganador del match con unidad de puntos."
 	)
 	_assert(
 		_has_line(match_controller.get_match_result_lines(), "Objetivo | Primero a 2 pts"),

@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El cierre final de `Teams` debe nombrar puntos y no un score `A-B` ambiguo**
+ - `MatchController._build_match_victory_status_line()` ahora publica `Equipo X gana la partida por A-B pts` cuando el modo es `Teams`; `FFA` conserva su lectura propia `con N punto(s)`.
+ - `match_completion_test.gd` fija el contrato en `round_status_line`, `RecapLabel` y `MatchResultLabel`.
+ - Motivo: despues de volver explicito `Objetivo | Primero a N pts`, dejar el cierre principal como `2-0` seguia reintroduciendo la duda entre rondas y puntos justo en la superficie mas importante del resultado.
+
 1. **Los recaps entre rondas tambien deben explicar explicitamente un empate como `sin ganador (+0)`**
  - `MatchController` ahora persiste `_last_round_was_draw` y hace que `_build_round_closing_line()` pueda devolver `Cierre ronda | sin ganador (+0)` cuando la ronda termino sin winner pero el match sigue abierto.
  - La decision evita inferir el empate desde `_round_status_line` y mantiene el seam de lectura del cierre en un solo builder, igual que para `ring-out`, `destruccion total` y `explosion inestable`.

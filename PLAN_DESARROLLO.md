@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El cierre final `Teams` ahora explicita que el score del match son puntos:
+  - la revision estricta detecto otro hueco de lectura: aunque HUD, recap y panel final ya mostraban `Objetivo | Primero a N pts`, la decision principal seguia cerrando como `Equipo X gana la partida 2-0`, ambigua entre rondas y puntos.
+  - `scripts/systems/match_controller.gd` ahora hace que `_build_match_victory_status_line()` publique `Equipo X gana la partida por A-B pts` solo en `Teams`; `FFA` conserva su lectura propia `con N punto(s)`.
+  - `scripts/tests/match_completion_test.gd` fija la regresion minima: `round_status_line`, `RecapLabel` y `MatchResultLabel` ya no aceptan el cierre viejo sin unidad.
+  - validacion: rojo inicial en `godot --headless --path . -s res://scripts/tests/match_completion_test.gd`; despues pasaron ese test, `match_closing_cause_summary_test.gd` y `test_runner.gd`.
+
 - Las rondas sin ganador ahora tambien se explican dentro del recap intermedio:
   - la revision estricta detecto un hueco real: cuando la ronda terminaba en empate, el panel mostraba `Decision | Ronda N sin ganador` y el marcador, pero no dejaba una linea propia que aclarara que no hubo causa de cierre ni puntos otorgados.
   - `scripts/systems/match_controller.gd` ahora persiste `_last_round_was_draw` y hace que `_build_round_closing_line()` publique `Cierre ronda | sin ganador (+0)` solo en cierres intermedios, sin ensuciar el HUD vivo ni el cierre final del match.

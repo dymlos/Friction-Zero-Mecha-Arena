@@ -1611,7 +1611,7 @@ func _build_match_victory_status_line(winner_key: String, winner_score: int) -> 
 			_build_plural_segment(winner_score, "punto", "puntos"),
 		]
 
-	return "%s gana la partida %s-%s" % [
+	return "%s gana la partida por %s-%s pts" % [
 		_get_competitor_label_from_key(winner_key),
 		winner_score,
 		_get_highest_losing_score(winner_key),

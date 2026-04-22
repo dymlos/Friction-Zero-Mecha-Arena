@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## El cierre final `Teams` ya nombra explicitamente los puntos del match (2026-04-22)
+
+- Estado: la decision principal del match en `Teams` ya no cierra como un `2-0` ambiguo; ahora publica `Equipo X gana la partida por A-B pts`, alineada con el resto del HUD que ya explicita `Objetivo | Primero a N pts`.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` ajusta `_build_match_victory_status_line()` solo para `Teams`, sin tocar el wording propio de `FFA`.
+  - `scripts/tests/match_completion_test.gd` fija la regresion minima en tres superficies: `round_status_line`, `RecapLabel` y `MatchResultLabel`.
+- Resultado:
+  - el cierre final deja de parecer un conteo de rondas justo cuando el prototipo ya usa score ponderado por causa de cierre.
+  - `godot --headless --path . -s res://scripts/tests/match_completion_test.gd`, `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan.
+
 ## El recap entre rondas ahora explica tambien las rondas sin ganador (2026-04-22)
 
 - Estado: cuando una ronda termina en empate, el recap intermedio ya no deja solo `Decision | Ronda N sin ganador`; ahora agrega una linea propia `Cierre ronda | sin ganador (+0)` para dejar claro que no hubo causa premiada ni puntos sumados.
