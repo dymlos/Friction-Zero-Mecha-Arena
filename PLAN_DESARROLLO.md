@@ -4,6 +4,15 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- La presion de arena / reduccion progresiva ya queda congelada tambien en escenas `base/validation` de `Teams` y `FFA`:
+  - la revision estricta encontro otro hueco scene-level: `progressive_space_reduction_test.gd` seguia usando solo `main.tscn`, aunque el mismo seam `warning -> contraccion -> reset del arena` vive tambien en `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion:
+    - `scripts/tests/progressive_space_reduction_test.gd` ahora recorre las cuatro escenas jugables y resuelve el `arena_path` por variante.
+    - la fixture ahora fuerza `match_controller.match_config.rounds_to_win = 3` para validar reset intermedio real tambien en escenas `validation`.
+    - el cierre forzado de la ronda ahora respeta el modo: dos bajas para `Teams`, `N-1` bajas para `FFA`.
+  - decision operativa: tratar tambien presion de arena / reduccion progresiva como contrato compartido entre laboratorios `Teams/FFA base/validation`, no como assert de una sola escena.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/progressive_space_reduction_test.gd` y `test_runner.gd`.
+
 - Los stats scene-level de desgaste modular y negacion de partes ya quedan congelados tambien en `main_teams_validation.tscn`:
   - la revision estricta encontro otro hueco scene-level: `match_modular_loss_stats_test.gd` y `match_part_denial_stats_test.gd` seguian validando recap + resultado final solo en `main.tscn`, aunque esas mismas superficies existen tambien en la escena rapida `Teams`.
   - no hizo falta tocar produccion; la correccion vive en la red de regresion:

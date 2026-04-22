@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## La presion de arena / reduccion progresiva ya queda congelada tambien en `Teams/FFA base/validation` (2026-04-22)
+
+- Estado: el seam scene-level `warning -> contraccion -> reset del arena` ya no depende solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `MatchController`, `Main` y `ArenaBase` ya respetaban el mismo loop de presion; el gap real era de cobertura scene-level.
+  - `scripts/tests/progressive_space_reduction_test.gd` ahora valida las cuatro escenas jugables, resolviendo el `arena_path` segun el laboratorio activo.
+  - la fixture ahora fija `match_controller.match_config.rounds_to_win = 3` para evitar cierres finales accidentales en escenas `validation`.
+  - hallazgo de fixture: en `FFA` no alcanza con tirar dos robots al vacio; para observar el reset del arena hay que dejar un unico superviviente (`N-1` bajas), mientras `Teams` sigue cerrando con dos bajas.
+- Resultado:
+  - `Teams/FFA base/validation` deja de tener un punto ciego en warning de contraccion, shrink real del area segura y restauracion del arena tras reset comun de ronda.
+  - `godot --headless --path . -s res://scripts/tests/progressive_space_reduction_test.gd` pasa en las cuatro escenas y la suite completa sigue en `Suite OK: 86 tests`.
+
 ## Los stats scene-level de desgaste modular y negacion de partes ya quedan congelados tambien en `main_teams_validation.tscn` (2026-04-22)
 
 - Estado: dos seams de stats/cierre `Teams` ya no dependen solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`.

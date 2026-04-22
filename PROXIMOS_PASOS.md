@@ -15,6 +15,15 @@
 3. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
 4. Revisar si queda algun seam scene-level de `Teams/FFA` todavia atado a una sola escena antes de volver a tocar produccion.
 
+0. **No volver a dejar la presion de arena / reduccion progresiva congelada solo en `main.tscn`**
+ - `progressive_space_reduction_test.gd` ya recorre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+ - Mantener la fixture actual si el objetivo sigue siendo reset del arena y no pacing de fin de ronda:
+   - `match_controller.match_config.rounds_to_win = 3`
+   - intro `Teams/FFA` apagado
+   - cierre forzado dependiente del modo (`Teams`: dos bajas; `FFA`: `N-1` bajas)
+ - Si se retocan `MatchController.get_current_play_area_scale()`, `_reset_round()`, `Main._apply_match_pressure_to_arena()` o `ArenaBase.set_play_area_scale()`, tocar siempre las cuatro escenas como una misma superficie contractual y mantener esta regresion.
+ - Reabrir solo si una escena hermana pierde el warning `Arena se cierra en ...`, deja de encoger el area segura o no restaura el tamano completo tras reset comun de ronda.
+
 0. **No volver a dejar el lifecycle/cleanup del soporte `Teams` congelado solo en `main.tscn`**
  - `support_lifecycle_cleanup_test.gd` ya recorre `main.tscn` + `main_teams_validation.tscn` para los dos caminos criticos: reset de ronda y restart manual `F5`.
  - Mantener la fixture actual si el objetivo sigue siendo lifecycle puro: intro `Teams` apagado, score `1/1/1` para reset intermedio, `rounds_to_win = 2` en reset y `1` en restart manual.

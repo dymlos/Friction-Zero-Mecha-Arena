@@ -1,5 +1,20 @@
 # DECISIONES_TECNICAS.md - Friction Zero: Mecha Arena
 
+## 2026-04-22 - La presion de arena tambien debe congelarse sobre `Teams/FFA base/validation`, con cierre de ronda dependiente del modo
+
+- Que se hizo:
+  - `progressive_space_reduction_test.gd` ahora recorre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+- Decision:
+  - tratar tambien el seam `warning -> contraccion -> reset del arena` como contrato scene-level compartido entre los cuatro laboratorios jugables.
+  - endurecer la fixture en dos puntos:
+    - `match_controller.match_config.rounds_to_win = 3` para validar reset intermedio real y no cierre final accidental en escenas `validation`.
+    - cierre forzado de ronda dependiente del modo: dos bajas en `Teams`, `N-1` bajas en `FFA`.
+- Razon:
+  - al ampliar la cobertura, el primer rojo en `FFA` era falso: la produccion seguia bien, pero el test viejo dejaba dos supervivientes y por eso la ronda no reseteaba nunca.
+- Implicacion:
+  - futuros tests scene-level de presion/arena deben distinguir entre “el borde sigue encogido porque la ronda sigue viva” y “el borde no se restauró tras reset”.
+  - si reaparece un rojo en `FFA`, comprobar primero si la fixture realmente deja un unico superviviente antes de tocar `MatchController`, `Main` o `ArenaBase`.
+
 ## 2026-04-22 - El soporte post-muerte debe congelarse tambien en la escena rapida, pero con fixture estabilizada y cleanup por owner
 
 - Que se hizo:
