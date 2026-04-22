@@ -1,8 +1,11 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const TEAMS_SCENES := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
 
 var _failed := false
 
@@ -12,23 +15,27 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main = MAIN_SCENE.instantiate()
-	root.add_child(main)
+	for scene_path in TEAMS_SCENES:
+		await _assert_elimination_readability_contract(scene_path)
+	_finish()
 
-	await process_frame
-	await process_frame
 
+func _assert_elimination_readability_contract(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
+	if main == null:
+		return
+
+	var scene_label := "La escena %s" % scene_path
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
 	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapLabel") as Label
 	var match_result_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultLabel") as Label
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena principal deberia exponer MatchController.")
-	_assert(recap_label != null, "La escena principal deberia exponer el detalle del recap para validar atribucion.")
-	_assert(match_result_label != null, "La escena principal deberia exponer el detalle del resultado final para validar atribucion.")
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar lectura de eliminacion.")
+	_assert(match_controller != null, "%s deberia exponer MatchController." % scene_label)
+	_assert(recap_label != null, "%s deberia exponer el detalle del recap para validar atribucion." % scene_label)
+	_assert(match_result_label != null, "%s deberia exponer el detalle del resultado final para validar atribucion." % scene_label)
+	_assert(robots.size() >= 4, "%s deberia ofrecer cuatro robots para validar lectura de eliminacion." % scene_label)
 	if match_controller == null or recap_label == null or match_result_label == null or robots.size() < 4:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	match_controller.match_mode = MatchController.MatchMode.TEAMS
@@ -55,11 +62,11 @@ func _run() -> void:
 	var disabled_line := _find_robot_status_line(match_controller, robots[2])
 	_assert(
 		disabled_line.contains("Inutilizado"),
-		"El roster deberia seguir marcando al robot sin partes como inutilizado antes de la explosion."
+		"%s deberia seguir marcando al robot sin partes como inutilizado antes de la explosion." % scene_label
 	)
 	_assert(
 		disabled_line.contains("explota"),
-		"El roster deberia avisar que el cuerpo inutilizado va a explotar pronto."
+		"%s deberia avisar que el cuerpo inutilizado va a explotar pronto." % scene_label
 	)
 
 	await create_timer(0.4).timeout
@@ -67,18 +74,18 @@ func _run() -> void:
 	var exploded_line := _find_robot_status_line(match_controller, robots[2])
 	_assert(
 		exploded_line.contains("Fuera") or exploded_line.contains("Apoyo activo"),
-		"Tras explotar, el roster deberia dejar claro que el robot ya salio del combate principal."
+		"%s deberia dejar claro que el robot ya salio del combate principal tras explotar." % scene_label
 	)
 	_assert(
 		exploded_line.contains("explosion"),
-		"El roster deberia conservar la causa breve de eliminacion por explosion."
+		"%s deberia conservar la causa breve de eliminacion por explosion." % scene_label
 	)
 	_assert(
 		_has_line_with_fragment(
 			match_controller.get_round_state_lines(),
 			"Ultima baja | Player 3 explosiono tras quedar inutilizado por Player 1"
 		),
-		"El estado de ronda deberia dejar visible la ultima baja por explosion junto con el rival que la forzo."
+		"%s deberia dejar visible la ultima baja por explosion junto con el rival que la forzo." % scene_label
 	)
 
 	var void_attacker := robots[1]
@@ -89,46 +96,58 @@ func _run() -> void:
 	var void_line := _find_robot_status_line(match_controller, robots[3])
 	_assert(
 		void_line.contains("Fuera"),
-		"El robot que cae al vacio deberia figurar como fuera en el roster."
+		"%s deberia marcar como fuera al robot que cae al vacio." % scene_label
 	)
 	_assert(
 		void_line.contains("vacio"),
-		"El roster deberia conservar la causa breve de eliminacion por vacio."
+		"%s deberia conservar la causa breve de eliminacion por vacio." % scene_label
 	)
 	_assert(
 		_has_line_with_fragment(
 			match_controller.get_round_state_lines(),
 			"Ultima baja | Player 4 cayo al vacio por Player 2"
 		),
-		"El estado de ronda deberia exponer tambien la ultima baja por vacio junto con el rival responsable."
+		"%s deberia exponer tambien la ultima baja por vacio junto con el rival responsable." % scene_label
 	)
 	_assert(
 		recap_label.text.contains("Player 3 / Cizalla | baja 1 | explosion por Player 1"),
-		"El recap lateral deberia conservar la atribucion del rival que forzo la explosion."
+		"%s deberia conservar en el recap lateral la atribucion del rival que forzo la explosion." % scene_label
 	)
 	_assert(
 		recap_label.text.contains("Player 4 / Patin | baja 2 | vacio por Player 2"),
-		"El recap lateral deberia conservar la atribucion del rival que forzo la caida al vacio."
+		"%s deberia conservar en el recap lateral la atribucion del rival que forzo la caida al vacio." % scene_label
 	)
 	_assert(
 		_has_line_with_fragment(
 			match_controller.get_round_recap_panel_lines(),
 			"Cierre | Player 4 cayo al vacio por Player 2"
 		),
-		"El recap lateral del cierre final deberia reutilizar tambien la ultima baja con atribucion del rival responsable."
+		"%s deberia reutilizar tambien la ultima baja con atribucion del rival responsable en el recap lateral del cierre final." % scene_label
 	)
 	_assert(
 		recap_label.text.contains("Cierre | Player 4 cayo al vacio por Player 2"),
-		"El recap visible del cierre final deberia dejar explicita tambien la ultima baja decisiva."
+		"%s deberia dejar explicita tambien la ultima baja decisiva en el recap visible." % scene_label
 	)
 	_assert(
 		match_result_label.text.contains("Cierre | Player 4 cayo al vacio por Player 2"),
-		"El resultado final deberia reutilizar la ultima baja con atribucion del rival responsable."
+		"%s deberia reutilizar la ultima baja con atribucion del rival responsable en el resultado final." % scene_label
 	)
 
 	await create_timer(maxf(match_controller.round_reset_delay + 0.2, 0.95)).timeout
 	await _cleanup_main(main)
-	_finish()
+
+
+func _instantiate_scene(scene_path: String) -> Node:
+	var packed_scene := load(scene_path)
+	_assert(packed_scene is PackedScene, "La escena %s deberia seguir existiendo." % scene_path)
+	if not (packed_scene is PackedScene):
+		return null
+
+	var main := (packed_scene as PackedScene).instantiate()
+	root.add_child(main)
+	await process_frame
+	await process_frame
+	return main
 
 
 func _find_robot_status_line(match_controller: MatchController, robot: RobotBase) -> String:

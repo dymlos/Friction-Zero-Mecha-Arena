@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **La atribucion de bajas y la condicion final por robot en cierres `Teams` tambien deben congelarse sobre `main.tscn` y `main_teams_validation.tscn`**
+ - `match_elimination_readability_test.gd` y `match_robot_final_condition_summary_test.gd` ahora recorren `main.tscn` y `main_teams_validation.tscn`.
+ - No hubo cambio de produccion: la revision estricta confirmo que `MatchController` y la escena de validacion ya estaban alineados; el gap real era de cobertura scene-level en `RecapPanel` y `MatchResultPanel`.
+ - Motivo: el cierre `Teams` ya tenia paridad base/validation para objetivo, highlights, recap y detalle final, pero todavia faltaba congelar dos lecturas que explican exactamente como cayo cada robot y en que condicion termino cada superviviente.
+
 1. **Los highlights/detalle final de `Teams` tambien deben congelarse sobre `main.tscn` y `main_teams_validation.tscn`, no solo sobre una escena**
  - `match_highlight_moments_test.gd`, `support_decisive_highlight_test.gd` y `team_match_result_detail_order_test.gd` ahora recorren `main.tscn` y `main_teams_validation.tscn`.
  - No hubo cambio de produccion: la revision estricta confirmo que `MatchController` y la escena de validacion ya estaban alineados; el gap real era de cobertura scene-level sobre snippets/hints de cierre.

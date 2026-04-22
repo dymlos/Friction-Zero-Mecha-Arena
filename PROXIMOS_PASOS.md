@@ -13,6 +13,11 @@
  - Si se retocan `RecapPanel`, `MatchResultPanel`, `_build_round_highlight_lines()`, `record_support_payload_use(...)` o el orden del detalle final, tocar siempre `main.tscn` y `main_teams_validation.tscn` como una misma superficie contractual y mantener estas tres regresiones.
  - Reabrir solo si se decide separar deliberadamente los cierres `Teams` entre laboratorio base y rapido.
 
+0. **No volver a dejar drift entre `main.tscn` y `main_teams_validation.tscn` en atribucion de bajas o condicion final por robot**
+ - `match_elimination_readability_test.gd` y `match_robot_final_condition_summary_test.gd` ya congelan en ambas escenas `Teams` la atribucion `explosion/vacio por Player X`, la linea `Cierre | ...` y el detalle final por robot con arquetipo, partes restantes y extremidades faltantes.
+ - Si se retocan `RecapPanel`, `MatchResultPanel`, `_build_closing_elimination_line()`, `_build_robot_summary_line()` o el wording de bajas por robot, tocar siempre `main.tscn` y `main_teams_validation.tscn` como una misma superficie contractual y mantener estas dos regresiones.
+ - Reabrir solo si se decide separar deliberadamente esos cierres entre laboratorio base y rapido.
+
 0. **No volver a dejar drift entre escenas `base` y `validation` del recap entre rondas**
  - `match_round_recap_test.gd` ya congela el recap `Teams` en `main.tscn` y `main_teams_validation.tscn`; `match_round_draw_recap_test.gd` hace lo mismo con el empate `FFA` en `main_ffa.tscn` y `main_ffa_validation.tscn`.
  - Si se retocan `RecapPanel`, `RecapLabel`, wording `Cierre de ronda`, objetivo del match o limpieza post-reset, tocar siempre la pareja `base/validation` como una misma superficie contractual y mantener estas dos regresiones.

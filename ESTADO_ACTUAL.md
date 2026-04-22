@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## Los contratos Teams de atribucion de bajas y condicion final por robot ya quedan congelados tambien en `main_teams_validation.tscn` (2026-04-22)
+
+- Estado: dos lecturas de cierre `Teams` ya no dependen solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `MatchController` y la escena de validacion ya respetaban el mismo contrato; el gap real era de cobertura scene-level.
+  - `scripts/tests/match_elimination_readability_test.gd` ahora valida en `main.tscn` y `main_teams_validation.tscn` la atribucion visible de `explosion/vacio por Player X` y `Cierre | ...` en roster, recap y resultado final.
+  - `scripts/tests/match_robot_final_condition_summary_test.gd` ahora valida en `main.tscn` y `main_teams_validation.tscn` el detalle final por robot con arquetipo, partes restantes y extremidades faltantes.
+- Resultado:
+  - el cierre `Teams` deja de tener otro punto ciego entre laboratorio base y rapido; si una escena hermana pierde atribucion de bajas o resumen final por robot, la suite lo detecta antes de runtime.
+
 ## Los highlights/detalle final de `Teams` ya quedan congelados tambien en `main_teams_validation.tscn` (2026-04-22)
 
 - Estado: varios seams de cierre `Teams` ya no dependen solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`.

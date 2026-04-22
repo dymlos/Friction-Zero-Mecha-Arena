@@ -4,6 +4,14 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los contratos Teams de atribucion de bajas y condicion final por robot ya quedan congelados tambien en `main_teams_validation.tscn`:
+  - la revision estricta encontro otro hueco scene-level: `match_elimination_readability_test.gd` y `match_robot_final_condition_summary_test.gd` seguian tratando `main.tscn` como escena representativa aunque `RecapPanel` y `MatchResultPanel` existen tambien en `main_teams_validation.tscn`.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion:
+    - `scripts/tests/match_elimination_readability_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
+    - `scripts/tests/match_robot_final_condition_summary_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
+  - decision operativa: tratar tambien la atribucion de bajas (`explosion/vacio por Player X`, `Cierre | ...`) y el detalle final por robot (`3/4 partes`, extremidades faltantes, arquetipo) como contratos compartidos entre laboratorio `base/validation`.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/match_elimination_readability_test.gd`, `match_robot_final_condition_summary_test.gd` y `test_runner.gd`.
+
 - Los highlights/detalle final de `Teams` ya quedan congelados tambien en `main_teams_validation.tscn`:
   - la revision estricta encontro otro hueco scene-level: `Resumen | ...`, `Momento inicial/final`, `Apoyo decisivo` y el orden del detalle/stats de cierre seguian fijados solo en `main.tscn`, dejando drift posible en `main_teams_validation.tscn`.
   - no hizo falta tocar produccion; la correccion vive en la red de regresion:
