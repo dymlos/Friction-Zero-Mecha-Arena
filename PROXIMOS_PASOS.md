@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No volver a dejar soporte stale durante el reset runtime `F3/F4`**
+ - `Main._clear_post_death_support()` ya remueve las naves de `SupportRoot` antes de `queue_free()`, porque `_apply_lab_runtime_loadout()` recompone el laboratorio en la misma llamada y no puede seguir viendo `PilotSupportShip` transitorias.
+ - Si se retocan `_clear_post_death_support()`, `_apply_lab_runtime_loadout()`, `_find_post_death_support_ship()` o `_sync_lab_selector_visuals()`, mantener `lab_runtime_selector_test.gd`: ahora congela `P1 Grua Hard -> Apoyo activo -> F3/F4` y exige retorno inmediato al robot, desaparición de `Apoyo P1 | ...` y `SupportRoot` vacío sin esperar otro frame.
+ - Reabrir solo si el laboratorio deja de resetearse dentro de la misma llamada de loadout o si cambia explícitamente la fuente de verdad del selector runtime.
+
 0. **No reabrir el reset automático del selector runtime cuando el slot viene de `Apoyo activo`**
  - `lab_runtime_selector_test.gd` ahora cubre el flujo `P1 Grua Hard -> Apoyo activo -> ronda cerrada -> Ronda 2`; el contrato es que tras el reset automático vuelvan `Lab | P1 Grua Hard`, los controles de robot, la pista diegética sobre el robot y desaparezca `Apoyo P1 | ...`.
  - Si se retocan `_on_round_started()`, `_clear_post_death_support()`, `_sync_post_death_support_state()`, `_sync_lab_selector_visuals()` o el lifecycle del soporte post-muerte, mantener esa fixture.

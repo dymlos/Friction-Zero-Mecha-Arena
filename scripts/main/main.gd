@@ -941,6 +941,7 @@ func _find_post_death_support_ship(robot: RobotBase) -> PilotSupportShip:
 func _clear_post_death_support() -> void:
 	if support_root != null:
 		for child in support_root.get_children():
+			support_root.remove_child(child)
 			child.queue_free()
 		_set_post_death_support_lane_active(false, true)
 

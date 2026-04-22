@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El reset runtime del laboratorio (`F3/F4`) ya no deja una `PilotSupportShip` stale viva durante el mismo frame cuando el slot seleccionado venía de `Apoyo activo`: el selector, la chuleta `Control P1 | ...`, la línea `Apoyo P1 | ...` y la pista diegética vuelven inmediatamente al robot reconfigurado.
+- La corrección vive en `Main._clear_post_death_support()`, que ahora saca las naves de `SupportRoot` antes de `queue_free()`. Así `_find_post_death_support_ship(...)` deja de ver soporte transitorio cuando `_apply_lab_runtime_loadout()` reinicia la ronda dentro de la misma llamada.
+- `lab_runtime_selector_test.gd` suma la regresión concreta `P1 Grua Hard -> Apoyo activo -> F3/F4`, exigiendo en ambos caminos retorno inmediato a `P1 Cizalla Hard/Easy`, desaparición instantánea de `Apoyo P1 | ...` y `SupportRoot` vacío sin esperar otro frame.
+- Validación focalizada: `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - El reset automático de ronda del laboratorio ahora también queda congelado explícitamente cuando el slot seleccionado venía de `Apoyo activo`: no solo `F5` y `F6`, también el path normal `cierre de ronda -> nueva ronda` devuelve el selector runtime al robot/loadout real.
 - La revisión confirmó que la producción ya estaba bien resuelta entre `Main._on_round_started()`, `_clear_post_death_support()` y `_sync_lab_selector_visuals()`; el trabajo de esta iteración fue agregar la red headless que faltaba.
 - `lab_runtime_selector_test.gd` ahora fija el flujo `P1 Grua Hard -> Apoyo activo -> ronda cerrada -> Ronda 2`, exigiendo antes del reset `Lab | P1 Apoyo activo`, `Control P1 | usa C | objetivo Q/E`, `Apoyo P1 | sin carga`, y después del reset `Lab | P1 Grua Hard`, controles de robot, ausencia de `Apoyo P1 | ...`, sin `PilotSupportShip` stale y `LabSelectionIndicator` de vuelta en el robot.

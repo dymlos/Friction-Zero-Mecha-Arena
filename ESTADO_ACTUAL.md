@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Reset runtime `F3/F4` limpia `Apoyo activo` en el mismo frame (2026-04-22)
+
+- Estado: reconfigurar el slot seleccionado del laboratorio con `F3` o `F4` mientras ese jugador estaba en `Apoyo activo` ya no deja una `PilotSupportShip` stale visible hasta el frame siguiente.
+- Corrección aplicada:
+  - `scripts/main/main.gd` ahora hace que `_clear_post_death_support()` quite cada nave de `SupportRoot` antes de `queue_free()`.
+  - con eso, el reset interno que dispara `_apply_lab_runtime_loadout()` deja de encontrar soporte transitorio cuando recompone `Lab | ...`, `Control Pn | ...`, `Apoyo Pn | ...` y `LabSelectionIndicator`.
+  - `scripts/tests/lab_runtime_selector_test.gd` agrega la regresión `P1 Grua Hard -> Apoyo activo -> F3/F4`, exigiendo retorno inmediato a `P1 Cizalla Hard/Easy`, desaparición instantánea de `Apoyo P1 | ...`, `SupportRoot` vacío y selector de vuelta en el robot.
+- Resultado:
+  - queda cerrado el último seam de reset runtime del selector cuando el slot seleccionado venía desde soporte post-muerte: `F3`, `F4`, `F5`, `F6` y reset automático de ronda ya tienen red explícita.
+  - `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 82 tests`).
+
 ## Reset automático del selector runtime tras `Apoyo activo` cubierto (2026-04-22)
 
 - Estado: el laboratorio ya tiene regresión headless también para el camino normal `slot seleccionado -> Apoyo activo -> cierre de ronda -> nueva ronda`; no solo para `F5` y `F6`.

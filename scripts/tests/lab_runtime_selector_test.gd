@@ -15,6 +15,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_lab_selector_cycles_roster_and_control_mode()
 	await _validate_lab_selected_controls_follow_support_ship()
+	await _validate_lab_runtime_loadout_reset_clears_support_immediately()
 	await _validate_lab_selector_recovers_from_support_after_round_reset()
 	await _validate_lab_selector_recovers_from_support_after_manual_restart()
 	await _validate_ffa_scoreboard_refreshes_after_runtime_loadout_change()
@@ -275,6 +276,110 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 			support_selection_indicator.visible,
 			"Si el slot seleccionado ya esta en `Apoyo activo`, la pista diegetica deberia migrar a la nave de apoyo."
 		)
+
+	await _cleanup_node(main)
+
+
+func _validate_lab_runtime_loadout_reset_clears_support_immediately() -> void:
+	var main := MAIN_SCENE.instantiate()
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller != null:
+		match_controller.round_intro_duration = 0.0
+		if match_controller.match_config != null:
+			match_controller.match_config.round_intro_duration_teams = 0.0
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var robots := _get_scene_robots(main)
+	var support_root := main.get_node_or_null("SupportRoot")
+	_assert(round_label != null, "El laboratorio Teams deberia seguir exponiendo RoundLabel para validar F3/F4 desde `Apoyo activo`.")
+	_assert(robots.size() >= 1, "El laboratorio Teams deberia seguir exponiendo al menos un robot para validar el reset inmediato del selector.")
+	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot para validar el cleanup inmediato del carril.")
+	if round_label == null or robots.size() < 1 or support_root == null:
+		await _cleanup_node(main)
+		return
+
+	main.call("cycle_selected_lab_archetype")
+	await process_frame
+	await process_frame
+	main.call("toggle_selected_lab_control_mode")
+	await process_frame
+	await process_frame
+
+	robots[0].fall_into_void()
+	await process_frame
+	await process_frame
+	await process_frame
+	await process_frame
+
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Apoyo activo"),
+		"Antes de reconfigurar el slot desde `Apoyo activo`, el selector runtime deberia seguir el soporte post-muerte."
+	)
+	_assert(
+		round_label.text.contains("Apoyo P1 | sin carga"),
+		"Antes de usar F3/F4 desde `Apoyo activo`, el HUD deberia seguir exponiendo el estado accionable del soporte."
+	)
+	_assert(support_root.get_child_count() > 0, "Antes del reset runtime deberia existir una nave de apoyo viva en `SupportRoot`.")
+
+	main.call("cycle_selected_lab_archetype")
+
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Cizalla Hard"),
+		"Al usar F3 desde `Apoyo activo`, el selector runtime deberia volver inmediatamente al robot con el nuevo loadout."
+	)
+	_assert(
+		not String(main.call("get_lab_selector_summary_line")).contains("Apoyo activo"),
+		"Al usar F3 desde `Apoyo activo`, el resumen del laboratorio no deberia arrastrar el soporte stale hasta el frame siguiente."
+	)
+	_assert(
+		round_label.text.contains("Control P1 | mueve WASD | aim TFGX | ataca Space | energia Q/E | overdrive R | suelta C"),
+		"Al usar F3 desde `Apoyo activo`, la referencia compacta deberia volver inmediatamente a los controles del robot Hard."
+	)
+	_assert(
+		not round_label.text.contains("Apoyo P1 |"),
+		"Al usar F3 desde `Apoyo activo`, la linea persistente de soporte deberia desaparecer inmediatamente."
+	)
+	_assert(
+		support_root.get_child_count() == 0,
+		"Al usar F3 desde `Apoyo activo`, `SupportRoot` no deberia conservar naves stale hasta el siguiente frame."
+	)
+	_assert(
+		bool(robots[0].call("is_lab_selected")),
+		"Al usar F3 desde `Apoyo activo`, la marca diegetica deberia volver inmediatamente al robot seleccionado."
+	)
+
+	robots[0].fall_into_void()
+	await process_frame
+	await process_frame
+	await process_frame
+	await process_frame
+
+	main.call("toggle_selected_lab_control_mode")
+
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Cizalla Easy"),
+		"Al usar F4 desde `Apoyo activo`, el selector runtime deberia volver inmediatamente al robot con el nuevo modo."
+	)
+	_assert(
+		not String(main.call("get_lab_selector_summary_line")).contains("Apoyo activo"),
+		"Al usar F4 desde `Apoyo activo`, el laboratorio tampoco deberia arrastrar soporte stale."
+	)
+	_assert(
+		round_label.text.contains("Control P1 | mueve WASD | ataca Space | energia Q/E | overdrive R | suelta C"),
+		"Al usar F4 desde `Apoyo activo`, la referencia compacta deberia volver inmediatamente a los controles Easy."
+	)
+	_assert(
+		not round_label.text.contains("Apoyo P1 |"),
+		"Al usar F4 desde `Apoyo activo`, la linea de soporte tambien deberia desaparecer inmediatamente."
+	)
+	_assert(
+		support_root.get_child_count() == 0,
+		"Al usar F4 desde `Apoyo activo`, `SupportRoot` tampoco deberia quedar con soporte stale."
+	)
 
 	await _cleanup_node(main)
 

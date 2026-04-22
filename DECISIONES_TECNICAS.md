@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **El reset runtime `F3/F4` debe desalojar soporte post-muerte de `SupportRoot` antes de rearmar el laboratorio**
+ - `Main._apply_lab_runtime_loadout()` reinicia la ronda dentro de la misma llamada, así que cualquier `PilotSupportShip` todavía colgada de `SupportRoot` sigue siendo visible para `_find_post_death_support_ship(...)`, `_get_lab_robot_brief(...)` y `_sync_lab_selector_visuals()`.
+ - `Main._clear_post_death_support()` ahora quita cada hijo de `SupportRoot` antes de `queue_free()`, en vez de dejarlo en el árbol hasta el frame siguiente.
+ - `lab_runtime_selector_test.gd` fija el seam concreto con `F3` y `F4` desde `Apoyo activo`: el resumen vuelve inmediatamente al robot (`P1 Cizalla Hard/Easy`), desaparece `Apoyo P1 | ...`, `SupportRoot` queda vacío y la marca diegética reaparece en el robot sin esperar otro frame.
+ - Motivo: `queue_free()` solo limpiaba al final del frame y dejaba un estado transitorio falso justo en el mismo helper que usa el laboratorio para reconfigurar slot/arquetipo/modo en caliente.
+
 1. **El reset automático de ronda también debe dejar el selector runtime limpio tras `Apoyo activo`**
  - `Main._on_round_started()` ya ejecuta `_clear_post_death_support()` antes de reactivar la ronda, y `_sync_post_death_support_state()` + `_sync_lab_selector_visuals()` ya devolvían correctamente el actor seleccionado al robot/loadout runtime.
  - El gap real estaba en cobertura: `lab_runtime_selector_test.gd` ahora congela el flujo `P1 Grua Hard -> Apoyo activo -> ronda cerrada -> Ronda 2`, exigiendo antes del reset las tres líneas de soporte seleccionado y, después, el retorno a `Lab | P1 Grua Hard`, controles de robot, ausencia de `Apoyo P1 | ...`, sin `PilotSupportShip` stale y con `LabSelectionIndicator` otra vez sobre el robot.
