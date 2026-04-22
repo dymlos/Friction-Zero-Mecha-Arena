@@ -32,6 +32,11 @@ signal payload_used(support_ship: PilotSupportShip, payload_name: String, target
 @export_group("Interference Readability")
 @export_range(-1.0, 0.2, 0.01) var interference_range_indicator_height := -0.5
 @export_range(0.01, 0.12, 0.01) var interference_range_indicator_thickness := 0.03
+@export_group("Prototype Lab Readability")
+@export var lab_selection_indicator_radius := 0.62
+@export var lab_selection_indicator_height := 0.035
+@export_range(0.0, 0.2, 0.01) var lab_selection_indicator_pulse_amount := 0.08
+@export_range(1.0, 10.0, 0.5) var lab_selection_indicator_pulse_speed := 4.0
 
 var owner_robot: RobotBase = null
 var allied_robot: RobotBase = null
@@ -44,6 +49,9 @@ var _status_pulse_phase := 0.0
 var _selected_target_robot: RobotBase = null
 var _manual_target_override := false
 var _target_indicator_phase := 0.0
+var _lab_selection_indicator: MeshInstance3D = null
+var _lab_selection_indicator_animation_time := 0.0
+var _is_lab_selected := false
 
 @onready var hull_visual: MeshInstance3D = $HullVisual
 @onready var glow_visual: MeshInstance3D = $GlowVisual
@@ -57,10 +65,12 @@ func _ready() -> void:
 	_duplicate_runtime_material(glow_visual)
 	_duplicate_runtime_material(status_ring_visual)
 	_duplicate_runtime_material(status_pulse_visual)
+	_ensure_lab_selection_indicator()
 	_ensure_support_target_indicator()
 	_ensure_support_target_floor_indicator()
 	_ensure_interference_range_indicator()
 	_refresh_visuals()
+	_refresh_lab_selection_indicator()
 	_refresh_support_target_visuals()
 
 
@@ -86,6 +96,15 @@ func configure(
 
 func belongs_to_owner(robot: RobotBase) -> bool:
 	return owner_robot == robot
+
+
+func set_lab_selected(is_selected: bool) -> void:
+	_is_lab_selected = is_selected
+	_refresh_lab_selection_indicator()
+
+
+func is_lab_selected() -> bool:
+	return _is_lab_selected
 
 
 func get_status_summary() -> String:
@@ -194,6 +213,7 @@ func _physics_process(delta: float) -> void:
 	var target_selection_changed := _update_target_selection_from_input()
 	target_selection_changed = _refresh_target_selection() or target_selection_changed
 	_update_status_beacon(delta)
+	_update_lab_selection_indicator(delta)
 	_update_target_indicator(delta)
 	_update_target_floor_indicator()
 	_update_interference_range_indicator()
@@ -639,6 +659,35 @@ func _ensure_support_target_indicator() -> void:
 	add_child(indicator)
 
 
+func _ensure_lab_selection_indicator() -> void:
+	if get_node_or_null("LabSelectionIndicator") != null:
+		_lab_selection_indicator = get_node("LabSelectionIndicator") as MeshInstance3D
+		return
+
+	var indicator := MeshInstance3D.new()
+	indicator.name = "LabSelectionIndicator"
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = lab_selection_indicator_radius
+	mesh.bottom_radius = lab_selection_indicator_radius
+	mesh.height = 0.03
+	mesh.radial_segments = 32
+	mesh.rings = 1
+	indicator.mesh = mesh
+	indicator.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	indicator.position = Vector3(0.0, lab_selection_indicator_height, 0.0)
+	indicator.visible = false
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.no_depth_test = true
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.emission_enabled = true
+	material.roughness = 0.18
+	indicator.material_override = material
+	add_child(indicator)
+	_lab_selection_indicator = indicator
+
+
 func _ensure_support_target_floor_indicator() -> void:
 	if get_node_or_null("SupportTargetFloorIndicator") != null:
 		return
@@ -812,6 +861,55 @@ func _refresh_support_target_visuals() -> void:
 	_update_target_indicator(0.0)
 	_update_target_floor_indicator()
 	_update_interference_range_indicator()
+
+
+func _refresh_lab_selection_indicator() -> void:
+	if _lab_selection_indicator == null:
+		return
+
+	_lab_selection_indicator.visible = _is_lab_selected
+	if not _is_lab_selected:
+		_lab_selection_indicator.scale = Vector3.ONE
+		_lab_selection_indicator.position.y = lab_selection_indicator_height
+		return
+
+	var identity_color := owner_robot.get_identity_color() if is_instance_valid(owner_robot) else Color(0.76, 0.9, 1.0, 1.0)
+	var cue_color := identity_color.lerp(Color(0.96, 0.98, 1.0, 1.0), 0.45)
+	var material := _lab_selection_indicator.material_override as StandardMaterial3D
+	if material == null:
+		return
+
+	material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.24)
+	material.emission = cue_color
+	material.emission_energy_multiplier = 0.95
+
+
+func _update_lab_selection_indicator(delta: float) -> void:
+	if _lab_selection_indicator == null:
+		return
+	if not _lab_selection_indicator.visible:
+		_lab_selection_indicator_animation_time = 0.0
+		_lab_selection_indicator.scale = Vector3.ONE
+		_lab_selection_indicator.rotation = Vector3.ZERO
+		_lab_selection_indicator.position.y = lab_selection_indicator_height
+		return
+
+	_lab_selection_indicator_animation_time += delta
+	var wave := (sin(_lab_selection_indicator_animation_time * lab_selection_indicator_pulse_speed) + 1.0) * 0.5
+	var pulse := 1.0 + (wave - 0.5) * lab_selection_indicator_pulse_amount * 2.0
+	_lab_selection_indicator.scale = Vector3(pulse, 1.0, pulse)
+	_lab_selection_indicator.position.y = lab_selection_indicator_height + wave * 0.02
+	_lab_selection_indicator.rotation.y = fmod(_lab_selection_indicator.rotation.y + delta * 0.55, TAU)
+
+	var material := _lab_selection_indicator.material_override as StandardMaterial3D
+	if material == null:
+		return
+
+	var identity_color := owner_robot.get_identity_color() if is_instance_valid(owner_robot) else Color(0.76, 0.9, 1.0, 1.0)
+	var cue_color := identity_color.lerp(Color(0.96, 0.98, 1.0, 1.0), 0.45)
+	material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.2 + wave * 0.1)
+	material.emission = cue_color
+	material.emission_energy_multiplier = 0.95 + wave * 0.45
 
 
 func _is_target_in_interference_range(target_robot: RobotBase) -> bool:

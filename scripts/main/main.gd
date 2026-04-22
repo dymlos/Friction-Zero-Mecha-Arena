@@ -975,6 +975,7 @@ func _sync_post_death_support_state() -> void:
 			)
 
 	_set_post_death_support_lane_active(support_enabled)
+	_sync_lab_selector_visuals()
 
 
 func _prune_post_death_support_ships() -> void:
@@ -1195,8 +1196,25 @@ func _sync_lab_selector_visuals() -> void:
 		return
 
 	var selected_robot := _get_selected_lab_robot()
+	var selected_support_ship := _find_post_death_support_ship(selected_robot)
 	for robot in robots:
-		robot.set_lab_selected(lab_runtime_selector_enabled and robot == selected_robot)
+		robot.set_lab_selected(
+			lab_runtime_selector_enabled
+			and robot == selected_robot
+			and selected_support_ship == null
+		)
+	if support_root == null:
+		return
+
+	for child in support_root.get_children():
+		if not (child is PilotSupportShip):
+			continue
+
+		var support_ship := child as PilotSupportShip
+		support_ship.set_lab_selected(
+			lab_runtime_selector_enabled
+			and support_ship == selected_support_ship
+		)
 
 
 func _build_allowed_edge_pickup_ids() -> PackedStringArray:

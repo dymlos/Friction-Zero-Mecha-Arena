@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No volver a dejar `LabSelectionIndicator` pegado al robot cuando el slot entra en `Apoyo activo`**
+ - `PilotSupportShip` ya expone `set_lab_selected()/is_lab_selected()` y crea su propio `LabSelectionIndicator`; `Main._sync_lab_selector_visuals()` ahora apaga la marca del robot seleccionado si ya existe soporte activo para ese owner y la pasa a la nave.
+ - Si se retocan `_sync_lab_selector_visuals()`, `_sync_post_death_support_state()`, el lifecycle de `PilotSupportShip` o la visual runtime del selector, mantener `lab_runtime_selector_test.gd`: ahora fija robot marcado antes de la baja y nave marcada después de `Apoyo activo`.
+ - Reabrir solo si el laboratorio abandona esta pista diegética, cambia el actor controlable post-muerte o aparece otra capa visual que reemplace explícitamente al anillo runtime.
+
 0. **No reabrir el salto `F6` desde `Apoyo activo` al tocar selector runtime o persistencia entre laboratorios**
  - `lab_scene_selector_test.gd` ahora cubre el flujo `P1 Grua Hard -> Apoyo activo -> F6 -> Equipos rapido`; el contrato es que la escena nueva recupere `Lab | P1 Grua Hard ...`, controles de robot Hard y no arrastre `Apoyo P1 | ...`.
  - Si se retocan `cycle_lab_scene_variant()`, `_store_lab_runtime_session_state()`, `_restore_lab_runtime_session_settings()`, `_apply_restored_lab_runtime_loadouts()` o el lifecycle del soporte post-muerte, mantener esa fixture.

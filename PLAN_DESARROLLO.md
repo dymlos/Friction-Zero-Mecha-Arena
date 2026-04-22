@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- La pista diegética `LabSelectionIndicator` del laboratorio ya sigue también al actor jugable real cuando el slot seleccionado cae en `Teams` y pasa a `Apoyo activo`: el anillo deja de quedarse pegado al robot caído y migra a `PilotSupportShip`.
+- La corrección se resolvió sin abrir otra UI: `PilotSupportShip` ahora expone `set_lab_selected()/is_lab_selected()` y crea su propio anillo runtime, mientras `Main._sync_lab_selector_visuals()` apaga la marca del robot si existe soporte activo para ese owner y la reaplica a la nave.
+- `lab_runtime_selector_test.gd` fija el seam completo: antes de la baja exige anillo visible en el robot seleccionado; después de `fall_into_void()` exige anillo apagado en el robot, `is_lab_selected()` verdadero en la nave y `LabSelectionIndicator` visible en `PilotSupportShip`.
+- Validación focalizada: `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - El salto runtime `F6` entre laboratorios ya tiene regresión explícita también cuando el slot seleccionado venía de `Apoyo activo`: el cambio de escena debe limpiar la nave post-muerte, restaurar el robot del slot con su loadout runtime (`Grua Hard` en la fixture) y borrar la línea `Apoyo P1 | ...` en la escena nueva.
 - La decisión fue congelar el seam en cobertura, no tocar producción: `cycle_lab_scene_variant()` ya persistía solo slot/loadout/HUD en `_lab_runtime_session_state`, y la escena recargada rearmaba un laboratorio limpio sin arrastrar soporte stale.
 - `lab_scene_selector_test.gd` ahora cubre el flujo completo `P1 Grua Hard -> Apoyo activo -> F6 -> Equipos rapido`: antes del salto exige `Lab | P1 Apoyo activo`, `Control P1 | usa C | objetivo Q/E` y `Apoyo P1 | sin carga`; después del salto exige `Lab | P1 Grua Hard`, controles de robot Hard y ausencia de `Apoyo P1 | ...`.

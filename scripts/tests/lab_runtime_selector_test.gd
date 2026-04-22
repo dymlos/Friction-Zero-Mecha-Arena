@@ -217,6 +217,10 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 		not round_label.text.contains("Apoyo P1 |"),
 		"Antes de una baja, el round-state no deberia anunciar una linea de apoyo para un robot que sigue activo."
 	)
+	var robot_selection_indicator := robots[0].get_node_or_null("LabSelectionIndicator") as MeshInstance3D
+	_assert(robot_selection_indicator != null, "El robot seleccionado deberia arrancar con la pista diegetica del laboratorio disponible.")
+	if robot_selection_indicator != null:
+		_assert(robot_selection_indicator.visible, "Antes de una baja, la pista diegetica deberia seguir visible sobre el robot seleccionado.")
 
 	robots[0].fall_into_void()
 	await process_frame
@@ -244,6 +248,32 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 		round_label.text.contains("Apoyo P1 | sin carga"),
 		"Si el slot seleccionado pasa a la nave de apoyo, el round-state deberia dejar visible tambien su estado accionable persistente."
 	)
+	if robot_selection_indicator != null:
+		_assert(
+			not robot_selection_indicator.visible,
+			"Cuando el slot seleccionado ya controla la nave de apoyo, la pista diegetica no deberia seguir pegada al robot caido."
+		)
+	var support_root := main.get_node_or_null("SupportRoot")
+	var support_ship: Node = support_root.get_child(0) if support_root != null and support_root.get_child_count() > 0 else null
+	_assert(
+		support_ship != null and support_ship.has_method("is_lab_selected"),
+		"La nave de apoyo deberia exponer tambien el estado de seleccion runtime para que el laboratorio siga al actor jugable."
+	)
+	if support_ship != null:
+		_assert(
+			bool(support_ship.call("is_lab_selected")),
+			"Si el slot seleccionado ya esta en `Apoyo activo`, la nave de apoyo deberia quedar marcada como seleccionada."
+		)
+	var support_selection_indicator := support_ship.get_node_or_null("LabSelectionIndicator") as MeshInstance3D if support_ship != null else null
+	_assert(
+		support_selection_indicator != null,
+		"La nave de apoyo del slot seleccionado deberia mostrar tambien una pista diegetica del selector runtime."
+	)
+	if support_selection_indicator != null:
+		_assert(
+			support_selection_indicator.visible,
+			"Si el slot seleccionado ya esta en `Apoyo activo`, la pista diegetica deberia migrar a la nave de apoyo."
+		)
 
 	await _cleanup_node(main)
 

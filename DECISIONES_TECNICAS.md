@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **La pista diegética del selector runtime debe seguir al actor jugable real, también en `Apoyo activo`**
+ - `PilotSupportShip` ahora expone `set_lab_selected()/is_lab_selected()` y crea su propio `LabSelectionIndicator`, con color derivado del `owner_robot`, para no dejar la legibilidad del selector atada solo a `RobotBase`.
+ - `Main._sync_lab_selector_visuals()` ya no marca siempre al robot seleccionado: si `_find_post_death_support_ship(selected_robot)` devuelve una nave activa, apaga la marca del robot y la mueve a esa `PilotSupportShip`; `_sync_post_death_support_state()` reejecuta ese sync al cambiar el lifecycle del soporte.
+ - `lab_runtime_selector_test.gd` fija el contrato: antes de la baja el anillo vive en el robot; despues de pasar a soporte, el robot lo apaga y la nave queda seleccionada/visible.
+ - Motivo: las últimas iteraciones ya habían alineado HUD y round-state con `Apoyo activo`, pero la pista en mundo seguía mintiendo sobre qué actor controlaba realmente el jugador. Reusar el mismo lenguaje visual del selector evita abrir más HUD y mantiene claridad en pantalla compartida.
+
 1. **El salto `F6` entre laboratorios debe limpiar `Apoyo activo` pero conservar el loadout runtime**
  - `Main.cycle_lab_scene_variant()` sigue persistiendo solo slot seleccionado, overrides `Easy/Hard`, modo HUD y paths de arquetipo dentro de `_lab_runtime_session_state`; no guarda estado transitorio del soporte post-muerte.
  - `lab_scene_selector_test.gd` ahora fija el contrato completo: si `P1` cae, entra en `Apoyo activo` y luego cambia a la siguiente escena con `F6`, la escena recargada debe volver a `Lab | P1 Grua Hard ...`, `Control P1 | mueve ... aim ...` y ninguna línea `Apoyo P1 | ...`.

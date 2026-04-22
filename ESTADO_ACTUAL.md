@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Pista diegética del selector runtime alineada con `Apoyo activo` (2026-04-22)
+
+- Estado: cuando el slot seleccionado del laboratorio cae en `Teams` y pasa a `Apoyo activo`, la pista diegética `LabSelectionIndicator` ya no queda pegada al robot caído; ahora migra a la nave `PilotSupportShip`, alineada con `Lab | P1 Apoyo activo`, `Control P1 | usa C | objetivo Q/E` y `Apoyo P1 | ...`.
+- Corrección aplicada:
+  - `scripts/support/pilot_support_ship.gd` ahora expone `set_lab_selected()/is_lab_selected()` y crea un `LabSelectionIndicator` runtime con el mismo lenguaje visual sobrio del laboratorio.
+  - `scripts/main/main.gd` hace que `_sync_lab_selector_visuals()` apague la marca del robot seleccionado cuando `_find_post_death_support_ship(robot)` devuelve una nave activa, y la pase a esa `PilotSupportShip`.
+  - `_sync_post_death_support_state()` vuelve a sincronizar la pista diegética en cada cambio de lifecycle del soporte para que el anillo aparezca/desaparezca sin depender de otro input de selector.
+  - `scripts/tests/lab_runtime_selector_test.gd` fija la regresión completa: anillo visible en el robot antes de la baja; anillo apagado en el robot y visible en la nave tras `fall_into_void()`.
+- Resultado:
+  - el laboratorio ya no contradice en mundo al round-state cuando el jugador seleccionado deja de controlar el robot y pasa al carril post-muerte.
+  - `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan.
+
 ## Cambio de laboratorio `F6` desde `Apoyo activo` cubierto (2026-04-22)
 
 - Estado: el selector runtime ya tiene cobertura headless para el caso donde el slot seleccionado cae en `Teams`, pasa a `Apoyo activo` y luego salta de laboratorio con `F6`.
