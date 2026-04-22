@@ -4,6 +4,9 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Medición corta cerrada para el gating de no-ops del soporte `Teams`: en el setup real 2v2/3-robots-vivos, una mala selección manual de `surge` o `movilidad` no gasta la carga, sigue mostrando `ya activo` y se corrige con un solo ciclo de target hacia el aliado útil.
+- `support_payload_actionability_test.gd` ahora fija también esa recuperación operativa: forzar target manual redundante, bloquear el no-op y confirmar redirección inmediata al aliado útil sin tocar `PilotSupportShip`.
+- Decisión operativa: no reabrir este seam por sensación en el laboratorio actual; solo volver a medir si `Teams` escala a más aliados vivos simultáneos o si cambia el orden/costo del ciclado manual.
 - La nave de apoyo `Teams` ya no puede gastar `surge` o `movilidad` sobre un target que su propia lectura compacta ya marca como `ya activo`; `_resolve_support_target_for_payload()` ahora reutiliza `_is_payload_actionable_on_target(...)`, así que la carga queda disponible para redirigirla a un aliado realmente útil.
 - `support_payload_actionability_test.gd` fija ambas regresiones reales: `surge` y `movilidad` sobre aliados con toda la ventana útil ya cubierta.
 - El soporte post-muerte ya no deja envejecerse el default en runtime: si el target auto-seleccionado deja de ser accionable durante la ronda y existe otro objetivo útil, `PilotSupportShip` resincroniza solo hacia ese nuevo mejor target sin obligar a corregirlo manualmente.

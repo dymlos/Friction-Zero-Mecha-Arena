@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## Redirección manual de buffs validada en `Teams` (2026-04-22)
+
+- Estado: en el setup real `Teams` del prototipo actual, bloquear no-ops de `surge`/`movilidad` no deja a la nave de apoyo “clavada” sobre una mala selección manual.
+- Medición aplicada:
+  - `support_payload_actionability_test.gd` ahora reproduce una sesión corta con 3 robots vivos: el target por defecto arranca sobre el aliado útil, el jugador cicla a mano hacia el aliado saturado, el roster sigue marcando `ya activo`, el uso falla sin consumir y un único ciclo manual devuelve la carga al aliado útil.
+  - no hubo cambio de gameplay en `PilotSupportShip`; la corrección previa ya era suficiente para el laboratorio `Teams` actual.
+- Resultado:
+  - el gating de no-ops mejora consistencia entre lectura y ejecución sin sumar fricción extra relevante en 2v2 con un único aliado alternativo.
+  - `godot --headless --path . -s res://scripts/tests/support_payload_actionability_test.gd` y `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd` pasan con el nuevo escenario de recuperación manual.
+
 ## `Surge` / `movilidad` ya no se consumen sobre targets redundantes (2026-04-22)
 
 - Estado: la nave de apoyo `Teams` ya no quema una carga de buff sobre el mismo target que su roster ya marcaba como `ya activo`.

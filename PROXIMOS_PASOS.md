@@ -2,10 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
-0. **Medir si el bloqueo de no-ops mejora el valor real del soporte**
- - `PilotSupportShip` ya no gasta `surge` ni `movilidad` sobre targets marcados como `ya activo`; el próximo playtest corto Teams debería confirmar si ese gating mejora decisiones reales o si deja a la nave demasiado tiempo “cargando una mala elección” cuando el jugador no recicla target.
- - Si se retoca este seam, mantener `support_payload_actionability_test.gd` junto con `support_payload_availability_readability_test.gd`: ahora una cubre la lectura `ya activo` y la otra que esa misma lectura también gobierne el consumo real.
- - Archivos objetivo: `scripts/support/pilot_support_ship.gd`, `scripts/tests/support_payload_actionability_test.gd`, `scripts/tests/support_payload_availability_readability_test.gd`.
+0. **No reabrir el gating de no-ops salvo cambio real de escala en `Teams`**
+ - La medición corta ya quedó cerrada: en el laboratorio `Teams` actual, una mala selección manual de `surge` o `movilidad` no gasta la carga y se corrige con un solo ciclo de target hacia el aliado útil.
+ - Si se retoca este seam, mantener `support_payload_actionability_test.gd` junto con `support_payload_availability_readability_test.gd`: ahora una cubre bloqueo + redirección manual y la otra que la misma lectura `ya activo` siga gobernando roster/cues.
+ - Reabrir solo si `Teams` suma más aliados vivos simultáneos, cambia el costo del ciclado manual o aparece fricción real en sesión con más de dos candidatos aliados.
+ - Archivos objetivo: `scripts/support/pilot_support_ship.gd`, `scripts/tests/support_payload_actionability_test.gd`, `scripts/tests/support_payload_availability_readability_test.gd`, `scripts/tests/team_post_death_support_targeting_test.gd`.
 
 0. **Validar legibilidad del nuevo estado `Apoyo activo`**
  - El roster vivo `Teams` ya distingue a la baja que sigue influyendo desde la nave de soporte, el HUD explicito ya no mezcla los controles del robot caido con los de la nave, la línea `Apoyo activo` ya no arrastra `skill`, energía ni `item` del robot muerto, `interferencia` explicita `fuera de rango` y también `estable`, `stabilizer` marca `sin daño`, `surge/movilidad` publican `ya activo` cuando el buff seleccionado sería redundante, los tres cues diegéticos (`SupportTargetIndicator`, `SupportTargetFloorIndicator`, `InterferenceRangeIndicator`) se atenúan cuando el payload sería un no-op real, el auto-target ya vuelve solo al mejor objetivo útil si el default envejece durante la ronda y el override manual ya tiene regresión propia para no volver a pelear contra el jugador. La siguiente sesión corta debe confirmar si ese paquete compacto alcanza por sí solo o si todavía hace falta ajustar orden/contraste antes de sumar otra UI.

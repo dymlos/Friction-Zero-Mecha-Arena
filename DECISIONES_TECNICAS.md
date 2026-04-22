@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El gating de no-ops del soporte queda aceptado para el laboratorio `Teams` actual**
+ - `support_payload_actionability_test.gd` ahora cubre no solo el bloqueo de consumo sino también la recuperación operativa: selección manual redundante, warning `ya activo`, uso fallido sin gasto y corrección con un único ciclo hacia el aliado útil.
+ - No hubo cambio de producción en `PilotSupportShip` en esta iteración; la medición pasó con el comportamiento actual.
+ - Motivo: en el prototipo `Teams` vigente el soporte corrige una mala decisión en un solo input extra, así que sumar auto-rescates sobre override manual volvería a pelear contra la intención del jugador sin evidencia de fricción real. El seam solo debe reabrirse si el modo suma más aliados simultáneos o cambia el costo del ciclado.
+
 1. **La ejecución del soporte debe respetar la misma accionabilidad que ya comunica el roster**
  - `_resolve_support_target_for_payload()` ahora reutiliza `_is_payload_actionable_on_target(target_robot)` y no deja llegar a `apply_energy_surge()` / `apply_mobility_boost()` cuando el target ya estaba en `ya activo`.
  - `support_payload_actionability_test.gd` fija el bug real: `surge` y `movilidad` antes se consumían aunque no agregaran ventana útil; ahora fallan limpio y la carga queda disponible.
