@@ -42,6 +42,7 @@ var _gate_disruption_time_left := 0.0
 var _pickup_collection_lock_time_left := 0.0
 var _status_pulse_phase := 0.0
 var _selected_target_robot: RobotBase = null
+var _manual_target_override := false
 var _target_indicator_phase := 0.0
 
 @onready var hull_visual: MeshInstance3D = $HullVisual
@@ -165,7 +166,7 @@ func use_support_payload() -> bool:
 			return false
 
 	_support_payload_name = ""
-	_set_selected_target(null)
+	_assign_selected_target(null, false)
 	_refresh_visuals()
 	_refresh_support_target_visuals()
 	payload_used.emit(self, payload_name, target_robot)
@@ -384,13 +385,17 @@ func _update_target_selection_from_input() -> bool:
 
 func _refresh_target_selection(force_default: bool = false) -> bool:
 	if not has_support_payload():
-		return _set_selected_target(null)
+		return _assign_selected_target(null, false)
 
 	var candidates := _get_support_target_candidates()
 	if candidates.is_empty():
-		return _set_selected_target(null)
+		return _assign_selected_target(null, false)
+
+	var default_target := _get_default_support_target(candidates)
 	if force_default or not _contains_support_target(candidates, _selected_target_robot):
-		return _set_selected_target(_get_default_support_target(candidates))
+		return _assign_selected_target(default_target, false)
+	if _should_resync_to_default_target(default_target):
+		return _assign_selected_target(default_target, false)
 
 	return false
 
@@ -398,18 +403,18 @@ func _refresh_target_selection(force_default: bool = false) -> bool:
 func _cycle_selected_target(direction: int) -> bool:
 	var candidates := _get_support_target_candidates()
 	if candidates.is_empty():
-		return _set_selected_target(null)
+		return _assign_selected_target(null, false)
 	if candidates.size() == 1:
-		return _set_selected_target(candidates[0])
+		return _assign_selected_target(candidates[0], false)
 	if not _contains_support_target(candidates, _selected_target_robot):
-		return _set_selected_target(_get_default_support_target(candidates))
+		return _assign_selected_target(_get_default_support_target(candidates), false)
 
 	var current_index := candidates.find(_selected_target_robot)
 	if current_index < 0:
-		return _set_selected_target(_get_default_support_target(candidates))
+		return _assign_selected_target(_get_default_support_target(candidates), false)
 
 	var next_index := wrapi(current_index + direction, 0, candidates.size())
-	return _set_selected_target(candidates[next_index])
+	return _assign_selected_target(candidates[next_index], true)
 
 
 func _get_support_target_candidates() -> Array[RobotBase]:
@@ -452,17 +457,28 @@ func _contains_support_target(candidates: Array[RobotBase], target_robot: RobotB
 	return candidates.find(target_robot) >= 0
 
 
-func _set_selected_target(target_robot: RobotBase) -> bool:
+func _assign_selected_target(target_robot: RobotBase, manual_override_enabled: bool) -> bool:
 	if not is_instance_valid(target_robot):
 		target_robot = null
-	if _selected_target_robot == target_robot:
+		manual_override_enabled = false
+	if _selected_target_robot == target_robot and _manual_target_override == manual_override_enabled:
 		return false
 
 	_selected_target_robot = target_robot
+	_manual_target_override = manual_override_enabled
 	if target_robot != null and owner_robot != null and owner_robot.is_ally_of(target_robot):
 		allied_robot = target_robot
 	_refresh_support_target_visuals()
 	return true
+
+
+func _should_resync_to_default_target(default_target: RobotBase) -> bool:
+	if _manual_target_override:
+		return false
+	if default_target == null or default_target == _selected_target_robot:
+		return false
+
+	return _is_payload_actionable_on_target(default_target) and not _is_payload_actionable_on_target(_selected_target_robot)
 
 
 func _compare_support_targets(left: RobotBase, right: RobotBase) -> bool:
