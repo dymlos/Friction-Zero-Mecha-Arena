@@ -810,7 +810,7 @@ func _build_match_stats_lines() -> Array[String]:
 		return []
 
 	var lines: Array[String] = []
-	for competitor_key in _competitor_order:
+	for competitor_key in _get_match_stats_ordered_competitors():
 		var stats_line := _build_competitor_match_stats_line(competitor_key)
 		if stats_line == "":
 			continue
@@ -920,6 +920,19 @@ func _build_elimination_stats_segment(stats: Dictionary) -> String:
 		return "bajas sufridas %s" % total_eliminations
 
 	return "bajas sufridas %s (%s)" % [total_eliminations, ", ".join(breakdown)]
+
+
+func _get_match_stats_ordered_competitors() -> Array[String]:
+	var ordered_competitors := _competitor_order.duplicate()
+	if ordered_competitors.size() <= 1:
+		return ordered_competitors
+
+	if match_mode == MatchMode.TEAMS:
+		ordered_competitors.sort_custom(_compare_team_competitors_for_recap)
+		return ordered_competitors
+
+	ordered_competitors.sort_custom(_compare_ffa_competitors_for_standings)
+	return ordered_competitors
 
 
 func _build_plural_segment(amount: int, singular_label: String, plural_label: String) -> String:

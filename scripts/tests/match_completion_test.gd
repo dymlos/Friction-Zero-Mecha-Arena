@@ -132,6 +132,18 @@ func _run() -> void:
 		recap_label.text.contains("Stats | Equipo 1 | rescates 1 | borde 1 | partes perdidas 1 (1 brazo) | bajas sufridas 0"),
 		"El recap lateral deberia compartir la misma telemetria simple del cierre de match, incluyendo desgaste modular."
 	)
+	var recap_lines := match_controller.get_round_recap_panel_lines()
+	var match_result_lines := match_controller.get_match_result_lines()
+	_assert(
+		_line_index(recap_lines, "Stats | Equipo 1 | rescates 1 | borde 1 | partes perdidas 1 (1 brazo) | bajas sufridas 0")
+			< _line_index(recap_lines, "Stats | Equipo 2 | bajas sufridas 4 (4 vacio)"),
+		"El recap Teams deberia ordenar las stats siguiendo el resultado real del match y dejar primero al equipo ganador."
+	)
+	_assert(
+		_line_index(match_result_lines, "Stats | Equipo 1 | rescates 1 | borde 1 | partes perdidas 1 (1 brazo) | bajas sufridas 0")
+			< _line_index(match_result_lines, "Stats | Equipo 2 | bajas sufridas 4 (4 vacio)"),
+		"El panel final Teams deberia ordenar las stats siguiendo el resultado real del match y dejar primero al equipo ganador."
+	)
 	_assert(
 		match_result_label.text.contains("Reinicio | F5"),
 		"El panel final deberia dejar visible la accion de reinicio inmediato."
@@ -188,6 +200,14 @@ func _has_line_prefix(lines: Array[String], prefix: String) -> bool:
 			return true
 
 	return false
+
+
+func _line_index(lines: Array[String], expected: String) -> int:
+	for index in range(lines.size()):
+		if lines[index] == expected:
+			return index
+
+	return 999
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:

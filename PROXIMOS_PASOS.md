@@ -64,6 +64,7 @@
   - decidir si el reinicio automático debe seguir siendo el fallback del laboratorio o si conviene pasar a una solución manual-only más adelante.
   - definir si ring-out y destruccion total siguen puntuando igual o si alguno merece bonus/feedback diferencial.
   - si vuelve a tocarse la linea `Stats | ...`, conservar la semantica actual: `_competitor_match_stats.eliminations` mide derrotas recibidas, asi que el cierre debe seguir rotulandolas como `bajas sufridas`, no como bajas infligidas.
+  - si vuelve a tocarse el orden del bloque `Stats | ...`, conservar `ffa_match_result_standings_test.gd`, `team_match_result_detail_order_test.gd` y `match_completion_test.gd`: ahora tambien cierran el riesgo de mezclar ranking/resultado correctos con telemetria final en scene-order.
   - si vuelve a tocarse el wording superior del cierre, conservar la separacion por modo: `Equipos` puede resumirse como `A-B`, pero `FFA` ya necesita una frase tipo `Player X gana la partida con N punto(s)` porque el detalle multi-competidor vive debajo en `Marcador` / `Posiciones`.
   - si vuelve a tocarse el orden del detalle de cierre, conservar `team_match_result_detail_order_test.gd` y `ffa_match_result_standings_test.gd`: ambos cierran el mismo riesgo de volver a scene-order en `RecapPanel`/`MatchResultPanel`.
   - si vuelve a tocarse la atribucion `por Player X`, conservar `match_elimination_source_reset_test.gd` dentro del chequeo minimo: el stale reciente no vivia en `RobotBase`, sino en el mapa per-round de `MatchController` que alimenta recap/resultado final.

@@ -54,6 +54,17 @@ func _run() -> void:
 	var winner_detail_b := "%s | sigue en pie | 4/4 partes" % robots[3].display_name
 	var loser_detail_a := "%s | baja 1 | vacio | 4/4 partes" % robots[0].display_name
 	var loser_detail_b := "%s | baja 2 | vacio | 4/4 partes" % robots[1].display_name
+	var winner_stats := "Stats | Equipo 2 | bajas sufridas 0"
+	var loser_stats := "Stats | Equipo 1 | bajas sufridas 2 (2 vacio)"
+
+	_assert(
+		_line_index(recap_lines, winner_stats) < _line_index(recap_lines, loser_stats),
+		"El recap Teams deberia ordenar tambien las stats siguiendo el resultado real del match."
+	)
+	_assert(
+		_line_index(match_result_lines, winner_stats) < _line_index(match_result_lines, loser_stats),
+		"El resultado final Teams deberia ordenar tambien las stats siguiendo el resultado real del match."
+	)
 
 	_assert(
 		_line_index(recap_lines, winner_detail_a) < _line_index(recap_lines, loser_detail_a),

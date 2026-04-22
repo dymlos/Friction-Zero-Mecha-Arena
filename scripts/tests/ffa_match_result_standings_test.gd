@@ -138,8 +138,36 @@ func _run() -> void:
 	var third_place_detail := "%s | baja 3 | vacio | 4/4 partes" % robots[2].display_name
 	var fourth_place_detail := "%s | baja 2 | vacio | 4/4 partes" % robots[1].display_name
 	var fifth_place_detail := "%s | baja 1 | vacio | 4/4 partes" % robots[0].display_name
+	var winner_stats := "Stats | %s | bajas sufridas 0" % robots[3].display_name
+	var third_place_stats := "Stats | %s | bajas sufridas 1 (1 vacio)" % robots[2].display_name
+	var fourth_place_stats := "Stats | %s | bajas sufridas 1 (1 vacio)" % robots[1].display_name
+	var fifth_place_stats := "Stats | %s | bajas sufridas 1 (1 vacio)" % robots[0].display_name
 	var recap_lines := match_controller.get_round_recap_panel_lines()
 	var match_result_lines := match_controller.get_match_result_lines()
+	_assert(
+		_line_index(recap_lines, winner_stats) < _line_index(recap_lines, third_place_stats),
+		"El recap FFA deberia ordenar tambien las stats siguiendo la posicion final real."
+	)
+	_assert(
+		_line_index(recap_lines, third_place_stats) < _line_index(recap_lines, fourth_place_stats),
+		"El recap FFA deberia mantener las stats empatadas en el mismo orden real del desempate."
+	)
+	_assert(
+		_line_index(recap_lines, fourth_place_stats) < _line_index(recap_lines, fifth_place_stats),
+		"El recap FFA deberia dejar ultimas las stats del primer eliminado cuando todos empatan en score."
+	)
+	_assert(
+		_line_index(match_result_lines, winner_stats) < _line_index(match_result_lines, third_place_stats),
+		"El resultado final FFA deberia ordenar tambien las stats siguiendo la posicion final real."
+	)
+	_assert(
+		_line_index(match_result_lines, third_place_stats) < _line_index(match_result_lines, fourth_place_stats),
+		"El resultado final FFA deberia mantener las stats empatadas en el mismo orden real del desempate."
+	)
+	_assert(
+		_line_index(match_result_lines, fourth_place_stats) < _line_index(match_result_lines, fifth_place_stats),
+		"El resultado final FFA deberia dejar ultimas las stats del primer eliminado cuando todos empatan en score."
+	)
 	_assert(
 		_line_index(recap_lines, winner_detail) < _line_index(recap_lines, third_place_detail),
 		"El recap FFA deberia ordenar el detalle por robot siguiendo la posicion final real."
