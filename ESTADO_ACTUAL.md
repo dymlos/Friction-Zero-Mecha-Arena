@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## El recap lateral del cierre final ya repite tambien la ultima baja decisiva (2026-04-22)
+
+- Estado: cuando el match termina, `RecapPanel` ya no queda un paso atras del `MatchResultPanel`; ahora tambien incluye `Cierre | <ultima baja>` con la misma atribucion del rival responsable.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` extrae `_build_closing_elimination_line()` desde `_last_elimination_summary`.
+  - la misma linea se reutiliza en `get_round_recap_panel_lines()` y `get_match_result_lines()`, sin tocar HUD vivo ni recaps intermedios.
+  - `scripts/tests/match_elimination_readability_test.gd` fija la regresion minima en dos superficies del recap final: array de lineas y `RecapLabel` visible.
+- Resultado:
+  - los dos paneles de cierre final quedan simetricos y autosuficientes para reconstruir que baja concreto clincheo el match.
+  - `godot --headless --path . -s res://scripts/tests/match_elimination_readability_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd`, `godot --headless --path . -s res://scripts/tests/match_highlight_moments_test.gd`, `godot --headless --path . -s res://scripts/tests/ffa_match_result_standings_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan.
+
 ## El targeting post-muerte de soporte ya tiene regresion estable sobre el loop fisico real (2026-04-22)
 
 - Estado: `team_post_death_support_targeting_test.gd` ya no cae de forma intermitente al validar `interferencia` y el regreso desde override manual al modo auto.

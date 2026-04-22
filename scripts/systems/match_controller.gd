@@ -418,6 +418,10 @@ func get_round_recap_panel_lines() -> Array[String]:
 
 		lines.append(_build_robot_recap_panel_line(robot))
 
+	var closing_elimination_line := _build_closing_elimination_line()
+	if closing_elimination_line != "":
+		lines.append(closing_elimination_line)
+
 	var restart_prompt_line := get_match_restart_prompt_line()
 	if restart_prompt_line != "":
 		lines.append(restart_prompt_line)
@@ -475,8 +479,9 @@ func get_match_result_lines() -> Array[String]:
 
 		lines.append(_build_robot_recap_panel_line(robot))
 
-	if _last_elimination_summary != "":
-		lines.append("Cierre | %s" % _last_elimination_summary)
+	var closing_elimination_line := _build_closing_elimination_line()
+	if closing_elimination_line != "":
+		lines.append(closing_elimination_line)
 
 	var restart_prompt_line := get_match_restart_prompt_line()
 	if restart_prompt_line != "":
@@ -1021,6 +1026,15 @@ func _build_round_closing_line() -> String:
 		_get_match_closing_cause_label(_last_round_closing_cause),
 		_get_round_victory_points_for_cause(_last_round_closing_cause),
 	]
+
+
+func _build_closing_elimination_line() -> String:
+	if not _match_over:
+		return ""
+	if _last_elimination_summary == "":
+		return ""
+
+	return "Cierre | %s" % _last_elimination_summary
 
 
 func _get_elimination_source_suffix(robot: RobotBase) -> String:

@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **Los dos paneles de cierre final deben repetir la misma linea `Cierre | <ultima baja>`**
+ - `MatchController` ya guardaba `_last_elimination_summary`, pero solo `get_match_result_lines()` la mostraba. Ahora `_build_closing_elimination_line()` centraliza esa lectura y la reutiliza tambien en `get_round_recap_panel_lines()`.
+ - `match_elimination_readability_test.gd` fija el contrato sobre el recap lateral: exige la linea tanto en el array del panel como en `RecapLabel`.
+ - Motivo: recap lateral y panel final conviven en el mismo estado `match_over`; si uno muestra la baja decisiva y el otro no, el cierre deja dos versiones del mismo evento en vez de una sola lectura consistente.
+
 1. **Los tests del soporte post-muerte deben esperar ticks fisicos, no solo frames visuales**
  - `PilotSupportShip` refresca targeting y override en `_physics_process()`, asi que la fixture `team_post_death_support_targeting_test.gd` ahora hace que `_wait_frames()` espere `physics_frame` y luego `process_frame`.
  - No hubo cambio en `scripts/support/pilot_support_ship.gd`; la correccion vive en la observacion del test.

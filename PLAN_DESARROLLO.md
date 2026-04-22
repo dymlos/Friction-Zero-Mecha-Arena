@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El recap lateral del cierre final ahora repite tambien `Cierre | ...`, igual que el panel final:
+  - la revision estricta detecto una asimetria residual en los dos paneles de cierre: `MatchResultPanel` ya reutilizaba la ultima baja decisiva, pero `RecapPanel` no la repetia aunque ambas superficies convivian al mismo tiempo.
+  - `scripts/systems/match_controller.gd` ahora concentra esa linea en `_build_closing_elimination_line()` y la reutiliza tanto en `get_round_recap_panel_lines()` como en `get_match_result_lines()`.
+  - `scripts/tests/match_elimination_readability_test.gd` fija la regresion minima sobre arrays + `RecapLabel`: el recap lateral del cierre final tambien debe decir `Cierre | Player X ... por Player Y`.
+  - validacion: rojo inicial en `godot --headless --path . -s res://scripts/tests/match_elimination_readability_test.gd`; despues pasaron ese test, `match_completion_test.gd`, `match_highlight_moments_test.gd`, `ffa_match_result_standings_test.gd` y la suite completa `test_runner.gd` (`Suite OK: 84 tests`).
+
 - La suite de targeting post-muerte ya no queda flaky por esperar el loop incorrecto:
   - la revision detecto que `team_post_death_support_targeting_test.gd` fallaba de forma intermitente aun sin tocar produccion; el soporte actualiza targeting en `_physics_process()`, pero la fixture esperaba solo `process_frame`.
   - la correccion minima vive en la propia regresion: `_wait_frames()` ahora espera primero `physics_frame` y luego `process_frame`, alineando el helper con el seam real de `PilotSupportShip`.

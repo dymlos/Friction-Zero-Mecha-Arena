@@ -111,6 +111,17 @@ func _run() -> void:
 		"El recap lateral deberia conservar la atribucion del rival que forzo la caida al vacio."
 	)
 	_assert(
+		_has_line_with_fragment(
+			match_controller.get_round_recap_panel_lines(),
+			"Cierre | Player 4 cayo al vacio por Player 2"
+		),
+		"El recap lateral del cierre final deberia reutilizar tambien la ultima baja con atribucion del rival responsable."
+	)
+	_assert(
+		recap_label.text.contains("Cierre | Player 4 cayo al vacio por Player 2"),
+		"El recap visible del cierre final deberia dejar explicita tambien la ultima baja decisiva."
+	)
+	_assert(
 		match_result_label.text.contains("Cierre | Player 4 cayo al vacio por Player 2"),
 		"El resultado final deberia reutilizar la ultima baja con atribucion del rival responsable."
 	)

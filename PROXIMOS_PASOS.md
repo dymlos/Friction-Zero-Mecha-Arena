@@ -8,6 +8,11 @@
 2. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 
+0. **No volver a dejar que solo uno de los dos paneles de cierre explique la ultima baja decisiva**
+ - `MatchController` ya reutiliza `_build_closing_elimination_line()` tanto en `get_round_recap_panel_lines()` como en `get_match_result_lines()`; si se retocan recap o resultado final, mantener esa fuente de verdad compartida.
+ - `match_elimination_readability_test.gd` ahora fija el contrato minimo sobre el recap lateral final: el array del panel y `RecapLabel` visible deben repetir `Cierre | <ultima baja>`, igual que `MatchResultPanel`.
+ - Reabrir solo si el cierre final deja de mostrar esa linea en ambas superficies o si una sola capa visible reemplaza explicitamente a la otra.
+
 0. **No volver a esperar solo `process_frame` en regresiones del soporte que dependen de `_physics_process()`**
  - `team_post_death_support_targeting_test.gd` ya fija `_wait_frames()` sobre `physics_frame + process_frame`; si se agregan asserts nuevos para targeting/override/input del soporte, reutilizar ese helper y no volver a leer estados a mitad del tick fisico.
  - Reabrir solo si `PilotSupportShip` deja de resolver targeting en `_physics_process()` o si el harness de tests cambia a otro loop compartido.
