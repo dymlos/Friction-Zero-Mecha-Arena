@@ -19,6 +19,7 @@ signal pickup_collected(robot: RobotBase, restored_charges: int)
 
 var _available := true
 var _spawn_enabled := true
+var _collection_enabled := true
 var _animation_time := 0.0
 var _base_visual_position := Vector3.ZERO
 
@@ -38,23 +39,43 @@ func _process(delta: float) -> void:
 	var wave := sin(_animation_time * bob_speed)
 	visuals_root.position = _base_visual_position + Vector3(0.0, wave * bob_height, 0.0)
 	visuals_root.rotation.y = fmod(visuals_root.rotation.y + rotation_speed * delta, TAU)
+	if not _collection_enabled or not monitoring:
+		return
+
+	for body in get_overlapping_bodies():
+		if _try_collect_robot(body):
+			return
 
 
 func _on_body_entered(body: Node) -> void:
-	if not _spawn_enabled or not _available:
-		return
+	_try_collect_robot(body)
+
+
+func _try_collect_robot(body: Node) -> bool:
+	if not _spawn_enabled or not _available or not _collection_enabled:
+		return false
 	if not (body is RobotBase):
-		return
+		return false
 
 	var robot := body as RobotBase
 	var previous_charges := robot.get_core_skill_charge_count()
 	if not robot.restore_core_skill_charges(charge_amount):
-		return
+		return false
 
 	var restored_charges := maxi(robot.get_core_skill_charge_count() - previous_charges, 0)
 	_set_available_state(false)
 	respawn_timer.start(respawn_delay)
 	pickup_collected.emit(robot, restored_charges)
+	return true
+
+
+func is_collection_enabled() -> bool:
+	return _collection_enabled
+
+
+func set_collection_enabled(is_enabled: bool) -> void:
+	_collection_enabled = is_enabled
+	_set_available_state(_available)
 
 
 func _on_respawn_timer_timeout() -> void:

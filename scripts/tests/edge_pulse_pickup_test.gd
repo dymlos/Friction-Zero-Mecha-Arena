@@ -194,6 +194,9 @@ func _validate_main_scene_pulse_pickups() -> void:
 	_assert(active_pickup != null, "La escena principal deberia habilitar pulso en al menos un layout del borde.")
 
 	if active_pickup != null and scene_robots.size() > 0:
+		if (match_controller as MatchController).is_round_intro_active():
+			await create_timer((match_controller as MatchController).get_round_intro_time_left() + 0.15).timeout
+			await process_frame
 		var robot := scene_robots[0]
 		robot.global_position = active_pickup.global_position
 		active_pickup.call("_on_body_entered", robot)

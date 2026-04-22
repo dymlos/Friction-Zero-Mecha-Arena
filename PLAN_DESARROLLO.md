@@ -4,6 +4,13 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- La apertura ahora tambien bloquea pickups de borde hasta que termina el intro:
+  - la revision estricta encontro un hueco jugable entre la documentacion y el prototipo: `Teams`/`FFA` ya telegraphiaban la apertura, pero los pedestales del borde seguian siendo recogibles desde el frame cero y aceleraban el primer contacto sin dar tiempo real a leer posicionamiento.
+  - `Main` ahora sincroniza un lock de coleccion sobre `edge_pickups` mientras `MatchController.is_round_intro_active()` siga verdadero; los pedestales quedan visibles, pero no se consumen hasta que la ronda realmente abre.
+  - el HUD del laboratorio deja esa ventana explicita con `Borde | ... | abre en Xs`, y los pickups ahora revisan overlaps al liberarse el intro para no exigir salir y volver a entrar al pedestal.
+  - la nueva regresion `edge_pickup_intro_lock_test.gd` fija el contrato minimo en `main.tscn`: el pickup no debe recogerse durante el intro y vuelve a funcionar cuando termina.
+  - validacion: `godot --headless --path . -s res://scripts/tests/edge_pickup_intro_lock_test.gd`, `edge_utility_pickup_test.gd`, `edge_mobility_pickup_test.gd`, `edge_energy_pickup_test.gd`, `edge_pulse_pickup_test.gd`, `edge_charge_pickup_scene_test.gd` y `test_runner.gd` (`Suite OK: 85 tests`).
+
 - Validado otra vez el perfil actual de cierre por causa (`ring-out 2 / destruccion total 1 / explosion inestable 4`) sin tocar producción:
   - la revision estricta volvio a contrastar el perfil activo en `MatchConfig` (`default_match_config.tres`, `ffa_validation_match_config.tres`, `teams_validation_match_config.tres`) contra la red que ya lo congela en runtime y en superficies de cierre.
   - la evidencia mecanica sigue alineada: `match_elimination_victory_weights_test.gd` confirma que `Teams` y `FFA` suman `2` por `ring-out` y luego `+4` por `explosion inestable`; `match_closing_cause_summary_test.gd` y `match_completion_test.gd` mantienen visible el mismo perfil en recap/resultado final con `Puntos cierre | ...`, `Cierre ronda | ...` y `Cierre decisivo | ...`.

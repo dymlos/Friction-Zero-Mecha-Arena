@@ -93,6 +93,7 @@ func _ready() -> void:
 	_connect_match_flow()
 	_register_existing_robots()
 	match_controller.start_match()
+	_sync_edge_pickup_intro_lock()
 	_sync_round_intro_locks()
 	_sync_opening_telegraph()
 	_apply_match_pressure_to_arena()
@@ -105,6 +106,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	_apply_match_pressure_to_arena()
+	_sync_edge_pickup_intro_lock()
 	_sync_round_intro_locks()
 	_sync_opening_telegraph()
 	_sync_post_death_support_state()
@@ -770,9 +772,26 @@ func _build_round_state_lines() -> Array[String]:
 
 	var edge_summary := _arena.get_active_edge_pickup_layout_summary()
 	if edge_summary != "":
-		lines.append("Borde | %s" % edge_summary)
+		if match_controller.is_round_intro_active():
+			lines.append(
+				"Borde | %s | abre en %.1fs"
+				% [edge_summary, snappedf(match_controller.get_round_intro_time_left(), 0.1)]
+			)
+		else:
+			lines.append("Borde | %s" % edge_summary)
 
 	return lines
+
+
+func _sync_edge_pickup_intro_lock() -> void:
+	var collection_enabled := not match_controller.is_round_intro_active()
+	for node in get_tree().get_nodes_in_group("edge_pickups"):
+		if not is_ancestor_of(node):
+			continue
+		if not node.has_method("set_collection_enabled"):
+			continue
+
+		node.call("set_collection_enabled", collection_enabled)
 
 
 func _on_robot_fell_into_void(robot: RobotBase) -> void:

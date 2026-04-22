@@ -4,9 +4,15 @@
 
 ## Prioridad inmediata tras la revision estricta (2026-04-22)
 
-1. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
+1. Medir en playtest corto si `OpeningTelegraph + lock de pickups de borde + Borde | ... | abre en Xs` realmente limpia el primer choque o si la espera se siente demasiado larga/corta en `main.tscn` y `main_teams_validation.tscn`.
 2. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
+
+0. **No volver a dejar los pickups de borde recogibles durante el intro**
+ - `Main` ya sincroniza `set_collection_enabled(false)` sobre `edge_pickups` mientras `MatchController.is_round_intro_active()` siga activo, y el HUD del laboratorio ahora deja explicita esa ventana como `Borde | ... | abre en Xs`.
+ - `edge_pickup_intro_lock_test.gd` congela el contrato minimo: en `main.tscn` un pickup de reparacion activo no debe recogerse durante el intro y debe volver a funcionar cuando termina el countdown.
+ - Las fixtures scene-level de pickups (`edge_utility/mobility/energy/pulse/charge`) ahora esperan a que termine el intro antes de validar coleccion real; si se toca otra vez el opening, conservar esa separacion entre apertura telegraphiada y borde activado.
+ - Reabrir solo si un playtest real demuestra que el opening sigue yendose demasiado rapido o si el lock vuelve opaco/antinatural el valor del borde.
 
 0. **No reabrir `ring-out 2 / destruccion total 1 / explosion inestable 4` por intuicion**
  - La revision estricta ya volvio a pasar `match_elimination_victory_weights_test.gd`, `match_closing_cause_summary_test.gd`, `match_completion_test.gd` y la suite completa sin tocar produccion ni configs.

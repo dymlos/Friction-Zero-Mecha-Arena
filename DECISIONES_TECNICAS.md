@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **Los pickups de borde deben quedar visibles pero bloqueados hasta que termina el intro**
+ - `Main` ahora sincroniza el lock runtime desde `MatchController.is_round_intro_active()` y el HUD lo deja explicito con `Borde | ... | abre en Xs`.
+ - Cada pickup de borde separa `spawn_enabled` de `collection_enabled`: el pedestal sigue telegraphiando valor durante la apertura, pero el consumo real no ocurre hasta que la ronda ya esta en juego.
+ - Los pickups ahora vuelven a revisar overlaps cuando el lock se libera, para que quedarse parado sobre el pedestal durante el countdown no obligue a salir y reentrar.
+ - Motivo: la documentacion pide una apertura pareja con tiempo de lectura y posicionamiento. Si los rewards del borde se cobraban desde el frame cero, el opening quedaba resuelto por contacto oportunista y no por duelo/lectura espacial.
+
 1. **No reabrir el perfil de score por causa `2/1/4` sin evidencia runtime/manual nueva**
  - `MatchConfig` sigue fijando `void_elimination_round_points = 2`, `destruction_elimination_round_points = 1` y `unstable_elimination_round_points = 4` tanto en el recurso base como en las configs de validacion `FFA/Teams`.
  - `match_elimination_victory_weights_test.gd` sigue congelando la mecanica en ambos modos (`ring-out` suma `2`, `explosion inestable` suma `4`), mientras `match_closing_cause_summary_test.gd` y `match_completion_test.gd` confirman que recap y cierre final siguen leyendo el mismo perfil visible dentro del prototipo.

@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## La apertura ya bloquea los pickups de borde hasta que la ronda realmente abre (2026-04-22)
+
+- Estado: los pedestales del borde siguen visibles durante el intro, pero ya no pueden recogerse hasta que `MatchController` libera la ronda; el HUD del laboratorio ahora lo explicita con `Borde | ... | abre en Xs`.
+- Correccion aplicada:
+  - `scripts/main/main.gd` sincroniza `set_collection_enabled(false)` sobre `edge_pickups` mientras `is_round_intro_active()` siga activo y vuelve a habilitarlos apenas termina el countdown.
+  - los pickups de borde (`repair/mobility/energy/pulse/charge/utility`) ahora separan visibilidad de disponibilidad: mantienen silhouette/pedestal visibles, bloquean consumo durante el intro y revisan overlaps cuando vuelven a quedar habilitados.
+  - `scripts/tests/edge_pickup_intro_lock_test.gd` fija la regresion principal; las fixtures scene-level de pickups esperan a que termine el intro antes de validar coleccion real en `main.tscn` / `main_ffa.tscn`.
+- Resultado:
+  - el opening queda mas alineado con `inicio parejo -> analisis -> escalada`: los items del borde siguen prometiendo valor, pero ya no saltan por contacto gratis antes del primer beat jugable.
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa con `Suite OK: 85 tests`.
+
 ## El perfil actual de score por causa sigue validado y no requiere retoque sin evidencia nueva (2026-04-22)
 
 - Estado: el prototipo sigue usando `ring-out 2 / destruccion total 1 / explosion inestable 4` en `MatchConfig`, y la red actual vuelve a confirmar que ese perfil se refleja igual en `Teams`, `FFA`, recap y cierre final.

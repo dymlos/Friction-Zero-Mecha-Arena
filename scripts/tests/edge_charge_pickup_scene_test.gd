@@ -26,6 +26,7 @@ func _validate_default_teams_scene_enables_charge_pickups_when_both_teams_have_s
 	await process_frame
 
 	var arena := main.get_node_or_null("ArenaRoot/ArenaBlockout")
+	var match_controller := main.get_node_or_null("Systems/MatchController")
 	_assert(arena is ArenaBase, "La escena principal deberia seguir montando un ArenaBase real.")
 	if not (arena is ArenaBase):
 		await _cleanup_scene_root(main)
@@ -84,6 +85,9 @@ func _validate_default_teams_scene_enables_charge_pickups_when_both_teams_have_s
 			"El resumen `Borde | ...` deberia nombrar la municion/carga cuando forme parte del layout activo en Teams."
 		)
 
+	if match_controller != null and bool(match_controller.call("is_round_intro_active")):
+		await create_timer(float(match_controller.call("get_round_intro_time_left")) + 0.15).timeout
+		await process_frame
 	skill_robot.global_position = active_pickup.global_position
 	active_pickup.call("_on_body_entered", skill_robot)
 	await process_frame
@@ -105,6 +109,7 @@ func _validate_ffa_scene_enables_charge_pickups_for_skill_robots() -> void:
 	await process_frame
 
 	var arena := main.get_node_or_null("ArenaRoot/ArenaBlockout")
+	var match_controller := main.get_node_or_null("Systems/MatchController")
 	_assert(arena is ArenaBase, "La escena FFA deberia seguir montando un ArenaBase real.")
 	if not (arena is ArenaBase):
 		await _cleanup_scene_root(main)
@@ -154,6 +159,9 @@ func _validate_ffa_scene_enables_charge_pickups_for_skill_robots() -> void:
 			"El resumen `Borde | ...` deberia nombrar la municion/carga cuando forme parte del layout activo."
 		)
 
+	if match_controller != null and bool(match_controller.call("is_round_intro_active")):
+		await create_timer(float(match_controller.call("get_round_intro_time_left")) + 0.15).timeout
+		await process_frame
 	skill_robot.global_position = active_pickup.global_position
 	active_pickup.call("_on_body_entered", skill_robot)
 	await process_frame
