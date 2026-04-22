@@ -331,9 +331,9 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - el roster agrega la etiqueta `Easy/Hard` por robot y ahora mantiene visible el hint real de input para que el setup quede legible durante playtests
 - Se cerro la brecha mas obvia del input local/Hard:
   - el perfil `WASD` ahora tiene `throw_part` dedicado (`C`) para no dejar a P1 sin negacion manual
-  - `RobotBase` crea acciones `aim_*` y usa `TFGX` como aim por teclado en Hard para el slot/local mas simple de laboratorio
+  - `RobotBase` crea acciones `aim_*` y ahora deja tres caminos Hard por teclado sin joystick: `WASD + TFGX`, `flechas + Ins/Del/PgUp/PgDn` y `numpad + KP7/KP9/KP//KP*`
   - `main.gd` resume en el estado inicial del HUD que mapping real esta usando cada slot, y `MatchController` mantiene ese hint en el roster para que el playtest no dependa de recordar controles fuera de pantalla
-  - se decidio no extender por ahora el aim Hard a otros perfiles de teclado; fuera de `WASD + TFGX`, los slots Hard locales quedan explicitamente joypad-first
+  - `IJKL` sigue explicitamente joypad-first en Hard para no forzar un cuarto mapping de teclado compartido todavia mas solapado
 - Se activo la primera presion de endgame que faltaba en mapas:
   - `MatchController` ahora mide tiempo de ronda y expone un factor de contraccion del arena
   - `Main` aplica ese factor sobre `ArenaBase` sin mezclar logica de match y geometria
@@ -454,7 +454,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - Los nuevos arquetipos siguen siendo una capa deliberadamente liviana:
   - hoy combinan tuning + pasivas chicas, una silueta diegetica minima por rol y `Ariete/Grua/Aguja/Ancla` como primera tanda real de skills propias; todavia no hay selección runtime ni una segunda capa mas profunda de reglas por arquetipo
   - si `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` siguen sintiéndose demasiado parecidos en playtest, el siguiente paso debera reforzar lectura/rango/ritmo de `Embestida/Iman/Pulso/Baliza` o sumar otra regla visible por rol, no solo más multiplicadores
-- El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y solo el perfil `WASD` tiene aim por teclado dedicado; el resto queda intencionalmente joypad-first si quiere torso independiente real.
+- El soporte Hard ya existe y ya puede asignarse por slot en `Main`, pero sigue siendo una primera base: no hay selección/UI de modo por jugador en runtime y `IJKL` sigue intencionalmente joypad-first; aun falta decidir por playtest si esos tres perfiles de teclado (`WASD`, `flechas`, `numpad`) alcanzan o si conviene otro flujo local.
 - El nuevo post-muerte de `Teams` ya existe como slice jugable, pero sigue siendo deliberadamente minimo: hoy expone una `PilotSupportShip` discreta con tres payloads pro-aliado (`estabilizador`, `energia` y `movilidad`) y una `interferencia` ligera de corto alcance, ademas de un loop perimetral continuo, una primera capa de `gates` temporales con `TimingVisual`, un `StatusBeacon` diegetico, seleccion manual de objetivo con marcador alto + marca de piso sobre el target y un anillo de alcance para `interferencia`; todavia falta decidir por playtest si esa mezcla ya aporta comeback/tension suficiente sin robar lectura al combate principal y si conviene sumar mas variedad externa.
 - La energia ya es jugable y ahora tambien se lee mejor en mundo, pero sigue siendo una primera version discreta: no existe redistribucion libre por porcentajes ni sobrecalentamiento mas rico por parte.
 - La explosion inestable ya conecta overdrive con la ruta de destruccion total, pero todavia falta playtestear si sus multiplicadores vuelven especial esa apuesta sin convertirla en el cierre dominante del match.

@@ -56,7 +56,7 @@
    - ajustar si hace falta radio de retorno, cleanup y ritmo de choque con un aliado en escena, sin reabrir spam accidental.
 
 7. **Convertir el soporte Hard en una opcion realmente jugable**
-   - playtestear si `WASD + TFGX` alcanza como unico camino Hard/local de teclado o si la sesion real justifica reabrir esa decision.
+   - playtestear si los tres caminos Hard/local ya expuestos (`WASD + TFGX`, `flechas + Ins/Del/PgUp/PgDn`, `numpad + KP7/KP9/KP//KP*`) alcanzan para sesiones cortas o si aun hace falta otro flujo local/persistente.
    - medir si `F4` sobre el selector runtime + roster persistente + `LabSelectionIndicator` alcanzan como claridad de laboratorio o si aparece una necesidad real de un flujo pre-match/persistente por jugador.
    - revisar si la referencia persistente de controles activos ya alcanza o si sigue faltando una ayuda mas compacta para pantalla compartida.
    - playtestear si la nueva lectura torso/chasis mejora el combate o si todavia se siente demasiado sutil para pantalla compartida.

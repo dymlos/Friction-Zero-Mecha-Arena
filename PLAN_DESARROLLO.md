@@ -311,9 +311,9 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 **Estado actual del prototipo:**
 - el torso superior ya puede orientarse por separado del chasis usando `UpperBodyPivot`
 - la direccion de combate/impacto modular en Hard ya se lee desde ese torso, no desde el chasis completo
-- el soporte actual sigue siendo mayormente joypad-first, pero el perfil `WASD` ya tiene aim por teclado (`TFGX`) para habilitar al menos un slot Hard jugable sin joystick en laboratorio
+- el soporte actual sigue siendo mayormente joypad-first, pero `RobotBase` ya ofrece tres caminos Hard por teclado en laboratorio: `WASD + TFGX`, `flechas + Ins/Del/PgUp/PgDn` y `numpad + KP7/KP9/KP//KP*`
 - `Main` ya puede forzar slots concretos a Hard desde `hard_mode_player_slots`; el HUD deja visible el mapping activo por slot al inicio y el roster lo mantiene visible durante la ronda
-- se decidio mantener el camino Hard por teclado acotado a `WASD + TFGX`; el resto de los slots Hard queda explicitamente joypad-first hasta que playtests reales justifiquen reabrir esa decision o sumar un selector runtime
+- `IJKL` sigue explicitamente joypad-first hasta que playtests reales justifiquen reabrir un cuarto mapping o sumar un flujo local mas guiado
 
 ## Etapa 7 - Partes desprendidas, recuperacion y cuerpo averiado
 

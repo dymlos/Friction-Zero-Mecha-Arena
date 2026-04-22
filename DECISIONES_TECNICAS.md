@@ -297,17 +297,17 @@
    - La configuracion por defecto deja de usar 180s para que la contraccion aparezca en sesiones reales de laboratorio.
    - Motivo: un sistema de presion que casi nunca se activa no aporta feedback util al prototipo.
 
-37. **Camino Hard por teclado acotado al perfil `WASD`**
-   - `RobotBase` ahora crea acciones `aim_left/right/forward/back` y el perfil `WASD_SPACE` las resuelve con `TFGX`; ademas suma `throw_part` en `C`.
-   - Motivo: cerrar la brecha mas evidente del laboratorio local con el minimo cambio posible, sin intentar resolver de golpe un esquema Hard perfecto para 4 teclados compartidos.
+37. **Camino Hard por teclado ampliado a tres perfiles locales**
+   - `RobotBase` ahora crea acciones `aim_left/right/forward/back` para `WASD_SPACE`, `ARROWS_ENTER` y `NUMPAD`, con `TFGX`, `Ins/Del/PgUp/PgDn` y `KP7/KP9/KP//KP*` respectivamente; `throw_part` sigue dedicado por perfil.
+   - Motivo: el laboratorio local ya tenia selector runtime por slot y escenas cortas para comparar control; limitar el aim Hard a un solo teclado dejaba la validacion demasiado sesgada hacia P1.
 
 38. **Leyenda de controles visible desde el arranque**
    - `Main` construye el mensaje inicial del HUD leyendo `robot.get_input_hint()` por slot local.
    - Motivo: que los playtests Easy/Hard no dependan de recordar mappings fuera del juego y dejar explicito cuando un slot Hard sigue necesitando aim por stick derecho.
 
 39. **Politica Hard/local cerrada a favor de claridad**
-   - Se mantiene `WASD + TFGX` como unico camino Hard/local totalmente por teclado; el resto de los perfiles Hard queda explicitamente joypad-first y esa advertencia sigue visible al arrancar, ademas de persistir en el roster cuando el HUD esta en modo `explicito`.
-   - Motivo: evitar nuevos solapes de teclas y UX confusa en teclado compartido hasta tener evidencia de playtests que justifique reabrir mappings o sumar selector runtime.
+   - `WASD`, `flechas` y `numpad` ya pueden jugar Hard sin joystick; `IJKL` sigue explicitamente joypad-first y esa advertencia sigue visible al arrancar, ademas de persistir en el roster cuando el HUD esta en modo `explicito`.
+   - Motivo: ampliar cobertura de laboratorio sin forzar un cuarto mapping de teclado que probablemente se solape peor o degrade la legibilidad del setup compartido.
 
 40. **Los laboratorios principales se ciclan runtime desde `Main`, no desde menues o el editor**
    - `Main` ahora mantiene `LAB_SCENE_VARIANTS`, expone `cycle_lab_scene_variant()` / `get_lab_scene_variant_summary_line()` y cambia escena con `F6` entre `main`, `main_teams_validation`, `main_ffa` y `main_ffa_validation`.

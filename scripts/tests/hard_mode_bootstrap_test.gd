@@ -46,6 +46,14 @@ func _run() -> void:
 	await process_frame
 	_assert(main.hard_mode_player_slots.has(2), "El selector por slot debe habilitar Hard en el jugador elegido.")
 	_assert(robots[1].control_mode == RobotBase.ControlMode.HARD, "P2 debe pasar a Hard desde el selector de slot.")
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	_assert(roster_label is Label, "El HUD deberia seguir mostrando el roster compacto.")
+	if roster_label is Label:
+		var roster_text_hard_p2 := (roster_label as Label).text
+		_assert(
+			roster_text_hard_p2.contains("flechas + aim Ins/Del/PgUp/PgDn"),
+			"El roster deberia volver visible el nuevo aim Hard por teclado del perfil flechas."
+		)
 
 	main.toggle_lab_control_mode_for_player_slot(2)
 	await process_frame
@@ -53,8 +61,6 @@ func _run() -> void:
 	_assert(not main.hard_mode_player_slots.has(2), "El selector por slot debe revertir a Easy si se vuelve a activar.")
 	_assert(robots[1].control_mode == RobotBase.ControlMode.EASY, "P2 debe volver a Easy tras otro toggle de mismo slot.")
 
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
-	_assert(roster_label is Label, "El HUD deberia seguir mostrando el roster compacto.")
 	if roster_label is Label:
 		var roster_text := (roster_label as Label).text
 		_assert(roster_text.contains("Player 1"), "El roster deberia seguir incluyendo al jugador Hard.")

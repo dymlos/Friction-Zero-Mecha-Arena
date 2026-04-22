@@ -91,6 +91,8 @@ const KEYBOARD_PROFILE_LABELS := {
 
 const KEYBOARD_PROFILE_HARD_AIM_LABELS := {
 	KeyboardProfile.WASD_SPACE: "TFGX",
+	KeyboardProfile.ARROWS_ENTER: "Ins/Del/PgUp/PgDn",
+	KeyboardProfile.NUMPAD: "KP7/KP9/KP//KP*",
 }
 
 const IDENTITY_COLORS := [
@@ -147,6 +149,10 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"move_right": [KEY_RIGHT],
 		"move_forward": [KEY_UP],
 		"move_back": [KEY_DOWN],
+		"aim_left": [KEY_INSERT],
+		"aim_right": [KEY_DELETE],
+		"aim_forward": [KEY_PAGEUP],
+		"aim_back": [KEY_PAGEDOWN],
 		"attack": [KEY_ENTER],
 		"energy_prev": [KEY_COMMA],
 		"energy_next": [KEY_PERIOD],
@@ -158,6 +164,10 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"move_right": [KEY_KP_6],
 		"move_forward": [KEY_KP_8],
 		"move_back": [KEY_KP_2],
+		"aim_left": [KEY_KP_7],
+		"aim_right": [KEY_KP_9],
+		"aim_forward": [KEY_KP_DIVIDE],
+		"aim_back": [KEY_KP_MULTIPLY],
 		"attack": [KEY_KP_0],
 		"energy_prev": [KEY_KP_1],
 		"energy_next": [KEY_KP_3],
