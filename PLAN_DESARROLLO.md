@@ -4,6 +4,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-21
 
+- Teardown del cuerpo inutilizado endurecido: `RobotBase._process()` ahora resincroniza cada frame la visibilidad del `DisabledWarningIndicator` contra el estado real (`_is_disabled/_is_respawning/time_left`), cerrando un stale local que dejaba el mesh marcado como `visible` aunque el robot ya hubiera explotado y quedado oculto para respawn.
 - Etapa 0 a 3: base jugable ya integrada en `main.tscn` con arena, camara compartida, empuje, caida al vacio y cierre de ronda simple por ultimo robot/equipo en pie.
 - Bootstrap local mas claro: `main.gd` ahora alinea robots con los spawns del arena blockout, asigna slots de jugador y admite 4 jugadores de teclado/slot por defecto para laboratorio 2v2.
 - Input local separado: `RobotBase` resuelve perfiles de teclado por slot y deja de leer joysticks "de todos" cuando el robot ya usa teclado.

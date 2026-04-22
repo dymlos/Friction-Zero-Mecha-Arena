@@ -82,6 +82,7 @@
    - ajuste fino de valores de aceleracion, damping, empuje y danio usando esas escenas cortas para iterar mas rapido antes de tocar los laboratorios largos.
    - medir si el reset corto de ronda y el reinicio de match dejan suficiente tiempo de lectura o si necesitan delays algo mayores
    - mantener una corrida completa `scripts/tests/*.gd` como chequeo de regresion rapida cuando se toque soporte Teams o teardown de escenas, porque el bug reciente del `SupportTargetFloorIndicator` solo aparecia en suite completa y no en ejecuciones aisladas.
+   - conservar tambien `robot_disabled_warning_indicator_test.gd` dentro de los chequeos minimos cada vez que se toque lifecycle de `RobotBase`, porque el stale del warning aparecia justo en la transicion explosion -> respawn y no se veia mirando solo `is_visible_in_tree`.
 
 11. **Profundizar el soporte Hard sin convertirlo en requisito**
    - direccionar mejor ataques/skills futuros usando la nueva referencia de torso

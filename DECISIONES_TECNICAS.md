@@ -66,6 +66,10 @@
    - Se añadió una acción dedicada para lanzar una parte transportada, permitiendo negar recuperaciones sin introducir un sistema de item adicional.
    - Motivo: conectar el bucle de rescate con decisiones de espacio/tiempo y mantener el control del estado legible.
 
+16. **Los indicadores diegeticos dependientes de timers se resincronizan tambien desde `_process()`**
+   - `RobotBase` vuelve a ejecutar `_refresh_disabled_warning_indicator()` cada frame antes de animar el warning de explosion diferida.
+   - Motivo: el teardown del cuerpo inutilizado podia dejar `DisabledWarningIndicator.visible` stale aunque el robot ya hubiera explotado/ocultado; resincronizar desde el loop visual mantiene el flag local alineado con `_is_disabled`, `_is_respawning` y `time_left` sin abrir otro estado paralelo.
+
 82. **La negacion modular se acredita desde `recovery_lost`, no con otro tracker paralelo**
    - `DetachedPart` conserva el ultimo portador solo para el momento de perderse al vacio; `Main` usa ese dato para convertir `recovery_lost = "void"` en `negaciones N` unicamente si quien la niega no es aliado del dueño original.
    - Motivo: el loop rescate/negacion ya tenia el evento correcto; reaprovecharlo mantiene la regla simple, evita duplicar estado en runtime y vuelve el cierre de partida mas explicativo sin otra UI.

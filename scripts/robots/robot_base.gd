@@ -1153,6 +1153,7 @@ func _physics_process(delta: float) -> void:
 func _process(delta: float) -> void:
 	_refresh_carry_return_indicator()
 	_refresh_recovery_target_indicator()
+	_refresh_disabled_warning_indicator()
 	_update_recovery_target_indicator_animation(delta)
 	_update_lab_selection_indicator(delta)
 	_update_energy_focus_indicator_animation(delta)

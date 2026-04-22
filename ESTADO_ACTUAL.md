@@ -4,6 +4,7 @@
 
 El proyecto ya tiene una base jugable en Godot 4.6 con:
 
+- cleanup mas robusto del warning diegetico de explosion diferida: al salir del estado inutilizado, `RobotBase` vuelve a sincronizar en `_process()` la visibilidad de `DisabledWarningIndicator` con el estado gameplay real para que no quede `visible` stale durante el respawn.
 - arena flotante legible con bordes visibles y caida al vacio
 - camara compartida ortografica con seguimiento de los robots visibles
 - un robot controlable placeholder con movimiento pesado al arrancar y mas libre al deslizar
