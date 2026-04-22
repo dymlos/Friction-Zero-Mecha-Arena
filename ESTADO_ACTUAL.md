@@ -12,6 +12,17 @@
   - congelar el slice `selector runtime + Apoyo activo + HUD` en modo mantenimiento.
   - mover la siguiente iteracion a validacion jugable corta de score por causa, apertura de `Teams` y ritmo de cierre, que hoy prometen mas retorno sobre la fantasia central que otra ronda de microajustes de laboratorio.
 
+## Cierre final ya expone el perfil runtime de score por causa (2026-04-22)
+
+- Estado: el recap final y el panel `Partida cerrada` ya muestran tambien `Puntos cierre | ring-out N | destruccion total N | explosion inestable N`, usando los valores activos del `MatchConfig` cargado en esa escena.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` agrega `_build_closing_points_profile_line()` y lo publica en `get_round_recap_panel_lines()` y `get_match_result_lines()` solo cuando el match ya termino.
+  - la nueva linea se construye desde `match_config.void_elimination_round_points`, `destruction_elimination_round_points` y `unstable_elimination_round_points`, evitando que el cierre dependa de recordar el perfil `2/1/4` por fuera del prototipo.
+  - `scripts/tests/match_closing_cause_summary_test.gd` amplia la regresion existente en `Teams` y `FFA`: ademas de `Cierres | ...`, ahora exige que recap y resultado final repitan el perfil runtime de puntos por causa.
+- Resultado:
+  - el siguiente playtest corto de score/cierre ya puede leer dentro del propio prototipo tanto la mezcla real de cierres (`Cierres | ...`) como el peso activo de cada ruta (`Puntos cierre | ...`) sin abrir configs ni notas auxiliares.
+  - `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd`, `godot --headless --path . -s res://scripts/tests/match_elimination_victory_weights_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 82 tests`).
+
 ## `F2` ya cubre el salto entre robot vivo y `Apoyo activo` (2026-04-22)
 
 - Estado: el selector runtime del laboratorio ya tiene regresión headless para el caso donde el slot seleccionado sale de una nave post-muerte con `F2`, cae sobre un robot vivo, y luego vuelve a ese mismo slot ya en `Apoyo activo`.

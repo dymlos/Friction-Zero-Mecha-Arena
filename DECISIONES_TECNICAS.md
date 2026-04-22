@@ -86,6 +86,12 @@
  - `match_closing_cause_summary_test.gd` fija el contrato completo en `Teams` y `FFA` con una partida de dos rondas (`ring-out` + `explosion inestable`).
  - Motivo: `Stats | ...` ya explicaba bajas sufridas por competidor y `Ultima baja` explicaba el evento final, pero faltaba una lectura corta de “que tipo de cierres gano esta partida” para evaluar el peso por causa dentro del propio prototipo.
 
+1. **El cierre final debe exponer tambien el perfil runtime de puntos por causa**
+ - `MatchController` agrega `_build_closing_points_profile_line()` y lo usa en `get_round_recap_panel_lines()` / `get_match_result_lines()` solo cuando la partida ya termino.
+ - La linea se construye desde `MatchConfig` (`void_elimination_round_points`, `destruction_elimination_round_points`, `unstable_elimination_round_points`) y se publica como `Puntos cierre | ring-out N | destruccion total N | explosion inestable N`.
+ - `match_closing_cause_summary_test.gd` extiende la regresion de cierre en `Teams` y `FFA`: recap y resultado final deben mostrar esa linea con el config runtime cargado, no con un valor duplicado en docs o tests.
+ - Motivo: el foco actual del prototipo es validar ritmo de cierre y score por causa. Si el panel final ya responde “que rutas cerraron la partida”, tambien debe responder “cuanto vale hoy cada ruta” sin obligar a salir del juego para mirar `.tres` o fixtures.
+
 1. **`MatchConfig.new()` debe heredar el mismo perfil base que las escenas del prototipo**
  - `scripts/systems/match_config.gd` ahora usa como defaults exportados el mismo paquete que `default_match_config.tres`: `local_player_count=4`, intro `FFA=1.0`, intro `Teams=0.6`, score por causa `2/1/4`.
  - `scripts/tests/match_config_defaults_test.gd` fija el drift comparando la instancia in-memory contra `res://data/config/default_match_config.tres`.

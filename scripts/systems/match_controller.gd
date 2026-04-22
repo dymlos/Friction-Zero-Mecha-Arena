@@ -378,6 +378,9 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var match_closing_cause_line := _build_match_closing_cause_summary_line()
 	if match_closing_cause_line != "":
 		lines.append(match_closing_cause_line)
+	var closing_points_line := _build_closing_points_profile_line()
+	if closing_points_line != "":
+		lines.append(closing_points_line)
 	var elimination_cause_line := _build_round_elimination_cause_summary_line()
 	if elimination_cause_line != "":
 		lines.append(elimination_cause_line)
@@ -425,6 +428,9 @@ func get_match_result_lines() -> Array[String]:
 	var match_closing_cause_line := _build_match_closing_cause_summary_line()
 	if match_closing_cause_line != "":
 		lines.append(match_closing_cause_line)
+	var closing_points_line := _build_closing_points_profile_line()
+	if closing_points_line != "":
+		lines.append(closing_points_line)
 	var elimination_cause_line := _build_round_elimination_cause_summary_line()
 	if elimination_cause_line != "":
 		lines.append(elimination_cause_line)
@@ -947,6 +953,19 @@ func _build_match_closing_cause_summary_line() -> String:
 		return ""
 
 	return "Cierres | %s" % " | ".join(segments)
+
+
+func _build_closing_points_profile_line() -> String:
+	if not _match_over:
+		return ""
+	if match_config == null:
+		return ""
+
+	return "Puntos cierre | ring-out %s | destruccion total %s | explosion inestable %s" % [
+		match_config.void_elimination_round_points,
+		match_config.destruction_elimination_round_points,
+		match_config.unstable_elimination_round_points,
+	]
 
 
 func _get_elimination_source_suffix(robot: RobotBase) -> String:

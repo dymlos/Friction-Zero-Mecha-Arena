@@ -51,6 +51,7 @@ func _verify_match_closing_cause_summary(
 		await _cleanup_main(main)
 		return
 
+	var expected_points_line := _build_expected_closing_points_line(match_controller)
 	match_controller.match_config.rounds_to_win = 6
 	match_controller.match_config.round_intro_duration_ffa = 0.0
 	match_controller.match_config.round_intro_duration_teams = 0.0
@@ -87,6 +88,14 @@ func _verify_match_closing_cause_summary(
 	_assert(
 		_has_line(match_controller.get_match_result_lines(), "Cierres | ring-out 1 | explosion inestable 1"),
 		"%s: el panel final deberia repetir la mezcla acumulada de cierres por causa." % label
+	)
+	_assert(
+		_has_line(match_controller.get_round_recap_panel_lines(), expected_points_line),
+		"%s: el recap final deberia publicar el perfil activo de puntos por causa para leer el peso real del cierre." % label
+	)
+	_assert(
+		_has_line(match_controller.get_match_result_lines(), expected_points_line),
+		"%s: el panel final deberia repetir el perfil activo de puntos por causa." % label
 	)
 
 	await _cleanup_main(main)
@@ -139,6 +148,15 @@ func _has_line(lines: Array[String], expected: String) -> bool:
 			return true
 
 	return false
+
+
+func _build_expected_closing_points_line(match_controller: MatchController) -> String:
+	var match_config := match_controller.match_config
+	return "Puntos cierre | ring-out %s | destruccion total %s | explosion inestable %s" % [
+		match_config.void_elimination_round_points,
+		match_config.destruction_elimination_round_points,
+		match_config.unstable_elimination_round_points,
+	]
 
 
 func _assert(condition: bool, message: String) -> void:
