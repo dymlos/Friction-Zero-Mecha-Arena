@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/pickups/edge_mobility_pickup.gd" id="1_pickup"]
 
@@ -27,6 +27,18 @@ emission = Color(0.14, 1, 0.82, 1)
 emission_energy_multiplier = 2.0
 roughness = 0.14
 
+[sub_resource type="BoxMesh" id="BoxMesh_accent"]
+size = Vector3(0.34, 0.06, 0.14)
+
+[sub_resource type="StandardMaterial3D" id="Material_accent"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.32, 1, 0.84, 0.84)
+emission_enabled = true
+emission = Color(0.26, 1, 0.84, 1)
+emission_energy_multiplier = 0.85
+roughness = 0.16
+
 [node name="EdgeMobilityPickup" type="Area3D"]
 script = ExtResource("1_pickup")
 
@@ -44,6 +56,11 @@ material_override = SubResource("Material_base")
 transform = Transform3D(0.819152, 0, 0.573576, 0, 1, 0, -0.573576, 0, 0.819152, 0, 0.64, 0)
 mesh = SubResource("CylinderMesh_core")
 material_override = SubResource("Material_core")
+
+[node name="Accent" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(0.642788, -0.766044, 0, 0.766044, 0.642788, 0, 0, 0, 1, 0.1, 0.42, 0)
+mesh = SubResource("BoxMesh_accent")
+material_override = SubResource("Material_accent")
 
 [node name="RespawnTimer" type="Timer" parent="."]
 one_shot = true

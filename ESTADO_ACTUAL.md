@@ -201,6 +201,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - Se ajustó la validación existente al nuevo contrato de mapa:
   - `edge_pickup_layout_rotation_test.gd` cubre arena aislada + `main.tscn`, verificando 4 pickups activos por ronda, pares espejados y avance de layout tras reset
   - los tests de movilidad, energía y pulso sobre `main.tscn` ya buscan un pickup realmente activo antes de validar roster/HUD
+- Se reforzó la lectura en mundo del borde sin abrir otro HUD:
+  - los seis `edge pickups` ahora suman un `Visuals/Accent` propio en la escena, con firma sobria por tipo para que `repair`, `mobility`, `energy`, `pulse`, `charge` y `utility` no dependan solo del color del núcleo
+  - ese acento queda visible también durante cooldown porque vive en el mismo pedestal persistente del pickup
+  - `edge_pickup_silhouette_test.gd` fija el contrato de siluetas distintas + material emisivo por pickup
 - Se agregó el primer item universal de una sola carga en mano:
   - existe una escena nueva `edge_pulse_pickup.tscn` con pedestal persistente, cooldown visible y contrato de pickup equivalente al resto de incentivos de borde
   - al tocarla, `RobotBase` guarda `pulse_charge`, reaprovecha `CarryIndicator`, muestra `item pulso` en el roster y no permite mezclar la carga con una `DetachedPart`

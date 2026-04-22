@@ -95,6 +95,7 @@
    - medir si las nuevas coberturas blockout, la rotacion semialeatoria por ronda y el nuevo split `Equipos=2 pares / FFA=3 tipos` ya generan duelos más tácticos o si algunos layouts siguen volviendo flancos demasiado seguros.
    - ajustar si el mazo actual necesita pesos finos por modo/mapa, otra seed por arena o más presencia de `pulso`/`municion`/`energia`/`estabilidad` antes de abrir más tipos de item.
    - revisar si la línea `Borde | ...` alcanza como lectura de laboratorio o si conviene una telemetría/playtest scene mejor antes de sumar más variedad.
+   - confirmar por playtest si las nuevas siluetas runtime de `repair/mobility/energy/pulse/charge/utility` alcanzan para distinguir pickups de borde en cámara compartida o si alguna todavía necesita contraste/forma más marcada.
    - decidir si el siguiente paso de items debe ser variar el contenido del mazo, sumar más items de una sola carga o pasar a una capa mínima de inventario explícito.
    - mantener el centro limpio y legible, evitando saturar la arena con demasiados objetos.
    - validar si el gating actual de `municion` por roster alcanza o si algun modo necesita reglas propias mas explicitas para no dejar valor muerto o ventaja injusta.

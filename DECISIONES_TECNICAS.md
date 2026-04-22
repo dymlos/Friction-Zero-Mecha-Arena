@@ -548,6 +548,10 @@
    - `RobotBase._spawn_detached_part()` ahora llama `configure_from_visuals(...)` antes de `add_child(...)`, y el dueño refuerza el retorno con `RecoveryTargetFloorIndicator` ademas del marker alto ya existente.
    - Motivo: en el flujo real de `main.tscn`, `_ready()` de `DetachedPart` podia correr con `original_robot == null`, perdiendo el registro como pieza recuperable y apagando la lectura del objetivo de retorno justo cuando un aliado la cargaba o relanzaba. Corregir el orden arregla el hook real y permite sostener la nueva marca de piso sin trackers paralelos.
 
+101. **Los edge pickups diferencian tipo por silueta persistente, no solo por color**
+   - `edge_repair_pickup.tscn`, `edge_mobility_pickup.tscn`, `edge_energy_pickup.tscn`, `edge_pulse_pickup.tscn`, `edge_charge_pickup.tscn` y `edge_utility_pickup.tscn` ahora suman `Visuals/Accent`, un mesh liviano con material propio/emisivo y firma sobria por pickup que sigue visible sobre el mismo pedestal incluso cuando el núcleo entra en cooldown.
+   - Motivo: el resumen `Borde | ...` ya aclaraba el layout activo y el pedestal persistente marcaba el punto de interés, pero en pantalla compartida todavía faltaba distinguir rápido “qué pickup es éste” sin depender del color del núcleo ni del HUD. Colgar esa lectura del propio pickup mantiene la claridad del borde y preserva el centro limpio.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
