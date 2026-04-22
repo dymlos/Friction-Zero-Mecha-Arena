@@ -1,8 +1,11 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const TEAMS_SCENES := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
 
 var _failed := false
 
@@ -12,19 +15,22 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main = MAIN_SCENE.instantiate()
-	root.add_child(main)
+	for scene_path in TEAMS_SCENES:
+		await _assert_scene_hides_neutral_teams_scoreboard(scene_path)
+	_finish()
 
-	await process_frame
-	await process_frame
+
+func _assert_scene_hides_neutral_teams_scoreboard(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
+	if main == null:
+		return
 
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
-	_assert(robots.size() >= 4, "La escena principal Teams deberia seguir ofreciendo cuatro robots jugables.")
+	_assert(match_controller != null, "La escena %s deberia seguir exponiendo MatchController." % scene_path)
+	_assert(robots.size() >= 4, "La escena %s deberia seguir ofreciendo cuatro robots Teams." % scene_path)
 	if match_controller == null or robots.size() < 4:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	match_controller.match_mode = MatchController.MatchMode.TEAMS
@@ -36,7 +42,7 @@ func _run() -> void:
 	var opening_lines := match_controller.get_round_state_lines()
 	_assert(
 		not _has_prefix_line(opening_lines, "Marcador | "),
-		"El HUD vivo Teams no deberia gastar una linea en un marcador 0-0 totalmente neutro al abrir la ronda."
+		"La escena %s no deberia gastar una linea en un marcador 0-0 totalmente neutro al abrir la ronda Teams." % scene_path
 	)
 
 	robots[2].fall_into_void()
@@ -46,11 +52,10 @@ func _run() -> void:
 
 	_assert(
 		_has_prefix_line(match_controller.get_round_state_lines(), "Marcador | "),
-		"Despues de decidir una ronda Teams, el marcador deberia volver a mostrarse porque ya aporta contexto real."
+		"La escena %s deberia volver a mostrar el marcador en cuanto una ronda Teams ya aporta contexto real." % scene_path
 	)
 
 	await _cleanup_main(main)
-	_finish()
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:
@@ -61,6 +66,19 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 			robots.append(child as RobotBase)
 
 	return robots
+
+
+func _instantiate_scene(scene_path: String) -> Node:
+	var packed_scene := load(scene_path)
+	_assert(packed_scene is PackedScene, "La escena %s deberia seguir existiendo." % scene_path)
+	if not (packed_scene is PackedScene):
+		return null
+
+	var main := (packed_scene as PackedScene).instantiate()
+	root.add_child(main)
+	await process_frame
+	await process_frame
+	return main
 
 
 func _has_prefix_line(lines: Array[String], expected_prefix: String) -> bool:

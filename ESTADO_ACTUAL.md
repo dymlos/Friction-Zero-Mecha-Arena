@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## La apertura neutra ya queda congelada tambien en escenas `base` y `validation` (2026-04-22)
+
+- Estado: los contratos de opening/readability mas sensibles ya no dependen de una sola escena por modo; `Teams` y `FFA` ahora tienen la misma red de regresion tanto en laboratorio base como en laboratorio rapido.
+- Correccion aplicada:
+  - `scripts/tests/teams_live_scoreboard_opening_test.gd` valida el marcador neutro oculto en `main.tscn` y `main_teams_validation.tscn`.
+  - `scripts/tests/ffa_live_standings_hud_test.gd` valida el opening neutral sin `Marcador |`, `Posiciones |` ni `Desempate |` en `main_ffa.tscn` y `main_ffa_validation.tscn`, y comprueba que ambas escenas vuelvan a mostrar score/posiciones cuando la ronda ya aporta informacion real.
+  - `scripts/tests/teams_opening_intro_telegraph_test.gd` sigue fijando `OpeningTelegraph` visible en `Teams` y ahora tambien congela que `main_ffa_validation.tscn` lo mantenga oculto igual que `main_ffa.tscn`.
+- Resultado:
+  - la pareja `base/validation` deja de ser un punto ciego para drift de opening; si una escena rapida pierde el contrato neutral del HUD o hereda cues de `Teams` en `FFA`, la suite lo marca antes de que llegue a runtime.
+
 ## La apertura ya bloquea los pickups de borde hasta que la ronda realmente abre (2026-04-22)
 
 - Estado: los pedestales del borde siguen visibles durante el intro, pero ya no pueden recogerse hasta que `MatchController` libera la ronda; el HUD del laboratorio ahora lo explicita con `Borde | ... | abre en Xs`.

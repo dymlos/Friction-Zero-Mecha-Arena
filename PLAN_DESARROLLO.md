@@ -4,6 +4,15 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- La apertura neutral ya queda congelada tambien en los laboratorios `base` y `validation` de ambos modos:
+  - la revision estricta encontro un hueco de mantenimiento: varios contratos de opening/readability (`Marcador 0-0` oculto en `Teams`, opening neutral limpio en `FFA`, `OpeningTelegraph` oculto fuera de `Teams`) estaban fijados solo en una escena por modo, dejando espacio para drift entre `main*.tscn` y las escenas rapidas.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion:
+    - `scripts/tests/teams_live_scoreboard_opening_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
+    - `scripts/tests/ffa_live_standings_hud_test.gd` ahora recorre `main_ffa.tscn` y `main_ffa_validation.tscn`.
+    - `scripts/tests/teams_opening_intro_telegraph_test.gd` ahora tambien congela que `main_ffa_validation.tscn` mantenga oculto el telegraph de carriles.
+  - decision operativa: seguir usando la pareja `base/validation` como una sola superficie contractual para openings/HUD inicial, no como escenas que puedan divergir en silencio.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/teams_live_scoreboard_opening_test.gd`, `teams_opening_intro_telegraph_test.gd` y `ffa_live_standings_hud_test.gd`.
+
 - La apertura ahora tambien bloquea pickups de borde hasta que termina el intro:
   - la revision estricta encontro un hueco jugable entre la documentacion y el prototipo: `Teams`/`FFA` ya telegraphiaban la apertura, pero los pedestales del borde seguian siendo recogibles desde el frame cero y aceleraban el primer contacto sin dar tiempo real a leer posicionamiento.
   - `Main` ahora sincroniza un lock de coleccion sobre `edge_pickups` mientras `MatchController.is_round_intro_active()` siga verdadero; los pedestales quedan visibles, pero no se consumen hasta que la ronda realmente abre.

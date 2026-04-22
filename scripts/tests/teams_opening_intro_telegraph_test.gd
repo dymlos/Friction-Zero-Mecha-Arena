@@ -8,7 +8,10 @@ const TEAMS_SCENES := [
 	"res://scenes/main/main.tscn",
 	"res://scenes/main/main_teams_validation.tscn",
 ]
-const FFA_SCENE := "res://scenes/main/main_ffa.tscn"
+const FFA_SCENES := [
+	"res://scenes/main/main_ffa.tscn",
+	"res://scenes/main/main_ffa_validation.tscn",
+]
 
 var _failed := false
 
@@ -21,7 +24,8 @@ func _run() -> void:
 	for scene_path in TEAMS_SCENES:
 		await _assert_teams_scene_shows_opening_lane_telegraph(scene_path)
 
-	await _assert_ffa_scene_keeps_opening_telegraph_hidden(FFA_SCENE)
+	for scene_path in FFA_SCENES:
+		await _assert_ffa_scene_keeps_opening_telegraph_hidden(scene_path)
 	_finish()
 
 

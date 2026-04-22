@@ -1,8 +1,11 @@
 extends SceneTree
 
-const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const FFA_SCENES := [
+	"res://scenes/main/main_ffa.tscn",
+	"res://scenes/main/main_ffa_validation.tscn",
+]
 
 var _failed := false
 
@@ -12,19 +15,22 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main = FFA_SCENE.instantiate()
-	root.add_child(main)
+	for scene_path in FFA_SCENES:
+		await _assert_scene_uses_neutral_ffa_opening_hud(scene_path)
+	_finish()
 
-	await process_frame
-	await process_frame
+
+func _assert_scene_uses_neutral_ffa_opening_hud(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
+	if main == null:
+		return
 
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena FFA deberia exponer MatchController.")
-	_assert(robots.size() >= 4, "La escena FFA deberia ofrecer cuatro robots para validar posiciones en vivo.")
+	_assert(match_controller != null, "La escena %s deberia exponer MatchController." % scene_path)
+	_assert(robots.size() >= 4, "La escena %s deberia ofrecer cuatro robots para validar posiciones en vivo." % scene_path)
 	if match_controller == null or robots.size() < 4:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	match_controller.round_reset_delay = 0.2
@@ -40,15 +46,15 @@ func _run() -> void:
 	var opening_round_lines := match_controller.get_round_state_lines()
 	_assert(
 		not _has_prefix_line(opening_round_lines, "Marcador | "),
-		"El HUD vivo de FFA no deberia gastar una linea en un marcador totalmente empatado durante la apertura neutral."
+		"La escena %s no deberia gastar una linea en un marcador totalmente empatado durante la apertura neutral FFA." % scene_path
 	)
 	_assert(
 		not _has_prefix_line(opening_round_lines, "Posiciones | "),
-		"El HUD vivo de FFA no deberia mostrar posiciones mientras toda la ronda sigue empatada y nadie fue eliminado."
+		"La escena %s no deberia mostrar posiciones mientras toda la ronda sigue empatada y nadie fue eliminado." % scene_path
 	)
 	_assert(
 		not _has_prefix_line(opening_round_lines, "Desempate | "),
-		"El HUD vivo de FFA no deberia gastar una linea en el desempate mientras el ranking todavia no aporta informacion real."
+		"La escena %s no deberia gastar una linea en el desempate mientras el ranking todavia no aporta informacion real." % scene_path
 	)
 
 	robots[0].fall_into_void()
@@ -61,7 +67,7 @@ func _run() -> void:
 	var round_lines := match_controller.get_round_state_lines()
 	_assert(
 		_has_prefix_line(round_lines, "Marcador | "),
-		"En cuanto la ronda FFA ya tiene score util, el HUD vivo deberia volver a mostrar el marcador."
+		"La escena %s deberia volver a mostrar el marcador en cuanto la ronda FFA ya tiene score util." % scene_path
 	)
 	var expected_standings := "Posiciones | 1. %s (%s) | 2. %s (0) | 3. %s (0) | 4. %s (0)" % [
 		robots[3].display_name,
@@ -72,7 +78,7 @@ func _run() -> void:
 	]
 	_assert(
 		_has_line(round_lines, expected_standings),
-		"El HUD vivo de FFA deberia mostrar las posiciones actuales junto al marcador."
+		"La escena %s deberia mostrar las posiciones actuales junto al marcador." % scene_path
 	)
 	_assert(
 		_has_line(
@@ -83,11 +89,10 @@ func _run() -> void:
 				robots[0].display_name,
 			]
 		),
-		"El HUD vivo de FFA deberia dejar visible que rivales ganan el desempate cuando varios competidores comparten score."
+		"La escena %s deberia dejar visible que rivales ganan el desempate cuando varios competidores comparten score." % scene_path
 	)
 
 	await _cleanup_main(main)
-	_finish()
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:
@@ -98,6 +103,19 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 			robots.append(child as RobotBase)
 
 	return robots
+
+
+func _instantiate_scene(scene_path: String) -> Node:
+	var packed_scene := load(scene_path)
+	_assert(packed_scene is PackedScene, "La escena %s deberia seguir existiendo." % scene_path)
+	if not (packed_scene is PackedScene):
+		return null
+
+	var main := (packed_scene as PackedScene).instantiate()
+	root.add_child(main)
+	await process_frame
+	await process_frame
+	return main
 
 
 func _has_line(lines: Array[String], expected: String) -> bool:

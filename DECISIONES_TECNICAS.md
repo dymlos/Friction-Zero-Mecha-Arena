@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **Los contratos de opening neutral deben congelarse sobre las escenas `base` y `validation`, no solo sobre una**
+ - `teams_live_scoreboard_opening_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`; `ffa_live_standings_hud_test.gd` recorre `main_ffa.tscn` y `main_ffa_validation.tscn`; `teams_opening_intro_telegraph_test.gd` ya fija tambien que `main_ffa_validation.tscn` mantenga oculto el telegraph de carriles.
+ - No hubo cambio de produccion: la correccion fue ampliar la red sobre las escenas que el repo ya trata como laboratorios equivalentes.
+ - Motivo: el riesgo real no era de gameplay nuevo sino de drift silencioso entre escenas hermanas. Congelar openings/HUD inicial en ambas variantes protege la iteracion rapida sin exigir revalidacion manual cada vez que se toca una sola escena.
+
 1. **Los pickups de borde deben quedar visibles pero bloqueados hasta que termina el intro**
  - `Main` ahora sincroniza el lock runtime desde `MatchController.is_round_intro_active()` y el HUD lo deja explicito con `Borde | ... | abre en Xs`.
  - Cada pickup de borde separa `spawn_enabled` de `collection_enabled`: el pedestal sigue telegraphiando valor durante la apertura, pero el consumo real no ocurre hasta que la ronda ya esta en juego.
