@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **En HUD explícito `Teams`, `Apoyo activo` debe mostrar primero la acción vigente y dejar la causa de baja al final**
+ - `MatchController._build_robot_status_line()` ahora trata `has_active_support` como un caso propio: arranca con `Apoyo activo`, agrega el `support_state` completo de `PilotSupportShip` y solo después añade `baja vacio/explosion/...` fuera del modo contextual.
+ - `live_roster_order_test.gd` congela el orden mínimo `Apoyo activo -> get_support_input_hint() -> vacio`; el objetivo no es esconder la causa, sino evitar que interrumpa el hint/payload accionable del soporte.
+ - Motivo: en pantalla compartida, la información más útil para el jugador eliminado ya no es cómo cayó sino qué puede hacer ahora desde la nave. Mantener la causa como remate conserva contexto sin competir con la acción viva.
+
 1. **El reset runtime `F3/F4` debe desalojar soporte post-muerte de `SupportRoot` antes de rearmar el laboratorio**
  - `Main._apply_lab_runtime_loadout()` reinicia la ronda dentro de la misma llamada, así que cualquier `PilotSupportShip` todavía colgada de `SupportRoot` sigue siendo visible para `_find_post_death_support_ship(...)`, `_get_lab_robot_brief(...)` y `_sync_lab_selector_visuals()`.
  - `Main._clear_post_death_support()` ahora quita cada hijo de `SupportRoot` antes de `queue_free()`, en vez de dejarlo en el árbol hasta el frame siguiente.

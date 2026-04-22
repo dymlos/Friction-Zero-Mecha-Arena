@@ -121,12 +121,20 @@ func _validate_teams_live_roster_marks_support_active_players() -> void:
 	var roster_lines := match_controller.get_robot_status_lines()
 	var player_one_line := _find_line_containing(roster_lines, robots[0].display_name)
 	_assert(
-		player_one_line.contains("Apoyo activo | vacio"),
+		player_one_line.contains("Apoyo activo"),
 		"El roster vivo Teams deberia marcar cuando un jugador eliminado sigue aportando desde la nave de apoyo."
 	)
 	_assert(
 		player_one_line.contains("usa "),
 		"El roster vivo Teams deberia conservar el hint de uso mientras el apoyo post-muerte sigue activo."
+	)
+	_assert(
+		player_one_line.find("Apoyo activo") < player_one_line.find(robots[0].get_support_input_hint()),
+		"En HUD explicito, la linea de `Apoyo activo` deberia mostrar primero el nuevo estado jugable y luego el hint accionable del soporte."
+	)
+	_assert(
+		player_one_line.find(robots[0].get_support_input_hint()) < player_one_line.find("vacio"),
+		"En HUD explicito, la causa de baja deberia quedar despues del hint accionable del soporte y no interrumpir la nueva accion."
 	)
 
 	await _cleanup_node(main)

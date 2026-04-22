@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## HUD explícito `Teams` prioriza la acción de `Apoyo activo` (2026-04-22)
+
+- Estado: cuando un jugador eliminado sigue influyendo desde `PilotSupportShip`, el roster explícito ya no muestra primero la causa de baja y recién después el hint/payload del soporte.
+- Corrección aplicada:
+  - `scripts/systems/match_controller.gd` ahora arma el caso `has_active_support` como `Apoyo activo | <support_state> | baja <causa>`; conserva la causa visible, pero la deja como dato secundario.
+  - `support_state` deja de agregarse una segunda vez al final de la línea en ese camino.
+  - `scripts/tests/live_roster_order_test.gd` fija el orden mínimo `Apoyo activo -> hint accionable -> vacio`.
+- Resultado:
+  - el HUD explícito sigue explicando cómo cayó el jugador, pero ya prioriza la acción vigente del slice post-muerte, alineado con la regla de legibilidad del proyecto.
+  - `godot --headless --path . -s res://scripts/tests/live_roster_order_test.gd`, `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 82 tests`).
+
 ## Reset runtime `F3/F4` limpia `Apoyo activo` en el mismo frame (2026-04-22)
 
 - Estado: reconfigurar el slot seleccionado del laboratorio con `F3` o `F4` mientras ese jugador estaba en `Apoyo activo` ya no deja una `PilotSupportShip` stale visible hasta el frame siguiente.

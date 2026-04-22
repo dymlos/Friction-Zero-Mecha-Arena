@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El roster explícito `Teams` ahora prioriza la acción vigente del soporte post-muerte: cuando un jugador pasa a `Apoyo activo`, la línea deja de intercalar la causa de baja antes del hint/payload accionable y pasa a ordenar `Apoyo activo | <support_state> | baja <causa>`.
+- La corrección vive en `MatchController._build_robot_status_line()`, sin abrir HUD nuevo ni esconder la causa; solo la degrada a dato secundario para que el soporte real se lea primero.
+- `live_roster_order_test.gd` suma la regresión mínima del orden de segmentos en HUD explícito (`Apoyo activo` -> `get_support_input_hint()` -> `vacio`), mientras `hud_detail_mode_test.gd`, `team_post_death_support_test.gd` y la suite completa siguen verdes.
+- Validación focalizada: `godot --headless --path . -s res://scripts/tests/live_roster_order_test.gd`, `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - El reset runtime del laboratorio (`F3/F4`) ya no deja una `PilotSupportShip` stale viva durante el mismo frame cuando el slot seleccionado venía de `Apoyo activo`: el selector, la chuleta `Control P1 | ...`, la línea `Apoyo P1 | ...` y la pista diegética vuelven inmediatamente al robot reconfigurado.
 - La corrección vive en `Main._clear_post_death_support()`, que ahora saca las naves de `SupportRoot` antes de `queue_free()`. Así `_find_post_death_support_ship(...)` deja de ver soporte transitorio cuando `_apply_lab_runtime_loadout()` reinicia la ronda dentro de la misma llamada.
 - `lab_runtime_selector_test.gd` suma la regresión concreta `P1 Grua Hard -> Apoyo activo -> F3/F4`, exigiendo en ambos caminos retorno inmediato a `P1 Cizalla Hard/Easy`, desaparición instantánea de `Apoyo P1 | ...` y `SupportRoot` vacío sin esperar otro frame.

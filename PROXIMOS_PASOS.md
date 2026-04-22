@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No volver a dejar que la causa de baja corte primero la linea explícita de `Apoyo activo`**
+ - `MatchController._build_robot_status_line()` ya ordena el caso `has_active_support` como `Apoyo activo | <support_state> | baja <causa>`; si se retocan `support_state`, el roster vivo o el wording de causas, mantener esa prioridad accionable.
+ - `live_roster_order_test.gd` ahora fija el orden mínimo `Apoyo activo -> get_support_input_hint() -> vacio`; `hud_detail_mode_test.gd` sigue cubriendo que en contextual la causa directamente no reaparezca.
+ - Reabrir solo si el soporte post-muerte deja de usar el roster vivo como referencia principal o si aparece otra capa UI que vuelva redundante esa lectura.
+
 0. **No volver a dejar soporte stale durante el reset runtime `F3/F4`**
  - `Main._clear_post_death_support()` ya remueve las naves de `SupportRoot` antes de `queue_free()`, porque `_apply_lab_runtime_loadout()` recompone el laboratorio en la misma llamada y no puede seguir viendo `PilotSupportShip` transitorias.
  - Si se retocan `_clear_post_death_support()`, `_apply_lab_runtime_loadout()`, `_find_post_death_support_ship()` o `_sync_lab_selector_visuals()`, mantener `lab_runtime_selector_test.gd`: ahora congela `P1 Grua Hard -> Apoyo activo -> F3/F4` y exige retorno inmediato al robot, desaparición de `Apoyo P1 | ...` y `SupportRoot` vacío sin esperar otro frame.

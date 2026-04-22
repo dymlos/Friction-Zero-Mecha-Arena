@@ -640,6 +640,12 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		state_segment += " | %s" % state_detail
 
 	var segments: Array[String] = [state_segment]
+	if has_active_support:
+		segments = [state_label]
+		if support_state != "":
+			segments.append(support_state)
+		if state_detail != "" and not contextual_hud:
+			segments.append("baja %s" % state_detail)
 	var can_show_robot_combat_state := not is_eliminated and not robot.is_disabled_state()
 	if contextual_hud:
 		if can_show_robot_combat_state:
@@ -683,7 +689,7 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 			segments.append("item %s" % robot.get_carried_item_display_name())
 		if robot.is_carrying_part():
 			segments.append("carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name()))
-	if support_state != "":
+	if support_state != "" and not has_active_support:
 		segments.append(support_state)
 
 	return "%s %s | %s" % [control_label, robot.get_roster_display_name(), " | ".join(segments)]
