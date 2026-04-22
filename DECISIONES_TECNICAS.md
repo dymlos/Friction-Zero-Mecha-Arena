@@ -2,6 +2,10 @@
 
 ## Decisiones vigentes
 
+1. **El target textual del soporte post-muerte reutiliza tambien el nombre de roster**
+   - `PilotSupportShip._get_selected_target_label()` ahora devuelve `target_robot.get_roster_display_name()` y no `display_name`.
+   - Motivo: despues de corregir roster vivo y cierres para conservar `Player / Arquetipo`, dejar `apoyo ... > Player X` en la nave Teams seguia abriendo otra fuga de identidad justo en una capa de lectura tactica. Reusar el mismo helper mantiene continuidad sin sumar otro formato textual.
+
 1. **La decision final de FFA usa wording propio, no score tipo duelo**
    - `MatchController._finish_match_with_winner()` ahora delega en `_build_match_victory_status_line()`: en `FFA` devuelve `Player X gana la partida con N punto(s)` y en `Equipos` conserva `Equipo X gana la partida A-B`.
    - Motivo: el cierre FFA ya muestra `Marcador`, `Posiciones` y `Desempate`; repetir arriba un `X-Y` heredado de duelo confundia la lectura de un match con mas de dos competidores.

@@ -4,6 +4,7 @@
 
 El proyecto ya tiene una base jugable en Godot 4.6 con:
 
+- soporte post-muerte Teams tambien consistente en identidad textual: la `PilotSupportShip` ya no vuelve a `Player X` pelado cuando resume el objetivo seleccionado; `apoyo ... > <objetivo>` reutiliza el mismo `Player / Arquetipo` del roster vivo para aliados y rivales
 - roster compacto vivo mas coherente con el resto del match: `MatchController` ya no deja que las lineas por robot queden clavadas al scene-order mientras `Marcador`, `Posiciones`, recap y resultado final usan el orden competitivo real; ahora el roster reutiliza esos mismos comparators para mostrar antes al lider FFA o al aliado que sigue en pie dentro de Teams
 - recap y resultado final tambien preservan mejor la identidad de roster: el detalle compacto por robot ya no vuelve a `Player X` pelado al cerrar ronda/partida, sino que conserva `Player X / <Arquetipo>` usando el mismo helper de nombre que el HUD vivo; asi el cierre explica quien sobrevivio, cayo o quedo inutilizado sin perder la lectura de rol
 - stats de cierre mas claros: la linea `Stats | ...` del recap/resultado final ahora deja explicito `bajas sufridas N (...)` cuando resume eliminaciones acumuladas por causa, evitando que ese dato se lea como bajas infligidas cuando en realidad describe derrotas recibidas por el competidor

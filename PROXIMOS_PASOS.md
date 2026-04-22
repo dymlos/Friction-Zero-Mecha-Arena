@@ -14,6 +14,7 @@
    - confirmar por playtest que apagar la `PilotSupportShip` apenas muere el ultimo aliado se siente correcto y no corta ayudas “merecidas” demasiado pronto en cierres muy ajustados.
    - confirmar por playtest que `FFA` realmente queda limpio y que compartir la escena base no introduce confusion por elementos post-muerte ocultos.
    - revisar si la nueva lectura `apoyo N (M usos: payload ...)` alcanza para explicar el valor real del soporte en el cierre o si conviene compactarla mas cuando haya varias ayudas distintas en una misma partida.
+   - si vuelve a tocarse el resumen `apoyo ... > <objetivo>`, conservar `team_post_death_support_test.gd`: ahora tambien fija que el target textual mantenga `Player / Arquetipo` y no vuelva a `Player X` pelado.
 
 2. **Validar el nuevo roster de arquetipos**
    - usar `F2/F3/F4` para recorrer cruces reales entre `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` en `main.tscn` y `main_ffa.tscn` sin editar escenas entre partidas, validando tambien si el nuevo `LabSelectionIndicator` evita errores de slot en pantalla compartida.

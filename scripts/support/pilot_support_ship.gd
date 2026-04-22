@@ -279,7 +279,7 @@ func _get_selected_target_label() -> String:
 	if target_robot == null:
 		return ""
 
-	return target_robot.display_name
+	return target_robot.get_roster_display_name()
 
 
 func _update_target_selection_from_input() -> bool:

@@ -126,6 +126,11 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 				roster_label.text.contains("estabilizador"),
 				"El roster deberia mostrar cuando la nave lleva una carga de apoyo."
 			)
+			_assert(
+				support_ship.has_method("get_status_summary")
+					and String(support_ship.call("get_status_summary")).contains(robots[0].get_roster_display_name()),
+				"El soporte post-muerte deberia conservar `Player / Arquetipo` tambien al nombrar a su aliado objetivo."
+			)
 			if status_ring_visual != null and status_ring_visual.material_override is StandardMaterial3D:
 				var loaded_ring_color := (status_ring_visual.material_override as StandardMaterial3D).albedo_color
 				_assert(
@@ -312,8 +317,9 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 						"La interferencia deberia apuntar por defecto al rival valido mas cercano al carril."
 					)
 				_assert(
-					roster_label.text.contains(enemy_robot.display_name),
-					"El roster deberia dejar visible a que rival apunta la interferencia cargada."
+					support_ship.has_method("get_status_summary")
+						and String(support_ship.call("get_status_summary")).contains(enemy_robot.get_roster_display_name()),
+					"El roster deberia dejar visible a que rival apunta la interferencia cargada sin perder la identidad `Player / Arquetipo`."
 				)
 
 				Input.action_press("p2_energy_next")
@@ -327,8 +333,9 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 						"El jugador eliminado deberia poder ciclar el objetivo de interferencia entre rivales validos."
 					)
 				_assert(
-					roster_label.text.contains(second_enemy_robot.display_name),
-					"Tras ciclar el objetivo, el roster deberia actualizar el rival seleccionado."
+					support_ship.has_method("get_status_summary")
+						and String(support_ship.call("get_status_summary")).contains(second_enemy_robot.get_roster_display_name()),
+					"Tras ciclar el objetivo, el roster deberia actualizar el rival seleccionado sin volver a `Player X` pelado."
 				)
 				if support_target_floor_indicator != null:
 					_assert(
