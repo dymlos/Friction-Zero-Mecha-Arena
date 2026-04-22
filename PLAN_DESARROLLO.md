@@ -4,6 +4,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El soporte post-muerte Teams ya no nace “armado gratis” por solaparse con pickups del carril: `PilotSupportShip` arranca con una ventana corta `spawn_pickup_grace_duration`, el roster marca `sin carga` mientras sigue vacio y la primera recogida exige una pasada real por el carril.
 - El cleanup del soporte post-muerte ya tiene red de regresión propia: `support_lifecycle_cleanup_test.gd` cubre tanto el reset de ronda no final como el reinicio manual `F5`, y fija además que `SupportRoot`, `support_state` y el carril externo vuelven limpios antes de la ronda siguiente.
 - El roster vivo `Teams` ya no arrastra estados de combate del robot caído cuando ese jugador sigue en `Apoyo activo`: `MatchController` deja fuera `skill ...`, foco/estado de energía, buffs y `item ...` del cuerpo eliminado y conserva solo la información todavía accionable desde `PilotSupportShip`.
 - El roster explicito `Teams` ya no mezcla controles viejos del robot con controles de la nave cuando una baja sigue activa por soporte post-muerte: `MatchController` oculta `robot.get_input_hint()` en ese estado y deja solo el hint valido de `PilotSupportShip` dentro de `support_state`.

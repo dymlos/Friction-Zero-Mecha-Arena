@@ -124,7 +124,7 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 					"Pedestal y nucleo deberian usar materiales independientes para no perder contraste."
 				)
 			support_ship.global_position = support_pickup.global_position
-			await _wait_frames(3)
+			await _wait_support_spawn_grace(support_ship)
 
 			_assert(
 				roster_label.text.contains("estabilizador"),
@@ -536,6 +536,15 @@ func _wait_frames(frame_count: int) -> void:
 func _wait_physics_frames(frame_count: int) -> void:
 	for _index in range(maxi(frame_count, 0)):
 		await physics_frame
+
+
+func _wait_support_spawn_grace(support_ship: Node3D) -> void:
+	var wait_seconds := 0.0
+	if support_ship != null:
+		wait_seconds = float(support_ship.get("spawn_pickup_grace_duration")) + 0.05
+	if wait_seconds > 0.0:
+		await create_timer(wait_seconds).timeout
+	await _wait_frames(2)
 
 
 func _cleanup_main(main: Node) -> void:

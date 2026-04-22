@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **La nave de apoyo debe nacer vacia y con una breve gracia antes de recoger pickups**
+ - `PilotSupportShip` ahora expone `spawn_pickup_grace_duration`, arma `_pickup_collection_lock_time_left` en `configure()` y no ejecuta `_try_collect_support_pickup()` hasta que esa ventana termina.
+ - `get_status_summary()` agrega `sin carga` cuando el soporte sigue activo pero todavia no lleva payload.
+ - Motivo: el carril estaba dando un payload gratis por simple solape al spawnear, lo que falseaba `Apoyo activo`, highlights y stats de soporte. El grace mantiene el loop tactico sin tocar la logica de pickups.
+
 1. **Los tests de lifecycle del soporte deben neutralizar score ponderado antes de afirmar round reset**
  - `support_lifecycle_cleanup_test.gd` fija `void_elimination_round_points`, `destruction_elimination_round_points` y `unstable_elimination_round_points` a `1` cuando el objetivo es validar cleanup entre rounds.
  - Motivo: en el prototipo actual una sola ronda por `ring_out` puede cerrar el match completo; si el test quiere cubrir `_reset_round()` o limpieza de `SupportRoot`, debe pinnear score lifecycle y no depender del balance vigente.

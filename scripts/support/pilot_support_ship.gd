@@ -18,6 +18,7 @@ signal payload_used(support_ship: PilotSupportShip, payload_name: String, target
 @export_range(0.2, 1.0, 0.01) var support_interference_drive_multiplier := 0.78
 @export_range(0.2, 1.0, 0.01) var support_interference_control_multiplier := 0.72
 @export_range(0.1, 2.5, 0.1) var gate_disruption_duration := 0.65
+@export_range(0.0, 1.5, 0.05) var spawn_pickup_grace_duration := 0.35
 @export_group("Target Readability")
 @export_range(0.6, 2.4, 0.05) var target_indicator_height := 1.3
 @export_range(0.0, 0.4, 0.01) var target_indicator_bob_height := 0.08
@@ -38,6 +39,7 @@ var arena: ArenaBase = null
 var _support_payload_name := ""
 var _lane_progress := 0.0
 var _gate_disruption_time_left := 0.0
+var _pickup_collection_lock_time_left := 0.0
 var _status_pulse_phase := 0.0
 var _selected_target_robot: RobotBase = null
 var _target_indicator_phase := 0.0
@@ -75,6 +77,7 @@ func configure(
 		global_position = arena.get_support_lane_position_from_progress(_lane_progress)
 	else:
 		global_position = spawn_position
+	_pickup_collection_lock_time_left = maxf(spawn_pickup_grace_duration, 0.0)
 	_refresh_target_selection(true)
 	_refresh_visuals()
 	_refresh_support_target_visuals()
@@ -97,6 +100,8 @@ func get_status_summary() -> String:
 		if target_label != "":
 			payload_summary += " > %s" % target_label
 		segments.append(payload_summary)
+	else:
+		segments.append("sin carga")
 
 	return " | ".join(segments)
 
@@ -173,6 +178,7 @@ func _physics_process(delta: float) -> void:
 
 	var was_gate_disrupted := is_gate_disrupted()
 	_gate_disruption_time_left = maxf(_gate_disruption_time_left - delta, 0.0)
+	_pickup_collection_lock_time_left = maxf(_pickup_collection_lock_time_left - delta, 0.0)
 	_update_movement(delta)
 	var target_selection_changed := _update_target_selection_from_input()
 	target_selection_changed = _refresh_target_selection() or target_selection_changed
@@ -220,6 +226,8 @@ func _update_movement(delta: float) -> void:
 
 func _try_collect_support_pickup() -> void:
 	if has_support_payload():
+		return
+	if _pickup_collection_lock_time_left > 0.0:
 		return
 
 	for node in get_tree().get_nodes_in_group("pilot_support_pickups"):

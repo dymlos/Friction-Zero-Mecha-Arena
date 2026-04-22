@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Nave de apoyo sin pickup gratis al aparecer (2026-04-22)
+
+- Estado: en `Teams`, `PilotSupportShip` ya no arranca con un payload inmediato por aparecer encima de un pickup del carril.
+- Correccion aplicada:
+  - `PilotSupportShip` suma `spawn_pickup_grace_duration` y bloquea `_try_collect_support_pickup()` durante esa ventana inicial.
+  - `get_status_summary()` ahora publica `sin carga` cuando la nave sigue activa pero todavia no lleva payload.
+  - `live_roster_order_test.gd` fija que `Apoyo activo` no nazca ya armado; `team_post_death_support_test.gd`, `support_match_stats_test.gd` y `support_decisive_highlight_test.gd` esperan explicitamente el grace antes de recoger el primer pickup.
+- Resultado:
+  - el carril vuelve a exigir una decision/movimiento real antes del primer apoyo.
+  - el roster distingue mejor soporte activo vacio vs soporte activo con payload listo.
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa (`Suite OK: 77 tests`).
+
 ## Cleanup del soporte post-muerte cubierto en reset/restart (2026-04-22)
 
 - Estado: el soporte post-muerte Teams ya tiene regresión explícita para evitar restos stale entre rounds o tras `F5`.

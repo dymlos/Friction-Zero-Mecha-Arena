@@ -79,7 +79,7 @@ func _run() -> void:
 		return
 
 	support_ship.global_position = surge_pickup.global_position
-	await _wait_frames(3)
+	await _wait_support_spawn_grace(support_ship)
 
 	Input.action_press("p2_throw_part")
 	await _wait_frames(2)
@@ -128,6 +128,15 @@ func _has_line(lines: Array[String], expected: String) -> bool:
 func _wait_frames(count: int) -> void:
 	for _step in range(count):
 		await process_frame
+
+
+func _wait_support_spawn_grace(support_ship: Node3D) -> void:
+	var wait_seconds := 0.0
+	if support_ship != null:
+		wait_seconds = float(support_ship.get("spawn_pickup_grace_duration")) + 0.05
+	if wait_seconds > 0.0:
+		await create_timer(wait_seconds).timeout
+	await _wait_frames(2)
 
 
 func _assert(condition: bool, message: String) -> void:

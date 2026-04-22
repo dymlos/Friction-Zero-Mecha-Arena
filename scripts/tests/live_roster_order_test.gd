@@ -16,6 +16,7 @@ func _run() -> void:
 	await _validate_ffa_live_roster_uses_standings_order()
 	await _validate_teams_live_roster_prioritizes_surviving_teammate()
 	await _validate_teams_live_roster_marks_support_active_players()
+	await _validate_teams_live_roster_marks_unarmed_support_active_players()
 	await _validate_teams_live_roster_uses_support_controls_only_for_support_active_players()
 	await _validate_teams_live_roster_hides_stale_robot_combat_state_during_active_support()
 	_finish()
@@ -126,6 +127,59 @@ func _validate_teams_live_roster_marks_support_active_players() -> void:
 	_assert(
 		player_one_line.contains("usa "),
 		"El roster vivo Teams deberia conservar el hint de uso mientras el apoyo post-muerte sigue activo."
+	)
+
+	await _cleanup_node(main)
+
+
+func _validate_teams_live_roster_marks_unarmed_support_active_players() -> void:
+	var main := MAIN_SCENE.instantiate()
+	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller_preload != null:
+		match_controller_preload.round_intro_duration = 0.0
+		if match_controller_preload.match_config != null:
+			match_controller_preload.match_config.round_intro_duration_teams = 0.0
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	var support_root := main.get_node_or_null("SupportRoot")
+	var robots := _get_scene_robots(main)
+	_assert(match_controller != null, "La escena Teams deberia exponer MatchController.")
+	_assert(support_root != null, "La escena Teams deberia exponer SupportRoot.")
+	_assert(robots.size() >= 4, "La escena Teams deberia ofrecer cuatro robots para validar el estado vacio del soporte.")
+	if match_controller == null or support_root == null or robots.size() < 4:
+		await _cleanup_node(main)
+		return
+
+	robots[0].fall_into_void()
+	await _wait_frames(4)
+
+	_assert(
+		support_root.get_child_count() == 1,
+		"Al caer un aliado en Teams deberia aparecer una sola nave de apoyo para validar su estado inicial."
+	)
+	var support_ship := support_root.get_child(0)
+	_assert(support_ship != null and support_ship.has_method("has_support_payload"), "La nave de apoyo deberia exponer si ya viene armada.")
+	if support_ship != null and support_ship.has_method("has_support_payload"):
+		_assert(
+			not bool(support_ship.call("has_support_payload")),
+			"La nave de apoyo no deberia recolectar un payload gratis al aparecer en el carril externo."
+		)
+
+	var player_one_line := _find_line_containing(match_controller.get_robot_status_lines(), robots[0].display_name)
+	_assert(
+		player_one_line.contains("sin carga"),
+		"El roster vivo Teams deberia aclarar cuando `Apoyo activo` todavia no lleva ningun payload."
+	)
+	_assert(
+		not player_one_line.contains("movilidad >")
+			and not player_one_line.contains("energia >")
+			and not player_one_line.contains("estabilizador >")
+			and not player_one_line.contains("interferencia >"),
+		"Antes de moverse por el carril, `Apoyo activo` no deberia aparecer ya con un payload seleccionado."
 	)
 
 	await _cleanup_node(main)

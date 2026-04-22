@@ -26,6 +26,7 @@
 
 2. **Cerrar soporte post-muerte con datos reales**
   - El targeting base ya quedo corregido: cuando haya varios objetivos vivos, `PilotSupportShip` ahora prioriza utilidad del payload en vez de `scene-order`. No reabrir ese punto salvo rojo nuevo en `team_post_death_support_targeting_test.gd`.
+  - La nave ya no debe aparecer armada: si se toca `PilotSupportShip.configure()`, `_try_collect_support_pickup()` o el layout del carril, conservar `spawn_pickup_grace_duration` o una regla equivalente para evitar pickups gratis al respawn.
   - El cierre ya explica tambien el ultimo payload decisivo del ganador (`Apoyo decisivo | ...`). No volver a esconder ese dato en agregado si se retoca `record_support_payload_use(...)` o `_build_round_highlight_lines()`.
   - El cleanup basico ya quedo cubierto: si se toca `_clear_post_death_support()`, `_on_round_started()`, `start_match()` o el carril externo, mantener tambien `support_lifecycle_cleanup_test.gd` para que no reaparezcan naves/hints/pickups stale entre rounds o tras `F5`.
   - Partir de `support_use_total`, `support_payload_use_*` y `support_rounds_decided` ya registrados en `MatchStats` para guiar ajustes.
