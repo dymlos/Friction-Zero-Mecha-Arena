@@ -891,10 +891,11 @@ func _build_ffa_tiebreaker_line() -> String:
 		return ""
 	if not _should_show_live_ffa_standings():
 		return ""
-	if not _ffa_standings_have_score_tie():
+	var tie_segments := _build_ffa_tiebreak_segments()
+	if tie_segments.is_empty():
 		return ""
 
-	return "Desempate | score igual -> mejor cierre de la ronda final"
+	return "Desempate | %s" % " ; ".join(tie_segments)
 
 
 func _should_show_live_ffa_standings() -> bool:
@@ -918,6 +919,45 @@ func _ffa_standings_have_score_tie() -> bool:
 		seen_scores[score] = true
 
 	return false
+
+
+func _build_ffa_tiebreak_segments() -> Array[String]:
+	if not _ffa_standings_have_score_tie():
+		return []
+
+	var ordered_competitors := _competitor_order.duplicate()
+	ordered_competitors.sort_custom(_compare_ffa_competitors_for_standings)
+	var tie_segments: Array[String] = []
+	var current_group: Array[String] = []
+	var current_score := 0
+	var has_current_group := false
+
+	for competitor_key in ordered_competitors:
+		var score := int(_competitor_scores.get(competitor_key, 0))
+		if not has_current_group or score == current_score:
+			current_group.append(str(competitor_key))
+			current_score = score
+			has_current_group = true
+			continue
+
+		if current_group.size() > 1:
+			tie_segments.append(_build_ffa_tiebreak_segment(current_score, current_group))
+
+		current_group = [str(competitor_key)]
+		current_score = score
+
+	if current_group.size() > 1:
+		tie_segments.append(_build_ffa_tiebreak_segment(current_score, current_group))
+
+	return tie_segments
+
+
+func _build_ffa_tiebreak_segment(score: int, competitor_keys: Array[String]) -> String:
+	var labels: Array[String] = []
+	for competitor_key in competitor_keys:
+		labels.append(_get_competitor_label_from_key(competitor_key))
+
+	return "%s pts: %s" % [score, " > ".join(labels)]
 
 
 func _ffa_scores_have_difference() -> bool:

@@ -6,6 +6,10 @@
    - `MatchController` ahora deja `Posiciones | ...` y `Desempate | ...` fuera de `get_round_state_lines()` mientras la ronda sigue activa, nadie fue eliminado y todos los competidores continúan con el mismo score; en recap/resultado final se mantienen siempre, y durante la ronda reaparecen apenas hay score divergente o una baja que ya rompa la neutralidad.
    - Motivo: la lectura FFA en vivo era valiosa, pero imprimir una tabla 4-way empatada al arranque agregaba ruido justo en el momento mas limpio del match. El criterio nuevo preserva la informacion importante sin volver opaco el opening.
 
+1. **El desempate FFA nombra a quienes van arriba dentro del empate**
+   - `MatchController._build_ffa_tiebreaker_line()` ahora agrupa por score empatado y publica segmentos concretos como `0 pts: Player 3 > Player 2 > Player 1`, reutilizando el mismo comparator de standings para HUD vivo, recap y resultado final.
+   - Motivo: la nota generica `score igual -> mejor cierre de la ronda final` dejaba claro que habia desempate, pero no explicaba quien lo estaba ganando. Nombrar el orden real cierra mejor el “por que voy segundo/cuarto” sin abrir otra UI ni otro criterio paralelo.
+
 1. **El arranque legible de ronda vive en `MatchController`, no en otra UI o escena**
    - `MatchController` ahora expone `round_intro_duration`, mantiene `_round_intro_remaining`, publica `Ronda N | arranca en ...` y no deja avanzar tiempo/contraccion mientras sigue ese beat inicial; `Main` solo sincroniza el lock hacia `RobotBase`, que lo vuelve visible en mundo mediante `RoundIntroIndicator`.
    - Motivo: el hueco contra `Documentación/07` era de ritmo, no de presentación. Resolverlo en el lifecycle de ronda preserva el laboratorio existente, evita duplicar escenas/countdowns y deja el “inicio parejo -> análisis -> escalada” como comportamiento real del match, mientras el aro diegético evita depender solo del HUD en cámara compartida.

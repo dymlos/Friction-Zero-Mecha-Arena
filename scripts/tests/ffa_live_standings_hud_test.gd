@@ -61,8 +61,15 @@ func _run() -> void:
 		"El HUD vivo de FFA deberia mostrar las posiciones actuales junto al marcador."
 	)
 	_assert(
-		_has_line(round_lines, "Desempate | score igual -> mejor cierre de la ronda final"),
-		"El HUD vivo de FFA deberia dejar visible el criterio de desempate cuando varios competidores comparten score."
+		_has_line(
+			round_lines,
+			"Desempate | 0 pts: %s > %s > %s" % [
+				robots[2].display_name,
+				robots[1].display_name,
+				robots[0].display_name,
+			]
+		),
+		"El HUD vivo de FFA deberia dejar visible que rivales ganan el desempate cuando varios competidores comparten score."
 	)
 
 	await _cleanup_main(main)

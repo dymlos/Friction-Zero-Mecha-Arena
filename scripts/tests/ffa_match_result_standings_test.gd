@@ -80,20 +80,46 @@ func _run() -> void:
 		"El panel final FFA deberia repetir tambien el detalle compacto por robot para explicar el cierre individual."
 	)
 	_assert(
-		_has_line(match_controller.get_round_recap_panel_lines(), "Desempate | score igual -> mejor cierre de la ronda final"),
-		"El recap FFA deberia explicar el criterio usado cuando varios jugadores cierran con el mismo score."
+		_has_line(
+			match_controller.get_round_recap_panel_lines(),
+			"Desempate | 0 pts: %s > %s > %s" % [
+				robots[2].display_name,
+				robots[1].display_name,
+				robots[0].display_name,
+			]
+		),
+		"El recap FFA deberia explicar que jugadores ganan el desempate cuando varios cierran con el mismo score."
 	)
 	_assert(
-		_has_line(match_controller.get_match_result_lines(), "Desempate | score igual -> mejor cierre de la ronda final"),
-		"El resultado final FFA deberia repetir el criterio de desempate para que las posiciones empatadas no parezcan arbitrarias."
+		_has_line(
+			match_controller.get_match_result_lines(),
+			"Desempate | 0 pts: %s > %s > %s" % [
+				robots[2].display_name,
+				robots[1].display_name,
+				robots[0].display_name,
+			]
+		),
+		"El resultado final FFA deberia repetir que jugadores ganan el desempate para que las posiciones empatadas no parezcan arbitrarias."
 	)
 	_assert(
-		recap_label.text.contains("Desempate | score igual -> mejor cierre de la ronda final"),
-		"El recap visible FFA deberia dejar legible el criterio de desempate."
+		recap_label.text.contains(
+			"Desempate | 0 pts: %s > %s > %s" % [
+				robots[2].display_name,
+				robots[1].display_name,
+				robots[0].display_name,
+			]
+		),
+		"El recap visible FFA deberia dejar legible que jugadores ganan el desempate."
 	)
 	_assert(
-		match_result_label.text.contains("Desempate | score igual -> mejor cierre de la ronda final"),
-		"El panel final FFA deberia dejar legible el criterio de desempate."
+		match_result_label.text.contains(
+			"Desempate | 0 pts: %s > %s > %s" % [
+				robots[2].display_name,
+				robots[1].display_name,
+				robots[0].display_name,
+			]
+		),
+		"El panel final FFA deberia dejar legible que jugadores ganan el desempate."
 	)
 
 	await _cleanup_main(main)
