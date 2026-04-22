@@ -533,7 +533,7 @@ func record_robot_elimination(
 		_round_status_line = "Ronda %s en juego" % _round_number
 		return _last_elimination_summary
 
-	_finish_round_with_winner(winner_key)
+	_finish_round_with_winner(winner_key, cause)
 	return _round_status_line
 
 
@@ -1285,10 +1285,11 @@ func _get_remaining_competitor_keys() -> Array[String]:
 	return remaining
 
 
-func _finish_round_with_winner(winner_key: String) -> void:
+func _finish_round_with_winner(winner_key: String, finishing_cause: EliminationCause) -> void:
 	_round_active = false
 	_round_reset_pending = true
-	var winner_score := int(_competitor_scores.get(winner_key, 0)) + 1
+	var round_points := _get_round_victory_points_for_cause(finishing_cause)
+	var winner_score := int(_competitor_scores.get(winner_key, 0)) + round_points
 	_competitor_scores[winner_key] = winner_score
 	if winner_score >= get_rounds_to_win():
 		_finish_match_with_winner(winner_key, winner_score)
@@ -1303,6 +1304,13 @@ func _finish_round_draw() -> void:
 	_round_reset_pending = true
 	_round_status_line = "Ronda %s sin ganador" % _round_number
 	_schedule_round_reset()
+
+
+func _get_round_victory_points_for_cause(cause: EliminationCause) -> int:
+	if match_config == null:
+		return 1
+
+	return max(0, match_config.get_round_victory_points_for_cause(int(cause)))
 
 
 func _finish_match_with_winner(winner_key: String, winner_score: int) -> void:
