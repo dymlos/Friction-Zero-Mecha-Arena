@@ -2,6 +2,10 @@
 
 ## Decisiones vigentes
 
+1. **El detalle por robot del cierre Teams tambien sigue el resultado real**
+   - `_get_recap_ordered_robots()` ahora ordena `Teams` con `_compare_team_robots_for_recap()` en vez de devolver `registered_robots` crudo; el comparator prioriza al equipo que sigue en pie en la ronda cerrada, desempata por score de match y, dentro de cada equipo, deja primero sobrevivientes/robots aun no eliminados y luego las bajas en el orden real de `_round_elimination_order_by_robot_id`.
+   - Motivo: despues de cerrar la incoherencia equivalente en `FFA`, dejar `Teams` en scene-order seguia mezclando la explicacion del cierre cuando ganaba el segundo equipo del laboratorio. Reusar un orden derivado del estado real mantiene el recap legible sin inventar otra UI ni tocar el sistema de score.
+
 1. **El detalle por robot del cierre FFA reutiliza el mismo orden de standings**
    - `get_round_recap_panel_lines()` y `get_match_result_lines()` ahora iteran `_get_recap_ordered_robots()`; en `FFA`, ese helper ordena los robots con `_compare_ffa_competitors_for_standings()` en vez de respetar `registered_robots`.
    - Motivo: despues de ordenar `Marcador`, `Posiciones` y `Desempate`, dejar el breakdown final en scene-order seguia mezclando dos lecturas distintas del mismo cierre. Reusar el comparator existente mantiene consistencia sin inventar otra regla.

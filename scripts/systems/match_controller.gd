@@ -639,11 +639,75 @@ func _get_recap_ordered_robots() -> Array[RobotBase]:
 
 		ordered_robots.append(robot)
 
-	if match_mode != MatchMode.FFA:
+	if match_mode == MatchMode.TEAMS:
+		ordered_robots.sort_custom(_compare_team_robots_for_recap)
 		return ordered_robots
 
 	ordered_robots.sort_custom(_compare_ffa_robots_for_recap)
 	return ordered_robots
+
+
+func _compare_team_robots_for_recap(a: RobotBase, b: RobotBase) -> bool:
+	if a == null or b == null:
+		return is_instance_valid(a)
+
+	var team_a := _get_competitor_key(a)
+	var team_b := _get_competitor_key(b)
+	if team_a != team_b:
+		return _compare_team_competitors_for_recap(team_a, team_b)
+
+	var state_rank_a := _get_team_robot_recap_state_rank(a)
+	var state_rank_b := _get_team_robot_recap_state_rank(b)
+	if state_rank_a != state_rank_b:
+		return state_rank_a < state_rank_b
+
+	if state_rank_a == 2:
+		var elimination_order_a := int(_round_elimination_order_by_robot_id.get(a.get_instance_id(), 0))
+		var elimination_order_b := int(_round_elimination_order_by_robot_id.get(b.get_instance_id(), 0))
+		if elimination_order_a != elimination_order_b:
+			return elimination_order_a < elimination_order_b
+
+	return registered_robots.find(a) < registered_robots.find(b)
+
+
+func _compare_team_competitors_for_recap(a: String, b: String) -> bool:
+	var finish_rank_a := _get_team_recap_finish_rank(a)
+	var finish_rank_b := _get_team_recap_finish_rank(b)
+	if finish_rank_a != finish_rank_b:
+		return finish_rank_a < finish_rank_b
+
+	var score_a := int(_competitor_scores.get(a, 0))
+	var score_b := int(_competitor_scores.get(b, 0))
+	if score_a != score_b:
+		return score_a > score_b
+
+	return _competitor_order.find(a) < _competitor_order.find(b)
+
+
+func _get_team_recap_finish_rank(team_key: String) -> int:
+	if match_mode != MatchMode.TEAMS:
+		return 999
+
+	for robot in registered_robots:
+		if not is_instance_valid(robot):
+			continue
+		if _get_competitor_key(robot) != team_key:
+			continue
+		if not is_robot_eliminated(robot):
+			return 0
+
+	return 1
+
+
+func _get_team_robot_recap_state_rank(robot: RobotBase) -> int:
+	if robot == null:
+		return 999
+	if not is_robot_eliminated(robot):
+		if robot.is_disabled_state():
+			return 1
+		return 0
+
+	return 2
 
 
 func _compare_ffa_robots_for_recap(a: RobotBase, b: RobotBase) -> bool:
