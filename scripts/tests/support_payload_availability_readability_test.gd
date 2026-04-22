@@ -14,6 +14,8 @@ func _init() -> void:
 
 func _run() -> void:
 	await _verify_stabilizer_warns_when_target_has_no_damage()
+	await _verify_surge_warns_when_target_already_has_full_boost_window()
+	await _verify_mobility_warns_when_target_already_has_full_boost_window()
 	_finish()
 
 
@@ -73,6 +75,125 @@ func _verify_stabilizer_warns_when_target_has_no_damage() -> void:
 	)
 
 	await _cleanup_main(main)
+
+
+func _verify_surge_warns_when_target_already_has_full_boost_window() -> void:
+	var main := await _instantiate_main_scene()
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
+	var support_root := main.get_node_or_null("SupportRoot")
+	var robots := _get_scene_robots(main)
+	_assert(roster_label != null, "El HUD deberia seguir exponiendo el roster compacto.")
+	_assert(support_root != null, "La escena Teams deberia seguir exponiendo SupportRoot.")
+	_assert(robots.size() >= 4, "La escena Teams deberia seguir ofreciendo cuatro robots.")
+	if roster_label == null or support_root == null or robots.size() < 4:
+		await _cleanup_main(main)
+		return
+
+	robots[1].fall_into_void()
+	await _wait_frames(4)
+
+	var support_ship := support_root.get_child(0) as PilotSupportShip
+	_assert(support_ship != null, "La nave de apoyo deberia existir para validar la disponibilidad de `surge`.")
+	if support_ship == null:
+		await _cleanup_main(main)
+		return
+
+	var surge_pickup := _find_support_pickup("surge")
+	_assert(surge_pickup != null, "El carril deberia seguir ofreciendo un pickup `surge`.")
+	if surge_pickup == null:
+		await _cleanup_main(main)
+		return
+
+	var surge_duration := float(support_ship.get("support_energy_surge_duration")) + 1.0
+	robots[0].apply_energy_surge(surge_duration)
+	robots[2].apply_energy_surge(surge_duration)
+	support_ship.global_position = surge_pickup.global_position
+	await _wait_support_spawn_grace(support_ship)
+
+	_assert(
+		roster_label.text.contains("energia"),
+		"El roster deberia seguir mostrando cuando la nave lleva una carga `surge`."
+	)
+	_assert(
+		roster_label.text.contains("ya activo"),
+		"Si el aliado objetivo ya tiene toda la ventana util de `surge`, el roster deberia explicitar que ese payload seria redundante."
+	)
+
+	robots[2].apply_damage_to_part("left_arm", robots[2].max_part_health * 0.15, Vector3.LEFT)
+	await create_timer(1.0).timeout
+	await _wait_frames(2)
+
+	_assert(
+		not roster_label.text.contains("ya activo"),
+		"Cuando la ventana activa de `surge` baja por debajo de la duracion que aporta la nave, la advertencia de redundancia deberia limpiarse sola."
+	)
+
+	await _cleanup_main(main)
+
+
+func _verify_mobility_warns_when_target_already_has_full_boost_window() -> void:
+	var main := await _instantiate_main_scene()
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
+	var support_root := main.get_node_or_null("SupportRoot")
+	var robots := _get_scene_robots(main)
+	_assert(roster_label != null, "El HUD deberia seguir exponiendo el roster compacto.")
+	_assert(support_root != null, "La escena Teams deberia seguir exponiendo SupportRoot.")
+	_assert(robots.size() >= 4, "La escena Teams deberia seguir ofreciendo cuatro robots.")
+	if roster_label == null or support_root == null or robots.size() < 4:
+		await _cleanup_main(main)
+		return
+
+	robots[1].fall_into_void()
+	await _wait_frames(4)
+
+	var support_ship := support_root.get_child(0) as PilotSupportShip
+	_assert(support_ship != null, "La nave de apoyo deberia existir para validar la disponibilidad de `movilidad`.")
+	if support_ship == null:
+		await _cleanup_main(main)
+		return
+
+	var mobility_pickup := _find_support_pickup("mobility")
+	_assert(mobility_pickup != null, "El carril deberia seguir ofreciendo un pickup `mobility`.")
+	if mobility_pickup == null:
+		await _cleanup_main(main)
+		return
+
+	var mobility_duration := float(support_ship.get("support_mobility_boost_duration")) + 1.0
+	robots[0].apply_mobility_boost(mobility_duration)
+	robots[2].apply_mobility_boost(mobility_duration)
+	support_ship.global_position = mobility_pickup.global_position
+	await _wait_support_spawn_grace(support_ship)
+
+	_assert(
+		roster_label.text.contains("movilidad"),
+		"El roster deberia seguir mostrando cuando la nave lleva una carga `mobility`."
+	)
+	_assert(
+		roster_label.text.contains("ya activo"),
+		"Si el aliado objetivo ya tiene toda la ventana util de `movilidad`, el roster deberia explicitar que ese payload seria redundante."
+	)
+
+	robots[2].apply_damage_to_part("left_leg", robots[2].max_part_health * 0.2, Vector3.LEFT)
+	await create_timer(1.0).timeout
+	await _wait_frames(2)
+
+	_assert(
+		not roster_label.text.contains("ya activo"),
+		"Cuando la ventana activa de `movilidad` baja por debajo de lo que aportaria la nave, la advertencia de redundancia deberia limpiarse sola."
+	)
+
+	await _cleanup_main(main)
+
+
+func _instantiate_main_scene() -> Node:
+	var main = MAIN_SCENE.instantiate()
+	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller_preload != null and match_controller_preload.match_config != null:
+		match_controller_preload.match_config.round_intro_duration_teams = 0.0
+	root.add_child(main)
+	await process_frame
+	await process_frame
+	return main
 
 
 func _find_support_pickup(payload_name: String) -> Node3D:

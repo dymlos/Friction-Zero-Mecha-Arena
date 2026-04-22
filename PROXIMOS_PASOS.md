@@ -3,8 +3,8 @@
 ## Siguiente iteracion recomendada
 
 0. **Validar legibilidad del nuevo estado `Apoyo activo`**
- - El roster vivo `Teams` ya distingue a la baja que sigue influyendo desde la nave de soporte, el HUD explicito ya no mezcla los controles del robot caido con los de la nave, la línea `Apoyo activo` ya no arrastra `skill`, energía ni `item` del robot muerto, `interferencia` explicita `fuera de rango` y `stabilizer` ahora marca `sin daño` cuando el aliado objetivo sigue sano; la siguiente sesión corta debe confirmar si ese wording compacto alcanza por sí solo o si todavía hace falta ajustar orden/contraste antes de sumar otra UI.
- - Mantener `live_roster_order_test.gd`, `team_post_death_support_test.gd` y `support_payload_availability_readability_test.gd` como red mínima si se retoca `support_state`, `get_status_summary()` o el builder de roster.
+ - El roster vivo `Teams` ya distingue a la baja que sigue influyendo desde la nave de soporte, el HUD explicito ya no mezcla los controles del robot caido con los de la nave, la línea `Apoyo activo` ya no arrastra `skill`, energía ni `item` del robot muerto, `interferencia` explicita `fuera de rango`, `stabilizer` marca `sin daño` y ahora `surge/movilidad` también publican `ya activo` cuando el buff seleccionado sería redundante; la siguiente sesión corta debe confirmar si ese wording compacto alcanza por sí solo o si todavía hace falta ajustar orden/contraste antes de sumar otra UI.
+ - Mantener `live_roster_order_test.gd`, `team_post_death_support_test.gd` y `support_payload_availability_readability_test.gd` como red mínima si se retoca `support_state`, `get_status_summary()` o el builder de roster; este último ya fija los cuatro warnings de disponibilidad (`sin daño`, `fuera de rango`, `ya activo` para `surge`, `ya activo` para `movilidad`).
  - Archivos objetivo: `scripts/systems/match_controller.gd`, `scripts/support/pilot_support_ship.gd`, `scripts/tests/live_roster_order_test.gd`, `scripts/tests/team_post_death_support_test.gd`, `scripts/tests/support_payload_availability_readability_test.gd`.
 
 0. **Validación runtime de choque cerrada (2026-04-22)**

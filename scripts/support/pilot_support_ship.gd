@@ -302,12 +302,35 @@ func _get_payload_availability_label() -> String:
 		if _get_total_missing_active_part_health(target_robot) <= 0.0:
 			return "sin daño"
 		return ""
+	if _support_payload_name == PilotSupportPickup.PAYLOAD_SURGE:
+		if _would_surge_payload_be_redundant(target_robot):
+			return "ya activo"
+		return ""
+	if _support_payload_name == PilotSupportPickup.PAYLOAD_MOBILITY:
+		if _would_mobility_payload_be_redundant(target_robot):
+			return "ya activo"
+		return ""
 	if _support_payload_name != PilotSupportPickup.PAYLOAD_INTERFERENCE:
 		return ""
 	if _is_target_in_interference_range(target_robot):
 		return ""
 
 	return "fuera de rango"
+
+
+func _would_surge_payload_be_redundant(target_robot: RobotBase) -> bool:
+	if target_robot == null or not target_robot.is_energy_surge_active():
+		return false
+
+	return target_robot.get_energy_surge_time_left() >= support_energy_surge_duration
+
+
+func _would_mobility_payload_be_redundant(target_robot: RobotBase) -> bool:
+	if target_robot == null or not target_robot.is_mobility_boost_active():
+		return false
+
+	var applied_duration := support_mobility_boost_duration * target_robot.get_mobility_boost_duration_multiplier()
+	return target_robot.get_mobility_boost_time_left() >= applied_duration
 
 
 func _update_target_selection_from_input() -> bool:

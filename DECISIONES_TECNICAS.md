@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **`Surge` y `movilidad` tambien deben explicar cuando reutilizarlos seria un no-op**
+ - `PilotSupportShip.get_status_summary()` ahora agrega `ya activo` si la carga actual es `surge` o `movilidad`, existe un target seleccionado y ese aliado ya conserva al menos toda la ventana útil que aportaría otra activación del mismo payload.
+ - `surge` compara contra `support_energy_surge_duration`; `movilidad` usa la duración efectiva del target (`support_mobility_boost_duration * get_mobility_boost_duration_multiplier()`), para no falsear el warning en arquetipos con boosts más largos.
+ - Motivo: el slice de soporte ya habia resuelto los fallos silenciosos de `stabilizer` e `interferencia`, pero los buffs seguian pudiendo verse “listos” aunque volver a usarlos no cambiara nada. Mantener la regla en el summary conserva HUD y mundo alineados sin sumar UI.
+
 1. **`Stabilizer` tambien debe explicar cuando todavia no tiene nada que reparar**
  - `PilotSupportShip.get_status_summary()` ahora agrega `sin daño` cuando la carga actual es `stabilizer`, existe un target seleccionado y ese aliado no tiene ninguna parte activa averiada.
  - La disponibilidad se calcula reutilizando `_get_total_missing_active_part_health(...)`, asi que el warning desaparece en cuanto aparece una averia real sobre ese mismo target.

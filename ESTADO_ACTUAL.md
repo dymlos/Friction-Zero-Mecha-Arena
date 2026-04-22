@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## `Surge` / `movilidad` redundantes visibles en roster (2026-04-22)
+
+- Estado: la nave de apoyo `Teams` ya explica cuando una carga de `surge` o `movilidad` no aportaria nada inmediato porque el aliado seleccionado ya conserva toda la ventana útil de ese buff.
+- Correccion aplicada:
+  - `PilotSupportShip.get_status_summary()` ahora agrega `ya activo` para `surge` y `movilidad` solo cuando reutilizar ese payload seria un no-op real sobre el target actual.
+  - `surge` compara `get_energy_surge_time_left()` contra `support_energy_surge_duration`.
+  - `movilidad` compara `get_mobility_boost_time_left()` contra la duración efectiva del target (`support_mobility_boost_duration * get_mobility_boost_duration_multiplier()`).
+  - `support_payload_availability_readability_test.gd` fija ambos contratos y tambien cubre que la advertencia desaparezca sola cuando la ventana restante ya queda por debajo del valor real del payload.
+- Resultado:
+  - el carril ya no comunica “carga lista” cuando `surge` o `movilidad` serian redundantes sobre el objetivo seleccionado.
+  - `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 78 tests`).
+
 ## `Stabilizer` sin daño visible en roster (2026-04-22)
 
 - Estado: la nave de apoyo `Teams` ya explica cuando una carga `estabilizador` todavia no puede reparar nada porque su aliado objetivo sigue completamente sano.
