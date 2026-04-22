@@ -59,6 +59,7 @@ const LAB_SCENE_VARIANTS := [
 @export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
 @export var lab_runtime_selector_enabled := true
 @export var lab_runtime_archetypes: Array[RobotArchetypeConfig] = []
+@export_range(8, 64, 1) var detached_part_cleanup_limit := 20
 @export_group("FFA Bootstrap")
 @export_range(2.5, 12.0, 0.1) var ffa_spawn_radius := 5.6
 @export_range(0.0, 180.0, 1.0) var ffa_spawn_angle_offset_degrees := 45.0
@@ -87,6 +88,7 @@ func _ready() -> void:
 	match_controller.start_match()
 	_sync_round_intro_locks()
 	_apply_match_pressure_to_arena()
+	_cleanup_detached_parts()
 	_sync_lab_selector_visuals()
 	_report_startup_structure()
 	ui.show_status(_build_hud_toggle_status())
@@ -551,6 +553,7 @@ func _on_robot_part_destroyed(robot: RobotBase, part_name: String, _detached_par
 		_detached_part.recovery_lost.connect(_on_detached_part_recovery_lost)
 	match_controller.record_part_loss(robot, part_name)
 	ui.show_status("%s perdio %s" % [robot.display_name, RobotBase.get_part_display_name(part_name)])
+	_cleanup_detached_parts()
 
 
 func _on_robot_part_restored(robot: RobotBase, part_name: String, restored_by: RobotBase) -> void:
@@ -664,10 +667,42 @@ func _on_edge_utility_pickup_collected(robot: RobotBase, stability_duration: flo
 
 func _on_round_started(round_number: int) -> void:
 	_clear_post_death_support()
+	_cleanup_detached_parts()
 	if _arena == null:
 		return
 
 	_arena.activate_edge_pickup_layout_for_round(round_number)
+
+
+func _cleanup_detached_parts() -> void:
+	if detached_part_cleanup_limit <= 0 or get_tree() == null:
+		return
+
+	var active_parts: Array[DetachedPart] = []
+	for node in get_tree().get_nodes_in_group("detached_parts"):
+		if not (node is DetachedPart):
+			continue
+
+		var detached_part := node as DetachedPart
+		if not is_instance_valid(detached_part) or detached_part.is_carried():
+			continue
+
+		active_parts.append(detached_part)
+
+	active_parts.sort_custom(func(a: DetachedPart, b: DetachedPart) -> bool:
+		return a.get_cleanup_time_left() < b.get_cleanup_time_left()
+	)
+
+	var excess_count := active_parts.size() - detached_part_cleanup_limit
+	if excess_count <= 0:
+		return
+
+	for i in range(excess_count):
+		var stale_part := active_parts[i]
+		if not is_instance_valid(stale_part):
+			continue
+
+		stale_part.queue_free()
 
 
 func _spawn_post_death_support_if_needed(robot: RobotBase) -> void:
