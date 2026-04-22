@@ -757,10 +757,11 @@ func _update_interference_range_indicator() -> void:
 
 	var target_robot := get_selected_target_robot()
 	var in_range := target_robot != null and _is_target_in_interference_range(target_robot)
+	var is_actionable := target_robot != null and _is_payload_actionable_on_target(target_robot)
 	var accent_color := _get_support_payload_color()
 	var indicator_color := accent_color.darkened(0.2)
 	var emission_boost := 0.48
-	if in_range:
+	if in_range and is_actionable:
 		indicator_color = accent_color.lightened(0.06)
 		emission_boost = 0.92
 
@@ -768,10 +769,10 @@ func _update_interference_range_indicator() -> void:
 	if material == null:
 		return
 
-	indicator_color.a = 0.24 if in_range else 0.12
+	indicator_color.a = 0.24 if in_range and is_actionable else 0.12
 	material.albedo_color = indicator_color
 	material.emission = accent_color
-	material.emission_energy_multiplier = emission_boost
+	material.emission_energy_multiplier = emission_boost if in_range and is_actionable else 0.3
 
 
 func _refresh_support_target_visuals() -> void:

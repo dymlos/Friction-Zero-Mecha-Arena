@@ -8,7 +8,8 @@
 - Corrección aplicada:
   - `PilotSupportShip` suma `_is_payload_actionable_on_target(...)` y reutiliza la utilidad real del payload para `stabilizer`, `surge`, `movilidad` e `interferencia`.
   - `SupportTargetIndicator` y `SupportTargetFloorIndicator` siguen visibles mientras hay target, pero ahora bajan intensidad cuando el caso ya cae en `sin daño`, `ya activo` o `estable`, igual que antes hacían para `fuera de rango`.
-  - `support_payload_availability_readability_test.gd` fija el caso de `interferencia` con dos rivales en rango: default sobre el rival afectable y atenuación clara al ciclar al rival inmune por `estabilidad`.
+  - `InterferenceRangeIndicator` también dejó de tratar `en rango` como sinónimo de “útil”: ahora solo entra en estado brillante si el target además es accionable.
+  - `support_payload_availability_readability_test.gd` fija el caso de `interferencia` con dos rivales en rango: default sobre el rival afectable y atenuación clara al ciclar al rival inmune por `estabilidad` en los tres cues diegéticos.
 - Resultado:
   - el carril ya no contradice al jugador entre HUD y mundo; la explicación compacta y la lectura diegética del objetivo usan la misma noción de “payload útil ahora”.
   - `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 78 tests`).

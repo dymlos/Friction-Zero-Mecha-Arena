@@ -287,17 +287,21 @@ func _verify_interference_target_markers_dim_when_target_has_stability() -> void
 
 	var target_indicator := support_ship.get_node_or_null("SupportTargetIndicator") as MeshInstance3D
 	var target_floor_indicator := support_ship.get_node_or_null("SupportTargetFloorIndicator") as MeshInstance3D
+	var interference_range_indicator := support_ship.get_node_or_null("InterferenceRangeIndicator") as MeshInstance3D
 	_assert(target_indicator != null, "La nave deberia seguir exponiendo un marcador diegetico sobre el target.")
 	_assert(target_floor_indicator != null, "La nave deberia seguir exponiendo una marca diegetica a nivel piso.")
-	if target_indicator == null or target_floor_indicator == null:
+	_assert(interference_range_indicator != null, "La nave deberia seguir exponiendo el anillo de rango de `interferencia`.")
+	if target_indicator == null or target_floor_indicator == null or interference_range_indicator == null:
 		await _cleanup_main(main)
 		return
 
 	var valid_target_material := target_indicator.material_override as StandardMaterial3D
 	var valid_floor_material := target_floor_indicator.material_override as StandardMaterial3D
+	var valid_range_material := interference_range_indicator.material_override as StandardMaterial3D
 	_assert(valid_target_material != null, "El marcador superior deberia seguir usando material legible para validar su intensidad.")
 	_assert(valid_floor_material != null, "La marca de piso deberia seguir usando material legible para validar su intensidad.")
-	if valid_target_material == null or valid_floor_material == null:
+	_assert(valid_range_material != null, "El anillo de rango deberia seguir usando material legible para validar su intensidad.")
+	if valid_target_material == null or valid_floor_material == null or valid_range_material == null:
 		await _cleanup_main(main)
 		return
 
@@ -307,6 +311,7 @@ func _verify_interference_target_markers_dim_when_target_has_stability() -> void
 	)
 	var valid_target_emission := valid_target_material.emission_energy_multiplier
 	var valid_floor_emission := valid_floor_material.emission_energy_multiplier
+	var valid_range_emission := valid_range_material.emission_energy_multiplier
 
 	Input.action_press("p2_energy_next")
 	await _wait_frames(2)
@@ -319,7 +324,8 @@ func _verify_interference_target_markers_dim_when_target_has_stability() -> void
 	)
 	var stable_target_material := target_indicator.material_override as StandardMaterial3D
 	var stable_floor_material := target_floor_indicator.material_override as StandardMaterial3D
-	if stable_target_material == null or stable_floor_material == null:
+	var stable_range_material := interference_range_indicator.material_override as StandardMaterial3D
+	if stable_target_material == null or stable_floor_material == null or stable_range_material == null:
 		await _cleanup_main(main)
 		return
 
@@ -330,6 +336,10 @@ func _verify_interference_target_markers_dim_when_target_has_stability() -> void
 	_assert(
 		stable_floor_material.emission_energy_multiplier < valid_floor_emission,
 		"Si el rival seleccionado esta inmune por `estabilidad`, la marca de piso tambien deberia verse menos comprometida que sobre un objetivo realmente util."
+	)
+	_assert(
+		stable_range_material.emission_energy_multiplier < valid_range_emission,
+		"Si el rival seleccionado esta inmune por `estabilidad`, el anillo de rango no deberia seguir viendose tan listo como sobre un objetivo realmente util."
 	)
 
 	await _cleanup_main(main)

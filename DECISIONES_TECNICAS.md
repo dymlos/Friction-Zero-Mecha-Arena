@@ -4,8 +4,8 @@
 
 1. **Los marcadores diegéticos del soporte deben degradarse con la misma regla de utilidad que ya usa el roster**
  - `PilotSupportShip` ahora centraliza `_is_payload_actionable_on_target(target_robot)` para decidir si el payload seleccionado tendría efecto real inmediato.
- - `SupportTargetIndicator` y `SupportTargetFloorIndicator` siguen visibles mientras exista un target, pero bajan intensidad si el payload actual ya cae en `sin daño`, `ya activo`, `estable` o `fuera de rango`.
- - Motivo: el roster compacto ya habia dejado de fallar “mudo”, pero el mundo seguia sugiriendo un target valido salvo por rango. Mantener ambos cues sobre la misma nocion de accionabilidad evita drift sin sumar UI nueva.
+ - `SupportTargetIndicator`, `SupportTargetFloorIndicator` e `InterferenceRangeIndicator` siguen visibles mientras exista un target/carga relevante, pero bajan intensidad si el payload actual ya cae en `sin daño`, `ya activo`, `estable` o `fuera de rango`.
+ - Motivo: el roster compacto ya habia dejado de fallar “mudo”, pero el mundo seguia sugiriendo un target valido salvo por rango y aun dejaba el anillo de alcance demasiado “listo” frente a inmunidad por `estabilidad`. Mantener los tres cues sobre la misma nocion de accionabilidad evita drift sin sumar UI nueva.
 
 1. **`Interferencia` tambien debe explicar cuando el objetivo sigue inmune por `estabilidad`**
  - `PilotSupportShip.get_status_summary()` ahora agrega `estable` si la carga actual es `interferencia`, existe un target seleccionado y ese rival mantiene `stability_boost` activo.
