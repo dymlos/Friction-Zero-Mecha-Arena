@@ -16,7 +16,7 @@
 
 0. **No volver a dejar los pickups de borde recogibles durante el intro**
  - `Main` ya sincroniza `set_collection_enabled(false)` sobre `edge_pickups` mientras `MatchController.is_round_intro_active()` siga activo, y el HUD del laboratorio ahora deja explicita esa ventana como `Borde | ... | abre en Xs`.
- - `edge_pickup_intro_lock_test.gd` congela el contrato minimo: en `main.tscn` un pickup de reparacion activo no debe recogerse durante el intro y debe volver a funcionar cuando termina el countdown.
+ - `edge_pickup_intro_lock_test.gd` congela el contrato minimo en `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`: un pickup de reparacion activo no debe recogerse durante el intro y debe volver a funcionar cuando termina el countdown.
  - Las fixtures scene-level de pickups (`edge_utility/mobility/energy/pulse/charge`) ahora esperan a que termine el intro antes de validar coleccion real; si se toca otra vez el opening, conservar esa separacion entre apertura telegraphiada y borde activado.
  - Reabrir solo si un playtest real demuestra que el opening sigue yendose demasiado rapido o si el lock vuelve opaco/antinatural el valor del borde.
 

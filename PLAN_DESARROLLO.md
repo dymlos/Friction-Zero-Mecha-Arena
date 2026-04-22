@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El lock de pickups de borde durante el intro ya queda congelado tambien en las escenas `base` y `validation` de `Teams/FFA`:
+  - la revision estricta encontro otro hueco de mantenimiento en el opening: el contrato `pickup visible pero no cobrable + HUD Borde | ... | abre en Xs + desbloqueo al terminar el countdown` estaba cubierto solo en `main.tscn`, dejando drift posible en `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+  - no hizo falta tocar produccion; `Main` y los pickups ya estaban alineados. La correccion vive en `scripts/tests/edge_pickup_intro_lock_test.gd`, que ahora recorre las cuatro escenas y verifica el mismo seam scene-level.
+  - decision operativa: tratar el opening del borde como otro contrato compartido entre laboratorios `base/validation`, igual que el HUD neutral y el telegraph de apertura.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/edge_pickup_intro_lock_test.gd`.
+
 - La apertura neutral ya queda congelada tambien en los laboratorios `base` y `validation` de ambos modos:
   - la revision estricta encontro un hueco de mantenimiento: varios contratos de opening/readability (`Marcador 0-0` oculto en `Teams`, opening neutral limpio en `FFA`, `OpeningTelegraph` oculto fuera de `Teams`) estaban fijados solo en una escena por modo, dejando espacio para drift entre `main*.tscn` y las escenas rapidas.
   - no hizo falta tocar produccion; la correccion vive en la red de regresion:
@@ -17,7 +23,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
   - la revision estricta encontro un hueco jugable entre la documentacion y el prototipo: `Teams`/`FFA` ya telegraphiaban la apertura, pero los pedestales del borde seguian siendo recogibles desde el frame cero y aceleraban el primer contacto sin dar tiempo real a leer posicionamiento.
   - `Main` ahora sincroniza un lock de coleccion sobre `edge_pickups` mientras `MatchController.is_round_intro_active()` siga verdadero; los pedestales quedan visibles, pero no se consumen hasta que la ronda realmente abre.
   - el HUD del laboratorio deja esa ventana explicita con `Borde | ... | abre en Xs`, y los pickups ahora revisan overlaps al liberarse el intro para no exigir salir y volver a entrar al pedestal.
-  - la nueva regresion `edge_pickup_intro_lock_test.gd` fija el contrato minimo en `main.tscn`: el pickup no debe recogerse durante el intro y vuelve a funcionar cuando termina.
+  - la nueva regresion `edge_pickup_intro_lock_test.gd` ya fija ese contrato en `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`: el pickup no debe recogerse durante el intro y vuelve a funcionar cuando termina.
   - validacion: `godot --headless --path . -s res://scripts/tests/edge_pickup_intro_lock_test.gd`, `edge_utility_pickup_test.gd`, `edge_mobility_pickup_test.gd`, `edge_energy_pickup_test.gd`, `edge_pulse_pickup_test.gd`, `edge_charge_pickup_scene_test.gd` y `test_runner.gd` (`Suite OK: 85 tests`).
 
 - Validado otra vez el perfil actual de cierre por causa (`ring-out 2 / destruccion total 1 / explosion inestable 4`) sin tocar producción:

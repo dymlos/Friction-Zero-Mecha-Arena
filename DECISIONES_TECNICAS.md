@@ -11,6 +11,7 @@
  - `Main` ahora sincroniza el lock runtime desde `MatchController.is_round_intro_active()` y el HUD lo deja explicito con `Borde | ... | abre en Xs`.
  - Cada pickup de borde separa `spawn_enabled` de `collection_enabled`: el pedestal sigue telegraphiando valor durante la apertura, pero el consumo real no ocurre hasta que la ronda ya esta en juego.
  - Los pickups ahora vuelven a revisar overlaps cuando el lock se libera, para que quedarse parado sobre el pedestal durante el countdown no obligue a salir y reentrar.
+ - `edge_pickup_intro_lock_test.gd` ya congela ese contrato en `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`; no volver a tratar `main.tscn` como unico representante del opening del borde.
  - Motivo: la documentacion pide una apertura pareja con tiempo de lectura y posicionamiento. Si los rewards del borde se cobraban desde el frame cero, el opening quedaba resuelto por contacto oportunista y no por duelo/lectura espacial.
 
 1. **No reabrir el perfil de score por causa `2/1/4` sin evidencia runtime/manual nueva**

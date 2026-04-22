@@ -1,6 +1,11 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const SCENE_PATHS := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+	"res://scenes/main/main_ffa.tscn",
+	"res://scenes/main/main_ffa_validation.tscn",
+]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
@@ -13,54 +18,66 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main := MAIN_SCENE.instantiate()
+	for scene_path in SCENE_PATHS:
+		await _run_scene_case(scene_path)
+
+	_finish()
+
+
+func _run_scene_case(scene_path: String) -> void:
+	var scene_resource := load(scene_path)
+	_assert(scene_resource is PackedScene, "La escena %s deberia seguir existiendo para validar el intro del borde." % scene_path)
+	if not (scene_resource is PackedScene):
+		return
+
+	var main := (scene_resource as PackedScene).instantiate()
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
 	if match_controller != null and match_controller.match_config != null:
 		match_controller.match_config.round_intro_duration_teams = 0.45
+		match_controller.match_config.round_intro_duration_ffa = 0.45
 	root.add_child(main)
 
 	await process_frame
 	await process_frame
 
 	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
-	var arena := main.get_node_or_null("ArenaRoot/ArenaBlockout") as ArenaBase
+	var arena := _find_active_arena(main)
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
-	_assert(round_label != null, "La escena principal deberia seguir mostrando el bloque de estado de ronda.")
-	_assert(arena != null, "La escena principal deberia seguir exponiendo un arena activo.")
-	_assert(robots.size() >= 1, "La escena principal deberia seguir ofreciendo robots jugables para validar el opening.")
+	_assert(match_controller != null, "La escena %s deberia seguir exponiendo MatchController." % scene_path)
+	_assert(round_label != null, "La escena %s deberia seguir mostrando el bloque de estado de ronda." % scene_path)
+	_assert(arena != null, "La escena %s deberia seguir exponiendo un arena activa." % scene_path)
+	_assert(robots.size() >= 1, "La escena %s deberia seguir ofreciendo robots jugables para validar el opening." % scene_path)
 	if match_controller == null or round_label == null or arena == null or robots.is_empty():
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	var pickup := await _activate_round_with_repair_pickup(main, arena)
 	var robot := robots[0]
-	_assert(pickup != null, "La apertura Teams deberia poder validar un pickup de reparacion activo en el borde.")
-	_assert(match_controller.is_round_intro_active(), "La escena principal deberia seguir dentro del intro para bloquear el borde.")
+	_assert(pickup != null, "La escena %s deberia poder validar un pickup de reparacion activo en el borde." % scene_path)
+	_assert(match_controller.is_round_intro_active(), "La escena %s deberia seguir dentro del intro para bloquear el borde." % scene_path)
 	if pickup == null or not match_controller.is_round_intro_active():
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	robot.apply_damage_to_part("left_leg", 20.0, Vector3.BACK)
 	var damaged_health := robot.get_part_health("left_leg")
-	_assert(damaged_health < robot.max_part_health, "La prueba necesita una parte dañada antes de tocar el pickup.")
+	_assert(damaged_health < robot.max_part_health, "La escena %s necesita una parte dañada antes de tocar el pickup." % scene_path)
 	robot.global_position = (pickup as Node3D).global_position
 	pickup.call("_on_body_entered", robot)
 	await process_frame
 
 	_assert(
 		is_equal_approx(robot.get_part_health("left_leg"), damaged_health),
-		"Durante el intro, los pickups de borde no deberian poder recogerse aunque el robot ya este encima."
+		"Durante el intro, la escena %s no deberia dejar cobrar pickups de borde aunque el robot ya este encima."
+		% scene_path
 	)
 	_assert(
 		round_label.text.contains("Borde |"),
-		"El HUD del laboratorio deberia seguir explicando que tipos de pickup esperan en el borde."
+		"La escena %s deberia seguir explicando que tipos de pickup esperan en el borde." % scene_path
 	)
 	_assert(
 		round_label.text.contains("abre en"),
-		"Durante el intro, el HUD deberia aclarar que el borde todavia no esta liberado."
+		"La escena %s deberia aclarar que el borde todavia no esta liberado durante el intro." % scene_path
 	)
 
 	await create_timer(match_controller.get_round_intro_time_left() + 0.15).timeout
@@ -71,11 +88,10 @@ func _run() -> void:
 
 	_assert(
 		robot.get_part_health("left_leg") > damaged_health,
-		"Al terminar el intro, el pickup de borde deberia volver a poder recogerse."
+		"Al terminar el intro, la escena %s deberia volver a permitir el pickup de borde." % scene_path
 	)
 
 	await _cleanup_main(main)
-	_finish()
 
 
 func _activate_round_with_repair_pickup(root_node: Node, arena: ArenaBase) -> Node:
@@ -100,6 +116,18 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 			robots.append(child as RobotBase)
 
 	return robots
+
+
+func _find_active_arena(main: Node) -> ArenaBase:
+	var arena_root := main.get_node_or_null("ArenaRoot")
+	if arena_root == null:
+		return null
+
+	for child in arena_root.get_children():
+		if child is ArenaBase:
+			return child as ArenaBase
+
+	return null
 
 
 func _assert(condition: bool, message: String) -> void:

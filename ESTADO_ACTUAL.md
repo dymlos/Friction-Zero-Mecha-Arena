@@ -2,6 +2,15 @@
 
 ## Estado del prototipo
 
+## El lock del borde durante el intro ya esta congelado tambien en `base` y `validation` de ambos modos (2026-04-22)
+
+- Estado: el contrato `pickup visible pero bloqueado + HUD Borde | ... | abre en Xs + desbloqueo al terminar el countdown` ya no depende solo de `main.tscn`; ahora queda cubierto tambien en `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `scripts/main/main.gd` y los pickups de borde ya sincronizaban bien el intro desde `MatchController.is_round_intro_active()`.
+  - `scripts/tests/edge_pickup_intro_lock_test.gd` ahora recorre las cuatro escenas jugables y verifica el mismo seam scene-level con un pickup de reparacion activo: bloqueo durante el intro, linea `Borde | ... | abre en Xs` visible y coleccion restaurada apenas termina el countdown.
+- Resultado:
+  - la apertura del borde deja de tener otro punto ciego entre laboratorio base y rapido; si una variante pierde el lock o el wording del HUD, la red lo detecta antes de llegar a runtime.
+
 ## La apertura neutra ya queda congelada tambien en escenas `base` y `validation` (2026-04-22)
 
 - Estado: los contratos de opening/readability mas sensibles ya no dependen de una sola escena por modo; `Teams` y `FFA` ahora tienen la misma red de regresion tanto en laboratorio base como en laboratorio rapido.
@@ -18,7 +27,7 @@
 - Correccion aplicada:
   - `scripts/main/main.gd` sincroniza `set_collection_enabled(false)` sobre `edge_pickups` mientras `is_round_intro_active()` siga activo y vuelve a habilitarlos apenas termina el countdown.
   - los pickups de borde (`repair/mobility/energy/pulse/charge/utility`) ahora separan visibilidad de disponibilidad: mantienen silhouette/pedestal visibles, bloquean consumo durante el intro y revisan overlaps cuando vuelven a quedar habilitados.
-  - `scripts/tests/edge_pickup_intro_lock_test.gd` fija la regresion principal; las fixtures scene-level de pickups esperan a que termine el intro antes de validar coleccion real en `main.tscn` / `main_ffa.tscn`.
+  - `scripts/tests/edge_pickup_intro_lock_test.gd` fija la regresion principal en `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`; las fixtures scene-level de pickups siguen esperando a que termine el intro antes de validar coleccion real.
 - Resultado:
   - el opening queda mas alineado con `inicio parejo -> analisis -> escalada`: los items del borde siguen prometiendo valor, pero ya no saltan por contacto gratis antes del primer beat jugable.
   - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa con `Suite OK: 85 tests`.
