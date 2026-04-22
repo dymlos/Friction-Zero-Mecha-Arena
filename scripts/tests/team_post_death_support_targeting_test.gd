@@ -19,6 +19,7 @@ func _run() -> void:
 	await _verify_interference_defaults_to_enemy_without_stability()
 	await _verify_interference_retargets_when_auto_selected_enemy_becomes_immune()
 	await _verify_interference_keeps_manual_override_when_selected_enemy_becomes_immune()
+	await _verify_interference_resumes_auto_targeting_after_manual_cycle_back_to_default()
 	await _verify_surge_defaults_to_ally_with_useful_remaining_window()
 	await _verify_mobility_defaults_to_ally_with_useful_remaining_window()
 	_finish()
@@ -315,6 +316,88 @@ func _verify_interference_keeps_manual_override_when_selected_enemy_becomes_immu
 	_assert(
 		support_ship.get_selected_target_robot() == manually_selected_enemy,
 		"Si el jugador eligio ese target a mano, la nave no deberia auto-corregirlo aunque otro rival vuelva a ser mas util."
+	)
+
+	await _cleanup_main(main)
+
+
+func _verify_interference_resumes_auto_targeting_after_manual_cycle_back_to_default() -> void:
+	var main := await _instantiate_main_scene()
+	var robots := _get_scene_robots(main)
+	var support_root := main.get_node_or_null("SupportRoot")
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar el regreso al modo auto.")
+	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
+	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
+	if robots.size() < 4 or support_root == null or match_controller == null:
+		await _cleanup_main(main)
+		return
+
+	match_controller.match_mode = MatchController.MatchMode.TEAMS
+	match_controller.match_config.round_intro_duration_teams = 0.0
+	match_controller.start_match()
+	await _wait_frames(2)
+
+	robots[1].fall_into_void()
+	await _wait_frames(4)
+
+	_assert(
+		support_root.get_child_count() == 1,
+		"Al caer un aliado en Teams deberia aparecer una nave de apoyo para validar el regreso al modo auto."
+	)
+	if support_root.get_child_count() != 1:
+		await _cleanup_main(main)
+		return
+
+	var support_ship := support_root.get_child(0) as PilotSupportShip
+	_assert(support_ship != null, "La nave de apoyo deberia existir para validar el regreso al modo auto.")
+	if support_ship == null:
+		await _cleanup_main(main)
+		return
+
+	var auto_target_enemy := robots[3]
+	var alternate_enemy := robots[2]
+	var ship_position := Vector3(0.0, support_ship.global_position.y, 0.0)
+	support_ship.global_position = ship_position
+	auto_target_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.0)
+	alternate_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.8)
+
+	var stored := support_ship.store_support_payload(PilotSupportPickup.PAYLOAD_INTERFERENCE)
+	_assert(stored, "La nave deberia aceptar una carga de interferencia directa para validar el regreso al modo auto.")
+	await _wait_frames(2)
+
+	_assert(
+		support_ship.get_selected_target_robot() == auto_target_enemy,
+		"Antes de tocar el target a mano, `interferencia` deberia seguir autoapuntando al rival mas util."
+	)
+
+	Input.action_press("p2_energy_next")
+	await _wait_frames(2)
+	Input.action_release("p2_energy_next")
+	await _wait_frames(2)
+
+	_assert(
+		support_ship.get_selected_target_robot() == alternate_enemy,
+		"El test deberia poder mover el target al rival alternativo para entrar en override manual."
+	)
+
+	Input.action_press("p2_energy_next")
+	await _wait_frames(2)
+	Input.action_release("p2_energy_next")
+	await _wait_frames(2)
+
+	_assert(
+		support_ship.get_selected_target_robot() == auto_target_enemy,
+		"El test deberia poder volver a mano al mismo target que el auto-target habia elegido por defecto."
+	)
+
+	var stabilized := auto_target_enemy.apply_stability_boost(1.5)
+	_assert(stabilized, "El target default deberia poder ganar `estabilidad` para invalidar el viejo default.")
+	await _wait_frames(2)
+
+	_assert(
+		support_ship.get_selected_target_robot() == alternate_enemy,
+		"Si el jugador vuelve a quedar parado sobre el mismo target default, la nave deberia retomar el modo auto y resincronizarse cuando ese objetivo deja de ser util."
 	)
 
 	await _cleanup_main(main)

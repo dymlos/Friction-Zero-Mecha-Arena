@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **Volver manualmente al target default debe reactivar el modo auto del soporte**
+ - `_cycle_selected_target()` ya no deja `_manual_target_override = true` por inercia cuando el jugador cicla de vuelta al mismo target que `_get_default_support_target(candidates)` elegiría en ese frame.
+ - Si el target visible vuelve a coincidir con el default, la nave limpia el override manual y recupera el auto-retarget frente a cambios runtime de accionabilidad.
+ - `team_post_death_support_targeting_test.gd` fija el bug real con `interferencia`: override manual al rival alternativo, vuelta al default y posterior resincronización cuando ese default gana `estabilidad`.
+ - Motivo: mantener “manual” solo por historial de input dejaba un estado invisible para el jugador y bloqueaba resincronizaciones que sí eran coherentes con el target visible actual.
+
 1. **El gating de no-ops del soporte queda aceptado para el laboratorio `Teams` actual**
  - `support_payload_actionability_test.gd` ahora cubre no solo el bloqueo de consumo sino también la recuperación operativa: selección manual redundante, warning `ya activo`, uso fallido sin gasto y corrección con un único ciclo hacia el aliado útil.
  - No hubo cambio de producción en `PilotSupportShip` en esta iteración; la medición pasó con el comportamiento actual.

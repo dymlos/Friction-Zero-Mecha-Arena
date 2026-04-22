@@ -413,7 +413,10 @@ func _cycle_selected_target(direction: int) -> bool:
 		return _assign_selected_target(_get_default_support_target(candidates), false)
 
 	var next_index := wrapi(current_index + direction, 0, candidates.size())
-	return _assign_selected_target(candidates[next_index], true)
+	var next_target := candidates[next_index]
+	var default_target := _get_default_support_target(candidates)
+	var keep_manual_override := next_target != null and next_target != default_target
+	return _assign_selected_target(next_target, keep_manual_override)
 
 
 func _get_support_target_candidates() -> Array[RobotBase]:

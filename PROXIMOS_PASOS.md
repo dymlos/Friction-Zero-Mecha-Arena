@@ -2,6 +2,12 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No reabrir el estado manual del soporte cuando el target visible ya coincide con el default**
+ - `PilotSupportShip` ya limpia `_manual_target_override` si el jugador cicla manualmente de vuelta al mismo target que `_get_default_support_target(candidates)` habría elegido en ese frame.
+ - Si se retoca `_cycle_selected_target()`, conservar `team_post_death_support_targeting_test.gd`: ahora también cubre el caso “override manual -> vuelta al default -> target default se vuelve inmune -> resincronización automática”.
+ - Reabrir solo si cambia el criterio de default por payload o aparece un modo con más candidatos simultáneos que haga ambiguo cuándo un target visible realmente coincide con el auto-target.
+ - Archivos objetivo: `scripts/support/pilot_support_ship.gd`, `scripts/tests/team_post_death_support_targeting_test.gd`.
+
 0. **No reabrir el gating de no-ops salvo cambio real de escala en `Teams`**
  - La medición corta ya quedó cerrada: en el laboratorio `Teams` actual, una mala selección manual de `surge` o `movilidad` no gasta la carga y se corrige con un solo ciclo de target hacia el aliado útil.
  - Si se retoca este seam, mantener `support_payload_actionability_test.gd` junto con `support_payload_availability_readability_test.gd`: ahora una cubre bloqueo + redirección manual y la otra que la misma lectura `ya activo` siga gobernando roster/cues.

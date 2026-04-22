@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Volver al target default ya reactiva el auto-target del soporte (2026-04-22)
+
+- Estado: la nave de apoyo `Teams` ya no arrastra un override manual stale si el jugador cicla de vuelta al mismo target que el auto-target ya habría elegido por defecto.
+- Corrección aplicada:
+  - `_cycle_selected_target()` ahora compara el target manual nuevo con `_get_default_support_target(candidates)`.
+  - si ambos coinciden, la nave limpia `_manual_target_override` y recupera el comportamiento de resincronización automática cuando ese default envejece o se vuelve inmune.
+  - `team_post_death_support_targeting_test.gd` suma la regresión concreta con `interferencia`: default útil -> ciclo manual al alternativo -> vuelta manual al default -> `estabilidad` sobre el default -> salto automático al alternativo útil.
+- Resultado:
+  - la distinción entre “override manual” y “modo auto” ahora depende del target realmente visible, no del historial del input.
+  - `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_actionability_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 79 tests`).
+
 ## Redirección manual de buffs validada en `Teams` (2026-04-22)
 
 - Estado: en el setup real `Teams` del prototipo actual, bloquear no-ops de `surge`/`movilidad` no deja a la nave de apoyo “clavada” sobre una mala selección manual.

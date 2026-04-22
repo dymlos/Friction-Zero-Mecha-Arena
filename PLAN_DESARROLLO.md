@@ -4,6 +4,10 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El soporte post-muerte `Teams` ahora vuelve solo al modo auto si el jugador cicla manualmente de regreso al mismo target que el default actual; desde ahi, si ese target envejece o se vuelve inmune, la nave puede resincronizar otra vez hacia el mejor objetivo útil.
+- La corrección vive en `_cycle_selected_target()`: al aterrizar sobre el mismo target que `_get_default_support_target(candidates)` ya elegiría, `PilotSupportShip` limpia `_manual_target_override` en vez de arrastrar un override stale.
+- `team_post_death_support_targeting_test.gd` ahora fija ese seam completo para `interferencia`: auto-target -> override manual al rival alternativo -> vuelta manual al default -> `estabilidad` sobre ese default -> salto automático de nuevo al rival útil.
+- Validación cerrada: `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_actionability_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 79 tests`).
 - Medición corta cerrada para el gating de no-ops del soporte `Teams`: en el setup real 2v2/3-robots-vivos, una mala selección manual de `surge` o `movilidad` no gasta la carga, sigue mostrando `ya activo` y se corrige con un solo ciclo de target hacia el aliado útil.
 - `support_payload_actionability_test.gd` ahora fija también esa recuperación operativa: forzar target manual redundante, bloquear el no-op y confirmar redirección inmediata al aliado útil sin tocar `PilotSupportShip`.
 - Decisión operativa: no reabrir este seam por sensación en el laboratorio actual; solo volver a medir si `Teams` escala a más aliados vivos simultáneos o si cambia el orden/costo del ciclado manual.
