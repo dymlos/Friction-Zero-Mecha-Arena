@@ -2,9 +2,23 @@
 
 ## Estado del prototipo
 
+## Auditoría de consistencia de escenas (2026-04-22)
+
+- Estado: se revisaron `main.tscn`, `main_ffa.tscn`, `main_teams_validation.tscn` y `main_ffa_validation.tscn`; todas sus dependencias de `ext_resource` principales existen en disco.
+- Hallazgos: no se detectaron referencias rotas en esta revisión.
+- Observación de continuidad:
+  - `main_ffa_validation.tscn` y `main_teams_validation.tscn` mantienen overrides de arena y `MatchConfig` correctos para su modo de trabajo.
+- Riesgo de seguimiento: no se ejecutó arranque/compilado de estas escenas en esta pasada, por lo que la validación final queda para el siguiente ciclo junto con pruebas de sensibilidad de combate.
+
 El proyecto ya tiene una base jugable en Godot 4.6 con:
 
 - soporte post-muerte Teams tambien consistente en identidad textual: la `PilotSupportShip` ya no vuelve a `Player X` pelado cuando resume el objetivo seleccionado; `apoyo ... > <objetivo>` reutiliza el mismo `Player / Arquetipo` del roster vivo para aliados y rivales
+- cierre de ronda/partida con pesos por causa validado para 2 modos:
+  - `MatchController` suma puntos de ronda por causa (`ring_out`, `destruccion total`, `explosion inestable`) y `match_elimination_victory_weights_test.gd` valida ese contrato en sesiones cortas de `Teams` y `FFA`.
+  - el desempate interno y la frase final por modo siguen alineados con ranking real, por lo que la diferencia de puntuación de cierre solo hace más fuerte el riesgo/recompensa sin romper lectura.
+- métricas de soporte post-muerte ya disponibles en cierre:
+  - el resumen `Stats | ...` y las métricas por competidor ahora incluyen `support_use_total`, `support_payload_use_*` y `support_rounds_decided`.
+  - esto habilita evaluar si el soporte cambia el ritmo real del cierre, y si ajustar `move_speed`, `respawn_delay` o `support gate timing` en lugar de tocar el núcleo de combate.
 - roster compacto vivo mas coherente con el resto del match: `MatchController` ya no deja que las lineas por robot queden clavadas al scene-order mientras `Marcador`, `Posiciones`, recap y resultado final usan el orden competitivo real; ahora el roster reutiliza esos mismos comparators para mostrar antes al lider FFA o al aliado que sigue en pie dentro de Teams
 - recap y resultado final tambien preservan mejor la identidad de roster: el detalle compacto por robot ya no vuelve a `Player X` pelado al cerrar ronda/partida, sino que conserva `Player X / <Arquetipo>` usando el mismo helper de nombre que el HUD vivo; asi el cierre explica quien sobrevivio, cayo o quedo inutilizado sin perder la lectura de rol
 - stats de cierre mas claros: la linea `Stats | ...` del recap/resultado final ahora deja explicito `bajas sufridas N (...)` cuando resume eliminaciones acumuladas por causa, evitando que ese dato se lea como bajas infligidas cuando en realidad describe derrotas recibidas por el competidor
@@ -12,10 +26,11 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - cierre FFA mas coherente tambien en la frase de victoria: cuando libre para todos cierra la partida, `MatchController` ya no recicla el wording `X-Y` de `Equipos`; ahora anuncia `Player X gana la partida con N punto(s)` y deja que `Marcador` / `Posiciones` expliquen el resto del ranking
 - cierre FFA mas coherente tambien en el detalle fino: `MatchController` ya no deja que el bloque por robot de recap/resultado final siga el orden fijo de la escena; ahora reutiliza el mismo orden real de posiciones/desempate del match para que ganador, empates y primer eliminado queden alineados con `Marcador`, `Posiciones` y `Desempate`
 - cierre FFA mas coherente tambien en la telemetria compacta: la linea `Stats | ...` del recap/resultado final ya no queda en el orden fijo de registro; ahora sigue el mismo ranking real del cierre para que ganador, empates y derrotados no mezclen standings correctos con stats stale
-- apertura de ronda mas legible y menos brusca: `MatchController` ahora deja un intro corto (`round_intro_duration = 0.8` en la escena compartida) que muestra `Ronda N | arranca en ...`, congela el conteo real de ronda y mantiene el arena sin contraccion hasta liberar el control; `Main` baja ese estado a `RobotBase`, que bloquea movimiento, aim, ataque, overdrive y skill/throw solo durante ese beat inicial y lo acompaña con `RoundIntroIndicator`, un aro sobrio a ras del piso visible mientras el control sigue bloqueado para acercar el laboratorio al ritmo documentado de “inicio parejo -> analisis -> escalada”
+- apertura de ronda mas legible y menos brusca: `MatchController` ahora usa `MatchConfig` para resolver `round_intro_duration` por modo (`round_intro_duration_ffa` y `round_intro_duration_teams`) y muestra `Ronda N | arranca en ...`, congela el conteo real de ronda y mantiene el arena sin contraccion hasta liberar el control; `Main` baja ese estado a `RobotBase`, que bloquea movimiento, aim, ataque, overdrive y skill/throw solo durante ese beat inicial y lo acompaña con `RoundIntroIndicator`, un aro sobrio a ras del piso visible mientras el control sigue bloqueado para acercar el laboratorio al ritmo documentado de “inicio parejo -> analisis -> escalada”
 - FFA abre con menos ruido en el HUD vivo: mientras toda la ronda sigue empatada y nadie fue eliminado, `MatchController` ya no imprime `Marcador | ...`, `Posiciones | ...` ni `Desempate | ...`; las tres lineas reaparecen juntas apenas el score o una baja vuelven esa lectura realmente util
 - cierre de ronda/partida mas confiable a nivel explicacion: `MatchController` ya limpia la atribucion per-round de agresores cuando reinicia una ronda, asi que `RecapPanel` y `MatchResultPanel` no arrastran un `por Player X` stale si ese mismo robot cae sin agresor en la ronda siguiente
 - desempate FFA mas explicito: `MatchController` ahora nombra el score empatado y el orden real dentro de cada empate (`Desempate | 0 pts: Player 3 > Player 2 > Player 1`) en HUD vivo, recap y resultado final, evitando que las posiciones empatadas parezcan arbitrarias
+- defaults de HUD por modo ahora configurables desde `MatchConfig`: `hud_detail_mode_ffa` y `hud_detail_mode_teams` definen el estado inicial de HUD por modo en `MatchController` sin tocar el toggle runtime de `F1`, permitiendo que `Equipos` y `FFA` arranquen con ruido ajustado desde cada laboratorio.
 - entrypoint comun de validacion restaurado: `scripts/tests/test_runner.gd` ahora corre la suite headless completa descubriendo todos los `*_test.gd` del proyecto y omitiendose a si mismo; `test_suite_runner_test.gd` deja cubierto el contrato minimo de discovery para que la automatizacion no vuelva a romperse en silencio.
 - cleanup mas robusto del warning diegetico de explosion diferida: al salir del estado inutilizado, `RobotBase` vuelve a sincronizar en `_process()` la visibilidad de `DisabledWarningIndicator` con el estado gameplay real para que no quede `visible` stale durante el respawn.
 - arena flotante legible con bordes visibles y caida al vacio
@@ -164,6 +179,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - validacion automatizada del laboratorio rapido FFA: `ffa_validation_lab_scene_test.gd` comprueba que `main_ffa_validation.tscn` preserve modo FFA, `MatchConfig` corto, arena compacta, spawns diagonales mas cercanos al conflicto y la lectura `Modo | FFA` + `Borde | ...` en el HUD
 - validacion automatizada de explosion inestable: `robot_unstable_explosion_test.gd` compara la variante base contra la version nacida en `Overdrive`, y `match_unstable_explosion_readability_test.gd` verifica su lectura compacta en `main.tscn`
 - validacion automatizada del telegraph de explosion: `robot_disabled_warning_indicator_test.gd` comprueba que el anillo nace oculto, aparece al inutilizarse, refleja radio estable/inestable y desaparece al salir de ese estado
+- validacion automatizada de limpieza proactiva de partes: `main_detached_part_cleanup_test.gd` valida `detached_part_cleanup_limit` en `main.tscn`, incluyendo reintento entre rondas y preservación de partes en mano durante la limpieza de piso.
 
 ## Lo completado en esta iteracion
 
@@ -341,6 +357,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - reutiliza el mismo color de identidad del robot dueño
   - sigue viéndose mientras la pieza permanece disponible en el piso
 - Se agrego un test dedicado `two_vs_two_carry_validation_test.gd` sobre la escena principal 2v2 y se corrigio `robot_part_return_test.gd` para respetar el `pickup_delay` real.
+- Se agrego `main_detached_part_cleanup_test.gd` para validar limpieza por `detached_part_cleanup_limit` y que una parte en mano no se pierda al pasar de ronda en `main.tscn`.
 - Se corrigio una advertencia de tipado en `_refresh_carry_indicator_color()` que rompía la compilación headless al tratarse como error.
 - Se endurecio la salida de los tests headless actuales: ahora conservan estado de fallo y terminan con codigo distinto de cero cuando una asercion falla.
 - Se sumo validacion headless especifica para redistribucion y overdrive, cubriendo el slice tactico nuevo sin introducir infraestructura adicional.
@@ -366,6 +383,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_disabled_warning_indicator_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/detached_part_recovery_readability_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/detached_part_return_target_test.gd`
+- `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/main_detached_part_cleanup_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/robot_part_return_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/two_vs_two_carry_validation_test.gd`
 - `godot --headless --path /home/user/repo/Friction-Zero-Mecha-Arena --script res://scripts/tests/teams_validation_lab_scene_test.gd`

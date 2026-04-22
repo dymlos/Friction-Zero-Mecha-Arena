@@ -2,9 +2,19 @@
 
 ## Decisiones vigentes
 
+1. **La base de escena principal y sus variantes de laboratorio no muestran referencias rotas**
+ - Estado al 2026-04-22: se verificó que `main.tscn`, `main_ffa.tscn`, `main_teams_validation.tscn` y `main_ffa_validation.tscn` tienen rutas de recursos coherentes y disponibles en disco.
+ - Hallazgo residual: esta auditoría no sustituye un chequeo runtime completo; la validación de carga y sensación se realiza en la siguiente tarea de sensibilidad de combate de ambos modos de laboratorio.
+ - Motivo: mantener estabilidad del loop antes de abrir más tuning, evitando tocar movimiento/choque sobre una base de escena que ya podía romperse por referencias.
+
 1. **El target textual del soporte post-muerte reutiliza tambien el nombre de roster**
    - `PilotSupportShip._get_selected_target_label()` ahora devuelve `target_robot.get_roster_display_name()` y no `display_name`.
    - Motivo: despues de corregir roster vivo y cierres para conservar `Player / Arquetipo`, dejar `apoyo ... > Player X` en la nave Teams seguia abriendo otra fuga de identidad justo en una capa de lectura tactica. Reusar el mismo helper mantiene continuidad sin sumar otro formato textual.
+
+1. **Cierre de la validación del soporte post-muerte Teams en laboratorio quedó en estado operativo estable**
+   - Se prioriza `main_teams_validation.tscn` como escena de validación de soporte y se deja el ciclo actual de soporte como base estable: `respawn_delay` de pickups (`3.4`/`3.9`/`4.2`/`4.8`) en `arena_blockout.tscn`, nave externa con `move_speed = 8.5` y `support_lane_gates` con `closed_duration/open_duration = 0.9/1.75`.
+   - Motivo: con la integración actual, el soporte aporta decisiones tácticas (selección de objetivo, pickups de apoyo y timing de gates) sin introducir aún una regla de intervención que opaque el combate principal; por ahora no se aplican cambios de balance hasta validar con sesiones tempranas de caída en `main.tscn/main_teams_validation.tscn`.
+   - Seguimiento: si las sesiones muestran carril dominante o irrelevante, ajustar primero `PilotSupportShip.move_speed` y `pilot_support_pickup.respawn_delay` antes de añadir más complejidad de rutas/obstáculos.
 
 1. **La decision final de FFA usa wording propio, no score tipo duelo**
    - `MatchController._finish_match_with_winner()` ahora delega en `_build_match_victory_status_line()`: en `FFA` devuelve `Player X gana la partida con N punto(s)` y en `Equipos` conserva `Equipo X gana la partida A-B`.
@@ -39,8 +49,16 @@
    - Motivo: la nota generica `score igual -> mejor cierre de la ronda final` dejaba claro que habia desempate, pero no explicaba quien lo estaba ganando. Nombrar el orden real cierra mejor el “por que voy segundo/cuarto” sin abrir otra UI ni otro criterio paralelo.
 
 1. **El arranque legible de ronda vive en `MatchController`, no en otra UI o escena**
-   - `MatchController` ahora expone `round_intro_duration`, mantiene `_round_intro_remaining`, publica `Ronda N | arranca en ...` y no deja avanzar tiempo/contraccion mientras sigue ese beat inicial; `Main` solo sincroniza el lock hacia `RobotBase`, que lo vuelve visible en mundo mediante `RoundIntroIndicator`.
-   - Motivo: el hueco contra `Documentación/07` era de ritmo, no de presentación. Resolverlo en el lifecycle de ronda preserva el laboratorio existente, evita duplicar escenas/countdowns y deja el “inicio parejo -> análisis -> escalada” como comportamiento real del match, mientras el aro diegético evita depender solo del HUD en cámara compartida.
+  - `MatchController` ahora expone `round_intro_duration`, mantiene `_round_intro_remaining`, publica `Ronda N | arranca en ...` y no deja avanzar tiempo/contraccion mientras sigue ese beat inicial; `Main` solo sincroniza el lock hacia `RobotBase`, que lo vuelve visible en mundo mediante `RoundIntroIndicator`.
+  - Motivo: el hueco contra `Documentación/07` era de ritmo, no de presentación. Resolverlo en el lifecycle de ronda preserva el laboratorio existente, evita duplicar escenas/countdowns y deja el “inicio parejo -> análisis -> escalada” como comportamiento real del match, mientras el aro diegético evita depender solo del HUD en cámara compartida.
+
+1. **El intro de ronda ahora puede diferir entre FFA y Equipos por configuración**
+  - `MatchConfig` expone `round_intro_duration_ffa` y `round_intro_duration_teams`; `MatchController._resolve_round_intro_duration()` usa el valor del modo activo al iniciar ronda y al hacer reset.
+  - Motivo: permite ajustar el tempo de apertura de combates de forma explícita por modo sin tocar escenas, manteniendo el loop de match estable y la sensación de control compartido.
+
+1. **El fallback de escena sobrevive a `match_config` nulo para laboratorios que heredan `match_controller.tscn`**
+  - `MatchController._resolve_round_intro_duration()` usa `match_controller.round_intro_duration` cuando `match_config == null`, y el campo queda documentado como override de escena para casos donde una escena hereda el controller sin recurso de config.
+  - Motivo: evita ambigüedad entre el override local y los valores por modo: si una escena de laboratorio omite `MatchConfig`, el ritmo de apertura seguirá funcionando desde nodos propios sin romper startup.
 
 1. **La atribucion de bajas vive estrictamente por ronda**
    - `MatchController._reset_round()` ahora limpia `_round_elimination_source_robot_ids` junto con recap/orden/cierre.
@@ -175,12 +193,17 @@
    - Motivo: evitar falsos verdes en automatización cuando una aserción registra error pero el script llega al `quit()` final.
 
 21. **Scoring de ronda simple y simétrico para el prototipo**
-   - Ring-out y destrucción total cuentan igual: eliminan al robot de la ronda y el último contendiente en pie suma un punto.
-   - Motivo: cerrar el sandbox infinito con la menor cantidad de reglas nuevas, sin comprometer todavía el diseño final de puntuación por modo.
+  - Ring-out y destrucción total cuentan igual: eliminan al robot de la ronda y el último contendiente en pie suma un punto.
+  - Motivo: cerrar el sandbox infinito con la menor cantidad de reglas nuevas, sin comprometer todavía el diseño final de puntuación por modo.
+
+22. **La puntuación por causa ya tiene telemetría de impacto de soporte en cierre**
+  - `MatchController` usa `MatchConfig.get_round_victory_points_for_cause` para sumar la puntuación correcta antes de comparar `rounds_to_win`, y eso ya está validado en `TEAMS` y `FFA`.
+  - Para sesiones de ajuste, cada cierre de ronda registra si el ganador usó soporte post-muerte en esa ronda; el acumulado queda en `support_rounds_decided` dentro de `MatchStats`.
+  - `_build_support_stats_segment(stats)` ahora incluye `rondas decisivas por apoyo X/Y (%)` y `match_elimination_victory_weights_test.gd` corre ambos modos con el mismo contrato.
 
 22. **Cierre de match first-to-X desde `MatchConfig`**
-   - El objetivo de rondas vive en `rounds_to_win`; cuando un competidor lo alcanza, `MatchController` anuncia ganador de partida y detiene la ronda actual.
-   - Motivo: el prototipo necesitaba una condición de victoria real, configurable y fácil de leer sin meter un mode flow más pesado todavía.
+  - El objetivo de rondas vive en `rounds_to_win`; cuando un competidor lo alcanza, `MatchController` anuncia ganador de partida y detiene la ronda actual.
+  - Motivo: el prototipo necesitaba una condición de victoria real, configurable y fácil de leer sin meter un mode flow más pesado todavía.
 
 23. **Reinicio automático tras victoria de match**
    - Tras una pausa corta (`match_restart_delay`), el laboratorio reinicia el match completo y vuelve a ronda 1 con score limpio.
@@ -524,6 +547,15 @@
    - `Main` ahora reserva `SupportRoot`, crea una `PilotSupportShip` cuando `record_robot_elimination()` deja a un aliado vivo en `Teams` y la limpia en cada `round_started`; `FFA` comparte la estructura base de escena pero no activa ese flujo.
    - Motivo: empezar a diferenciar Team vs Team sin romper la claridad del laboratorio libre ni abrir una segunda capa de reglas en el modo que todavia depende mas de supervivencia/oportunismo que de rescate coordinado.
 
+81b. **El contrato FFA en `Main` queda explícito: sin soporte post-muerte por diseño de esta fase**
+   - El ciclo de partida en FFA ahora queda fijado en `sin soporte`:
+     - `Main._spawn_post_death_support_if_needed()` sale temprano si `match_mode != MatchMode.TEAMS`.
+     - `_sync_post_death_support_state()` sólo activa carril/pickups cuando `match_mode == TEAMS`.
+     - `main_ffa.tscn` hereda el laboratorio base y fuerza `match_mode = 0` (`FFA`) con equipos neutrales para evitar rescates/alianzas accidentales.
+   - Escenario de rescate/negación: como no hay naves post-muerte en FFA, la ventaja post-baja queda exclusivamente en la mecánica base (choque, recuperación de piezas, negación manual y presión de borde), manteniendo el modo fiel a supervivencia/oportunismo.
+   - Escenario de estabilidad de score: el cierre de partida y el scoreboard de FFA no incorporan puntos extras por utilidad post-muerte; la lectura de ranking queda más estable para comparar rutas de victoria básicas (ring-out, destrucción total, explosión inestable) sin una capa de comeback no comprobada.
+   - Motivo: en la fase de prototipo, esto preserva la diferencia entre modos y evita introducir una economía de apoyo en FFA antes de validar su identidad en sesiones reales.
+
 82. **La capa post-muerte arranca desde apoyo aliado y suma una interferencia de corto alcance**
    - `PilotSupportShip` se mantiene en un carril externo derivado de `ArenaBase.get_support_lane_spawn_position_near()`, recoge `PilotSupportPickup` ocultos hasta que exista soporte activo y, al gastar `throw_part`, puede entregar `estabilizador`, `energia`, `movilidad` o `interferencia`; el roster agrega `apoyo ...` segun la carga.
    - Motivo: Team vs Team ya tenia comeback/rescate resuelto con hooks aliados; la siguiente mejora util era una presion tactica acotada, pero sin abrir otra capa de proyectiles ni sacar a la nave de su rol discreto.
@@ -615,6 +647,15 @@
 104. **El rescate ahora dice tambien cuando el handoff ya esta listo**
    - `RobotBase` expone `is_carried_part_return_ready()` y reutiliza ese estado para intensificar `CarryReturnIndicator` cuando el portador entra en el radio real de retorno; `RecoveryTargetFloorIndicator` del dueño tambien refuerza brillo/pulso si un aliado ya puede completar la devolucion.
    - Motivo: pieza en suelo, dueño y portador ya explicaban urgencia/pertenencia/destino, pero seguia faltando el “ya” tactico. Reusar los mismos cues del rescate evita otro HUD y vuelve mas legible el momento exacto de devolver la parte en pantalla compartida.
+
+105. **Configurar HUD por modo desde MatchConfig para el arranque del modo de detalle**
+  - `MatchConfig` ahora separa defaults de HUD en `hud_detail_mode_ffa` y `hud_detail_mode_teams`; `MatchController.get_hud_detail_mode()` usa el modo activo del match para resolver el estado inicial por partida.
+  - Motivo: algunos modos se benefician de defaults distintos sin cambiar la acción manual de `F1`; mantener esta separación en recursos facilita playtest y presets por laboratorio sin inflar la capa UI.
+
+106. **La limpieza de partes desprendidas ahora tiene validación automática del ciclo entre rondas**
+  - `scripts/tests/main_detached_part_cleanup_test.gd` valida que `Main` respete `detached_part_cleanup_limit` en `main.tscn`, incluyendo `round_started` y el ciclo completo de limpieza entre rondas.
+  - También valida que una parte en mano no se destruya por limpieza de piso, conservando la garantía de rescate/negación cuando existe portador.
+  - Motivo: la presión de arena y limpieza automática no debe introducir pérdida oculta de partida en un sistema de rescate que depende de lectura de ventana espacial; el test evita regresiones de mantenibilidad sin añadir controles nuevos.
 
 ## Criterios mantenidos
 
