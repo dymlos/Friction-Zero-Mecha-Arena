@@ -1,5 +1,23 @@
 # DECISIONES_TECNICAS.md - Friction Zero: Mecha Arena
 
+## 2026-04-22 - El opening runtime fija lock/unlock; el primer choque queda como metrica, no como gate
+
+- Que se hizo:
+  - se agrego `scripts/tests/opening_pacing_runtime_test.gd` para observar el opening vivo sobre las cuatro escenas jugables.
+- Decision:
+  - endurecer solo el seam tecnico estable del opening:
+    - bloqueo de deriva durante intro
+    - pickup de borde bloqueado mientras el robot ya esta encima
+    - liberacion automatica del pickup al abrir la ronda
+    - HUD `Borde | ... | abre en Xs`
+  - no convertir el tiempo al primer choque en assert duro de suite.
+- Razon:
+  - la misma corrida runtime mostro diferencias reales entre escenas (`Teams rapido` mas lento, `FFA base` sin choque significativo dentro de la ventana del driver sintetico).
+  - usar ese dato como medicion sirve para priorizar playtest/tuning sin volver flaky la suite ni confundir una diferencia de pacing con una regresion tecnica del opening.
+- Implicacion:
+  - si se vuelve a tocar `round_intro`, `OpeningTelegraph`, lock del borde o spawns, mantener `opening_pacing_runtime_test.gd`.
+  - si se quiere cerrar el pacing del primer choque, hacerlo con una nueva corrida runtime/manual y evidencia por escena, no con un string o assert global improvisado.
+
 ## Decisiones vigentes
 
 1. **La resolucion de ronda FFA tambien debe congelarse sobre `main_ffa.tscn` y `main_ffa_validation.tscn`**

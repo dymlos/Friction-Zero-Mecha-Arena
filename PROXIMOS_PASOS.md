@@ -5,6 +5,12 @@
 ## Prioridad inmediata tras la revision estricta (2026-04-22)
 
 1. Medir en playtest corto si `OpeningTelegraph + lock de pickups de borde + Borde | ... | abre en Xs` realmente limpia el primer choque o si la espera se siente demasiado larga/corta en `main.tscn` y `main_teams_validation.tscn`.
+   - La sonda runtime nueva ya dejo baseline:
+     - `Teams base`: `choque_post_unlock=1.787s`
+     - `Teams rapido`: `choque_post_unlock=2.961s`
+     - `FFA base`: `sin_dato`
+     - `FFA rapido`: `0.641s`
+   - El seam tecnico esta sano (`deriva_intro=0`, `pickup_post_unlock<=0.021s`); la siguiente sesion deberia decidir si hace falta tocar spawns/layout/pacing en `Teams rapido` y `FFA base`, no reabrir el lock del borde por intuicion.
 2. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 

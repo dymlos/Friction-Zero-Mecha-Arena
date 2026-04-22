@@ -2,6 +2,26 @@
 
 ## Estado del prototipo
 
+## El opening ya tiene medicion runtime dedicada de deriva, borde y primer choque post-intro (2026-04-22)
+
+- Estado: el paquete `intro + OpeningTelegraph + lock de pickups de borde` ya no depende solo de contracts headless scene-level; ahora tambien tiene una sonda runtime que mide el comportamiento real del opening sobre las cuatro escenas jugables.
+- Correccion aplicada:
+  - `scripts/tests/opening_pacing_runtime_test.gd` ejecuta `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
+  - la fixture deja un robot dañado solapando un `edge_repair_pickup` desde el frame cero y empuja a los otros robots hacia el centro para observar el opening vivo.
+  - la regresion fija solo el seam estable:
+    - `deriva_intro = 0`
+    - `pickup_post_unlock` rapido sin reingreso
+    - HUD `Borde | ... | abre en Xs` mientras el intro sigue activo y limpio al liberar la ronda
+  - el timing del primer choque significativo queda impreso como metrica de runtime y no como assert duro, porque la medicion mostro diferencias reales entre escenas.
+- Resultado:
+  - ultima corrida verde de la sonda:
+    - `Teams base`: `choque_post_unlock=1.787s`
+    - `Teams rapido`: `choque_post_unlock=2.961s`
+    - `FFA base`: `choque_post_unlock=sin_dato`
+    - `FFA rapido`: `choque_post_unlock=0.641s`
+  - en las cuatro escenas el opening siguio bloqueando deriva y liberando el borde correctamente (`pickup_post_unlock<=0.021s`, `ring_out_antes_dano=no`).
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa con `Suite OK: 86 tests`.
+
 ## Los contratos FFA de resolucion de ronda ya quedan congelados tambien en `main_ffa_validation.tscn` (2026-04-22)
 
 - Estado: el lifecycle FFA de “queda un solo robot vivo -> gana `Player X` -> score individual -> reset de ronda” ya no depende solo de `main_ffa.tscn`; la red ahora tambien cubre `main_ffa_validation.tscn`.

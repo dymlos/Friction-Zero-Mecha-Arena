@@ -4,6 +4,20 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El opening ya tiene una sonda runtime dedicada para medir deriva/borde/clash post-intro:
+  - `scripts/tests/opening_pacing_runtime_test.gd` ahora ejecuta las cuatro escenas jugables con un robot dañado ya solapando un `edge_repair_pickup` y los demas robots empujados hacia el centro desde frame cero.
+  - la regresion fija solo el seam estable del opening:
+    - `deriva_intro` bloqueada
+    - `pickup_post_unlock` liberado sin reingreso
+    - HUD `Borde | ... | abre en Xs` mientras dura el intro
+  - el tiempo al primer choque significativo queda medido, no endurecido como gate, porque la misma corrida mostro diferencias reales entre escenas:
+    - `Teams base`: `1.787s`
+    - `Teams rapido`: `2.961s`
+    - `FFA base`: `sin_dato`
+    - `FFA rapido`: `0.641s`
+  - decision operativa: tratar ahora el primer choque post-opening como evidencia de playtest/runtime y no como assert binario; el seam tecnico ya validado es lock/unlock del opening, no la convergencia tactica exacta entre layouts.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/opening_pacing_runtime_test.gd`, `round_intro_countdown_test.gd`, `edge_pickup_intro_lock_test.gd`, `robot_collision_pacing_test.gd` y `test_runner.gd`.
+
 - Los contratos FFA de resolucion de ronda ya quedan congelados tambien en `main_ffa_validation.tscn`:
   - la revision estricta encontro otro hueco scene-level: `ffa_round_resolution_test.gd` seguia tratando `main_ffa.tscn` como unica escena representativa aunque el mismo lifecycle FFA vive tambien en `main_ffa_validation.tscn`.
   - no hizo falta tocar produccion; la correccion vive en la red de regresion:
