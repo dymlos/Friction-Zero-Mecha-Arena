@@ -2,6 +2,13 @@
 
 ## Decisiones vigentes
 
+1. **La apertura `Teams` debe reforzarse con un telegraph diegético temporal, no con otra capa fija de HUD**
+ - `MatchController._build_round_intro_status_line()` ahora solo en `Teams` dice `carriles listos`, para dejar claro que el primer beat sigue siendo una lectura por filas/lane antes de liberar control.
+ - `Main._sync_opening_telegraph()` deriva dos filas por `team_id` desde las posiciones reales de los robots en espacio local del arena y delega el render a `ArenaBase.set_opening_lane_rows(...)`.
+ - `ArenaBase` crea un `OpeningTelegraph` runtime con `LaneA/LaneB`; las bandas se recalculan con el tamano jugable actual y se apagan apenas termina el intro o cuando el modo no es `Teams`.
+ - `teams_opening_intro_telegraph_test.gd` fija el contrato entero: visible/alineado en `main.tscn` + `main_teams_validation.tscn`, oculto en `main_ffa.tscn`, y nunca persistente despues del intro.
+ - Motivo: el facing inward ya mejoraba la orientacion, pero el primer beat todavia dependia demasiado de leer cuatro robots individuales. Esta solucion mantiene la pista en mundo, corta y reversible, alineada con la prioridad de legibilidad del proyecto.
+
 1. **El cierre final debe decir tambien que causa clincheo la partida y cuantos puntos dio**
  - `MatchController` ya mostraba `Cierres | ...` (mezcla acumulada del match) y `Puntos cierre | ...` (perfil runtime del config), pero faltaba el dato concreto de la ronda decisiva final.
  - `_finish_round_with_winner(...)` ahora persiste `_last_round_closing_cause`, y `get_round_recap_panel_lines()` / `get_match_result_lines()` publican `Cierre decisivo | ring-out/destruccion total/explosion inestable (+N)` solo cuando `_match_over`.

@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## La apertura `Teams` ahora telegraphia sus dos carriles durante el intro (2026-04-22)
+
+- Estado: la lectura del primer beat en `Teams` ya no depende solo del facing inward; mientras dura el intro aparece una pista diegética temporal en la arena y el estado de ronda explicita que la apertura arranca por carriles.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` cambia el wording del intro `Teams` a `Ronda N | carriles listos | arranca en ...`; `FFA` conserva el texto neutral.
+  - `scripts/arenas/arena_base.gd` crea en runtime `OpeningTelegraph` con `LaneA/LaneB`, ajustadas al tamano actual del arena y apagadas fuera del intro.
+  - `scripts/main/main.gd` deriva las filas vivas por `team_id` desde las posiciones reales de los robots y las empuja al arena con `_sync_opening_telegraph()`, reutilizando el lifecycle ya existente del intro.
+  - `scripts/tests/teams_opening_intro_telegraph_test.gd` congela el contrato completo en `main.tscn`, `main_teams_validation.tscn` y `main_ffa.tscn`.
+- Resultado:
+  - el setup `Teams` ahora explica mejor el emparejamiento inicial sin abrir otra banda permanente de HUD ni duplicar datos de spawn en escenas.
+  - `godot --headless --path . -s res://scripts/tests/teams_opening_intro_telegraph_test.gd`, `godot --headless --path . -s res://scripts/tests/round_intro_countdown_test.gd`, `godot --headless --path . -s res://scripts/tests/teams_spawn_coordination_test.gd`, `godot --headless --path . -s res://scripts/tests/main_scene_runtime_smoke_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 83 tests`).
+
 ## El cierre final ya explicita la causa decisiva y sus puntos (2026-04-22)
 
 - Estado: recap y panel `Partida cerrada` ya no dejan al playtest inferir cual fue la causa exacta que clincheo el match; ahora publican `Cierre decisivo | <causa> (+N)` junto a `Cierres | ...` y `Puntos cierre | ...`.

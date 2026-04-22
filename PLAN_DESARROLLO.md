@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Apertura `Teams` reforzada durante el intro sin sumar HUD permanente:
+  - `MatchController` ahora explicita `Ronda N | carriles listos | arranca en ...` solo en `Teams`.
+  - `ArenaBase` crea un `OpeningTelegraph` runtime con dos bandas horizontales que siguen las filas reales por equipo y se apagan al liberar la ronda.
+  - `Main` alimenta ese cue desde el mismo seam del round intro (`_sync_round_intro_locks()` / `_sync_opening_telegraph()`), sin timers paralelos ni datos duplicados en escenas.
+  - validacion: `godot --headless --path . -s res://scripts/tests/teams_opening_intro_telegraph_test.gd`, `godot --headless --path . -s res://scripts/tests/round_intro_countdown_test.gd`, `godot --headless --path . -s res://scripts/tests/teams_spawn_coordination_test.gd`, `godot --headless --path . -s res://scripts/tests/main_scene_runtime_smoke_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` (`Suite OK: 83 tests`).
+
 - Cierre decisivo legible dentro del propio prototipo:
   - recap y `Partida cerrada` ahora publican `Cierre decisivo | <causa> (+N)` ademas de `Cierres | ...` y `Puntos cierre | ...`.
   - `MatchController` persiste la causa que clinchea la ronda final en `_last_round_closing_cause` y la reutiliza solo en el cierre final, sin sumar ruido al HUD vivo.

@@ -1696,6 +1696,8 @@ func _should_show_live_score_summary() -> bool:
 
 
 func _build_round_intro_status_line() -> String:
+	if match_mode == MatchMode.TEAMS:
+		return "Ronda %s | carriles listos | arranca en %.1fs" % [_round_number, snappedf(get_round_intro_time_left(), 0.1)]
 	return "Ronda %s | arranca en %.1fs" % [_round_number, snappedf(get_round_intro_time_left(), 0.1)]
 
 

@@ -1,6 +1,7 @@
 extends Node3D
 class_name ArenaBase
 
+const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const EDGE_PICKUP_LAYOUT_PROFILE_TEAMS := "teams"
 const EDGE_PICKUP_LAYOUT_PROFILE_FFA := "ffa"
 const DEFAULT_EDGE_PICKUP_ALLOWED_IDS := ["repair", "mobility", "energy", "pulse", "utility"]
@@ -46,6 +47,9 @@ const EDGE_PICKUP_LAYOUTS_BY_PROFILE := {
 @export_range(0.4, 3.0, 0.1) var pressure_band_thickness := 1.4
 @export_range(0.0, 2.5, 0.1) var pressure_band_inset := 0.7
 @export_range(0.4, 1.0, 0.05) var pressure_band_length_ratio := 0.82
+@export_range(0.3, 1.0, 0.05) var opening_lane_length_ratio := 0.68
+@export_range(0.3, 1.8, 0.05) var opening_lane_thickness := 0.8
+@export_range(0.0, 1.5, 0.05) var opening_lane_row_padding := 0.45
 
 @onready var platform_collision_shape: CollisionShape3D = $Platform/CollisionShape3D
 @onready var platform_visual: MeshInstance3D = $Platform/PlatformVisual
@@ -75,11 +79,17 @@ var _edge_pickup_allowed_ids := PackedStringArray(DEFAULT_EDGE_PICKUP_ALLOWED_ID
 var _active_edge_pickup_layout := PackedStringArray()
 var _pressure_band_materials: Array[StandardMaterial3D] = []
 var _pressure_warning_strength := 0.0
+var _opening_telegraph_root: Node3D = null
+var _opening_lane_meshes: Array[MeshInstance3D] = []
+var _opening_lane_materials: Array[StandardMaterial3D] = []
+var _opening_lane_rows := PackedFloat32Array()
+var _opening_telegraph_active := false
 
 
 func _ready() -> void:
 	_current_play_area_size = safe_play_area_size
 	_prepare_runtime_resources()
+	_setup_opening_telegraph()
 	_cache_cover_block_positions()
 	_cache_edge_pickup_positions()
 	_cache_support_lane_node_positions()
@@ -113,6 +123,21 @@ func set_pressure_warning_strength(warning_strength: float) -> void:
 
 	_pressure_warning_strength = next_warning_strength
 	_update_pressure_telegraph(get_safe_play_area_size())
+
+
+func set_opening_lane_rows(team_rows: PackedFloat32Array, active: bool) -> void:
+	var next_active := active and team_rows.size() >= 2
+	var next_rows := PackedFloat32Array()
+	if next_active:
+		next_rows = team_rows.duplicate()
+		next_rows.sort()
+
+	if _opening_telegraph_active == next_active and _opening_lane_rows == next_rows:
+		return
+
+	_opening_telegraph_active = next_active
+	_opening_lane_rows = next_rows
+	_update_opening_telegraph(get_safe_play_area_size())
 
 
 func set_current_play_area_size(new_size: Vector2) -> void:
@@ -358,6 +383,38 @@ func _prepare_runtime_resources() -> void:
 	_prepare_pressure_telegraph_materials()
 
 
+func _setup_opening_telegraph() -> void:
+	if _opening_telegraph_root != null:
+		return
+
+	_opening_telegraph_root = Node3D.new()
+	_opening_telegraph_root.name = "OpeningTelegraph"
+	_opening_telegraph_root.visible = false
+	add_child(_opening_telegraph_root)
+
+	_opening_lane_meshes.clear()
+	_opening_lane_materials.clear()
+	for lane_name in ["LaneA", "LaneB"]:
+		var lane_mesh := BoxMesh.new()
+		lane_mesh.size = Vector3(1.0, 0.03, 1.0)
+		var lane_material := StandardMaterial3D.new()
+		lane_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		lane_material.albedo_color = Color(0.98, 0.7, 0.24, 0.14)
+		lane_material.emission_enabled = true
+		lane_material.emission = Color(1.0, 0.78, 0.24, 1.0)
+		lane_material.emission_energy_multiplier = 0.3
+		lane_material.roughness = 0.84
+
+		var lane_instance := MeshInstance3D.new()
+		lane_instance.name = lane_name
+		lane_instance.mesh = lane_mesh
+		lane_instance.material_override = lane_material
+		lane_instance.visible = false
+		_opening_telegraph_root.add_child(lane_instance)
+		_opening_lane_meshes.append(lane_instance)
+		_opening_lane_materials.append(lane_material)
+
+
 func _prepare_pressure_telegraph_materials() -> void:
 	_pressure_band_materials.clear()
 	for band in [
@@ -479,6 +536,7 @@ func _update_play_area_visuals() -> void:
 	west_edge.transform = Transform3D(Basis().scaled(Vector3(0.14, 1.0, current_size.y)), Vector3(-half_width, edge_height, 0.0))
 	east_edge.transform = Transform3D(Basis().scaled(Vector3(0.14, 1.0, current_size.y)), Vector3(half_width, edge_height, 0.0))
 	_update_pressure_telegraph(current_size)
+	_update_opening_telegraph(current_size)
 	_update_cover_block_positions(current_size)
 	_update_edge_pickup_positions(current_size)
 	_update_support_lane_node_positions(current_size)
@@ -539,6 +597,44 @@ func _update_pressure_telegraph_materials(telegraph_strength: float, shrinking: 
 		if material == null:
 			continue
 
+		var next_color := material.albedo_color
+		next_color.a = alpha
+		material.albedo_color = next_color
+		material.emission_energy_multiplier = emission_energy
+
+
+func _update_opening_telegraph(current_size: Vector2) -> void:
+	if _opening_telegraph_root == null:
+		return
+
+	var should_show := _opening_telegraph_active and _opening_lane_rows.size() >= 2
+	_opening_telegraph_root.visible = should_show
+	for lane_mesh in _opening_lane_meshes:
+		if lane_mesh != null:
+			lane_mesh.visible = should_show
+
+	if not should_show:
+		return
+
+	var lane_length := maxf(current_size.x * opening_lane_length_ratio, opening_lane_thickness)
+	var max_depth := current_size.y * 0.5 - opening_lane_row_padding
+	for index in range(mini(_opening_lane_meshes.size(), _opening_lane_rows.size())):
+		var lane_mesh := _opening_lane_meshes[index]
+		if lane_mesh == null:
+			continue
+		var lane_row := clampf(_opening_lane_rows[index], -max_depth, max_depth)
+		lane_mesh.transform = Transform3D(
+			Basis().scaled(Vector3(lane_length, 1.0, opening_lane_thickness)),
+			Vector3(0.0, 0.26, lane_row)
+		)
+
+	var lane_separation := absf(_opening_lane_rows[1] - _opening_lane_rows[0])
+	var lane_strength := clampf(remap(lane_separation, 1.4, 4.0, 0.35, 1.0), 0.35, 1.0)
+	var alpha := lerpf(0.1, 0.22, lane_strength)
+	var emission_energy := lerpf(0.24, 0.58, lane_strength)
+	for material in _opening_lane_materials:
+		if material == null:
+			continue
 		var next_color := material.albedo_color
 		next_color.a = alpha
 		material.albedo_color = next_color

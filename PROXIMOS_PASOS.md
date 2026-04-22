@@ -5,8 +5,13 @@
 ## Prioridad inmediata tras la revision estricta (2026-04-22)
 
 1. Validar `score` por causa en playtest corto y decidir si `2/1/4` sigue siendo el perfil correcto sin volver dominante ninguna ruta de cierre.
-2. Medir en playtest corto si la nueva orientacion inward de la apertura `Teams` mejora lectura de carril/primer choque en `main.tscn` y `main_teams_validation.tscn` o si todavia falta ajustar intro/telegraph.
+2. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
+
+0. **No reabrir la apertura `Teams` quitando el telegraph diegético o dejandolo persistente fuera del intro**
+ - `Main._sync_opening_telegraph()` ya usa las filas reales por `team_id` y el mismo lifecycle del intro; no sumar otro timer ni otra fuente de datos mientras esa ruta siga vigente.
+ - `ArenaBase.set_opening_lane_rows(...)` / `_update_opening_telegraph(...)` son el unico seam visual: si se retocan `safe_play_area_size`, bootstrap `Teams` o el intro, mantener `OpeningTelegraph`, `LaneA`, `LaneB` y su apagado automatico al liberar la ronda.
+ - `teams_opening_intro_telegraph_test.gd` ahora congela tres contratos: `Teams` visible + alineado, `FFA` oculto, wording `carriles` solo mientras el intro siga activo.
 
 0. **No volver a dejar que `Teams` herede una orientacion de spawn arbitraria**
  - `Main._get_bootstrap_spawn_transforms()` ya recompone la base de `Teams` con `_build_team_spawn_transform(...)`: mantiene la posicion del marker y fuerza que la mitad izquierda mire hacia `+X` local y la derecha hacia `-X`.

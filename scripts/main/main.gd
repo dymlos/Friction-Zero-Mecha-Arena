@@ -94,6 +94,7 @@ func _ready() -> void:
 	_register_existing_robots()
 	match_controller.start_match()
 	_sync_round_intro_locks()
+	_sync_opening_telegraph()
 	_apply_match_pressure_to_arena()
 	_cleanup_detached_parts()
 	_sync_lab_selector_visuals()
@@ -105,6 +106,7 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	_apply_match_pressure_to_arena()
 	_sync_round_intro_locks()
+	_sync_opening_telegraph()
 	_sync_post_death_support_state()
 	_refresh_hud()
 
@@ -330,6 +332,52 @@ func _sync_round_intro_locks() -> void:
 	var intro_locked := match_controller != null and match_controller.is_round_intro_active()
 	for robot in _get_scene_robots():
 		robot.set_round_intro_locked(intro_locked)
+
+
+func _sync_opening_telegraph() -> void:
+	if _arena == null:
+		return
+
+	if match_controller == null or match_controller.match_mode != MatchController.MatchMode.TEAMS:
+		_arena.set_opening_lane_rows(PackedFloat32Array(), false)
+		return
+
+	var team_rows := _get_team_opening_rows()
+	_arena.set_opening_lane_rows(team_rows, match_controller.is_round_intro_active())
+
+
+func _get_team_opening_rows() -> PackedFloat32Array:
+	if _arena == null:
+		return PackedFloat32Array()
+
+	var rows_by_team := {}
+	for robot in _get_scene_robots():
+		if robot == null:
+			continue
+
+		var local_position := _arena.to_local(robot.global_position)
+		if not rows_by_team.has(robot.team_id):
+			rows_by_team[robot.team_id] = {
+				"sum": 0.0,
+				"count": 0,
+			}
+
+		var team_row: Dictionary = rows_by_team[robot.team_id]
+		team_row["sum"] = float(team_row.get("sum", 0.0)) + local_position.z
+		team_row["count"] = int(team_row.get("count", 0)) + 1
+		rows_by_team[robot.team_id] = team_row
+
+	var team_rows := PackedFloat32Array()
+	for team_id in rows_by_team.keys():
+		var team_row: Dictionary = rows_by_team[team_id]
+		var count := int(team_row.get("count", 0))
+		if count <= 0:
+			continue
+
+		team_rows.append(float(team_row.get("sum", 0.0)) / float(count))
+
+	team_rows.sort()
+	return team_rows
 
 
 func _apply_match_mode_bootstrap(robots: Array[RobotBase]) -> void:
