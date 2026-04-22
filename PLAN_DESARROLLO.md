@@ -4,6 +4,14 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los contratos scene-level del soporte post-muerte `Teams` ya quedan congelados tambien en `main_teams_validation.tscn`, y `FFA` confirma soporte desactivado tambien en `main_ffa_validation.tscn`:
+  - la revision estricta encontro otro hueco scene-level: `team_post_death_support_test.gd`, `team_post_death_support_targeting_test.gd`, `support_payload_actionability_test.gd` y `support_payload_availability_readability_test.gd` seguian instanciando solo `main.tscn` aunque el mismo slice vive tambien en la escena rapida `Teams`.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion y en la fixture:
+    - los cuatro tests ahora recorren `main.tscn` + `main_teams_validation.tscn`; `team_post_death_support_test.gd` tambien confirma que `main_ffa.tscn` + `main_ffa_validation.tscn` no generan naves de apoyo.
+    - la fixture neutraliza ruido ajeno al seam de soporte (`round_intro_duration_teams = 0`, `progressive_space_reduction = false`, `round_time_seconds >= 120`) para que la escena rapida no meta bajas laterales por pacing/contraccion.
+    - hallazgo de contrato: en `main_teams_validation.tscn` la asercion correcta de cleanup no es `SupportRoot vacio`, porque el rival puede entrar legitimo en `Apoyo activo`; el test ahora congela que desaparezca la nave del jugador eliminado y solo exige ocultar pickups cuando ya no queda ninguna nave activa.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `team_post_death_support_targeting_test.gd`, `support_payload_actionability_test.gd`, `support_payload_availability_readability_test.gd` y `test_runner.gd`.
+
 - El opening ya tiene una sonda runtime dedicada para medir deriva/borde/clash post-intro:
   - `scripts/tests/opening_pacing_runtime_test.gd` ahora ejecuta las cuatro escenas jugables con un robot dañado ya solapando un `edge_repair_pickup` y los demas robots empujados hacia el centro desde frame cero.
   - la regresion fija solo el seam estable del opening:

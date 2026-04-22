@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Los contratos scene-level del soporte post-muerte `Teams` ya quedan congelados tambien en `main_teams_validation.tscn` (2026-04-22)
+
+- Estado: el slice de soporte post-muerte `Teams` ya no depende solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`, y `FFA` confirma que tanto `main_ffa.tscn` como `main_ffa_validation.tscn` siguen sin naves de apoyo.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `Main`, `PilotSupportShip` y `MatchController` ya respetaban el mismo contrato; el gap real era de cobertura scene-level.
+  - `scripts/tests/team_post_death_support_test.gd`, `team_post_death_support_targeting_test.gd`, `support_payload_actionability_test.gd` y `support_payload_availability_readability_test.gd` ahora recorren `main.tscn` + `main_teams_validation.tscn`.
+  - la fixture del soporte ahora neutraliza ruido que no pertenece al seam validado (`round_intro_duration_teams = 0`, `progressive_space_reduction = false`, `round_time_seconds >= 120`) para que la escena rapida no introduzca bajas laterales por pacing de ronda.
+  - hallazgo de contrato: en la escena rapida puede aparecer soporte legitimo del equipo rival dentro de la misma ronda, asi que el cleanup correcto es “desaparece la nave del jugador eliminado” y no “`SupportRoot` queda globalmente vacio”.
+- Resultado:
+  - el soporte post-muerte deja de tener otro punto ciego entre laboratorio base y rapido; si la escena rapida pierde spawn, targeting, warnings o bloqueo de no-ops, la suite lo detecta antes de runtime.
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa con `Suite OK: 86 tests`.
+
 ## El opening ya tiene medicion runtime dedicada de deriva, borde y primer choque post-intro (2026-04-22)
 
 - Estado: el paquete `intro + OpeningTelegraph + lock de pickups de borde` ya no depende solo de contracts headless scene-level; ahora tambien tiene una sonda runtime que mide el comportamiento real del opening sobre las cuatro escenas jugables.

@@ -1,6 +1,13 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const TEAMS_SCENES := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
+const FFA_SCENES := [
+	"res://scenes/main/main_ffa.tscn",
+	"res://scenes/main/main_ffa_validation.tscn",
+]
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 
@@ -12,28 +19,22 @@ func _init() -> void:
 
 
 func _run() -> void:
-	await _verify_support_ship_spawns_only_in_teams()
+	for scene_path in TEAMS_SCENES:
+		await _verify_support_ship_spawns_in_teams(scene_path)
+	for scene_path in FFA_SCENES:
+		await _verify_support_ship_stays_disabled_in_ffa(scene_path)
 	_finish()
 
 
-func _verify_support_ship_spawns_only_in_teams() -> void:
-	var main = MAIN_SCENE.instantiate()
-	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
-	if match_controller_preload != null:
-		match_controller_preload.round_intro_duration = 0.0
-		if match_controller_preload.match_config != null:
-			match_controller_preload.match_config.round_intro_duration_teams = 0.0
-	root.add_child(main)
-
-	await process_frame
-	await process_frame
+func _verify_support_ship_spawns_in_teams(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
-	_assert(support_root != null, "El laboratorio Teams deberia reservar un SupportRoot para el soporte post-muerte.")
-	_assert(robots.size() >= 4, "La escena principal deberia seguir ofreciendo cuatro robots para Teams.")
+	_assert(match_controller != null, "La escena %s deberia seguir exponiendo MatchController." % scene_path)
+	_assert(support_root != null, "La escena %s deberia reservar un SupportRoot para el soporte post-muerte." % scene_path)
+	_assert(robots.size() >= 4, "La escena %s deberia seguir ofreciendo cuatro robots para Teams." % scene_path)
 	if match_controller == null or support_root == null or robots.size() < 4:
 		await _cleanup_main(main)
 		return
@@ -104,10 +105,10 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 	var support_pickups := get_nodes_in_group("pilot_support_pickups")
 	_assert(
 		not support_pickups.is_empty(),
-		"El slice post-muerte deberia exponer pickups discretos para la nave de apoyo."
+		"La escena %s deberia exponer pickups discretos para la nave de apoyo." % scene_path
 	)
-	var arena := main.get_node_or_null("ArenaRoot/ArenaBlockout")
-	_assert(arena != null, "La escena principal deberia seguir exponiendo el arena para enrutar el carril externo.")
+	var arena := _get_scene_arena(main)
+	_assert(arena != null, "La escena %s deberia seguir exponiendo un arena para enrutar el carril externo." % scene_path)
 	if support_ship != null and not support_pickups.is_empty():
 		robots[0].apply_damage_to_part("left_arm", robots[0].max_part_health * 0.35, Vector3.LEFT)
 		var arm_health_before := robots[0].get_part_health("left_arm")
@@ -472,37 +473,29 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 	await _wait_frames(4)
 
 	_assert(
-		support_root.get_child_count() == 0,
-		"Si el jugador eliminado ya no tiene ningun aliado vivo, su nave de apoyo deberia desaparecer enseguida."
+		_find_support_ship_for_owner(support_root, robots[1]) == null,
+		"La escena %s deberia limpiar la nave de apoyo del jugador eliminado cuando su equipo ya no tiene aliados vivos." % scene_path
 	)
 	if roster_label != null:
 		_assert(
 			not roster_label.text.contains("apoyo"),
 			"Sin un aliado vivo al que asistir, el roster no deberia seguir mostrando apoyo activo."
 		)
-	if support_pickup_after_cleanup != null:
+	if support_pickup_after_cleanup != null and support_root.get_child_count() == 0:
 		_assert(
 			not support_pickup_after_cleanup.visible,
-			"Cuando la ultima nave se apaga, el carril post-muerte tambien deberia ocultar sus pickups."
+			"Cuando la escena %s ya no tiene ninguna nave de apoyo activa, el carril post-muerte tambien deberia ocultar sus pickups." % scene_path
 		)
 
 	await _cleanup_main(main)
 
-	var ffa_scene := load("res://scenes/main/main_ffa.tscn")
-	_assert(ffa_scene is PackedScene, "El proyecto deberia seguir exponiendo la escena dedicada FFA.")
-	if not (ffa_scene is PackedScene):
-		return
 
-	var ffa_main = (ffa_scene as PackedScene).instantiate()
-	root.add_child(ffa_main)
-
-	await process_frame
-	await process_frame
-
+func _verify_support_ship_stays_disabled_in_ffa(scene_path: String) -> void:
+	var ffa_main := await _instantiate_scene(scene_path)
 	var ffa_support_root := ffa_main.get_node_or_null("SupportRoot")
 	var ffa_robots := _get_scene_robots(ffa_main)
-	_assert(ffa_support_root != null, "La escena FFA deberia compartir la estructura base del laboratorio.")
-	_assert(ffa_robots.size() >= 4, "La escena FFA deberia seguir ofreciendo cuatro robots.")
+	_assert(ffa_support_root != null, "La escena %s deberia compartir la estructura base del laboratorio." % scene_path)
+	_assert(ffa_robots.size() >= 4, "La escena %s deberia seguir ofreciendo cuatro robots." % scene_path)
 	if ffa_support_root == null or ffa_robots.size() < 4:
 		await _cleanup_main(ffa_main)
 		return
@@ -512,10 +505,53 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 
 	_assert(
 		ffa_support_root.get_child_count() == 0,
-		"FFA no deberia activar naves de apoyo post-muerte."
+		"La escena %s no deberia activar naves de apoyo post-muerte." % scene_path
 	)
 
 	await _cleanup_main(ffa_main)
+
+
+func _instantiate_scene(scene_path: String) -> Node:
+	var packed_scene := load(scene_path)
+	_assert(packed_scene is PackedScene, "La escena %s deberia seguir existiendo." % scene_path)
+	if not (packed_scene is PackedScene):
+		return Node.new()
+
+	var main = (packed_scene as PackedScene).instantiate()
+	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller_preload != null:
+		match_controller_preload.round_intro_duration = 0.0
+		if match_controller_preload.match_config != null:
+			match_controller_preload.match_config.round_intro_duration_teams = 0.0
+			match_controller_preload.match_config.progressive_space_reduction = false
+			match_controller_preload.match_config.round_time_seconds = maxf(
+				float(match_controller_preload.match_config.round_time_seconds),
+				120.0
+			)
+	root.add_child(main)
+	await process_frame
+	await process_frame
+	return main
+
+
+func _get_scene_arena(main: Node) -> Node:
+	var arena_root := main.get_node_or_null("ArenaRoot")
+	if arena_root == null or arena_root.get_child_count() == 0:
+		return null
+
+	return arena_root.get_child(0)
+
+
+func _find_support_ship_for_owner(support_root_node: Node3D, owner_robot: RobotBase) -> Node:
+	if support_root_node == null or owner_robot == null:
+		return null
+
+	for child in support_root_node.get_children():
+		var support_owner := child.get("owner_robot") as RobotBase
+		if support_owner == owner_robot:
+			return child
+
+	return null
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:

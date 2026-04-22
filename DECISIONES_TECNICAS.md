@@ -1,5 +1,24 @@
 # DECISIONES_TECNICAS.md - Friction Zero: Mecha Arena
 
+## 2026-04-22 - El soporte post-muerte debe congelarse tambien en la escena rapida, pero con fixture estabilizada y cleanup por owner
+
+- Que se hizo:
+  - `team_post_death_support_test.gd`, `team_post_death_support_targeting_test.gd`, `support_payload_actionability_test.gd` y `support_payload_availability_readability_test.gd` ahora recorren `main.tscn` y `main_teams_validation.tscn`.
+  - `team_post_death_support_test.gd` tambien congela que `main_ffa.tscn` y `main_ffa_validation.tscn` no generen soporte post-muerte.
+- Decision:
+  - normalizar la fixture del soporte para remover ruido ajeno al seam:
+    - `round_intro_duration_teams = 0.0`
+    - `progressive_space_reduction = false`
+    - `round_time_seconds >= 120.0`
+  - en el cleanup final, endurecer el contrato correcto:
+    - la nave del jugador eliminado debe desaparecer cuando ya no tiene aliados vivos
+    - los pickups del carril solo deben ocultarse si no queda ninguna nave de apoyo activa
+- Razon:
+  - `main_teams_validation.tscn` comparte el mismo soporte, pero su pacing compacto puede generar una nave legitima del rival dentro de la misma ronda; exigir `SupportRoot` vacio global era un falso negativo del test, no una regresion de produccion.
+- Implicacion:
+  - futuros tests scene-level del soporte deben estabilizar pacing/pressure antes de medir targeting o lifecycle.
+  - si reaparece un rojo en cleanup, comprobar primero owner de la nave restante antes de asumir soporte stale.
+
 ## 2026-04-22 - El opening runtime fija lock/unlock; el primer choque queda como metrica, no como gate
 
 - Que se hizo:

@@ -4,15 +4,22 @@
 
 ## Prioridad inmediata tras la revision estricta (2026-04-22)
 
-1. Medir en playtest corto si `OpeningTelegraph + lock de pickups de borde + Borde | ... | abre en Xs` realmente limpia el primer choque o si la espera se siente demasiado larga/corta en `main.tscn` y `main_teams_validation.tscn`.
+1. Mantener el slice `Apoyo activo` en modo mantenimiento con las nuevas fixtures estabilizadas: si aparece otro rojo scene-level, comprobar primero si es drift real de `Main/PilotSupportShip` o contaminacion de pacing en `main_teams_validation.tscn`.
+2. Medir en playtest corto si `OpeningTelegraph + lock de pickups de borde + Borde | ... | abre en Xs` realmente limpia el primer choque o si la espera se siente demasiado larga/corta en `main.tscn` y `main_teams_validation.tscn`.
    - La sonda runtime nueva ya dejo baseline:
      - `Teams base`: `choque_post_unlock=1.787s`
      - `Teams rapido`: `choque_post_unlock=2.961s`
      - `FFA base`: `sin_dato`
      - `FFA rapido`: `0.641s`
    - El seam tecnico esta sano (`deriva_intro=0`, `pickup_post_unlock<=0.021s`); la siguiente sesion deberia decidir si hace falta tocar spawns/layout/pacing en `Teams rapido` y `FFA base`, no reabrir el lock del borde por intuicion.
-2. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
-3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
+3. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
+4. Revisar si queda algun seam scene-level de `Teams/FFA` todavia atado a una sola escena antes de volver a tocar produccion.
+
+0. **No volver a dejar el soporte post-muerte `Teams` congelado solo en `main.tscn`**
+ - `team_post_death_support_test.gd`, `team_post_death_support_targeting_test.gd`, `support_payload_actionability_test.gd` y `support_payload_availability_readability_test.gd` ya recorren `main.tscn` + `main_teams_validation.tscn`; `team_post_death_support_test.gd` tambien cubre `main_ffa.tscn` + `main_ffa_validation.tscn` para confirmar soporte desactivado.
+ - La fixture del soporte ya neutraliza `intro + pressure drift` (`round_intro_duration_teams = 0`, `progressive_space_reduction = false`, `round_time_seconds >= 120`); no volver a medir targeting/lifecycle en la escena rapida con su pacing corto si el objetivo del test no es justamente ese pacing.
+ - En cleanup, el contrato minimo es “desaparece la nave del jugador eliminado”; `SupportRoot` puede seguir no vacio si el rival entro legitimo en `Apoyo activo` dentro de la misma ronda.
+ - Reabrir solo si una escena pierde spawn, targeting, warnings o no-op gating del soporte, o si se cambia deliberadamente el lifecycle post-muerte entre laboratorio base y rapido.
 
 0. **No volver a dejar drift entre escenas `base` y `validation` del roster vivo, el marcador FFA o los stats/cierres de apoyo**
  - `ffa_live_scoreboard_order_test.gd` ya congela el marcador FFA ordenado por lider en `main_ffa.tscn` y `main_ffa_validation.tscn`.

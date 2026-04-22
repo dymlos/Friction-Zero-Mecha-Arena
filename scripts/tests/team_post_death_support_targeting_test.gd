@@ -1,6 +1,9 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const TEAMS_SCENES := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const PilotSupportShip = preload("res://scripts/support/pilot_support_ship.gd")
 const PilotSupportPickup = preload("res://scripts/support/pilot_support_pickup.gd")
@@ -14,26 +17,27 @@ func _init() -> void:
 
 
 func _run() -> void:
-	await _verify_stabilizer_defaults_to_most_damaged_ally()
-	await _verify_stabilizer_retargets_to_new_more_damaged_ally_without_manual_override()
-	await _verify_interference_defaults_to_unsuppressed_enemy()
-	await _verify_interference_defaults_to_enemy_without_stability()
-	await _verify_interference_retargets_when_auto_selected_enemy_becomes_immune()
-	await _verify_interference_keeps_manual_override_when_selected_enemy_becomes_immune()
-	await _verify_interference_resumes_auto_targeting_after_manual_cycle_back_to_default()
-	await _verify_surge_defaults_to_ally_with_useful_remaining_window()
-	await _verify_mobility_defaults_to_ally_with_useful_remaining_window()
+	for scene_path in TEAMS_SCENES:
+		await _verify_stabilizer_defaults_to_most_damaged_ally(scene_path)
+		await _verify_stabilizer_retargets_to_new_more_damaged_ally_without_manual_override(scene_path)
+		await _verify_interference_defaults_to_unsuppressed_enemy(scene_path)
+		await _verify_interference_defaults_to_enemy_without_stability(scene_path)
+		await _verify_interference_retargets_when_auto_selected_enemy_becomes_immune(scene_path)
+		await _verify_interference_keeps_manual_override_when_selected_enemy_becomes_immune(scene_path)
+		await _verify_interference_resumes_auto_targeting_after_manual_cycle_back_to_default(scene_path)
+		await _verify_surge_defaults_to_ally_with_useful_remaining_window(scene_path)
+		await _verify_mobility_defaults_to_ally_with_useful_remaining_window(scene_path)
 	_finish()
 
 
-func _verify_stabilizer_defaults_to_most_damaged_ally() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_stabilizer_defaults_to_most_damaged_ally(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var robots := _get_scene_robots(main)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar targeting de apoyo.")
-	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
-	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
+	_assert(robots.size() >= 4, "La escena %s deberia ofrecer cuatro robots para validar targeting de apoyo." % scene_path)
+	_assert(support_root != null, "La escena %s deberia seguir exponiendo SupportRoot." % scene_path)
+	_assert(match_controller != null, "La escena %s deberia seguir exponiendo MatchController." % scene_path)
 	if robots.size() < 4 or support_root == null or match_controller == null:
 		await _cleanup_main(main)
 		return
@@ -72,20 +76,20 @@ func _verify_stabilizer_defaults_to_most_damaged_ally() -> void:
 
 	_assert(
 		support_ship.get_selected_target_robot() == robots[2],
-		"Con varios aliados vivos, `estabilizador` deberia priorizar al aliado mas dañado y no al primero en scene-order."
+		"La escena %s deberia priorizar con `estabilizador` al aliado mas dañado y no al primero en scene-order." % scene_path
 	)
 
 	await _cleanup_main(main)
 
 
-func _verify_interference_defaults_to_unsuppressed_enemy() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_interference_defaults_to_unsuppressed_enemy(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var robots := _get_scene_robots(main)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar targeting enemigo.")
-	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
-	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
+	_assert(robots.size() >= 4, "La escena %s deberia ofrecer cuatro robots para validar targeting enemigo." % scene_path)
+	_assert(support_root != null, "La escena %s deberia seguir exponiendo SupportRoot." % scene_path)
+	_assert(match_controller != null, "La escena %s deberia seguir exponiendo MatchController." % scene_path)
 	if robots.size() < 4 or support_root == null or match_controller == null:
 		await _cleanup_main(main)
 		return
@@ -126,20 +130,20 @@ func _verify_interference_defaults_to_unsuppressed_enemy() -> void:
 
 	_assert(
 		support_ship.get_selected_target_robot() == fresh_enemy,
-		"Si hay mas de un rival valido, `interferencia` deberia priorizar a uno no suprimido antes que reciclar el ya afectado."
+		"La escena %s deberia hacer que `interferencia` priorice a un rival no suprimido antes que reciclar el ya afectado." % scene_path
 	)
 
 	await _cleanup_main(main)
 
 
-func _verify_stabilizer_retargets_to_new_more_damaged_ally_without_manual_override() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_stabilizer_retargets_to_new_more_damaged_ally_without_manual_override(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var robots := _get_scene_robots(main)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar retargeting aliado runtime.")
-	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
-	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
+	_assert(robots.size() >= 4, "La escena %s deberia ofrecer cuatro robots para validar retargeting aliado runtime." % scene_path)
+	_assert(support_root != null, "La escena %s deberia seguir exponiendo SupportRoot." % scene_path)
+	_assert(match_controller != null, "La escena %s deberia seguir exponiendo MatchController." % scene_path)
 	if robots.size() < 4 or support_root == null or match_controller == null:
 		await _cleanup_main(main)
 		return
@@ -182,7 +186,7 @@ func _verify_stabilizer_retargets_to_new_more_damaged_ally_without_manual_overri
 
 	_assert(
 		support_ship.get_selected_target_robot() == initially_damaged_ally,
-		"Antes del cambio runtime, el auto-target deberia seguir apuntando al unico aliado dañado."
+		"La escena %s deberia arrancar con el auto-target sobre el unico aliado dañado." % scene_path
 	)
 
 	newly_more_damaged_ally.apply_damage_to_part("right_leg", newly_more_damaged_ally.max_part_health * 0.55, Vector3.RIGHT)
@@ -191,20 +195,20 @@ func _verify_stabilizer_retargets_to_new_more_damaged_ally_without_manual_overri
 
 	_assert(
 		support_ship.get_selected_target_robot() == newly_more_damaged_ally,
-		"Sin override manual, `estabilizador` deberia resincronizarse con el aliado que paso a ser claramente mas urgente durante la ronda."
+		"La escena %s deberia resincronizar `estabilizador` con el aliado que paso a ser claramente mas urgente durante la ronda." % scene_path
 	)
 
 	await _cleanup_main(main)
 
 
-func _verify_interference_defaults_to_enemy_without_stability() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_interference_defaults_to_enemy_without_stability(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var robots := _get_scene_robots(main)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar inmunidad utility.")
-	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
-	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
+	_assert(robots.size() >= 4, "La escena %s deberia ofrecer cuatro robots para validar inmunidad utility." % scene_path)
+	_assert(support_root != null, "La escena %s deberia seguir exponiendo SupportRoot." % scene_path)
+	_assert(match_controller != null, "La escena %s deberia seguir exponiendo MatchController." % scene_path)
 	if robots.size() < 4 or support_root == null or match_controller == null:
 		await _cleanup_main(main)
 		return
@@ -245,14 +249,14 @@ func _verify_interference_defaults_to_enemy_without_stability() -> void:
 
 	_assert(
 		support_ship.get_selected_target_robot() == fresh_enemy,
-		"Si hay mas de un rival valido, `interferencia` deberia priorizar al que no esta protegido por `estabilidad`."
+		"La escena %s deberia hacer que `interferencia` priorice al rival no protegido por `estabilidad`." % scene_path
 	)
 
 	await _cleanup_main(main)
 
 
-func _verify_interference_retargets_when_auto_selected_enemy_becomes_immune() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_interference_retargets_when_auto_selected_enemy_becomes_immune(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var robots := _get_scene_robots(main)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
@@ -312,8 +316,8 @@ func _verify_interference_retargets_when_auto_selected_enemy_becomes_immune() ->
 	await _cleanup_main(main)
 
 
-func _verify_interference_keeps_manual_override_when_selected_enemy_becomes_immune() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_interference_keeps_manual_override_when_selected_enemy_becomes_immune(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var robots := _get_scene_robots(main)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
@@ -383,8 +387,8 @@ func _verify_interference_keeps_manual_override_when_selected_enemy_becomes_immu
 	await _cleanup_main(main)
 
 
-func _verify_interference_resumes_auto_targeting_after_manual_cycle_back_to_default() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_interference_resumes_auto_targeting_after_manual_cycle_back_to_default(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var robots := _get_scene_robots(main)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
@@ -464,8 +468,8 @@ func _verify_interference_resumes_auto_targeting_after_manual_cycle_back_to_defa
 	await _cleanup_main(main)
 
 
-func _verify_surge_defaults_to_ally_with_useful_remaining_window() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_surge_defaults_to_ally_with_useful_remaining_window(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var robots := _get_scene_robots(main)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
@@ -520,8 +524,8 @@ func _verify_surge_defaults_to_ally_with_useful_remaining_window() -> void:
 	await _cleanup_main(main)
 
 
-func _verify_mobility_defaults_to_ally_with_useful_remaining_window() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_mobility_defaults_to_ally_with_useful_remaining_window(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var robots := _get_scene_robots(main)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
@@ -577,11 +581,21 @@ func _verify_mobility_defaults_to_ally_with_useful_remaining_window() -> void:
 	await _cleanup_main(main)
 
 
-func _instantiate_main_scene() -> Node:
-	var main = MAIN_SCENE.instantiate()
+func _instantiate_scene(scene_path: String) -> Node:
+	var packed_scene := load(scene_path)
+	_assert(packed_scene is PackedScene, "La escena %s deberia seguir existiendo." % scene_path)
+	if not (packed_scene is PackedScene):
+		return Node.new()
+
+	var main = (packed_scene as PackedScene).instantiate()
 	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
 	if match_controller_preload != null and match_controller_preload.match_config != null:
 		match_controller_preload.match_config.round_intro_duration_teams = 0.0
+		match_controller_preload.match_config.progressive_space_reduction = false
+		match_controller_preload.match_config.round_time_seconds = maxf(
+			float(match_controller_preload.match_config.round_time_seconds),
+			120.0
+		)
 	root.add_child(main)
 	await process_frame
 	await process_frame

@@ -1,6 +1,9 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const TEAMS_SCENES := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const PilotSupportPickup = preload("res://scripts/support/pilot_support_pickup.gd")
 const PilotSupportShip = preload("res://scripts/support/pilot_support_ship.gd")
@@ -14,19 +17,20 @@ func _init() -> void:
 
 
 func _run() -> void:
-	await _verify_surge_does_not_spend_itself_on_full_window_target()
-	await _verify_mobility_does_not_spend_itself_on_full_window_target()
-	await _verify_surge_can_be_redirected_after_manual_redundant_selection()
-	await _verify_mobility_can_be_redirected_after_manual_redundant_selection()
+	for scene_path in TEAMS_SCENES:
+		await _verify_surge_does_not_spend_itself_on_full_window_target(scene_path)
+		await _verify_mobility_does_not_spend_itself_on_full_window_target(scene_path)
+		await _verify_surge_can_be_redirected_after_manual_redundant_selection(scene_path)
+		await _verify_mobility_can_be_redirected_after_manual_redundant_selection(scene_path)
 	_finish()
 
 
-func _verify_surge_does_not_spend_itself_on_full_window_target() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_surge_does_not_spend_itself_on_full_window_target(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
-	_assert(support_root != null, "La escena Teams deberia seguir exponiendo SupportRoot.")
-	_assert(robots.size() >= 4, "La escena Teams deberia seguir ofreciendo cuatro robots.")
+	_assert(support_root != null, "La escena %s deberia seguir exponiendo SupportRoot." % scene_path)
+	_assert(robots.size() >= 4, "La escena %s deberia seguir ofreciendo cuatro robots." % scene_path)
 	if support_root == null or robots.size() < 4:
 		await _cleanup_main(main)
 		return
@@ -64,12 +68,12 @@ func _verify_surge_does_not_spend_itself_on_full_window_target() -> void:
 	await _cleanup_main(main)
 
 
-func _verify_mobility_does_not_spend_itself_on_full_window_target() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_mobility_does_not_spend_itself_on_full_window_target(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
-	_assert(support_root != null, "La escena Teams deberia seguir exponiendo SupportRoot.")
-	_assert(robots.size() >= 4, "La escena Teams deberia seguir ofreciendo cuatro robots.")
+	_assert(support_root != null, "La escena %s deberia seguir exponiendo SupportRoot." % scene_path)
+	_assert(robots.size() >= 4, "La escena %s deberia seguir ofreciendo cuatro robots." % scene_path)
 	if support_root == null or robots.size() < 4:
 		await _cleanup_main(main)
 		return
@@ -109,14 +113,14 @@ func _verify_mobility_does_not_spend_itself_on_full_window_target() -> void:
 	await _cleanup_main(main)
 
 
-func _verify_surge_can_be_redirected_after_manual_redundant_selection() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_surge_can_be_redirected_after_manual_redundant_selection(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
-	_assert(support_root != null, "La escena Teams deberia seguir exponiendo SupportRoot.")
-	_assert(robots.size() >= 4, "La escena Teams deberia seguir ofreciendo cuatro robots.")
-	_assert(match_controller != null, "La escena Teams deberia seguir exponiendo MatchController.")
+	_assert(support_root != null, "La escena %s deberia seguir exponiendo SupportRoot." % scene_path)
+	_assert(robots.size() >= 4, "La escena %s deberia seguir ofreciendo cuatro robots." % scene_path)
+	_assert(match_controller != null, "La escena %s deberia seguir exponiendo MatchController." % scene_path)
 	if support_root == null or robots.size() < 4 or match_controller == null:
 		await _cleanup_main(main)
 		return
@@ -195,14 +199,14 @@ func _verify_surge_can_be_redirected_after_manual_redundant_selection() -> void:
 	await _cleanup_main(main)
 
 
-func _verify_mobility_can_be_redirected_after_manual_redundant_selection() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_mobility_can_be_redirected_after_manual_redundant_selection(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
-	_assert(support_root != null, "La escena Teams deberia seguir exponiendo SupportRoot.")
-	_assert(robots.size() >= 4, "La escena Teams deberia seguir ofreciendo cuatro robots.")
-	_assert(match_controller != null, "La escena Teams deberia seguir exponiendo MatchController.")
+	_assert(support_root != null, "La escena %s deberia seguir exponiendo SupportRoot." % scene_path)
+	_assert(robots.size() >= 4, "La escena %s deberia seguir ofreciendo cuatro robots." % scene_path)
+	_assert(match_controller != null, "La escena %s deberia seguir exponiendo MatchController." % scene_path)
 	if support_root == null or robots.size() < 4 or match_controller == null:
 		await _cleanup_main(main)
 		return
@@ -293,11 +297,21 @@ func _configure_multi_ally_teams_match(match_controller: MatchController, robots
 	await _wait_frames(2)
 
 
-func _instantiate_main_scene() -> Node:
-	var main = MAIN_SCENE.instantiate()
+func _instantiate_scene(scene_path: String) -> Node:
+	var packed_scene := load(scene_path)
+	_assert(packed_scene is PackedScene, "La escena %s deberia seguir existiendo." % scene_path)
+	if not (packed_scene is PackedScene):
+		return Node.new()
+
+	var main = (packed_scene as PackedScene).instantiate()
 	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
 	if match_controller_preload != null and match_controller_preload.match_config != null:
 		match_controller_preload.match_config.round_intro_duration_teams = 0.0
+		match_controller_preload.match_config.progressive_space_reduction = false
+		match_controller_preload.match_config.round_time_seconds = maxf(
+			float(match_controller_preload.match_config.round_time_seconds),
+			120.0
+		)
 	root.add_child(main)
 	await process_frame
 	await process_frame
