@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No reabrir el `F2` del selector runtime al saltar entre un robot vivo y un slot ya en `Apoyo activo`**
+ - `lab_runtime_selector_test.gd` ahora cubre el flujo `P1 Apoyo activo -> F2 -> P2 vivo -> wrap F2 -> P1 Apoyo activo`; el contrato es que `Lab | ...`, `Control Pn | ...`, `Apoyo Pn | ...` y la pista diegética cambien juntos en ambos sentidos.
+ - Si se retocan `cycle_lab_selector_slot()`, `get_lab_selector_summary_line()`, `get_lab_selected_controls_summary_line()`, `get_lab_selected_support_summary_line()` o `_sync_lab_selector_visuals()`, mantener esa fixture.
+ - Reabrir solo si el laboratorio deja de usar un selector por slot persistente o si la identidad jugable post-muerte deja de representarse como `Apoyo activo`.
+
 0. **No volver a dejar que la causa de baja corte primero la linea explícita de `Apoyo activo`**
  - `MatchController._build_robot_status_line()` ya ordena el caso `has_active_support` como `Apoyo activo | <support_state> | baja <causa>`; si se retocan `support_state`, el roster vivo o el wording de causas, mantener esa prioridad accionable.
  - `live_roster_order_test.gd` ahora fija el orden mínimo `Apoyo activo -> get_support_input_hint() -> vacio`; `hud_detail_mode_test.gd` sigue cubriendo que en contextual la causa directamente no reaparezca.

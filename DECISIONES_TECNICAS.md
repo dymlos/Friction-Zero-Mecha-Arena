@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El selector runtime `F2` tambien debe mantenerse coherente al aterrizar sobre slots ya en `Apoyo activo`**
+ - `Main.cycle_lab_selector_slot()` no necesita lógica especial extra: sigue cambiando solo `_lab_selected_player_slot`, y la reconstrucción real queda en `get_lab_selector_summary_line()`, `get_lab_selected_controls_summary_line()`, `get_lab_selected_support_summary_line()` y `_sync_lab_selector_visuals()`, todos apoyados en `_find_post_death_support_ship(selected_robot)`.
+ - `lab_runtime_selector_test.gd` ahora fija el seam que faltaba: `P1 Apoyo activo -> F2 -> P2 vivo -> wrap F2 -> P1 Apoyo activo`. En el salto de salida exige volver al robot vivo y borrar `Apoyo P1 | ...`; en el retorno exige recuperar `Lab | P1 Apoyo activo`, controles de soporte y la marca runtime en `PilotSupportShip`.
+ - Motivo: las iteraciones previas congelaban bien “el slot seleccionado cae” y sus resets (`F3/F4/F5/F6` + ronda nueva), pero faltaba el caso inverso donde el selector se mueve sobre un slot ya caído. Reusar la misma fuente de verdad evita ramificar el selector y mantiene legible el laboratorio.
+
 1. **En HUD explícito `Teams`, `Apoyo activo` debe mostrar primero la acción vigente y dejar la causa de baja al final**
  - `MatchController._build_robot_status_line()` ahora trata `has_active_support` como un caso propio: arranca con `Apoyo activo`, agrega el `support_state` completo de `PilotSupportShip` y solo después añade `baja vacio/explosion/...` fuera del modo contextual.
  - `live_roster_order_test.gd` congela el orden mínimo `Apoyo activo -> get_support_input_hint() -> vacio`; el objetivo no es esconder la causa, sino evitar que interrumpa el hint/payload accionable del soporte.

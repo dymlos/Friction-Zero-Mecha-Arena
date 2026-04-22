@@ -15,6 +15,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_lab_selector_cycles_roster_and_control_mode()
 	await _validate_lab_selected_controls_follow_support_ship()
+	await _validate_lab_selector_cycles_between_robot_and_active_support_slots()
 	await _validate_lab_runtime_loadout_reset_clears_support_immediately()
 	await _validate_lab_selector_recovers_from_support_after_round_reset()
 	await _validate_lab_selector_recovers_from_support_after_manual_restart()
@@ -276,6 +277,99 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 			support_selection_indicator.visible,
 			"Si el slot seleccionado ya esta en `Apoyo activo`, la pista diegetica deberia migrar a la nave de apoyo."
 		)
+
+	await _cleanup_node(main)
+
+
+func _validate_lab_selector_cycles_between_robot_and_active_support_slots() -> void:
+	var main := MAIN_SCENE.instantiate()
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller != null:
+		match_controller.round_intro_duration = 0.0
+		if match_controller.match_config != null:
+			match_controller.match_config.round_intro_duration_teams = 0.0
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var robots := _get_scene_robots(main)
+	_assert(round_label != null, "El laboratorio Teams deberia seguir exponiendo RoundLabel para validar `F2` entre robot y `Apoyo activo`.")
+	_assert(robots.size() >= 2, "La escena principal deberia seguir exponiendo dos slots jugables para validar `F2` con soporte post-muerte.")
+	if round_label == null or robots.size() < 2:
+		await _cleanup_node(main)
+		return
+
+	robots[0].fall_into_void()
+	await process_frame
+	await process_frame
+	await process_frame
+	await process_frame
+
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Apoyo activo"),
+		"Antes de usar `F2`, el selector runtime deberia seguir mostrando el soporte del slot que acaba de caer."
+	)
+	_assert(
+		round_label.text.contains("Control P1 | usa C | objetivo Q/E"),
+		"Antes de usar `F2`, la referencia compacta deberia seguir anclada a los controles reales del soporte activo."
+	)
+	_assert(
+		round_label.text.contains("Apoyo P1 | sin carga"),
+		"Antes de usar `F2`, el round-state deberia seguir exponiendo la linea accionable del soporte seleccionado."
+	)
+
+	main.call("cycle_lab_selector_slot")
+	await process_frame
+	await process_frame
+
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains(
+			"P2 %s Easy" % robots[1].get_archetype_label()
+		),
+		"Al ciclar `F2` desde `Apoyo activo`, el selector runtime deberia volver a describir el robot vivo del siguiente slot."
+	)
+	_assert(
+		not String(main.call("get_lab_selector_summary_line")).contains("Apoyo activo"),
+		"Al ciclar `F2` hacia un robot vivo, el resumen del laboratorio no deberia arrastrar el soporte del slot anterior."
+	)
+	_assert(
+		round_label.text.contains("Control P2 | mueve flechas | ataca Enter | energia ,/. | overdrive M | suelta /"),
+		"Al ciclar `F2` hacia un robot vivo, la referencia compacta deberia cambiar a sus controles reales."
+	)
+	_assert(
+		not round_label.text.contains("Apoyo P1 |"),
+		"Al ciclar `F2` hacia un robot vivo, la linea persistente del soporte no deberia seguir colgada del slot anterior."
+	)
+	_assert(
+		bool(robots[1].call("is_lab_selected")),
+		"Al ciclar `F2` hacia un robot vivo, la pista diegetica deberia migrar al nuevo slot seleccionado."
+	)
+
+	for _index in range(3):
+		main.call("cycle_lab_selector_slot")
+		await process_frame
+		await process_frame
+
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Apoyo activo"),
+		"Al volver con `F2` al slot caido, el selector runtime deberia recuperar la identidad `Apoyo activo` de ese jugador."
+	)
+	_assert(
+		round_label.text.contains("Control P1 | usa C | objetivo Q/E"),
+		"Al volver con `F2` al slot caido, la referencia compacta deberia retomar los controles del soporte."
+	)
+	_assert(
+		round_label.text.contains("Apoyo P1 | sin carga"),
+		"Al volver con `F2` al slot caido, la linea accionable del soporte deberia reaparecer."
+	)
+	var support_root := main.get_node_or_null("SupportRoot")
+	var support_ship := support_root.get_child(0) if support_root != null and support_root.get_child_count() > 0 else null
+	_assert(
+		support_ship != null and bool(support_ship.call("is_lab_selected")),
+		"Al volver con `F2` al slot caido, la nave de apoyo deberia recuperar tambien la marca runtime."
+	)
 
 	await _cleanup_node(main)
 

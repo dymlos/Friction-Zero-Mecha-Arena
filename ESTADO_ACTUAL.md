@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## `F2` ya cubre el salto entre robot vivo y `Apoyo activo` (2026-04-22)
+
+- Estado: el selector runtime del laboratorio ya tiene regresión headless para el caso donde el slot seleccionado sale de una nave post-muerte con `F2`, cae sobre un robot vivo, y luego vuelve a ese mismo slot ya en `Apoyo activo`.
+- Cobertura aplicada:
+  - `scripts/tests/lab_runtime_selector_test.gd` ahora recorre `P1 Apoyo activo -> F2 -> P2 vivo -> wrap F2 -> P1 Apoyo activo`.
+  - al salir del soporte exige que `Lab | ...` vuelva a describir el robot vivo, que `Control P2 | ...` reemplace la chuleta del soporte, que desaparezca `Apoyo P1 | ...` y que la pista diegética migre al robot seleccionado.
+  - al volver al slot caído exige recuperar `Lab | P1 Apoyo activo`, controles de soporte, `Apoyo P1 | sin carga` y la marca runtime sobre `PilotSupportShip`.
+  - la revisión confirmó que no hacía falta tocar producción: `Main.cycle_lab_selector_slot()` ya delegaba correctamente en `_sync_lab_selector_visuals()` y `_refresh_hud()`.
+- Resultado:
+  - queda congelado el seam que faltaba entre selector por slot y soporte post-muerte, evitando reabrir el problema solo porque hasta ahora la cobertura se centraba en “el slot seleccionado cae” y no en “el selector aterriza sobre un slot ya caído”.
+  - `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd` pasa.
+
 ## HUD explícito `Teams` prioriza la acción de `Apoyo activo` (2026-04-22)
 
 - Estado: cuando un jugador eliminado sigue influyendo desde `PilotSupportShip`, el roster explícito ya no muestra primero la causa de baja y recién después el hint/payload del soporte.

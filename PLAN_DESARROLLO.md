@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El selector runtime del laboratorio ya tiene regresión explícita también para el seam `F2` cuando el slot seleccionado sale de `Apoyo activo` hacia otro robot vivo y luego vuelve a aterrizar sobre la misma nave post-muerte.
+- La revisión confirmó que la producción ya estaba alineada: `cycle_lab_selector_slot()` solo cambia `_lab_selected_player_slot`, y tanto `Lab | ...` como `Control Pn | ...`, `Apoyo Pn | ...` y `LabSelectionIndicator` se reconstruyen correctamente desde `_find_post_death_support_ship(...)`.
+- `lab_runtime_selector_test.gd` ahora congela el flujo completo `P1 Apoyo activo -> F2 -> P2 vivo -> wrap F2 -> P1 Apoyo activo`, exigiendo que el resumen, la referencia compacta, la línea de soporte y la marca diegética migren en ambos sentidos sin arrastrar estado stale.
+- Validación focalizada: `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`.
+
 - El roster explícito `Teams` ahora prioriza la acción vigente del soporte post-muerte: cuando un jugador pasa a `Apoyo activo`, la línea deja de intercalar la causa de baja antes del hint/payload accionable y pasa a ordenar `Apoyo activo | <support_state> | baja <causa>`.
 - La corrección vive en `MatchController._build_robot_status_line()`, sin abrir HUD nuevo ni esconder la causa; solo la degrada a dato secundario para que el soporte real se lea primero.
 - `live_roster_order_test.gd` suma la regresión mínima del orden de segmentos en HUD explícito (`Apoyo activo` -> `get_support_input_hint()` -> `vacio`), mientras `hud_detail_mode_test.gd`, `team_post_death_support_test.gd` y la suite completa siguen verdes.
