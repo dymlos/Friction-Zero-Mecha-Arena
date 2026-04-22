@@ -22,6 +22,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_robot_stability_boost_behavior()
 	await _validate_pickup_cooldown_telegraph()
+	await _validate_cleanup_disables_area_monitoring_before_teardown()
 	await _validate_main_scene_utility_pickups()
 	await _validate_pickups_follow_arena_contraction()
 	_finish()
@@ -168,6 +169,41 @@ func _validate_pickup_cooldown_telegraph() -> void:
 
 	await _cleanup_node(robot)
 	await _cleanup_node(pickup)
+
+
+func _validate_cleanup_disables_area_monitoring_before_teardown() -> void:
+	var pickup_scene := _load_edge_utility_pickup_scene()
+	if pickup_scene == null:
+		return
+
+	var pickup := pickup_scene.instantiate() as Area3D
+	root.add_child(pickup)
+
+	await process_frame
+	await physics_frame
+
+	var collision_shape := pickup.get_node_or_null("CollisionShape3D") as CollisionShape3D
+	var teardown_state := {}
+	pickup.tree_exiting.connect(func() -> void:
+		teardown_state["monitoring"] = pickup.monitoring
+		teardown_state["monitorable"] = pickup.monitorable
+		teardown_state["collision_disabled"] = collision_shape == null or collision_shape.disabled
+	)
+
+	await _cleanup_node(pickup)
+
+	_assert(
+		teardown_state.get("monitoring", true) == false,
+		"El cleanup utility deberia apagar monitoring antes de sacar el Area3D del arbol para evitar ruido de Jolt."
+	)
+	_assert(
+		teardown_state.get("monitorable", true) == false,
+		"El cleanup utility deberia apagar monitorable antes del teardown para vaciar overlaps pendientes."
+	)
+	_assert(
+		teardown_state.get("collision_disabled", false) == true,
+		"El cleanup utility deberia desactivar la CollisionShape3D antes del teardown."
+	)
 
 
 func _validate_main_scene_utility_pickups() -> void:
@@ -370,11 +406,32 @@ func _cleanup_node(node: Node) -> void:
 	if not is_instance_valid(node):
 		return
 
+	var areas: Array[Area3D] = []
+	if node is Area3D:
+		areas.append(node as Area3D)
+	for child in node.find_children("*", "Area3D", true, false):
+		if child is Area3D:
+			areas.append(child as Area3D)
+	for area in areas:
+		area.monitoring = false
+		area.monitorable = false
+		var collision_shape := area.get_node_or_null("CollisionShape3D") as CollisionShape3D
+		if collision_shape != null:
+			collision_shape.disabled = true
+	if not areas.is_empty():
+		await physics_frame
+		await process_frame
+		await physics_frame
+		await process_frame
+
 	var parent := node.get_parent()
 	if parent != null:
 		parent.remove_child(node)
-	node.free()
+	node.queue_free()
 	await process_frame
+	await physics_frame
+	await process_frame
+	await physics_frame
 
 
 func _assert(condition: bool, message: String) -> void:

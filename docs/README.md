@@ -32,6 +32,8 @@ This folder keeps the long-form project history that no longer needs to live in 
   - Full historical decision logs kept for traceability.
 - `docs/roadmap-history/`
   - Previous long-form roadmap and next-step documents.
+- `qa/scenarios/`
+  - Committed `godot-qa` smoke scenarios that complement the native `scripts/tests/test_runner.gd` suite.
 
 ## Current archive entrypoints
 
