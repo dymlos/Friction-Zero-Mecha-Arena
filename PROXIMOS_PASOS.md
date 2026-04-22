@@ -71,7 +71,7 @@
    - si se retocan `pulse_charge_spawn_distance`, velocidad o lifetime de `Pulso`, conservar la cobertura headless que hoy evita que el proyectil nazca solapado con su robot origen.
    - medir si `Ancla` realmente corta rutas/duelos con `Baliza` o si la supresion actual se siente demasiado sutil para justificar el rol de Control/Zona.
    - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Embestida/Iman/Derrape/Pulso/Baliza x/y` + estados `embestida/derrape/zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad + `ArchetypeAccent` por rol/skill + `StatusEffectIndicator` para `estabilidad/zona`) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
-   - decidir si el selector runtime actual ya alcanza como flujo de laboratorio o si el siguiente paso debe ser persistencia/presets por escena, mas claridad visual o reforzar con otra skill/regla al arquetipo que siga borroso.
+   - decidir si el selector runtime actual ya alcanza como flujo de laboratorio ahora que `F6` conserva slot/arquetipos/modos, o si el siguiente paso debe ser presets visibles/limpieza manual de setup, mas claridad visual o reforzar con otra skill/regla al arquetipo que siga borroso.
 
 6. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
    - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` usando tambien el toggle `F1` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.
@@ -134,7 +134,7 @@
   - medir si `unstable_disabled_explosion_radius_multiplier`, `unstable_disabled_explosion_impulse_multiplier` y `unstable_disabled_explosion_damage_multiplier` vuelven especial la sobrecarga sin transformar el overdrive en una ruta dominante de remate
 
 12. **Mejorar validacion jugable**
-   - usar tambien `F6` para saltar en runtime entre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn` antes de volver al editor; si cambia el set de laboratorios, mantener sincronizados `LAB_SCENE_VARIANTS`, la linea `Escena | ...` y `lab_scene_selector_test.gd`.
+   - usar tambien `F6` para saltar en runtime entre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn` antes de volver al editor; si cambia el set de laboratorios, mantener sincronizados `LAB_SCENE_VARIANTS`, la linea `Escena | ...` y la persistencia de loadout cubierta en `lab_scene_selector_test.gd`.
    - si cambia el wiring base de cualquiera de esas cuatro escenas, mantener tambien `main_scene_runtime_smoke_test.gd`: ahora es la red minima que fija carga runtime real, `MatchConfig`, HUD, arena y bootstrap por modo.
    - usar `godot --headless --path . -s res://scripts/tests/test_runner.gd` como entrypoint comun antes de caer en loops shell manuales; si cambia el layout de `scripts/tests`, mantener tambien `test_suite_runner_test.gd` para no perder discovery en silencio.
    - si un test depende de score real, derivar el valor esperado desde `MatchConfig`; si depende de lifecycle puro entre rondas, fijar `void/destruccion/inestable = 1` dentro del test.

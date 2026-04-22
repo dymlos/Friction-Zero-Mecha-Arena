@@ -329,7 +329,8 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - selector runtime de escena/laboratorio para acelerar playtests
   - `Main` ahora deja ciclar con `F6` entre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`, sin pasar por el editor de Godot
   - el HUD suma `Escena | ... | F6 cambia`, asi el laboratorio activo sigue legible mientras se compara Teams/FFA o base/rapido en pantalla compartida
-  - `lab_scene_selector_test.gd` cubre el cambio real de escena, el wrap del ciclo completo y la persistencia de esa pista de HUD en cada variante
+  - ese cambio de escena ahora tambien preserva el estado activo del laboratorio (`slot` elegido, overrides `Easy/Hard` y `RobotArchetypeConfig` por jugador) para no rearmar manualmente el setup al saltar entre variantes
+  - `lab_scene_selector_test.gd` cubre el cambio real de escena, el wrap del ciclo completo y que el loadout runtime sobreviva al salto junto con la pista de HUD
 - partes desprendidas con propietario original, pickup por cercania y retorno parcial
 - transporte de partes que bloquea el ataque prototipo
 - negacion basica de partes si el portador cae al vacio

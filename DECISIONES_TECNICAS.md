@@ -414,6 +414,10 @@
    - `Main` ahora mantiene `LAB_SCENE_VARIANTS`, expone `cycle_lab_scene_variant()` / `get_lab_scene_variant_summary_line()` y cambia escena con `F6` entre `main`, `main_teams_validation`, `main_ffa` y `main_ffa_validation`.
    - Motivo: el proyecto ya tenia cuatro rutas utiles de playtest pero seguir saltando desde el editor hacia lenta la iteracion; resolverlo dentro del mismo runtime conserva el prototipo beginner-friendly, mejora la comparacion Teams/FFA y reutiliza escenas ya mantenidas sin agregar otra UI o bootstrap paralelo.
 
+40a. **`F6` persiste el setup activo del laboratorio entre escenas**
+   - Antes de llamar `change_scene_to_file(...)`, `Main` serializa en memoria de sesion el `player_slot` seleccionado, `hard_mode_player_slots` y el `resource_path` del `RobotArchetypeConfig` activo por robot; al boot de la escena siguiente consume ese estado y lo reaplica antes de refrescar HUD/selector.
+   - Motivo: sin esa persistencia, comparar `Equipos` vs `FFA` o laboratorio base vs rapido exigia reconstruir manualmente el mismo setup en cada salto, metiendo friccion justo en el flujo de playtest que `F6` queria acelerar.
+
 41. **Incentivo de borde via pickup de reparacion instantanea**
    - El primer objetivo real de borde se resolvio con `EdgeRepairPickup`: un pickup universal simple, fijo y visible que cura la parte activa mas dañada al tocarlo; en cooldown mantiene el pedestal y apaga solo el nucleo.
    - Motivo: volver los flancos tentadores ya en el laboratorio sin introducir todavía inventario, rareza o una capa de items que opaque el nucleo de patinar/chocar.

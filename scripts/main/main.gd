@@ -58,6 +58,8 @@ const LAB_SCENE_VARIANTS := [
 	},
 ]
 
+static var _lab_runtime_session_state: Dictionary = {}
+
 @export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
 @export var lab_runtime_selector_enabled := true
 @export var lab_runtime_archetypes: Array[RobotArchetypeConfig] = []
@@ -76,12 +78,15 @@ const LAB_SCENE_VARIANTS := [
 var _arena: ArenaBase = null
 var _lab_selected_player_slot := 1
 var _applying_lab_selector_reset := false
+var _pending_lab_runtime_session_state: Dictionary = {}
 
 
 func _ready() -> void:
 	# Esta escena solo conecta piezas grandes: arena, robots, UI y sistemas.
 	# La logica concreta vive en scripts mas chicos para que el proyecto crezca ordenado.
 	_arena = _get_active_arena()
+	_pending_lab_runtime_session_state = _consume_lab_runtime_session_state()
+	_restore_lab_runtime_session_settings()
 	_configure_playable_prototype()
 	_configure_edge_pickup_layout_profile()
 	_connect_arena_pickups()
@@ -243,6 +248,7 @@ func cycle_lab_scene_variant() -> void:
 	if next_scene_path == "":
 		return
 
+	_store_lab_runtime_session_state()
 	get_tree().change_scene_to_file(next_scene_path)
 
 
@@ -280,6 +286,8 @@ func _configure_playable_prototype() -> void:
 		if robot.is_player_controlled:
 			robot.refresh_input_setup()
 		robot.set_round_intro_locked(false)
+
+	_apply_restored_lab_runtime_loadouts(robots)
 
 
 func _sync_round_intro_locks() -> void:
@@ -334,6 +342,93 @@ func _get_scene_robots() -> Array[RobotBase]:
 			robots.append(child as RobotBase)
 
 	return robots
+
+
+func _store_lab_runtime_session_state() -> void:
+	if not lab_runtime_selector_enabled:
+		return
+
+	var state := {
+		"selected_player_slot": _lab_selected_player_slot,
+		"hard_mode_player_slots": Array(hard_mode_player_slots),
+		"archetype_paths": {},
+	}
+	var archetype_paths: Dictionary = state["archetype_paths"]
+	for robot in _get_scene_robots():
+		if robot == null or robot.archetype_config == null:
+			continue
+
+		var resource_path := robot.archetype_config.resource_path
+		if resource_path == "":
+			continue
+
+		archetype_paths[robot.player_index] = resource_path
+
+	_lab_runtime_session_state = state
+
+
+func _consume_lab_runtime_session_state() -> Dictionary:
+	if _lab_runtime_session_state.is_empty():
+		return {}
+
+	var consumed_state := _lab_runtime_session_state.duplicate(true)
+	_lab_runtime_session_state.clear()
+	return consumed_state
+
+
+func _restore_lab_runtime_session_settings() -> void:
+	if not lab_runtime_selector_enabled or _pending_lab_runtime_session_state.is_empty():
+		return
+
+	var restored_selected_slot := int(_pending_lab_runtime_session_state.get("selected_player_slot", 0))
+	if restored_selected_slot > 0:
+		_lab_selected_player_slot = restored_selected_slot
+
+	var restored_hard_slots_value: Variant = _pending_lab_runtime_session_state.get("hard_mode_player_slots", [])
+	if restored_hard_slots_value is Array:
+		var next_slots := PackedInt32Array()
+		for slot in restored_hard_slots_value:
+			next_slots.append(int(slot))
+		hard_mode_player_slots = next_slots
+
+
+func _apply_restored_lab_runtime_loadouts(robots: Array[RobotBase]) -> void:
+	if not lab_runtime_selector_enabled or _pending_lab_runtime_session_state.is_empty():
+		return
+
+	var archetype_paths_value: Variant = _pending_lab_runtime_session_state.get("archetype_paths", {})
+	if not (archetype_paths_value is Dictionary):
+		_pending_lab_runtime_session_state.clear()
+		return
+	var archetype_paths: Dictionary = archetype_paths_value
+
+	for robot in robots:
+		if robot == null:
+			continue
+
+		var restored_path := str(archetype_paths.get(robot.player_index, ""))
+		var restored_archetype := _resolve_lab_runtime_archetype_by_path(restored_path)
+		if restored_archetype == null or restored_archetype == robot.archetype_config:
+			continue
+
+		robot.apply_runtime_loadout(restored_archetype, robot.control_mode)
+
+	_pending_lab_runtime_session_state.clear()
+
+
+func _resolve_lab_runtime_archetype_by_path(resource_path: String) -> RobotArchetypeConfig:
+	if resource_path == "":
+		return null
+
+	for config in _get_lab_runtime_archetypes():
+		if config != null and config.resource_path == resource_path:
+			return config
+
+	var loaded_config := load(resource_path)
+	if loaded_config is RobotArchetypeConfig:
+		return loaded_config as RobotArchetypeConfig
+
+	return null
 
 
 func _get_arena_spawn_points() -> Array[Marker3D]:
