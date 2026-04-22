@@ -92,6 +92,13 @@ func get_status_summary() -> String:
 	var segments: Array[String] = []
 	if is_instance_valid(owner_robot):
 		segments.append(owner_robot.get_support_input_hint())
+	segments.append(get_actionable_status_summary())
+
+	return " | ".join(segments)
+
+
+func get_actionable_status_summary() -> String:
+	var segments: Array[String] = []
 	if is_gate_disrupted():
 		segments.append("interferido")
 	var payload_label := get_support_payload_label()

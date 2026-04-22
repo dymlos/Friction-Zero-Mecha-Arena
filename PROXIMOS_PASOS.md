@@ -2,6 +2,12 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No perder la linea `Apoyo Pn | ...` al tocar el soporte seleccionado del laboratorio**
+ - `Main` ya expone `get_lab_selected_support_summary_line()` y la suma al round-state solo cuando `_find_post_death_support_ship(robot)` existe para el slot seleccionado.
+ - `PilotSupportShip.get_actionable_status_summary()` es ahora la fuente de verdad de esa linea; si cambian warnings, payload labels o target summaries del soporte, actualizar ese helper y no duplicar string-building en `Main`.
+ - Mantener `lab_runtime_selector_test.gd`: ahora cubre que la linea no exista antes de la baja y que aparezca como `Apoyo P1 | sin carga` apenas el slot seleccionado pasa a la nave post-muerte.
+ - Reabrir solo si el laboratorio deja de usar el round-state como capa persistente para el slot seleccionado o si el slice post-muerte cambia de formato de lectura.
+
 0. **No volver a dejar stale el resumen `Lab | ...` cuando el slot entra en `Apoyo activo`**
  - `Main._get_lab_robot_brief()` ya prioriza `_find_post_death_support_ship(robot)` y cambia de `Pn Ariete Easy/Hard` a `Pn Apoyo activo` cuando el slot seleccionado ya no controla su robot sino la nave post-muerte en `Teams`.
  - Si se retocan `get_lab_selector_summary_line()`, `_get_lab_robot_brief()`, el lifecycle del soporte o el round-state del laboratorio, mantener `lab_runtime_selector_test.gd`: ahora cubre en el mismo flujo la transicion real `Lab | P1 Ariete Easy ...` -> `Lab | P1 Apoyo activo ...`.

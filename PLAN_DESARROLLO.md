@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El round-state del laboratorio ahora deja visible tambien el estado accionable del slot seleccionado cuando ese jugador ya paso a `Apoyo activo` en `Teams`: junto a `Lab | P1 Apoyo activo` y `Control P1 | usa C | objetivo Q/E`, aparece `Apoyo P1 | ...` con la carga/target real del soporte (`sin carga`, `interferencia > ...`, warnings como `fuera de rango`, etc.).
+- La implementacion se repartio en un seam chico para no duplicar reglas: `PilotSupportShip.get_status_summary()` sigue armando la linea completa del roster y ahora delega la parte accionable en `get_actionable_status_summary()`, mientras `Main.get_lab_selected_support_summary_line()` reutiliza ese helper y publica la nueva linea solo cuando el slot seleccionado realmente tiene nave post-muerte.
+- `lab_runtime_selector_test.gd` fija el seam en dos pasos: antes de la baja no debe aparecer ninguna linea `Apoyo P1 | ...`; despues de la caida del slot seleccionado, el round-state debe mostrar `Apoyo P1 | sin carga`.
+- Validacion focalizada: `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - El resumen `Lab | ...` del slot seleccionado ya no queda stale cuando ese jugador pasa a `Apoyo activo` en `Teams`: la misma línea que antes seguía anunciando `P1 Ariete Easy/Hard` ahora cambia a `P1 Apoyo activo`, alineada con los controles reales del soporte post-muerte.
 - La corrección vive en `Main._get_lab_robot_brief()`: antes de resumir arquetipo/modo consulta `_find_post_death_support_ship(robot)` y, si la nave existe, prioriza el estado jugable actual del slot en vez del loadout del robot caído.
 - `lab_runtime_selector_test.gd` fija el seam junto al hint de controles: arranca con `Lab | P1 Ariete Easy ...`, tras la baja del slot seleccionado exige `Apoyo activo` dentro del resumen runtime y también verifica que desaparezca el texto stale `Ariete Easy`.

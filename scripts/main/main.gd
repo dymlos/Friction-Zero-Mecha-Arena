@@ -262,6 +262,21 @@ func get_lab_hud_mode_summary_line() -> String:
 	return "HUD | %s | F1 cambia" % hud_mode_label
 
 
+func get_lab_selected_support_summary_line() -> String:
+	if not lab_runtime_selector_enabled:
+		return ""
+
+	var robot := _get_selected_lab_robot()
+	if robot == null:
+		return ""
+
+	var support_ship := _find_post_death_support_ship(robot)
+	if support_ship == null:
+		return ""
+
+	return "Apoyo P%s | %s" % [robot.player_index, support_ship.get_actionable_status_summary()]
+
+
 func cycle_lab_scene_variant() -> void:
 	var current_index := _get_current_lab_scene_variant_index()
 	var next_index := wrapi(current_index + 1, 0, LAB_SCENE_VARIANTS.size())
@@ -675,6 +690,9 @@ func _build_round_state_lines() -> Array[String]:
 	var controls_line := get_lab_selected_controls_summary_line()
 	if controls_line != "":
 		lines.append(controls_line)
+	var support_line := get_lab_selected_support_summary_line()
+	if support_line != "":
+		lines.append(support_line)
 	if _arena == null:
 		return lines
 

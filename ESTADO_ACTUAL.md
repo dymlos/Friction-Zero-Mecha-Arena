@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Estado accionable persistente del soporte en el round-state del laboratorio (2026-04-22)
+
+- Estado: cuando el slot seleccionado del laboratorio ya paso a `Apoyo activo` en `Teams`, el round-state ahora deja visible tambien la capa accionable del soporte y no obliga a mirar solo el roster para saber si la nave esta `sin carga`, `interferida` o que payload/target tiene listo.
+- Correccion aplicada:
+  - `scripts/support/pilot_support_ship.gd` ahora separa `get_actionable_status_summary()` de `get_status_summary()`.
+  - `get_status_summary()` sigue siendo la fuente completa para el roster (`hint de input + estado accionable`).
+  - `scripts/main/main.gd` agrega `get_lab_selected_support_summary_line()` y `_build_round_state_lines()` publica `Apoyo Pn | ...` solo cuando el slot seleccionado realmente ya tiene una `PilotSupportShip` activa.
+  - `scripts/tests/lab_runtime_selector_test.gd` fija la regresion: antes de la baja no debe existir `Apoyo P1 | ...`; despues de la caida del slot seleccionado debe aparecer `Apoyo P1 | sin carga`.
+- Resultado:
+  - el round-state del laboratorio ya deja juntas las tres piezas minimas del slice post-muerte seleccionado: identidad (`Lab | P1 Apoyo activo`), controles (`Control P1 | usa C | objetivo Q/E`) y estado accionable (`Apoyo P1 | ...`).
+  - `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 82 tests`).
+
 ## Resumen `Lab | ...` alineado con `Apoyo activo` (2026-04-22)
 
 - Estado: el resumen persistente del selector runtime ya no sigue anunciando `P1 Ariete Easy/Hard` cuando ese slot seleccionado cae en `Teams` y pasa a jugar desde la nave de soporte.

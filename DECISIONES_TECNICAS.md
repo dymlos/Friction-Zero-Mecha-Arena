@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **El round-state del laboratorio tambien debe dejar visible el estado accionable del soporte seleccionado**
+ - `PilotSupportShip.get_status_summary()` ya no mezcla dos responsabilidades internamente: sigue armando la linea completa del roster, pero delega la parte reutilizable de gameplay en `get_actionable_status_summary()`.
+ - `Main.get_lab_selected_support_summary_line()` consulta `_find_post_death_support_ship(robot)` y, solo si el slot seleccionado realmente ya paso a la nave post-muerte, publica `Apoyo Pn | ...` dentro de `_build_round_state_lines()`.
+ - `lab_runtime_selector_test.gd` fija el contrato: antes de la baja no existe ninguna linea `Apoyo P1 | ...`; despues de pasar a soporte debe aparecer `Apoyo P1 | sin carga`.
+ - Motivo: `Lab | ...` y `Control Pn | ...` ya explicaban identidad y botones del slot seleccionado, pero el estado accionable seguia escondido en el roster. Reusar la misma fuente de verdad del soporte mantiene legibilidad sin duplicar reglas de payload/target/warnings.
+
 1. **El resumen `Lab | ...` del laboratorio debe seguir el estado jugable real del slot seleccionado**
  - `Main._get_lab_robot_brief()` ya no resume siempre `P<n> <Arquetipo> <Easy/Hard>`; antes consulta `_find_post_death_support_ship(robot)` y, si el slot ya juega desde la nave `Teams`, pasa a devolver `P<n> Apoyo activo`.
  - `lab_runtime_selector_test.gd` fija el contrato junto con la chuleta `Control Pn | ...`: antes de la baja el resumen sigue mostrando `P1 Ariete Easy`, y tras pasar al soporte exige `Apoyo activo` sin conservar el texto stale del robot caído.

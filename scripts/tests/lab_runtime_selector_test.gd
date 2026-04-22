@@ -212,6 +212,10 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 		String(main.call("get_lab_selector_summary_line")).contains("P1 Ariete Easy"),
 		"Antes de una baja, el resumen del selector runtime deberia seguir describiendo el robot seleccionado."
 	)
+	_assert(
+		not round_label.text.contains("Apoyo P1 |"),
+		"Antes de una baja, el round-state no deberia anunciar una linea de apoyo para un robot que sigue activo."
+	)
 
 	robots[0].fall_into_void()
 	await process_frame
@@ -234,6 +238,10 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 	_assert(
 		not String(main.call("get_lab_selector_summary_line")).contains("Ariete Easy"),
 		"Si el slot seleccionado ya esta en `Apoyo activo`, el resumen del laboratorio no deberia seguir anunciandolo como si controlara el robot original."
+	)
+	_assert(
+		round_label.text.contains("Apoyo P1 | sin carga"),
+		"Si el slot seleccionado pasa a la nave de apoyo, el round-state deberia dejar visible tambien su estado accionable persistente."
 	)
 
 	await _cleanup_node(main)
