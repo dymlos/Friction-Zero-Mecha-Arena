@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El laboratorio ahora deja tambien una referencia persistente del modo HUD activo dentro del round-state (`HUD | explicito/contextual | F1 cambia`), evitando que el override runtime de `F1` quede visible solo en el `StatusLabel` temporal.
+- La implementacion vive en `Main`: `get_lab_hud_mode_summary_line()` deriva el label real desde `MatchController.get_hud_detail_mode_label()` y `_build_round_state_lines()` la publica junto a `Escena | ...`, `Lab | ...` y `Control Pn | ...`, por lo que tambien sobrevive al salto `F6` entre laboratorios sin otra persistencia manual.
+- `lab_scene_selector_test.gd` fija el seam completo: el laboratorio arranca con `HUD | explicito | F1 cambia`, cambia a `HUD | contextual | F1 cambia` al alternar `F1` y conserva esa misma linea tras recargar la siguiente escena con `F6`.
+- Validacion focalizada: `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` pasa.
+
 - El HUD vivo `Teams` ya no gasta una línea completa en `Marcador | Equipo 1 0 | Equipo 2 0` durante la apertura totalmente neutra del primer round; el score vuelve solo cuando una ronda decidida ya aporta contexto competitivo real.
 - La corrección vive en `MatchController._should_show_live_score_summary()`: `FFA` conserva su gating propio de standings, mientras `Teams` oculta el marcador solo durante el match activo sin rondas decididas (`_match_decided_rounds == 0`), manteniendo recap y resultado final intactos.
 - `teams_live_scoreboard_opening_test.gd` fija el seam completo: el opening `Teams` no debe mostrar `Marcador | ...`, pero tras cerrar una ronda por vacío la línea vuelve a aparecer en el HUD vivo.

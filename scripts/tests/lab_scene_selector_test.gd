@@ -62,6 +62,10 @@ func _validate_lab_scene_selector_cycles_between_variants() -> void:
 			round_label.text.contains("Escena | Equipos base"),
 			"El HUD deberia dejar visible la escena activa para el loop de laboratorio."
 		)
+		_assert(
+			round_label.text.contains("HUD | explicito | F1 cambia"),
+			"El HUD del laboratorio deberia dejar visible tambien el modo HUD activo para no depender solo del status temporal."
+		)
 
 	for index in range(1, EXPECTED_SCENE_ORDER.size()):
 		var expected: Dictionary = EXPECTED_SCENE_ORDER[index]
@@ -231,6 +235,10 @@ func _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants() -
 		"Antes del salto de escena, F1 deberia haber movido el HUD al modo contextual."
 	)
 	_assert(
+		round_label.text.contains("HUD | contextual | F1 cambia"),
+		"Tras alternar con F1, el round-state deberia anunciar en forma persistente el modo HUD activo."
+	)
+	_assert(
 		status_label.text.contains("HUD contextual"),
 		"El status runtime deberia anunciar el HUD contextual antes de persistirlo entre escenas."
 	)
@@ -256,6 +264,10 @@ func _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants() -
 	_assert(
 		not reloaded_round_label.text.contains("Modo |"),
 		"Tras cambiar de escena con F6, el override runtime del HUD deberia seguir en contextual."
+	)
+	_assert(
+		reloaded_round_label.text.contains("HUD | contextual | F1 cambia"),
+		"Tras cambiar de escena con F6, la referencia persistente del modo HUD deberia conservarse en el round-state."
 	)
 	_assert(
 		reloaded_status_label.text.contains("HUD contextual"),

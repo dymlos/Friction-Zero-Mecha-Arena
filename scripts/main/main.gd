@@ -252,6 +252,11 @@ func get_lab_scene_variant_summary_line() -> String:
 	return "Escena | %s | F6 cambia" % String(scene_variant.get("label", "laboratorio"))
 
 
+func get_lab_hud_mode_summary_line() -> String:
+	var hud_mode_label := match_controller.get_hud_detail_mode_label().replace("HUD ", "")
+	return "HUD | %s | F1 cambia" % hud_mode_label
+
+
 func cycle_lab_scene_variant() -> void:
 	var current_index := _get_current_lab_scene_variant_index()
 	var next_index := wrapi(current_index + 1, 0, LAB_SCENE_VARIANTS.size())
@@ -658,6 +663,7 @@ func _build_hud_toggle_status() -> String:
 func _build_round_state_lines() -> Array[String]:
 	var lines := match_controller.get_round_state_lines()
 	lines.append(get_lab_scene_variant_summary_line())
+	lines.append(get_lab_hud_mode_summary_line())
 	var lab_selector_line := get_lab_selector_summary_line()
 	if lab_selector_line != "":
 		lines.append(lab_selector_line)

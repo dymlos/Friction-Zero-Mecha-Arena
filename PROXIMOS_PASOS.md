@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No perder la linea `HUD | ... | F1 cambia` al tocar el HUD dual o el ciclo de escenas**
+ - `Main` ya expone `get_lab_hud_mode_summary_line()` y la suma al round-state del laboratorio; la fuente de verdad sigue siendo `MatchController.get_hud_detail_mode_label()`.
+ - Si se retocan `_build_round_state_lines()`, `cycle_hud_detail_mode()`, `apply_runtime_hud_detail_mode()` o el salto `F6`, mantener `lab_scene_selector_test.gd`: ahora cubre arranque `explicito`, cambio a `contextual` y persistencia de la misma linea tras recargar otra escena.
+ - Reabrir solo si el laboratorio deja de usar el round-state como referencia runtime principal del HUD o si aparece una pantalla pre-match que vuelva redundante esta linea.
+
 0. **No reabrir el marcador neutro de `Teams` al tocar el HUD vivo**
  - `MatchController` ya oculta `Marcador | ...` mientras el match `Teams` sigue en la apertura sin rondas decididas; recap y resultado final no usan ese gating.
  - Si se retocan `_build_score_summary_line()`, `_should_show_live_score_summary()` o el lifecycle de `_match_decided_rounds`, mantener `teams_live_scoreboard_opening_test.gd`; esa regresión ahora fija opening limpio + score visible otra vez tras cerrar una ronda.

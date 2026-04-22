@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **El laboratorio deja visible el modo HUD activo dentro del round-state**
+ - `Main` agrega `get_lab_hud_mode_summary_line()` y publica `HUD | explicito/contextual | F1 cambia` junto a `Escena | ...`, `Lab | ...` y `Control Pn | ...`.
+ - La linea deriva de `MatchController.get_hud_detail_mode_label()` y no de otro flag local, asi que sigue el override runtime real de `F1` y tambien persiste al saltar de laboratorio con `F6`.
+ - `lab_scene_selector_test.gd` fija el contrato: arranque explicito, cambio a contextual y persistencia tras recargar otra escena.
+ - Motivo: el HUD dual ya podia alternarse y persistirse entre laboratorios, pero fuera del `StatusLabel` temporal seguia faltando una referencia estable para saber en que modo habia quedado el laboratorio. Resolverlo dentro del round-state mantiene el loop autoexplicativo sin abrir otro panel ni otra fuente de verdad.
+
 1. **El HUD vivo `Teams` no debe gastar una línea en un marcador 0-0 totalmente neutro**
  - `MatchController._build_score_summary_line()` ahora delega en `_should_show_live_score_summary()`.
  - `FFA` conserva su gating actual de standings/score útil; `Teams` solo oculta el marcador mientras la ronda activa sigue en el estado inicial sin rondas decididas (`_match_decided_rounds == 0`).

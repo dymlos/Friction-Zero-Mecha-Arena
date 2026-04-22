@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Referencia persistente del modo HUD en el laboratorio (2026-04-22)
+
+- Estado: el laboratorio ya no depende solo del `StatusLabel` temporal para recordar si el HUD quedo en modo explicito o contextual; el propio round-state deja visible `HUD | explicito/contextual | F1 cambia`.
+- Correccion aplicada:
+  - `scripts/main/main.gd` agrega `get_lab_hud_mode_summary_line()` y la suma dentro de `_build_round_state_lines()`.
+  - la linea deriva directamente de `MatchController.get_hud_detail_mode_label()`, asi que sigue el override real de `F1` y tambien sobrevive al salto `F6` entre laboratorios sin otro estado paralelo.
+  - `scripts/tests/lab_scene_selector_test.gd` fija la regresion: arranque explicito, cambio a contextual y persistencia de la misma lectura tras cambiar de escena.
+- Resultado:
+  - el flujo de laboratorio queda mas autoexplicativo para depurar/validar HUD dual en pantalla compartida.
+  - `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` pasa.
+
 ## HUD vivo Teams sin marcador neutro en la apertura (2026-04-22)
 
 - Estado: la apertura del laboratorio `Teams` ya no arranca con una línea de score 0-0 que todavía no explica nada del match.
