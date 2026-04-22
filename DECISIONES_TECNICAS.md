@@ -794,6 +794,11 @@
   - También valida que una parte en mano no se destruya por limpieza de piso, conservando la garantía de rescate/negación cuando existe portador.
   - Motivo: la presión de arena y limpieza automática no debe introducir pérdida oculta de partida en un sistema de rescate que depende de lectura de ventana espacial; el test evita regresiones de mantenibilidad sin añadir controles nuevos.
 
+107. **El soporte aliado re-sincroniza al mejor objetivo util solo cuando sigue en modo auto**
+  - `PilotSupportShip._should_resync_to_default_target(...)` conserva para `interferencia` el contrato viejo de no rebotar por prioridad fina, pero para `stabilizer/surge/mobility` ahora compara tambien la prioridad del default actual contra el target auto-seleccionado.
+  - `_refresh_target_selection()` limpia ademas un override manual stale si el runtime ya volvio por si solo al mismo target default.
+  - Motivo: el carril de apoyo tenia una fuga de utilidad real. Si el jugador nunca habia tocado el target, la nave podia quedarse en un aliado “todavia valido” aunque otro pasara a ser claramente mas urgente en esa misma ronda. La correccion mantiene la intencion humana cuando existe override y evita abrir flicker extra en `interferencia`.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

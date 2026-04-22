@@ -393,6 +393,8 @@ func _refresh_target_selection(force_default: bool = false) -> bool:
 	var default_target := _get_default_support_target(candidates)
 	if force_default or not _contains_support_target(candidates, _selected_target_robot):
 		return _assign_selected_target(default_target, false)
+	if _manual_target_override and _selected_target_robot == default_target:
+		return _assign_selected_target(default_target, false)
 	if _should_resync_to_default_target(default_target):
 		return _assign_selected_target(default_target, false)
 
@@ -479,8 +481,14 @@ func _should_resync_to_default_target(default_target: RobotBase) -> bool:
 		return false
 	if default_target == null or default_target == _selected_target_robot:
 		return false
+	if not _is_payload_actionable_on_target(default_target):
+		return false
+	if not _is_payload_actionable_on_target(_selected_target_robot):
+		return true
+	if _support_payload_name == PilotSupportPickup.PAYLOAD_INTERFERENCE:
+		return false
 
-	return _is_payload_actionable_on_target(default_target) and not _is_payload_actionable_on_target(_selected_target_robot)
+	return _get_support_target_priority_score(default_target) > _get_support_target_priority_score(_selected_target_robot)
 
 
 func _compare_support_targets(left: RobotBase, right: RobotBase) -> bool:

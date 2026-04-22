@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El soporte aliado post-muerte ya no se queda clavado en un auto-target simplemente “todavia util” cuando aparece otro aliado claramente mas urgente durante la misma ronda.
+- La correccion vive en `PilotSupportShip._should_resync_to_default_target(...)`: para `estabilizador`, `energia` y `movilidad`, si no hubo override manual y el target default sube de prioridad real, la nave resincroniza al mejor aliado; `interferencia` conserva el criterio previo de no rebotar salvo que el target actual deje de ser accionable.
+- `_refresh_target_selection()` tambien limpia overrides manuales stale si el estado runtime ya convergio otra vez al mismo target default, evitando que ese flag bloquee resincronizaciones posteriores sin aportar una intencion real del jugador.
+- `team_post_death_support_targeting_test.gd` suma la regresion concreta: empezar sobre el aliado levemente dañado, herir mas fuerte a otro aliado en runtime y comprobar que `stabilizer` salta al nuevo objetivo prioritario sin input manual. La fixture ahora congela candidatos teletransportados (`is_player_controlled = false`, velocidad/impulso en cero) y la nueva prueba fuerza `_refresh_target_selection()` para no depender del timing global de la suite.
+- Validacion cerrada: `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_actionability_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 79 tests`).
+
 - El HUD contextual ya no arrastra la causa de baja dentro de `Apoyo activo`: cuando un jugador eliminado sigue activo desde `PilotSupportShip`, el roster limpio conserva `Apoyo activo` + hint/payload de soporte, pero deja la causa (`vacio`, etc.) para el HUD explicito y el cierre.
 - La poda vive solo en `MatchController._build_robot_status_line(...)`: si `contextual_hud` y `has_active_support` son verdaderos, `state_detail` deja de repetir la causa de eliminacion porque ya no es la informacion mas accionable de ese estado.
 - `hud_detail_mode_test.gd` ahora cubre explicitamente ese caso: en HUD contextual, una baja con soporte activo debe seguir mostrando `Apoyo activo`, `get_support_input_hint()` y `sin carga`, pero no la causa de baja.

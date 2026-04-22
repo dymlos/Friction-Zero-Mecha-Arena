@@ -15,6 +15,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await _verify_stabilizer_defaults_to_most_damaged_ally()
+	await _verify_stabilizer_retargets_to_new_more_damaged_ally_without_manual_override()
 	await _verify_interference_defaults_to_unsuppressed_enemy()
 	await _verify_interference_defaults_to_enemy_without_stability()
 	await _verify_interference_retargets_when_auto_selected_enemy_becomes_immune()
@@ -126,6 +127,71 @@ func _verify_interference_defaults_to_unsuppressed_enemy() -> void:
 	_assert(
 		support_ship.get_selected_target_robot() == fresh_enemy,
 		"Si hay mas de un rival valido, `interferencia` deberia priorizar a uno no suprimido antes que reciclar el ya afectado."
+	)
+
+	await _cleanup_main(main)
+
+
+func _verify_stabilizer_retargets_to_new_more_damaged_ally_without_manual_override() -> void:
+	var main := await _instantiate_main_scene()
+	var robots := _get_scene_robots(main)
+	var support_root := main.get_node_or_null("SupportRoot")
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar retargeting aliado runtime.")
+	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
+	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
+	if robots.size() < 4 or support_root == null or match_controller == null:
+		await _cleanup_main(main)
+		return
+
+	robots[0].team_id = 1
+	robots[1].team_id = 1
+	robots[2].team_id = 1
+	robots[3].team_id = 2
+	match_controller.match_mode = MatchController.MatchMode.TEAMS
+	match_controller.match_config.round_intro_duration_teams = 0.0
+	match_controller.start_match()
+	await _wait_frames(2)
+
+	var initially_damaged_ally := robots[0]
+	var newly_more_damaged_ally := robots[2]
+	var ship_anchor := Vector3(0.0, 0.0, 0.0)
+	_stabilize_support_target_candidate(null, initially_damaged_ally, ship_anchor + Vector3(-1.2, 0.0, 1.0))
+	_stabilize_support_target_candidate(null, newly_more_damaged_ally, ship_anchor + Vector3(1.2, 0.0, 1.6))
+	initially_damaged_ally.apply_damage_to_part("left_arm", initially_damaged_ally.max_part_health * 0.15, Vector3.LEFT)
+	robots[1].fall_into_void()
+	await _wait_frames(4)
+
+	_assert(
+		support_root.get_child_count() == 1,
+		"Al caer un aliado con otro duo vivo deberia aparecer una unica nave de apoyo."
+	)
+	if support_root.get_child_count() != 1:
+		await _cleanup_main(main)
+		return
+
+	var support_ship := support_root.get_child(0) as PilotSupportShip
+	_assert(support_ship != null, "La nave de apoyo deberia instanciarse correctamente.")
+	if support_ship == null:
+		await _cleanup_main(main)
+		return
+
+	var stored := support_ship.store_support_payload(PilotSupportPickup.PAYLOAD_STABILIZER)
+	_assert(stored, "La nave deberia aceptar una carga estabilizadora directa para validar retargeting aliado runtime.")
+	await _wait_frames(2)
+
+	_assert(
+		support_ship.get_selected_target_robot() == initially_damaged_ally,
+		"Antes del cambio runtime, el auto-target deberia seguir apuntando al unico aliado dañado."
+	)
+
+	newly_more_damaged_ally.apply_damage_to_part("right_leg", newly_more_damaged_ally.max_part_health * 0.55, Vector3.RIGHT)
+	support_ship.call("_refresh_target_selection")
+	await _wait_frames(1)
+
+	_assert(
+		support_ship.get_selected_target_robot() == newly_more_damaged_ally,
+		"Sin override manual, `estabilizador` deberia resincronizarse con el aliado que paso a ser claramente mas urgente durante la ronda."
 	)
 
 	await _cleanup_main(main)
@@ -558,6 +624,7 @@ func _stabilize_support_target_candidate(
 	if robot == null:
 		return
 
+	robot.is_player_controlled = false
 	robot.global_position = target_position
 	robot.velocity = Vector3.ZERO
 	robot.set("_planar_velocity", Vector3.ZERO)

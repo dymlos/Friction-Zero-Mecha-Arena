@@ -46,6 +46,8 @@
   - Partir de `support_use_total`, `support_payload_use_*` y `support_rounds_decided` ya registrados en `MatchStats` para guiar ajustes.
   - Ajustar `PilotSupportShip` y gates de carril solo con evidencia de sesiones cortas de Teams; evitar cambios sin efecto en rondas decisivas.
   - El siguiente foco de este slice ya no es “a quien apunta por defecto”, sino validar si el valor tactico real del carril justifica `stabilizer/surge/mobility/interference` en 2v2 y escenas futuras con mas aliados.
+  - Si se vuelve a tocar `_should_resync_to_default_target(...)` o `_refresh_target_selection()`, conservar tambien la nueva regresion de `stabilizer` que fuerza un cambio de prioridad aliado en runtime sin override manual; ese carril ya no debe volver a quedarse clavado en un target solo “todavia util”.
+  - Si se retoca otra vez la fixture de `team_post_death_support_targeting_test.gd`, mantener candidatos congelados (`is_player_controlled = false`, velocidad/impulso en cero) o una regla equivalente: esta suite vuelve a ponerse flaky cuando los robots teletransportados siguen leyendo input o arrastran movimiento residual.
   - Mantener la telemetría compacta si comunica valor; si no mejora `support_rounds_decided`, priorizar estabilidad de loops antes que tuning.
   - Archivos objetivo: `scripts/support/pilot_support_ship.gd`, `scripts/systems/match_controller.gd`, `scenes/main/main.tscn`, `scenes/main/main_teams_validation.tscn`, `data/config/teams_validation_match_config.tres`.
 

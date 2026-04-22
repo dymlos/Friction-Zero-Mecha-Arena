@@ -711,6 +711,10 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
 - La regression reciente del soporte Teams ya quedo cerrada:
   - el gasto de payload ya no depende de esperar al siguiente `_physics_process()` para apagar marca alta, marca de piso o radio de `interferencia`
   - la suite completa vuelve a pasar en una sola corrida headless, lo que deja el slice post-muerte mas confiable para futuras iteraciones
+- El auto-target aliado del soporte Teams tambien ya corrige prioridades runtime sin pedir otro input:
+  - `stabilizer`, `surge` y `movilidad` vuelven a seguir al aliado mas util cuando ese mejor objetivo cambia durante la ronda y el jugador nunca tomo control manual del target
+  - `interferencia` mantiene el contrato previo: no rebota entre rivales por prioridad fina, solo se resincroniza cuando el target actual deja de ser accionable
+  - la fixture headless de targeting ahora congela candidatos teletransportados y la regresion nueva fuerza el refresh de target explicitamente para no depender del orden/timing de la suite
 - Se agregó el primer pickup universal de movilidad:
   - existe una escena nueva `edge_mobility_pickup.tscn` con pedestal persistente y cooldown visible
   - al tocarla, `RobotBase` activa una ventana breve de movilidad reforzada (`traccion + control`) sin tocar el sistema de energía ni agregar UI pesada
