@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## Revision estricta del baseline cerrada (2026-04-22)
+
+- Estado: la base actual del prototipo sigue consistente despues de releer documentacion, revisar escenas/sistemas clave y correr la suite headless completa.
+- Evidencia:
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa con `Suite OK: 82 tests`.
+  - la revision no encontro un defecto nuevo de produccion en `MatchController`, `Main`, `PilotSupportShip`, HUD ni escenas principales que justificara reabrir el slice reciente de laboratorio/soporte.
+- Decision:
+  - congelar el slice `selector runtime + Apoyo activo + HUD` en modo mantenimiento.
+  - mover la siguiente iteracion a validacion jugable corta de score por causa, apertura de `Teams` y ritmo de cierre, que hoy prometen mas retorno sobre la fantasia central que otra ronda de microajustes de laboratorio.
+
 ## `F2` ya cubre el salto entre robot vivo y `Apoyo activo` (2026-04-22)
 
 - Estado: el selector runtime del laboratorio ya tiene regresión headless para el caso donde el slot seleccionado sale de una nave post-muerte con `F2`, cae sobre un robot vivo, y luego vuelve a ese mismo slot ya en `Apoyo activo`.

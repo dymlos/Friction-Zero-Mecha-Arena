@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **No reabrir el slice `laboratorio + Apoyo activo` sin rojo nuevo o evidencia runtime**
+ - La revision estricta de 2026-04-22 volvio a pasar la suite completa (`godot --headless --path . -s res://scripts/tests/test_runner.gd` => `Suite OK: 82 tests`) despues de releer documentacion y revisar `Main`, `MatchController`, `PilotSupportShip`, HUD y escenas principales.
+ - Decision operativa: tratar selector runtime, round-state del laboratorio y soporte post-muerte como una capa estabilizada. Si no aparece un fallo headless nuevo o una observacion runtime concreta, no seguir microajustando ese paquete por intuicion.
+ - Motivo: el proyecto ya tiene una red amplia sobre `F1/F2/F3/F4/F5/F6`, resets de ronda, orden del roster, cues de soporte y persistencia entre escenas; el mayor retorno del siguiente ciclo esta en gameplay jugable corto (`score`, `opening Teams`, `cierre`) y no en otra variacion del mismo seam de laboratorio.
+
 1. **El selector runtime `F2` tambien debe mantenerse coherente al aterrizar sobre slots ya en `Apoyo activo`**
  - `Main.cycle_lab_selector_slot()` no necesita lógica especial extra: sigue cambiando solo `_lab_selected_player_slot`, y la reconstrucción real queda en `get_lab_selector_summary_line()`, `get_lab_selected_controls_summary_line()`, `get_lab_selected_support_summary_line()` y `_sync_lab_selector_visuals()`, todos apoyados en `_find_post_death_support_ship(selected_robot)`.
  - `lab_runtime_selector_test.gd` ahora fija el seam que faltaba: `P1 Apoyo activo -> F2 -> P2 vivo -> wrap F2 -> P1 Apoyo activo`. En el salto de salida exige volver al robot vivo y borrar `Apoyo P1 | ...`; en el retorno exige recuperar `Lab | P1 Apoyo activo`, controles de soporte y la marca runtime en `PilotSupportShip`.

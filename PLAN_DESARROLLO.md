@@ -4,6 +4,15 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Revision estricta de baseline cerrada:
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` vuelve a pasar completo con `Suite OK: 82 tests`.
+  - no aparecio ningun rojo nuevo en soporte post-muerte, selector runtime, HUD dual, bootstrap de escenas ni pacing base de choque.
+  - decision operativa: no seguir abriendo microajustes del slice `laboratorio + Apoyo activo` sin un fallo headless nuevo o evidencia runtime clara; la red actual ya cubre los seams recientes y el mayor retorno ahora esta en playtest corto de score/ritmo/cierre.
+- Siguiente foco recomendado tras esta revision:
+  - validar pesos de cierre por causa con sesiones cortas en `main.tscn` / `main_ffa.tscn`;
+  - medir la apertura coordinada de `Teams` antes de volver a tocar HUD o selector;
+  - mantener el soporte post-muerte en modo mantenimiento, no en expansion, salvo evidencia nueva.
+
 - El selector runtime del laboratorio ya tiene regresión explícita también para el seam `F2` cuando el slot seleccionado sale de `Apoyo activo` hacia otro robot vivo y luego vuelve a aterrizar sobre la misma nave post-muerte.
 - La revisión confirmó que la producción ya estaba alineada: `cycle_lab_selector_slot()` solo cambia `_lab_selected_player_slot`, y tanto `Lab | ...` como `Control Pn | ...`, `Apoyo Pn | ...` y `LabSelectionIndicator` se reconstruyen correctamente desde `_find_post_death_support_ship(...)`.
 - `lab_runtime_selector_test.gd` ahora congela el flujo completo `P1 Apoyo activo -> F2 -> P2 vivo -> wrap F2 -> P1 Apoyo activo`, exigiendo que el resumen, la referencia compacta, la línea de soporte y la marca diegética migren en ambos sentidos sin arrastrar estado stale.

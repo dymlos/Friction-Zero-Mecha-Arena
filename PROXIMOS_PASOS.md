@@ -2,6 +2,12 @@
 
 ## Siguiente iteracion recomendada
 
+## Prioridad inmediata tras la revision estricta (2026-04-22)
+
+1. Validar `score` por causa en playtest corto y decidir si `2/1/4` sigue siendo el perfil correcto sin volver dominante ninguna ruta de cierre.
+2. Medir la apertura coordinada de `Teams` en `main.tscn` y `main_teams_validation.tscn` antes de reabrir HUD o selector runtime.
+3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
+
 0. **No reabrir el `F2` del selector runtime al saltar entre un robot vivo y un slot ya en `Apoyo activo`**
  - `lab_runtime_selector_test.gd` ahora cubre el flujo `P1 Apoyo activo -> F2 -> P2 vivo -> wrap F2 -> P1 Apoyo activo`; el contrato es que `Lab | ...`, `Control Pn | ...`, `Apoyo Pn | ...` y la pista diegética cambien juntos en ambos sentidos.
  - Si se retocan `cycle_lab_selector_slot()`, `get_lab_selector_summary_line()`, `get_lab_selected_controls_summary_line()`, `get_lab_selected_support_summary_line()` o `_sync_lab_selector_visuals()`, mantener esa fixture.
