@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Los contratos FFA de resolucion de ronda ya quedan congelados tambien en `main_ffa_validation.tscn` (2026-04-22)
+
+- Estado: el lifecycle FFA de “queda un solo robot vivo -> gana `Player X` -> score individual -> reset de ronda” ya no depende solo de `main_ffa.tscn`; la red ahora tambien cubre `main_ffa_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `MatchController` y el laboratorio rapido FFA ya respetaban el mismo contrato; el gap real era de cobertura scene-level.
+  - `scripts/tests/ffa_round_resolution_test.gd` ahora valida la misma resolucion de ronda en `main_ffa.tscn` y `main_ffa_validation.tscn`.
+  - la fixture ahora fuerza `match_controller.match_config.rounds_to_win = 3` porque `ffa_validation_match_config.tres` usa `1` y si no el assert valida cierre final en vez de reset intermedio.
+- Resultado:
+  - FFA base/validation deja de tener otro punto ciego en cierre intermedio y marcador por robot; si una escena hermana pierde el reset de ronda o vuelve a etiquetar al ganador como equipo, la suite lo detecta antes de runtime.
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa con `Suite OK: 85 tests`.
+
 ## Los contratos scene-level de `roster` vivo, marcador FFA y stats/cierre de apoyo ya quedan congelados tambien en escenas `base` y `validation` (2026-04-22)
 
 - Estado: tres seams de HUD/cierre ya no dependen de una sola escena representativa por modo; la red ahora cubre tambien `main_ffa_validation.tscn` y `main_teams_validation.tscn`.

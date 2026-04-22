@@ -1,6 +1,9 @@
 extends SceneTree
 
-const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
+const FFA_SCENE_PATHS := [
+	"res://scenes/main/main_ffa.tscn",
+	"res://scenes/main/main_ffa_validation.tscn",
+]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
@@ -12,7 +15,18 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main = FFA_SCENE.instantiate()
+	for scene_path in FFA_SCENE_PATHS:
+		await _exercise_scene(scene_path)
+	_finish()
+
+
+func _exercise_scene(scene_path: String) -> void:
+	var scene := load(scene_path)
+	_assert(scene is PackedScene, "La prueba FFA deberia poder cargar %s." % scene_path)
+	if not (scene is PackedScene):
+		return
+
+	var main := (scene as PackedScene).instantiate()
 	root.add_child(main)
 
 	await process_frame
@@ -20,14 +34,15 @@ func _run() -> void:
 
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena FFA deberia exponer MatchController.")
-	_assert(robots.size() >= 4, "La escena FFA deberia ofrecer cuatro robots para resolver una ronda real.")
+	_assert(match_controller != null, "%s deberia exponer MatchController." % scene_path)
+	_assert(robots.size() >= 4, "%s deberia ofrecer cuatro robots para resolver una ronda real." % scene_path)
 	if match_controller == null or robots.size() < 4:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	match_controller.round_reset_delay = 0.2
+	if match_controller.match_config != null:
+		match_controller.match_config.rounds_to_win = 3
 	var void_round_points := 1
 	if match_controller.match_config != null:
 		void_round_points = match_controller.match_config.get_round_victory_points_for_cause(
@@ -39,7 +54,7 @@ func _run() -> void:
 	var initial_round_lines := match_controller.get_round_state_lines()
 	_assert(
 		_has_line_with_fragment(initial_round_lines, "Modo | FFA"),
-		"El HUD de estado deberia dejar explicito que la ronda actual corre en FFA."
+		"%s deberia dejar explicito que la ronda actual corre en FFA." % scene_path
 	)
 
 	robots[0].fall_into_void()
@@ -49,32 +64,34 @@ func _run() -> void:
 	robots[2].fall_into_void()
 	await create_timer(0.05).timeout
 
-	_assert(not match_controller.is_round_active(), "La ronda FFA deberia cerrarse al quedar un solo robot en pie.")
+	_assert(
+		not match_controller.is_round_active(),
+		"%s deberia cerrar la ronda FFA al quedar un solo robot en pie." % scene_path
+	)
 	_assert(
 		match_controller.get_round_status_line().contains("Player 4"),
-		"El ganador de la ronda FFA deberia anunciarse por nombre de robot, no por equipo."
+		"%s deberia anunciar al ganador FFA por nombre de robot, no por equipo." % scene_path
 	)
 	_assert(
 		not match_controller.get_round_status_line().contains("Equipo"),
-		"El cierre de ronda FFA no deberia usar etiquetas de equipo."
+		"%s no deberia usar etiquetas de equipo al cerrar una ronda FFA." % scene_path
 	)
 
 	var resolved_round_lines := match_controller.get_round_state_lines()
 	_assert(
 		_has_line_with_fragment(resolved_round_lines, "Modo | FFA"),
-		"La lectura de modo deberia persistir tambien cuando la ronda ya se resolvio."
+		"%s deberia preservar la lectura de modo tras resolver la ronda." % scene_path
 	)
 	_assert(
 		_has_line_with_fragment(resolved_round_lines, "%s %s" % [robots[3].display_name, void_round_points]),
-		"El marcador FFA deberia reflejar los puntos configurados para el robot ganador."
+		"%s deberia reflejar en el marcador FFA los puntos configurados del ganador." % scene_path
 	)
 
 	await create_timer(match_controller.round_reset_delay + 0.25).timeout
-	_assert(match_controller.is_round_active(), "Tras el reset deberia comenzar otra ronda FFA.")
+	_assert(match_controller.is_round_active(), "%s deberia reiniciar otra ronda FFA." % scene_path)
 	await create_timer(0.35).timeout
 
 	await _cleanup_main(main)
-	_finish()
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:

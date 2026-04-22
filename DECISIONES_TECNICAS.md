@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **La resolucion de ronda FFA tambien debe congelarse sobre `main_ffa.tscn` y `main_ffa_validation.tscn`**
+ - `ffa_round_resolution_test.gd` ahora recorre `main_ffa.tscn` y `main_ffa_validation.tscn`.
+ - Hallazgo de fixture: `ffa_validation_match_config.tres` usa `rounds_to_win = 1`, asi que el test fija `match_config.rounds_to_win = 3` para validar reset intermedio real y no un cierre final accidental.
+ - No hubo cambio de produccion: la revision estricta confirmo que `MatchController` y la escena rapida FFA ya estaban alineados; el gap real era de cobertura scene-level.
+ - Motivo: opening, recap y cierre final FFA ya estaban tratados como contratos compartidos entre `base/validation`, pero todavia faltaba congelar tambien el lifecycle minimo de ronda que sostiene score individual y reset automatico.
+
 1. **Los contratos scene-level de `roster` vivo, marcador FFA y stats/cierre de apoyo tambien deben congelarse sobre escenas `base` y `validation`**
  - `ffa_live_scoreboard_order_test.gd` ahora recorre `main_ffa.tscn` y `main_ffa_validation.tscn`; `live_roster_order_test.gd` ahora recorre `main_ffa.tscn` + `main_ffa_validation.tscn` para `FFA` y `main.tscn` + `main_teams_validation.tscn` para `Teams`; `support_match_stats_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
  - No hubo cambio de produccion: la revision estricta confirmo que `MatchController`, `Main` y los laboratorios ya estaban alineados; el gap real era de cobertura scene-level sobre HUD vivo y cierre de apoyo.

@@ -4,6 +4,14 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los contratos FFA de resolucion de ronda ya quedan congelados tambien en `main_ffa_validation.tscn`:
+  - la revision estricta encontro otro hueco scene-level: `ffa_round_resolution_test.gd` seguia tratando `main_ffa.tscn` como unica escena representativa aunque el mismo lifecycle FFA vive tambien en `main_ffa_validation.tscn`.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion:
+    - `scripts/tests/ffa_round_resolution_test.gd` ahora recorre `main_ffa.tscn` y `main_ffa_validation.tscn`.
+    - hallazgo de fixture: la escena de validacion usa `rounds_to_win = 1`, asi que el test fija `match_config.rounds_to_win = 3` para validar reset intermedio real y no cierre final accidental.
+  - decision operativa: tratar tambien la resolucion de ronda FFA como contrato compartido entre laboratorios `base/validation`, no como assert de una sola escena.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/ffa_round_resolution_test.gd`, `ffa_validation_lab_scene_test.gd` y `test_runner.gd`.
+
 - Los contratos scene-level de `roster` vivo, marcador FFA y stats/cierre de apoyo ahora tambien quedan congelados en escenas `base` y `validation`:
   - la revision estricta encontro otro hueco scene-level: `ffa_live_scoreboard_order_test.gd`, `live_roster_order_test.gd` y `support_match_stats_test.gd` seguian usando una sola escena representativa aunque las mismas superficies viven tambien en `main_ffa_validation.tscn` y `main_teams_validation.tscn`.
   - no hizo falta tocar produccion; `MatchController`, `Main` y los laboratorios ya estaban alineados. La correccion vive en la red de regresion:

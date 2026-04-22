@@ -14,6 +14,12 @@
  - `support_match_stats_test.gd` ya congela `Aporte de apoyo | ...` y `Stats | Equipo 1 | apoyo ...` en recap lateral y resultado final de las dos escenas `Teams`.
  - Si se retocan HUD vivo, `RecapPanel`, `MatchResultPanel` o wiring del soporte post-muerte, tocar siempre la pareja `base/validation` como una misma superficie contractual y mantener estas tres regresiones.
 
+0. **No volver a dejar drift entre `main_ffa.tscn` y `main_ffa_validation.tscn` en resolucion de ronda FFA**
+ - `ffa_round_resolution_test.gd` ya congela en ambas escenas FFA el seam minimo `queda un robot vivo -> gana Player X -> score individual -> reset de ronda`.
+ - No volver a asumir que ambos laboratorios comparten el mismo target de match: la fixture ya fija `match_config.rounds_to_win = 3` porque `ffa_validation_match_config.tres` usa `1`.
+ - Si se retocan `MatchController`, el wording del ganador FFA o el lifecycle `round_reset_delay`, tocar siempre `main_ffa.tscn` y `main_ffa_validation.tscn` como una misma superficie contractual y mantener esta regresion.
+ - Reabrir solo si se decide separar deliberadamente el lifecycle FFA entre laboratorio base y rapido.
+
 0. **No volver a dejar drift entre `main.tscn` y `main_teams_validation.tscn` en resolucion de ronda, reset de atribucion o explosion inestable**
  - `match_round_resolution_test.gd`, `match_elimination_source_reset_test.gd` y `match_unstable_explosion_readability_test.gd` ya congelan esos tres seams sobre las dos escenas `Teams`.
  - Si se retocan `MatchController`, `RecapPanel`, el lifecycle `round_reset_delay` o el wording de `explosion inestable`, tocar siempre `main.tscn` y `main_teams_validation.tscn` como una misma superficie contractual y mantener estas tres regresiones.
