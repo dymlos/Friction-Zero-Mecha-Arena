@@ -15,6 +15,12 @@
 3. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
 4. Revisar si queda algun seam scene-level de `Teams/FFA` todavia atado a una sola escena antes de volver a tocar produccion.
 
+0. **No volver a dejar el lifecycle/cleanup del soporte `Teams` congelado solo en `main.tscn`**
+ - `support_lifecycle_cleanup_test.gd` ya recorre `main.tscn` + `main_teams_validation.tscn` para los dos caminos criticos: reset de ronda y restart manual `F5`.
+ - Mantener la fixture actual si el objetivo sigue siendo lifecycle puro: intro `Teams` apagado, score `1/1/1` para reset intermedio, `rounds_to_win = 2` en reset y `1` en restart manual.
+ - Si se retocan `Main._clear_post_death_support()`, `SupportRoot`, `SupportLaneGate`, spawn/cleanup de `PilotSupportShip` o el restart/reset de `MatchController`, tocar siempre `main.tscn` y `main_teams_validation.tscn` como una misma superficie contractual y mantener esta regresion.
+ - Reabrir solo si una de las dos escenas vuelve a dejar nave stale, `support_state` stale o carril externo activo despues del cleanup.
+
 0. **No volver a dejar el soporte post-muerte `Teams` congelado solo en `main.tscn`**
  - `team_post_death_support_test.gd`, `team_post_death_support_targeting_test.gd`, `support_payload_actionability_test.gd` y `support_payload_availability_readability_test.gd` ya recorren `main.tscn` + `main_teams_validation.tscn`; `team_post_death_support_test.gd` tambien cubre `main_ffa.tscn` + `main_ffa_validation.tscn` para confirmar soporte desactivado.
  - La fixture del soporte ya neutraliza `intro + pressure drift` (`round_intro_duration_teams = 0`, `progressive_space_reduction = false`, `round_time_seconds >= 120`); no volver a medir targeting/lifecycle en la escena rapida con su pacing corto si el objetivo del test no es justamente ese pacing.

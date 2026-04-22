@@ -4,6 +4,14 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El cleanup/lifecycle scene-level del soporte post-muerte `Teams` ya queda congelado tambien en `main_teams_validation.tscn`:
+  - la revision estricta encontro otro hueco scene-level: `support_lifecycle_cleanup_test.gd` seguia validando reset de ronda + `F5` solo en `main.tscn`, aunque el mismo lifecycle tambien vive en la escena rapida `Teams`.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion:
+    - `scripts/tests/support_lifecycle_cleanup_test.gd` ahora recorre `main.tscn` + `main_teams_validation.tscn`.
+    - la fixture existente sigue alcanzando para el seam: intro `Teams` apagado, score `1/1/1` en el path de reset y `rounds_to_win` separado entre reset intermedio (`2`) y restart manual (`1`).
+  - decision operativa: tratar tambien cleanup de `SupportRoot`, limpieza de `support_state` y apagado del carril externo como contrato compartido entre laboratorios `Teams base/validation`, no como assert de una sola escena.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/support_lifecycle_cleanup_test.gd` y `test_runner.gd`.
+
 - Los contratos scene-level del soporte post-muerte `Teams` ya quedan congelados tambien en `main_teams_validation.tscn`, y `FFA` confirma soporte desactivado tambien en `main_ffa_validation.tscn`:
   - la revision estricta encontro otro hueco scene-level: `team_post_death_support_test.gd`, `team_post_death_support_targeting_test.gd`, `support_payload_actionability_test.gd` y `support_payload_availability_readability_test.gd` seguian instanciando solo `main.tscn` aunque el mismo slice vive tambien en la escena rapida `Teams`.
   - no hizo falta tocar produccion; la correccion vive en la red de regresion y en la fixture:

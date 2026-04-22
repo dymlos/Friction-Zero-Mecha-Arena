@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## El cleanup/lifecycle scene-level del soporte post-muerte `Teams` ya queda congelado tambien en `main_teams_validation.tscn` (2026-04-22)
+
+- Estado: el lifecycle de soporte `spawn -> ronda reseteada -> cleanup` y `spawn -> match cerrado -> F5 -> cleanup` ya no depende solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `Main`, `PilotSupportShip`, `SupportLaneGate` y `MatchController` ya respetaban el mismo contrato; el gap real era de cobertura scene-level.
+  - `scripts/tests/support_lifecycle_cleanup_test.gd` ahora valida reset de ronda y restart manual sobre `main.tscn` + `main_teams_validation.tscn`.
+  - la fixture existente sigue siendo suficiente para este seam: `round_intro_duration_teams = 0.0`, score `1/1/1` en el reset intermedio y `rounds_to_win` separado para distinguir reset de ronda vs reinicio manual.
+- Resultado:
+  - `Teams base/validation` deja de tener otro punto ciego en limpieza de soporte post-muerte; si una escena hermana deja una `PilotSupportShip` stale, arrastra `support_state` al match nuevo o mantiene el carril externo activo despues del cleanup, la suite lo detecta antes de runtime.
+  - `godot --headless --path . -s res://scripts/tests/support_lifecycle_cleanup_test.gd` pasa en ambas escenas y la suite completa vuelve a `Suite OK: 86 tests`.
+
 ## Los contratos scene-level del soporte post-muerte `Teams` ya quedan congelados tambien en `main_teams_validation.tscn` (2026-04-22)
 
 - Estado: el slice de soporte post-muerte `Teams` ya no depende solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`, y `FFA` confirma que tanto `main_ffa.tscn` como `main_ffa_validation.tscn` siguen sin naves de apoyo.

@@ -1,6 +1,9 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const TEAM_SCENES := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const PilotSupportPickup = preload("res://scripts/support/pilot_support_pickup.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
@@ -14,19 +17,20 @@ func _init() -> void:
 
 
 func _run() -> void:
-	await _verify_support_cleanup_after_round_reset()
-	await _verify_support_cleanup_after_manual_match_restart()
+	for scene_path in TEAM_SCENES:
+		await _verify_support_cleanup_after_round_reset(scene_path)
+		await _verify_support_cleanup_after_manual_match_restart(scene_path)
 	_finish()
 
 
-func _verify_support_cleanup_after_round_reset() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_support_cleanup_after_round_reset(scene_path: String) -> void:
+	var main := await _instantiate_main_scene(scene_path)
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena principal deberia exponer MatchController para validar cleanup del soporte.")
-	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para cerrar una ronda Teams.")
+	_assert(match_controller != null, "%s deberia exponer MatchController para validar cleanup del soporte." % scene_path)
+	_assert(support_root != null, "%s deberia seguir exponiendo SupportRoot." % scene_path)
+	_assert(robots.size() >= 4, "%s deberia ofrecer cuatro robots para cerrar una ronda Teams." % scene_path)
 	if match_controller == null or support_root == null or robots.size() < 4:
 		await _cleanup_main(main)
 		return
@@ -89,14 +93,14 @@ func _verify_support_cleanup_after_round_reset() -> void:
 	await _cleanup_main(main)
 
 
-func _verify_support_cleanup_after_manual_match_restart() -> void:
-	var main := await _instantiate_main_scene()
+func _verify_support_cleanup_after_manual_match_restart(scene_path: String) -> void:
+	var main := await _instantiate_main_scene(scene_path)
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena principal deberia exponer MatchController para validar restart manual.")
-	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para cerrar una partida Teams.")
+	_assert(match_controller != null, "%s deberia exponer MatchController para validar restart manual." % scene_path)
+	_assert(support_root != null, "%s deberia seguir exponiendo SupportRoot." % scene_path)
+	_assert(robots.size() >= 4, "%s deberia ofrecer cuatro robots para cerrar una partida Teams." % scene_path)
 	if match_controller == null or support_root == null or robots.size() < 4:
 		await _cleanup_main(main)
 		return
@@ -160,8 +164,9 @@ func _verify_support_cleanup_after_manual_match_restart() -> void:
 	await _cleanup_main(main)
 
 
-func _instantiate_main_scene() -> Node:
-	var main := MAIN_SCENE.instantiate()
+func _instantiate_main_scene(scene_path: String) -> Node:
+	var scene := load(scene_path) as PackedScene
+	var main := scene.instantiate()
 	root.add_child(main)
 	await process_frame
 	await process_frame

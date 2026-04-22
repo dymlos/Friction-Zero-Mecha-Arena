@@ -19,6 +19,22 @@
   - futuros tests scene-level del soporte deben estabilizar pacing/pressure antes de medir targeting o lifecycle.
   - si reaparece un rojo en cleanup, comprobar primero owner de la nave restante antes de asumir soporte stale.
 
+## 2026-04-22 - El lifecycle/cleanup del soporte tambien debe congelarse sobre `main_teams_validation.tscn`
+
+- Que se hizo:
+  - `support_lifecycle_cleanup_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
+- Decision:
+  - tratar reset de ronda y restart manual del soporte como contrato scene-level compartido entre las dos escenas `Teams`.
+  - mantener la fixture ya existente del lifecycle, sin sumar normalizaciones extra mientras el seam siga verde:
+    - `round_intro_duration_teams = 0.0`
+    - score `1/1/1` cuando el objetivo es validar reset intermedio
+    - `rounds_to_win = 2` para reset, `1` para restart manual
+- Razon:
+  - `main_teams_validation.tscn` comparte el mismo wiring de `SupportRoot`, `support_state` y carril externo, pero el test seguia dejando ese lifecycle sin cobertura directa.
+  - la corrida verde en ambas escenas confirmo que el gap era de cobertura, no de produccion.
+- Implicacion:
+  - si se vuelve a tocar cleanup post-muerte en `Main`, `PilotSupportShip`, `SupportLaneGate` o restart/reset de `MatchController`, mantener esta regresion sobre las dos escenas `Teams`.
+
 ## 2026-04-22 - El opening runtime fija lock/unlock; el primer choque queda como metrica, no como gate
 
 - Que se hizo:
