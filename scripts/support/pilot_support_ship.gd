@@ -321,18 +321,31 @@ func _get_payload_availability_label() -> String:
 
 
 func _would_surge_payload_be_redundant(target_robot: RobotBase) -> bool:
-	if target_robot == null or not target_robot.is_energy_surge_active():
-		return false
+	return _get_surge_payload_useful_window(target_robot) <= 0.0
 
-	return target_robot.get_energy_surge_time_left() >= support_energy_surge_duration
+
+func _get_surge_payload_useful_window(target_robot: RobotBase) -> float:
+	if target_robot == null:
+		return 0.0
+	if not target_robot.is_energy_surge_active():
+		return support_energy_surge_duration
+
+	return maxf(support_energy_surge_duration - target_robot.get_energy_surge_time_left(), 0.0)
 
 
 func _would_mobility_payload_be_redundant(target_robot: RobotBase) -> bool:
-	if target_robot == null or not target_robot.is_mobility_boost_active():
-		return false
+	return _get_mobility_payload_useful_window(target_robot) <= 0.0
+
+
+func _get_mobility_payload_useful_window(target_robot: RobotBase) -> float:
+	if target_robot == null:
+		return 0.0
 
 	var applied_duration := support_mobility_boost_duration * target_robot.get_mobility_boost_duration_multiplier()
-	return target_robot.get_mobility_boost_time_left() >= applied_duration
+	if not target_robot.is_mobility_boost_active():
+		return applied_duration
+
+	return maxf(applied_duration - target_robot.get_mobility_boost_time_left(), 0.0)
 
 
 func _update_target_selection_from_input() -> bool:
@@ -482,8 +495,7 @@ func _get_stabilizer_target_priority(candidate: RobotBase) -> float:
 
 func _get_surge_target_priority(candidate: RobotBase) -> float:
 	var priority := 0.0
-	if not candidate.is_energy_surge_active():
-		priority += 4.0
+	priority += _get_surge_payload_useful_window(candidate) * 4.0
 	if candidate.is_overdrive_cooling_down():
 		priority += 0.5
 	priority += 1.0 - candidate.get_part_health_ratio(candidate.get_energy_focus_part_name())
@@ -492,8 +504,7 @@ func _get_surge_target_priority(candidate: RobotBase) -> float:
 
 func _get_mobility_target_priority(candidate: RobotBase) -> float:
 	var priority := 0.0
-	if not candidate.is_mobility_boost_active():
-		priority += 4.0
+	priority += _get_mobility_payload_useful_window(candidate) * 4.0
 	priority += 1.0 - _get_average_leg_health_ratio(candidate)
 	return priority
 

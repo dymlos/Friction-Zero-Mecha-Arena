@@ -25,6 +25,17 @@
   - el carril ya no comunica “carga lista” cuando `surge` o `movilidad` serian redundantes sobre el objetivo seleccionado.
   - `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 78 tests`).
 
+## Targeting de `surge` / `movilidad` alineado con ventana útil real (2026-04-22)
+
+- Estado: la nave de apoyo `Teams` ya no deja el target inicial sobre el primer aliado buffeado si ese objetivo ya está completamente saturado.
+- Correccion aplicada:
+  - `PilotSupportShip` ahora puntúa `surge` y `movilidad` por la ventana útil que realmente agregaría el payload, no solo por el estado binario activo/inactivo.
+  - la misma métrica gobierna tanto el warning `ya activo` como el targeting por defecto, evitando drift entre roster y gameplay.
+  - `team_post_death_support_targeting_test.gd` ahora fija dos regresiones nuevas: multi-aliado saturado para `surge` y multi-aliado saturado para `movilidad`.
+- Resultado:
+  - si existe otro aliado que todavía ganaría segundos reales de buff, el soporte ya lo prioriza sin obligar al jugador a corregir el target manualmente en el primer frame.
+  - `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `godot --headless --path . -s res://scripts/tests/live_roster_order_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 78 tests`).
+
 ## `Stabilizer` sin daño visible en roster (2026-04-22)
 
 - Estado: la nave de apoyo `Teams` ya explica cuando una carga `estabilizador` todavia no puede reparar nada porque su aliado objetivo sigue completamente sano.
@@ -134,9 +145,9 @@
 - Correccion aplicada:
   - `PilotSupportShip` ahora ordena candidatos por prioridad segun payload y reutiliza ese mismo orden para la seleccion por defecto y el ciclado manual.
   - `stabilizer` prioriza el aliado con mayor vida faltante en partes activas.
-  - `surge` y `mobility` evitan buffs redundantes cuando existe otro aliado mas util.
+  - `surge` y `mobility` ahora miden ventana útil real del buff, asi que tambien evitan defaults redundantes cuando existe otro aliado mas util.
   - `interference` prioriza rivales en rango y no suprimidos antes de volver a distancia/player order.
-  - `team_post_death_support_targeting_test.gd` fija dos regresiones concretas: multi-aliado para `stabilizer` y multi-rival para `interference`.
+  - `team_post_death_support_targeting_test.gd` fija cuatro regresiones concretas: multi-aliado para `stabilizer`, multi-rival para `interference` y multi-aliado saturado para `surge/movilidad`.
 - Resultado:
   - el loop Teams reduce dependencia de coordinacion perfecta cuando el soporte tenga mas de un objetivo vivo.
   - `team_post_death_support_test.gd`, `support_match_stats_test.gd` y el nuevo test de targeting pasan con el contrato actualizado.

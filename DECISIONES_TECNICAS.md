@@ -12,6 +12,11 @@
  - `surge` compara contra `support_energy_surge_duration`; `movilidad` usa la duración efectiva del target (`support_mobility_boost_duration * get_mobility_boost_duration_multiplier()`), para no falsear el warning en arquetipos con boosts más largos.
  - Motivo: el slice de soporte ya habia resuelto los fallos silenciosos de `stabilizer` e `interferencia`, pero los buffs seguian pudiendo verse “listos” aunque volver a usarlos no cambiara nada. Mantener la regla en el summary conserva HUD y mundo alineados sin sumar UI.
 
+1. **El targeting por defecto de `surge` y `movilidad` debe usar la misma definición de redundancia**
+ - `PilotSupportShip` ya no decide esos buffs solo por activo/inactivo; ahora calcula cuánta ventana útil agregaría realmente el payload.
+ - Si dos aliados ya están buffeados, el target inicial prioriza al que todavía ganaría segundos reales antes que al que ya quedó saturado.
+ - Motivo: dejar `ya activo` en el roster pero seguir autoapuntando al aliado redundante mantenía HUD y gameplay fuera de fase. La misma métrica debe gobernar ambos.
+
 1. **`Stabilizer` tambien debe explicar cuando todavia no tiene nada que reparar**
  - `PilotSupportShip.get_status_summary()` ahora agrega `sin daño` cuando la carga actual es `stabilizer`, existe un target seleccionado y ese aliado no tiene ninguna parte activa averiada.
  - La disponibilidad se calcula reutilizando `_get_total_missing_active_part_health(...)`, asi que el warning desaparece en cuanto aparece una averia real sobre ese mismo target.
@@ -58,7 +63,7 @@
 
 1. **El soporte post-muerte Teams prioriza utilidad del payload y no `scene-order` cuando hay varios objetivos vivos**
  - `PilotSupportShip` ahora calcula prioridad por payload y la usa tanto para el target inicial como para el orden de ciclado.
- - `stabilizer` mira vida faltante en partes activas; `surge`/`mobility` penalizan buffs redundantes; `interference` prefiere rivales en rango y no suprimidos antes de volver a distancia.
+ - `stabilizer` mira vida faltante en partes activas; `surge`/`mobility` miden ventana útil real del buff; `interference` prefiere rivales en rango y no suprimidos antes de volver a distancia.
  - Motivo: el riesgo documental era que Teams dependiera demasiado de coordinacion perfecta. Esta capa reduce friccion sin sumar UI ni otra mecanica de soporte.
 
 1. **La apertura base de Teams debe priorizar cercanía entre aliados antes que simetría en cruz**

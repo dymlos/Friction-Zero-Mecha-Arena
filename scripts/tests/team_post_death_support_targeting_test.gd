@@ -17,6 +17,8 @@ func _run() -> void:
 	await _verify_stabilizer_defaults_to_most_damaged_ally()
 	await _verify_interference_defaults_to_unsuppressed_enemy()
 	await _verify_interference_defaults_to_enemy_without_stability()
+	await _verify_surge_defaults_to_ally_with_useful_remaining_window()
+	await _verify_mobility_defaults_to_ally_with_useful_remaining_window()
 	_finish()
 
 
@@ -177,6 +179,119 @@ func _verify_interference_defaults_to_enemy_without_stability() -> void:
 	_assert(
 		support_ship.get_selected_target_robot() == fresh_enemy,
 		"Si hay mas de un rival valido, `interferencia` deberia priorizar al que no esta protegido por `estabilidad`."
+	)
+
+	await _cleanup_main(main)
+
+
+func _verify_surge_defaults_to_ally_with_useful_remaining_window() -> void:
+	var main := await _instantiate_main_scene()
+	var robots := _get_scene_robots(main)
+	var support_root := main.get_node_or_null("SupportRoot")
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar targeting de energia.")
+	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
+	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
+	if robots.size() < 4 or support_root == null or match_controller == null:
+		await _cleanup_main(main)
+		return
+
+	robots[0].team_id = 1
+	robots[1].team_id = 1
+	robots[2].team_id = 1
+	robots[3].team_id = 2
+	match_controller.match_mode = MatchController.MatchMode.TEAMS
+	match_controller.match_config.round_intro_duration_teams = 0.0
+	match_controller.start_match()
+	await _wait_frames(2)
+
+	robots[1].fall_into_void()
+	await _wait_frames(4)
+
+	_assert(
+		support_root.get_child_count() == 1,
+		"Al caer un aliado con otro duo vivo deberia aparecer una unica nave de apoyo."
+	)
+	if support_root.get_child_count() != 1:
+		await _cleanup_main(main)
+		return
+
+	var support_ship := support_root.get_child(0) as PilotSupportShip
+	_assert(support_ship != null, "La nave de apoyo deberia instanciarse correctamente.")
+	if support_ship == null:
+		await _cleanup_main(main)
+		return
+
+	var payload_duration := float(support_ship.get("support_energy_surge_duration"))
+	var redundant_ally := robots[0]
+	var useful_ally := robots[2]
+	redundant_ally.apply_energy_surge(payload_duration + 1.0)
+	useful_ally.apply_energy_surge(maxf(payload_duration * 0.35, 0.2))
+
+	var stored := support_ship.store_support_payload(PilotSupportPickup.PAYLOAD_SURGE)
+	_assert(stored, "La nave deberia aceptar una carga de energia directa para validar targeting.")
+	await _wait_frames(2)
+
+	_assert(
+		support_ship.get_selected_target_robot() == useful_ally,
+		"Si ambos aliados ya tienen `surge`, el targeting por defecto deberia priorizar al que aun ganaria ventana real."
+	)
+
+	await _cleanup_main(main)
+
+
+func _verify_mobility_defaults_to_ally_with_useful_remaining_window() -> void:
+	var main := await _instantiate_main_scene()
+	var robots := _get_scene_robots(main)
+	var support_root := main.get_node_or_null("SupportRoot")
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar targeting de movilidad.")
+	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
+	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
+	if robots.size() < 4 or support_root == null or match_controller == null:
+		await _cleanup_main(main)
+		return
+
+	robots[0].team_id = 1
+	robots[1].team_id = 1
+	robots[2].team_id = 1
+	robots[3].team_id = 2
+	match_controller.match_mode = MatchController.MatchMode.TEAMS
+	match_controller.match_config.round_intro_duration_teams = 0.0
+	match_controller.start_match()
+	await _wait_frames(2)
+
+	robots[1].fall_into_void()
+	await _wait_frames(4)
+
+	_assert(
+		support_root.get_child_count() == 1,
+		"Al caer un aliado con otro duo vivo deberia aparecer una unica nave de apoyo."
+	)
+	if support_root.get_child_count() != 1:
+		await _cleanup_main(main)
+		return
+
+	var support_ship := support_root.get_child(0) as PilotSupportShip
+	_assert(support_ship != null, "La nave de apoyo deberia instanciarse correctamente.")
+	if support_ship == null:
+		await _cleanup_main(main)
+		return
+
+	var redundant_ally := robots[0]
+	var useful_ally := robots[2]
+	var applied_duration := float(support_ship.get("support_mobility_boost_duration"))
+	applied_duration *= useful_ally.get_mobility_boost_duration_multiplier()
+	redundant_ally.apply_mobility_boost(applied_duration + 1.0)
+	useful_ally.apply_mobility_boost(maxf(applied_duration * 0.35, 0.2))
+
+	var stored := support_ship.store_support_payload(PilotSupportPickup.PAYLOAD_MOBILITY)
+	_assert(stored, "La nave deberia aceptar una carga de movilidad directa para validar targeting.")
+	await _wait_frames(2)
+
+	_assert(
+		support_ship.get_selected_target_robot() == useful_ally,
+		"Si ambos aliados ya tienen `movilidad`, el targeting por defecto deberia priorizar al que aun ganaria ventana real."
 	)
 
 	await _cleanup_main(main)
