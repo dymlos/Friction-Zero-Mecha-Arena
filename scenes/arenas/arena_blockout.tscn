@@ -158,39 +158,51 @@ material_override = SubResource("Material_pressure_band")
 
 [node name="WestRepairPickup" parent="." instance=ExtResource("2_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.4, 0.3, -2.4)
+respawn_delay = 6.0
 
 [node name="EastRepairPickup" parent="." instance=ExtResource("2_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.4, 0.3, 2.4)
+respawn_delay = 6.0
 
 [node name="NorthMobilityPickup" parent="." instance=ExtResource("3_mobility_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 0.3, -6.3)
+respawn_delay = 6.4
 
 [node name="SouthMobilityPickup" parent="." instance=ExtResource("3_mobility_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0.3, 6.3)
+respawn_delay = 6.4
 
 [node name="NorthChargePickup" parent="." instance=ExtResource("6_charge_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.3, -6.9)
+respawn_delay = 7.2
 
 [node name="SouthChargePickup" parent="." instance=ExtResource("6_charge_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.3, 6.9)
+respawn_delay = 7.2
 
 [node name="NorthUtilityPickup" parent="." instance=ExtResource("7_utility_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4, 0.3, -6.7)
+respawn_delay = 7.6
 
 [node name="SouthUtilityPickup" parent="." instance=ExtResource("7_utility_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.4, 0.3, 6.7)
+respawn_delay = 7.6
 
 [node name="NorthWestEnergyPickup" parent="." instance=ExtResource("4_energy_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.9, 0.3, -5.4)
+respawn_delay = 6.8
 
 [node name="SouthEastEnergyPickup" parent="." instance=ExtResource("4_energy_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.9, 0.3, 5.4)
+respawn_delay = 6.8
 
 [node name="NorthEastPulsePickup" parent="." instance=ExtResource("5_pulse_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.9, 0.3, -5.4)
+respawn_delay = 8.0
 
 [node name="SouthWestPulsePickup" parent="." instance=ExtResource("5_pulse_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.9, 0.3, 5.4)
+respawn_delay = 8.0
 
 [node name="NorthSupportPickup" parent="." instance=ExtResource("8_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -10.8)
