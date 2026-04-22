@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El recap entre rondas ahora deja visible tambien el perfil activo de puntos por causa:
+  - `MatchController` ya no reserva `Puntos cierre | ring-out N | destruccion total N | explosion inestable N` solo para `Partida cerrada`; la misma linea tambien aparece en `get_round_recap_panel_lines()` apenas una ronda termina.
+  - la correccion mantiene el gating en superficies de cierre (`_round_active == false`), sin sumar ruido al HUD vivo mientras el combate sigue abierto.
+  - `match_closing_cause_summary_test.gd` ahora congela el caso en `Teams` y `FFA`: tras la primera ronda por `ring-out`, el recap intermedio debe mostrar tanto `Cierre ronda | ...` como `Puntos cierre | ...`.
+  - validacion: rojo inicial en `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd`; despues pasaron ese test, `match_round_recap_test.gd`, `match_completion_test.gd` y `test_runner.gd` (`Suite OK: 83 tests`).
+
 - Los paneles de cierre ahora tambien dejan visible el objetivo del match:
   - `MatchController` extrae `Objetivo | Primero a N pts` a `_build_target_score_line()` y la reutiliza en HUD vivo explicito, `get_round_recap_panel_lines()` y `get_match_result_lines()`.
   - el recap intermedio y el cierre final ya no dependen del bloque principal del HUD para entender si un `1-0`, `2-0` o `3 pts` estan cerca de match point o ya cierran la partida.

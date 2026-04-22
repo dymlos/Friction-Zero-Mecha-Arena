@@ -83,6 +83,10 @@ func _verify_match_closing_cause_summary(
 		_has_line(match_controller.get_round_recap_panel_lines(), expected_round_closing_line),
 		"%s: el recap de ronda deberia decir que causa la cerro y cuantos puntos otorgo aunque el match siga abierto." % label
 	)
+	_assert(
+		_has_line(match_controller.get_round_recap_panel_lines(), expected_points_line),
+		"%s: el recap entre rondas deberia dejar visible tambien el perfil activo de puntos por causa para leer el peso vigente sin esperar al cierre final." % label
+	)
 
 	await create_timer(match_controller.round_reset_delay + 0.2).timeout
 

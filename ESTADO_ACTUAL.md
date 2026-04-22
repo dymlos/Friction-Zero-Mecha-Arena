@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## El recap entre rondas ahora muestra tambien `Puntos cierre | ...` antes del final del match (2026-04-22)
+
+- Estado: el playtest corto ya no necesita esperar a `Partida cerrada` para leer el perfil activo `ring-out / destruccion total / explosion inestable`; el recap entre rondas ahora publica tambien `Puntos cierre | ...`.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` cambia `_build_closing_points_profile_line()` para que se oculte solo durante la ronda activa, no durante todo el match abierto.
+  - `scripts/tests/match_closing_cause_summary_test.gd` agrega la regresion minima en `Teams` y `FFA`: despues de la primera ronda por `ring-out`, el recap debe incluir `Puntos cierre | ...` junto a `Cierre ronda | ...`.
+- Resultado:
+  - cada cierre intermedio ya deja visible no solo que causa dio `+N`, sino tambien el perfil completo vigente del match, alineando mejor el laboratorio con el siguiente paso de balancear pesos por causa.
+  - `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd`, `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 83 tests`).
+
 ## El recap lateral y el panel final ahora dejan visible tambien el objetivo del match (2026-04-22)
 
 - Estado: los paneles de cierre ya no quedan autosuficientes solo para score/causa/resumen; ahora tambien exponen `Objetivo | Primero a N pts`, evitando que el puntaje visible pierda contexto fuera del HUD principal.

@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El recap entre rondas tambien debe mostrar el perfil activo `Puntos cierre | ...`**
+ - `MatchController._build_closing_points_profile_line()` ya no depende de `_match_over`; ahora solo se oculta mientras `_round_active`, de modo que `get_round_recap_panel_lines()` puede reutilizar el mismo builder en cierres intermedios y `get_match_result_lines()` lo conserva para el cierre final.
+ - `match_closing_cause_summary_test.gd` fija el contrato en `Teams` y `FFA`: despues de la primera ronda por `ring-out`, el recap debe mostrar `Puntos cierre | ...` aun con el match abierto.
+ - Motivo: `Cierre ronda | <causa> (+N)` hacia visible la recompensa inmediata, pero seguia faltando el contexto del perfil completo de score por causa justo en el punto donde el playtest corto toma decisiones de balance.
+
 1. **Los paneles de cierre tambien deben conservar el objetivo del match**
  - `MatchController` ahora concentra `Objetivo | Primero a N pts` en `_build_target_score_line()` y la reutiliza en `get_round_state_lines()`, `get_round_recap_panel_lines()` y `get_match_result_lines()`.
  - `match_round_recap_test.gd` fija el recap entre rondas; `match_completion_test.gd` fija el cierre final, en ambos casos tanto sobre arrays como sobre `RecapLabel` / `MatchResultLabel`.

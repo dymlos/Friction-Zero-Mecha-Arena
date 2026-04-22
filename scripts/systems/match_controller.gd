@@ -981,7 +981,7 @@ func _build_match_closing_cause_summary_line() -> String:
 
 
 func _build_closing_points_profile_line() -> String:
-	if not _match_over:
+	if _round_active:
 		return ""
 	if match_config == null:
 		return ""

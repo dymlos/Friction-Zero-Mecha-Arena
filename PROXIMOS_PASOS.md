@@ -4,7 +4,7 @@
 
 ## Prioridad inmediata tras la revision estricta (2026-04-22)
 
-1. Validar `score` por causa en playtest corto y decidir si `2/1/4` sigue siendo el perfil correcto sin volver dominante ninguna ruta de cierre, usando ahora `Cierre ronda | ...` para leer cada recompensa antes del final del match.
+1. Validar `score` por causa en playtest corto y decidir si `2/1/4` sigue siendo el perfil correcto sin volver dominante ninguna ruta de cierre, usando ahora `Cierre ronda | ...` + `Puntos cierre | ...` para leer cada recompensa y su contexto antes del final del match.
 2. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 
@@ -111,9 +111,9 @@
  - Usar esa linea como lectura base para futuros playtests del score ponderado antes de sumar otra telemetria o panel nuevo.
 
 0. **No perder la linea `Puntos cierre | ...` al tocar score o cierre final**
- - `MatchController` ya publica en recap/resultado final el perfil runtime de score por causa (`ring-out`, `destruccion total`, `explosion inestable`) leyendo los valores activos desde `MatchConfig`.
- - Si se retocan `_build_closing_points_profile_line()`, `get_round_recap_panel_lines()`, `get_match_result_lines()` o los campos de score en `MatchConfig`, mantener `match_closing_cause_summary_test.gd`; ahora la misma fixture fija tanto `Cierres | ...` como `Puntos cierre | ...` en `Teams` y `FFA`.
- - Reabrir solo si el score por causa deja de ser visible en el cierre o si se mueve explicitamente a otra capa de lectura igual de accesible para playtest corto.
+ - `MatchController` ya publica en el recap entre rondas y en el cierre final el perfil runtime de score por causa (`ring-out`, `destruccion total`, `explosion inestable`) leyendo los valores activos desde `MatchConfig`.
+ - Si se retocan `_build_closing_points_profile_line()`, `get_round_recap_panel_lines()`, `get_match_result_lines()` o los campos de score en `MatchConfig`, mantener `match_closing_cause_summary_test.gd`; ahora la misma fixture fija `Puntos cierre | ...` antes y despues de cerrar el match en `Teams` y `FFA`.
+ - Reabrir solo si el score por causa deja de ser visible en recap/cierre o si se mueve explicitamente a otra capa de lectura igual de accesible para playtest corto.
 
 0. **No volver a esconder que causa dio los puntos decisivos del match**
  - `MatchController` ya persiste `_last_round_closing_cause` y publica `Cierre decisivo | <causa> (+N)` solo cuando `_match_over`; esa linea acompaña a `Cierres | ...` y `Puntos cierre | ...`, no los reemplaza.
