@@ -21,10 +21,10 @@
    - medir si las pasivas/skills actuales se entienden por playtest sin otra capa de UI: `Ariete` activando `Embestida` para comprometer choques, `Grua` estabilizando rescates y usando `Iman`, `Cizalla` rematando partes tocadas y `Patin` explotando mejor los pickups de impulso.
    - calibrar si `Embestida` necesita un impulso inicial muy chico o si la ventana actual de drive/impacto/estabilidad ya alcanza para sentirse inmediata sin robar protagonismo al melee base.
    - medir si `Iman` realmente abre rescates/negaciones a media distancia o si el rango actual se siente demasiado corto, tramposo o poco legible cuando hay varias piezas sueltas.
-   - medir si `Aguja` realmente introduce poke/skillshot legible ahora que `Pulso` ya tiene lectura diegetica sobre `CoreLight`, o si aun hace falta ajustar color/intensidad/ritmo del pulso para cámara compartida.
+   - medir si `Aguja` realmente introduce poke/skillshot legible ahora que `Pulso` ya tiene lectura diegetica sobre `CoreLight` y `ArchetypeAccent`, o si aun hace falta ajustar color/intensidad/ritmo del pulso para cámara compartida.
    - si se retocan `pulse_charge_spawn_distance`, velocidad o lifetime de `Pulso`, conservar la cobertura headless que hoy evita que el proyectil nazca solapado con su robot origen.
    - medir si `Ancla` realmente corta rutas/duelos con `Baliza` o si la supresion actual se siente demasiado sutil para justificar el rol de Control/Zona.
-   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Embestida/Iman/Pulso/Baliza x/y` + estados `embestida/zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad + `ArchetypeAccent` por rol + `StatusEffectIndicator` para `estabilidad/zona`) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
+   - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Embestida/Iman/Pulso/Baliza x/y` + estados `embestida/zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad + `ArchetypeAccent` por rol/skill + `StatusEffectIndicator` para `estabilidad/zona`) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
    - decidir si el selector runtime actual ya alcanza como flujo de laboratorio o si el siguiente paso debe ser persistencia/presets por escena, mas claridad visual o reforzar con otra skill/regla al arquetipo que siga borroso.
 
 3. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
@@ -100,5 +100,5 @@
 
 13. **Validar el primer item de una carga en mano**
    - medir si compartir slot entre `pulse_charge` y `DetachedPart` genera la decisión correcta o si frustra demasiado rescates importantes.
-   - revisar en playtest si la distincion nueva entre `pulse_charge` (CarryIndicator dorado) y `Pulso` de `Aguja` (`CoreLight` pulsando) se entiende al instante o si aun hace falta afinar contraste/ritmo.
+   - revisar en playtest si la distincion nueva entre `pulse_charge` (CarryIndicator dorado) y `Pulso` de `Aguja` (`CoreLight` + `ArchetypeAccent` pulsando) se entiende al instante o si aun hace falta afinar contraste/ritmo.
    - ajustar `pulse_charge_projectile_speed`, `pulse_charge_impulse` y `pulse_charge_damage` para que el item reposicione sin eclipsar la embestida base.

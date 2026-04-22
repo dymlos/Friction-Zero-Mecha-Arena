@@ -364,6 +364,11 @@
    - `RobotBase` ahora usa un pulso cian sobrio sobre `LeftCoreLight/RightCoreLight` cuando quedan cargas de skill propia, y apaga ese extra al vaciarse; el `CarryIndicator` dorado sigue reservado para `pulse_charge` o partes cargadas.
    - Motivo: `Aguja` ya tenía roster `skill Pulso x/y`, pero en cámara compartida seguía faltando distinguir rápido “tiene su skill lista” de “levantó un item universal de pulso”; reutilizar las luces del core preserva legibilidad sin abrir otro marcador flotante.
 
+70. **El acento de arquetipo tambien acompaña readiness/actividad de skill propia**
+   - `RobotBase._refresh_archetype_accent_visuals()` ahora mezcla un color de skill propia sobre `ArchetypeAccent` cuando quedan cargas y agrega un boost extra durante estados activos persistentes como `Embestida` (o una `Baliza` viva), sin crear nodos nuevos ni otra capa de HUD.
+   - `robot_archetype_readability_test.gd` valida en rojo-verde que `Aguja` baje la emision del acento al quedarse sin cargas y que `Ariete` la intensifique mientras dura `Embestida`.
+   - Motivo: `CoreLight` solo ya resolvía “hay skill”, pero seguía siendo una pista chica para cámara compartida; hacer que el propio `ArchetypeAccent` respire con esa disponibilidad reutiliza una silueta ya establecida y mejora lectura sin sumar ruido.
+
 70. **`Ancla` completa Control/Zona con una baliza persistente corta**
    - `RobotArchetypeConfig.CoreSkillType` ahora tambien puede ser `CONTROL_BEACON`, y `RobotBase` lo resuelve desplegando `ControlBeacon`, una zona breve que ralentiza drive/control de rivales dentro del area.
    - Motivo: cerrar el sexto arquetipo documentado con el cambio mas chico posible, reutilizando la misma accion de utilidad y manteniendo el efecto claramente subordinado al combate de choque.

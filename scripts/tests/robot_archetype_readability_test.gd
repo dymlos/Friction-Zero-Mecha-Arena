@@ -16,6 +16,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_archetype_accent_nodes_exist_and_differ()
 	await _validate_runtime_loadout_rebuilds_the_accent()
+	await _validate_core_skill_states_refresh_archetype_accent()
 	_finish()
 
 
@@ -122,13 +123,79 @@ func _validate_runtime_loadout_rebuilds_the_accent() -> void:
 	await _cleanup_robot(robot)
 
 
+func _validate_core_skill_states_refresh_archetype_accent() -> void:
+	var aguja := _spawn_robot(AGUJA_ARCHETYPE, 1, Vector3(-1.5, 0.0, 0.0))
+	var ariete := _spawn_robot(ARIETE_ARCHETYPE, 2, Vector3(1.5, 0.0, 0.0))
+	await process_frame
+	await physics_frame
+
+	var aguja_ready_energy := _get_accent_peak_emission_energy(aguja)
+	_assert(
+		aguja.use_core_skill(),
+		"Aguja deberia poder gastar una carga para validar la lectura del acento mientras la skill deja de estar lista."
+	)
+	_assert(
+		aguja.use_core_skill(),
+		"Aguja deberia poder agotar sus cargas para comparar el acento listo contra el agotado."
+	)
+	await process_frame
+	await physics_frame
+
+	var aguja_depleted_energy := _get_accent_peak_emission_energy(aguja)
+	_assert(
+		aguja_ready_energy > aguja_depleted_energy + 0.05,
+		"El acento de arquetipo deberia latir mas fuerte cuando la skill propia esta lista que cuando ya no quedan cargas."
+	)
+
+	var ariete_ready_energy := _get_accent_peak_emission_energy(ariete)
+	_assert(
+		ariete.use_core_skill(),
+		"Ariete deberia poder activar Embestida para reforzar la lectura activa sobre su acento."
+	)
+	await process_frame
+	await physics_frame
+
+	var ariete_active_energy := _get_accent_peak_emission_energy(ariete)
+	_assert(
+		ariete_active_energy > ariete_ready_energy + 0.08,
+		"El acento de arquetipo deberia intensificarse durante la ventana activa de la skill propia."
+	)
+
+	await _cleanup_robot(aguja)
+	await _cleanup_robot(ariete)
+
+
 func _spawn_robot(archetype: Resource, player_index: int, position: Vector3) -> RobotBase:
 	var robot := ROBOT_SCENE.instantiate() as RobotBase
 	robot.archetype_config = archetype
 	robot.player_index = player_index
 	robot.position = position
+	robot.gravity = 0.0
+	robot.void_fall_y = -100.0
 	root.add_child(robot)
 	return robot
+
+
+func _get_accent_peak_emission_energy(robot: RobotBase) -> float:
+	if robot == null:
+		return 0.0
+
+	var accent_root := robot.get_node_or_null("UpperBodyPivot/ArchetypeAccent") as Node3D
+	if accent_root == null:
+		return 0.0
+
+	var peak_energy := 0.0
+	for child in accent_root.get_children():
+		if not (child is MeshInstance3D):
+			continue
+
+		var material := (child as MeshInstance3D).material_override as StandardMaterial3D
+		if material == null:
+			continue
+
+		peak_energy = maxf(peak_energy, material.emission_energy_multiplier)
+
+	return peak_energy
 
 
 func _cleanup_robot(robot: RobotBase) -> void:

@@ -3461,6 +3461,9 @@ func _refresh_archetype_accent_visuals() -> void:
 		return
 
 	var archetype_color := _get_archetype_accent_color().lerp(get_identity_color(), 0.24)
+	var core_skill_color := _get_core_skill_accent_color()
+	var core_skill_ready_blend := _get_archetype_accent_core_skill_ready_blend()
+	var core_skill_active_blend := _get_archetype_accent_core_skill_active_blend()
 	var intact_ratio := 1.0
 	if not BODY_PARTS.is_empty():
 		var alive_parts := 0.0
@@ -3479,11 +3482,22 @@ func _refresh_archetype_accent_visuals() -> void:
 		var base_albedo: Color = base_values["albedo"]
 		var base_emission: Color = base_values["emission"]
 		material.albedo_color = base_albedo.lerp(archetype_color, 0.78)
+		material.albedo_color = material.albedo_color.lerp(core_skill_color, core_skill_ready_blend * 0.12)
+		material.albedo_color = material.albedo_color.lerp(core_skill_color.lightened(0.16), core_skill_active_blend * 0.18)
 		material.albedo_color = material.albedo_color.lerp(Color(0.1, 0.1, 0.1, 1.0), damage_blend + disabled_blend)
 		if material.emission_enabled:
 			material.emission = base_emission.lerp(archetype_color, 0.95)
+			material.emission = material.emission.lerp(core_skill_color, core_skill_ready_blend * 0.72)
+			material.emission = material.emission.lerp(core_skill_color.lightened(0.2), core_skill_active_blend)
 			material.emission = material.emission.lerp(Color(0.18, 0.12, 0.1, 1.0), disabled_blend * 0.8)
-			material.emission_energy_multiplier = maxf(0.18, 0.52 - damage_blend * 0.15 - disabled_blend * 0.22)
+			material.emission_energy_multiplier = maxf(
+				0.18,
+				0.52
+				- damage_blend * 0.15
+				- disabled_blend * 0.22
+				+ core_skill_ready_blend * 0.28
+				+ core_skill_active_blend * 0.62
+			)
 
 
 func _get_archetype_accent_color() -> Color:
@@ -3491,6 +3505,50 @@ func _get_archetype_accent_color() -> Color:
 		return get_identity_color()
 
 	return archetype_config.accent_color
+
+
+func _get_core_skill_accent_color() -> Color:
+	if not has_core_skill():
+		return _get_archetype_accent_color()
+
+	match archetype_config.core_skill_type:
+		RobotArchetypeConfig.CoreSkillType.PULSE_SHOT:
+			return Color(0.28, 0.9, 1.0, 1.0)
+		RobotArchetypeConfig.CoreSkillType.CONTROL_BEACON:
+			return Color(1.0, 0.78, 0.3, 1.0)
+		RobotArchetypeConfig.CoreSkillType.RECOVERY_GRAB:
+			return Color(0.66, 1.0, 0.72, 1.0)
+		RobotArchetypeConfig.CoreSkillType.RAM_BOOST:
+			return Color(1.0, 0.56, 0.18, 1.0)
+		_:
+			return _get_archetype_accent_color()
+
+
+func _get_archetype_accent_core_skill_ready_blend() -> float:
+	if not has_core_skill():
+		return 0.0
+	if get_core_skill_charge_count() <= 0 or get_core_skill_max_charges() <= 0:
+		return 0.0
+
+	var charge_ratio := clampf(
+		float(get_core_skill_charge_count()) / float(get_core_skill_max_charges()),
+		0.0,
+		1.0
+	)
+	var wave := (sin(_core_skill_visual_time * core_skill_ready_pulse_speed) + 1.0) * 0.5
+	var pulse := 1.0 + (wave - 0.5) * core_skill_ready_pulse_amount * 2.0
+	return clampf(charge_ratio * pulse, 0.0, 1.0)
+
+
+func _get_archetype_accent_core_skill_active_blend() -> float:
+	if not has_core_skill():
+		return 0.0
+	if is_ram_skill_active():
+		return 1.0
+	if is_instance_valid(_active_control_beacon):
+		return 0.52
+
+	return 0.0
 
 
 func _refresh_core_visuals() -> void:
@@ -3940,6 +3998,9 @@ func _start_disabled_respawn() -> void:
 	_cancel_respawn_timer()
 	_is_respawning = true
 	_exit_disabled_state()
+	if _disabled_warning_indicator != null:
+		_disabled_warning_indicator.visible = false
+		_disabled_warning_indicator.scale = Vector3.ONE
 	visible = false
 	collision_layer = 0
 	collision_mask = 0
