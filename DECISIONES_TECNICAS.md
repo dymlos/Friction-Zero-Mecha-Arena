@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El soporte post-muerte Teams prioriza utilidad del payload y no `scene-order` cuando hay varios objetivos vivos**
+ - `PilotSupportShip` ahora calcula prioridad por payload y la usa tanto para el target inicial como para el orden de ciclado.
+ - `stabilizer` mira vida faltante en partes activas; `surge`/`mobility` penalizan buffs redundantes; `interference` prefiere rivales en rango y no suprimidos antes de volver a distancia.
+ - Motivo: el riesgo documental era que Teams dependiera demasiado de coordinacion perfecta. Esta capa reduce friccion sin sumar UI ni otra mecanica de soporte.
+
 1. **La apertura base de Teams debe priorizar cercanía entre aliados antes que simetría en cruz**
  - `Main._get_bootstrap_spawn_transforms()` ya reutiliza el orden de `ArenaBase.get_spawn_points()` en Equipos, así que la fuente de verdad correcta para esa apertura es el layout del arena, no una capa extra de reasignación en runtime.
  - `arena_blockout.tscn` pasó de un layout en cruz a dos laterales por equipo; `teams_spawn_coordination_test.gd` fija que cada robot quede más cerca de su aliado que del rival más cercano en `main.tscn` y `main_teams_validation.tscn`.

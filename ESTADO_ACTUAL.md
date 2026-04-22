@@ -2,6 +2,19 @@
 
 ## Estado del prototipo
 
+## Targeting util del soporte post-muerte Teams (2026-04-22)
+
+- Estado: la nave de apoyo ya no fija por defecto el primer aliado/rival valido cuando hay varios candidatos vivos.
+- Correccion aplicada:
+  - `PilotSupportShip` ahora ordena candidatos por prioridad segun payload y reutiliza ese mismo orden para la seleccion por defecto y el ciclado manual.
+  - `stabilizer` prioriza el aliado con mayor vida faltante en partes activas.
+  - `surge` y `mobility` evitan buffs redundantes cuando existe otro aliado mas util.
+  - `interference` prioriza rivales en rango y no suprimidos antes de volver a distancia/player order.
+  - `team_post_death_support_targeting_test.gd` fija dos regresiones concretas: multi-aliado para `stabilizer` y multi-rival para `interference`.
+- Resultado:
+  - el loop Teams reduce dependencia de coordinacion perfecta cuando el soporte tenga mas de un objetivo vivo.
+  - `team_post_death_support_test.gd`, `support_match_stats_test.gd` y el nuevo test de targeting pasan con el contrato actualizado.
+
 ## Apertura Teams coordinada (2026-04-22)
 
 - Estado: `main.tscn` ya no arranca con un layout en cruz que separaba a aliados más de lo que acercaba a rivales.

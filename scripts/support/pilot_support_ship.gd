@@ -359,22 +359,7 @@ func _get_support_target_candidates() -> Array[RobotBase]:
 func _get_default_support_target(candidates: Array[RobotBase]) -> RobotBase:
 	if candidates.is_empty():
 		return null
-	if _support_payload_name != PilotSupportPickup.PAYLOAD_INTERFERENCE:
-		if _contains_support_target(candidates, allied_robot):
-			return allied_robot
-		return candidates[0]
-
-	var nearest_target := candidates[0]
-	var nearest_distance := INF
-	for candidate in candidates:
-		var planar_offset := candidate.global_position - global_position
-		planar_offset.y = 0.0
-		var distance := planar_offset.length_squared()
-		if distance < nearest_distance:
-			nearest_distance = distance
-			nearest_target = candidate
-
-	return nearest_target
+	return candidates[0]
 
 
 func _contains_support_target(candidates: Array[RobotBase], target_robot: RobotBase) -> bool:
@@ -402,10 +387,112 @@ func _compare_support_targets(left: RobotBase, right: RobotBase) -> bool:
 		return false
 	if right == null:
 		return true
+	var left_priority := _get_support_target_priority_score(left)
+	var right_priority := _get_support_target_priority_score(right)
+	if not is_equal_approx(left_priority, right_priority):
+		return left_priority > right_priority
+	if _support_payload_name == PilotSupportPickup.PAYLOAD_INTERFERENCE:
+		var left_distance := _get_target_planar_distance_squared(left)
+		var right_distance := _get_target_planar_distance_squared(right)
+		if not is_equal_approx(left_distance, right_distance):
+			return left_distance < right_distance
+	if left == allied_robot and right != allied_robot:
+		return true
+	if right == allied_robot and left != allied_robot:
+		return false
 	if left.player_index != right.player_index:
 		return left.player_index < right.player_index
 
 	return left.get_instance_id() < right.get_instance_id()
+
+
+func _get_support_target_priority_score(candidate: RobotBase) -> float:
+	if candidate == null:
+		return -INF
+
+	match _support_payload_name:
+		PilotSupportPickup.PAYLOAD_STABILIZER:
+			return _get_stabilizer_target_priority(candidate)
+		PilotSupportPickup.PAYLOAD_SURGE:
+			return _get_surge_target_priority(candidate)
+		PilotSupportPickup.PAYLOAD_MOBILITY:
+			return _get_mobility_target_priority(candidate)
+		PilotSupportPickup.PAYLOAD_INTERFERENCE:
+			return _get_interference_target_priority(candidate)
+		_:
+			return 0.0
+
+
+func _get_stabilizer_target_priority(candidate: RobotBase) -> float:
+	return _get_total_missing_active_part_health(candidate) / maxf(candidate.max_part_health, 0.001)
+
+
+func _get_surge_target_priority(candidate: RobotBase) -> float:
+	var priority := 0.0
+	if not candidate.is_energy_surge_active():
+		priority += 4.0
+	if candidate.is_overdrive_cooling_down():
+		priority += 0.5
+	priority += 1.0 - candidate.get_part_health_ratio(candidate.get_energy_focus_part_name())
+	return priority
+
+
+func _get_mobility_target_priority(candidate: RobotBase) -> float:
+	var priority := 0.0
+	if not candidate.is_mobility_boost_active():
+		priority += 4.0
+	priority += 1.0 - _get_average_leg_health_ratio(candidate)
+	return priority
+
+
+func _get_interference_target_priority(candidate: RobotBase) -> float:
+	var priority := 0.0
+	if _is_target_in_interference_range(candidate):
+		priority += 5.0
+	if not candidate.is_control_zone_suppressed():
+		priority += 4.0
+	priority -= _get_target_planar_distance_squared(candidate) * 0.1
+	return priority
+
+
+func _get_total_missing_active_part_health(candidate: RobotBase) -> float:
+	if candidate == null:
+		return 0.0
+
+	var missing_health := 0.0
+	for part_name in RobotBase.BODY_PARTS:
+		var part_health := candidate.get_part_health(part_name)
+		if part_health <= 0.0:
+			continue
+		missing_health += maxf(candidate.max_part_health - part_health, 0.0)
+
+	return missing_health
+
+
+func _get_average_leg_health_ratio(candidate: RobotBase) -> float:
+	if candidate == null:
+		return 1.0
+
+	var total_ratio := 0.0
+	var counted_legs := 0
+	for part_name in ["left_leg", "right_leg"]:
+		if candidate.get_part_health(part_name) <= 0.0:
+			continue
+		total_ratio += candidate.get_part_health_ratio(part_name)
+		counted_legs += 1
+	if counted_legs <= 0:
+		return 0.0
+
+	return total_ratio / float(counted_legs)
+
+
+func _get_target_planar_distance_squared(candidate: RobotBase) -> float:
+	if candidate == null:
+		return INF
+
+	var planar_offset := candidate.global_position - global_position
+	planar_offset.y = 0.0
+	return planar_offset.length_squared()
 
 
 func _ensure_support_target_indicator() -> void:
