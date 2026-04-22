@@ -1,0 +1,132 @@
+extends SceneTree
+
+const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
+const MatchController = preload("res://scripts/systems/match_controller.gd")
+const RobotBase = preload("res://scripts/robots/robot_base.gd")
+
+var _failed := false
+
+
+func _init() -> void:
+	call_deferred("_run")
+
+
+func _run() -> void:
+	await _validate_ffa_live_roster_uses_standings_order()
+	await _validate_teams_live_roster_prioritizes_surviving_teammate()
+	_finish()
+
+
+func _validate_ffa_live_roster_uses_standings_order() -> void:
+	var main := FFA_SCENE.instantiate()
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	var robots := _get_scene_robots(main)
+	_assert(match_controller != null, "La escena FFA deberia exponer MatchController.")
+	_assert(robots.size() >= 4, "La escena FFA deberia ofrecer cuatro robots para validar el roster vivo.")
+	if match_controller == null or robots.size() < 4:
+		await _cleanup_node(main)
+		return
+
+	match_controller.round_intro_duration = 0.0
+	for robot in robots:
+		robot.void_fall_y = -100.0
+
+	robots[0].fall_into_void()
+	await create_timer(0.05).timeout
+	robots[1].fall_into_void()
+	await create_timer(0.05).timeout
+	robots[2].fall_into_void()
+	await create_timer(0.05).timeout
+
+	var roster_lines := match_controller.get_robot_status_lines()
+	var player_four_index := _find_line_index_containing(roster_lines, robots[3].display_name)
+	var player_one_index := _find_line_index_containing(roster_lines, robots[0].display_name)
+	_assert(player_four_index >= 0, "El roster vivo FFA deberia seguir mostrando al ganador actual.")
+	_assert(player_one_index >= 0, "El roster vivo FFA deberia seguir mostrando a los eliminados.")
+	_assert(
+		player_four_index < player_one_index,
+		"El roster vivo FFA deberia ordenar primero al lider actual y no volver a scene-order."
+	)
+
+	await _cleanup_node(main)
+
+
+func _validate_teams_live_roster_prioritizes_surviving_teammate() -> void:
+	var main := MAIN_SCENE.instantiate()
+	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller_preload != null:
+		match_controller_preload.round_intro_duration = 0.0
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	var robots := _get_scene_robots(main)
+	_assert(match_controller != null, "La escena Teams deberia exponer MatchController.")
+	_assert(robots.size() >= 4, "La escena Teams deberia ofrecer cuatro robots para validar el roster vivo.")
+	if match_controller == null or robots.size() < 4:
+		await _cleanup_node(main)
+		return
+
+	robots[0].fall_into_void()
+	await create_timer(0.05).timeout
+
+	var roster_lines := match_controller.get_robot_status_lines()
+	var player_two_index := _find_line_index_containing(roster_lines, robots[1].display_name)
+	var player_one_index := _find_line_index_containing(roster_lines, robots[0].display_name)
+	_assert(player_two_index >= 0, "El roster vivo Teams deberia seguir mostrando al aliado superviviente.")
+	_assert(player_one_index >= 0, "El roster vivo Teams deberia seguir mostrando al aliado caido.")
+	_assert(
+		player_two_index < player_one_index,
+		"El roster vivo Teams deberia priorizar al aliado que sigue en pie antes que al eliminado dentro del mismo equipo."
+	)
+
+	await _cleanup_node(main)
+
+
+func _get_scene_robots(main: Node) -> Array[RobotBase]:
+	var robots: Array[RobotBase] = []
+	var robot_root := main.get_node("RobotRoot")
+	for child in robot_root.get_children():
+		if child is RobotBase:
+			robots.append(child as RobotBase)
+
+	return robots
+
+
+func _find_line_index_containing(lines: Array[String], fragment: String) -> int:
+	for index in range(lines.size()):
+		if lines[index].contains(fragment):
+			return index
+
+	return -1
+
+
+func _assert(condition: bool, message: String) -> void:
+	if condition:
+		return
+
+	_failed = true
+	push_error(message)
+
+
+func _cleanup_node(node: Node) -> void:
+	if not is_instance_valid(node):
+		return
+
+	var parent := node.get_parent()
+	if parent != null:
+		parent.remove_child(node)
+	node.free()
+	await process_frame
+
+
+func _finish() -> void:
+	quit(1 if _failed else 0)

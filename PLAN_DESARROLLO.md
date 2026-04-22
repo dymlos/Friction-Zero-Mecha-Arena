@@ -531,6 +531,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 **Estado actual del prototipo:**
 - ya existe un primer slice de HUD dual configurable desde `MatchConfig`, sin duplicar escenas ni abrir otra capa de UI
 - el modo `explicito` deja visibles `Modo`, `Objetivo`, hints de control y estado completo del roster; el modo `contextual` conserva marcador/estado base y solo reexpone dano, energia, buffs, items y cargas cuando cambian
+- ese mismo roster vivo ya no depende del orden fijo de la escena: `MatchController` reutiliza los comparators competitivos de FFA/Teams para que la lectura por robot acompañe al `Marcador` y al recap en vez de contradecirlos
 - sigue pendiente decidir por playtest si el toggle runtime actual (`F1`) alcanza para laboratorio o si conviene sumar persistencia/preset por modo ademas del default por recurso
 
 ## Dependencias resumidas

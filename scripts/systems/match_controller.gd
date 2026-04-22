@@ -260,7 +260,7 @@ func get_alive_robots() -> Array[RobotBase]:
 func get_robot_status_lines() -> Array[String]:
 	var lines: Array[String] = []
 	var contextual_hud := is_contextual_hud_enabled()
-	for robot in registered_robots:
+	for robot in _get_live_roster_ordered_robots():
 		if not is_instance_valid(robot):
 			continue
 
@@ -632,6 +632,14 @@ func _build_robot_part_state_summary(robot: RobotBase) -> String:
 
 
 func _get_recap_ordered_robots() -> Array[RobotBase]:
+	return _get_ordered_robots_for_competitive_readability()
+
+
+func _get_live_roster_ordered_robots() -> Array[RobotBase]:
+	return _get_ordered_robots_for_competitive_readability()
+
+
+func _get_ordered_robots_for_competitive_readability() -> Array[RobotBase]:
 	var ordered_robots: Array[RobotBase] = []
 	for robot in registered_robots:
 		if not is_instance_valid(robot):

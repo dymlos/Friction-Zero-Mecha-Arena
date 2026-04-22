@@ -600,6 +600,10 @@
    - `edge_repair_pickup.tscn`, `edge_mobility_pickup.tscn`, `edge_energy_pickup.tscn`, `edge_pulse_pickup.tscn`, `edge_charge_pickup.tscn` y `edge_utility_pickup.tscn` ahora suman `Visuals/Accent`, un mesh liviano con material propio/emisivo y firma sobria por pickup que sigue visible sobre el mismo pedestal incluso cuando el núcleo entra en cooldown.
    - Motivo: el resumen `Borde | ...` ya aclaraba el layout activo y el pedestal persistente marcaba el punto de interés, pero en pantalla compartida todavía faltaba distinguir rápido “qué pickup es éste” sin depender del color del núcleo ni del HUD. Colgar esa lectura del propio pickup mantiene la claridad del borde y preserva el centro limpio.
 
+103. **El roster vivo reutiliza el mismo orden competitivo del resto del match**
+   - `MatchController.get_robot_status_lines()` ya no itera `registered_robots` en scene-order; ahora delega en un helper compartido que aplica los comparators ya usados por recap/resultado final.
+   - Motivo: despues de corregir `Marcador`, `Posiciones`, detalle de cierre y `Stats | ...`, quedaba una fuga lateral donde el roster activo seguia mostrando primero al slot original en vez del lider FFA o del aliado que todavia seguia en pie en Teams. Reusar la misma ruta de orden mantiene una sola lectura competitiva sin agregar reglas nuevas.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.
