@@ -537,6 +537,8 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		segments.append("energia")
 	if robot.is_mobility_boost_active():
 		segments.append("impulso")
+	if robot.has_method("is_mobility_skill_active") and robot.is_mobility_skill_active():
+		segments.append("derrape")
 	if robot.is_stability_boost_active():
 		segments.append("estabilidad")
 	if robot.is_ram_skill_active():

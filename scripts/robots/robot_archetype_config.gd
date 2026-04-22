@@ -1,7 +1,7 @@
 extends Resource
 class_name RobotArchetypeConfig
 
-enum CoreSkillType { NONE, PULSE_SHOT, CONTROL_BEACON, RECOVERY_GRAB, RAM_BOOST }
+enum CoreSkillType { NONE, PULSE_SHOT, CONTROL_BEACON, RECOVERY_GRAB, RAM_BOOST, MOBILITY_BURST }
 enum AccentStyle { NONE, BUMPER, LIFT, BLADES, FIN, SPIKE, HALO }
 
 @export var archetype_label := ""
@@ -45,4 +45,5 @@ enum AccentStyle { NONE, BUMPER, LIFT, BLADES, FIN, SPIKE, HALO }
 @export_range(0.1, 4.0, 0.05) var core_skill_active_duration := 0.0
 @export_range(1.0, 2.0, 0.05) var core_skill_drive_multiplier := 1.0
 @export_range(1.0, 2.0, 0.05) var core_skill_arm_power_multiplier := 1.0
+@export_range(1.0, 2.0, 0.05) var core_skill_control_multiplier := 1.0
 @export_range(0.2, 1.0, 0.05) var core_skill_received_impulse_multiplier := 1.0

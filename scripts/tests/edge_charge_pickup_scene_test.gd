@@ -13,12 +13,12 @@ func _init() -> void:
 
 
 func _run() -> void:
-	await _validate_default_teams_scene_keeps_charge_pickups_inactive()
+	await _validate_default_teams_scene_enables_charge_pickups_when_both_teams_have_skills()
 	await _validate_ffa_scene_enables_charge_pickups_for_skill_robots()
 	_finish()
 
 
-func _validate_default_teams_scene_keeps_charge_pickups_inactive() -> void:
+func _validate_default_teams_scene_enables_charge_pickups_when_both_teams_have_skills() -> void:
 	var main = MAIN_SCENE.instantiate()
 	root.add_child(main)
 
@@ -37,14 +37,61 @@ func _validate_default_teams_scene_keeps_charge_pickups_inactive() -> void:
 		await _cleanup_scene_root(main)
 		return
 
+	var robots := _get_scene_robots(main)
+	var skill_robot: RobotBase = null
+	for robot in robots:
+		if robot.has_method("has_core_skill") and bool(robot.call("has_core_skill")):
+			skill_robot = robot
+			break
+
+	_assert(
+		skill_robot != null,
+		"El laboratorio 2v2 base deberia conservar al menos un robot con skill propia para probar la municion/carga."
+	)
+	if skill_robot == null:
+		await _cleanup_scene_root(main)
+		return
+
+	var initial_charges := int(skill_robot.call("get_core_skill_charge_count"))
+	var used := bool(skill_robot.call("use_core_skill"))
+	_assert(used, "La escena Teams deberia poder gastar una carga antes de buscar el pickup de municion.")
+	if not used:
+		await _cleanup_scene_root(main)
+		return
+
 	var arena_base := arena as ArenaBase
+	var active_pickup: Node3D = null
 	for round_number in range(1, 7):
 		arena_base.activate_edge_pickup_layout_for_round(round_number)
 		await process_frame
+		active_pickup = _find_enabled_pickup(main)
+		if active_pickup != null:
+			break
+
+	_assert(
+		active_pickup != null,
+		"El laboratorio 2v2 base deberia activar municion/carga cuando ambos equipos ya traen al menos una skill propia."
+	)
+	if active_pickup == null:
+		await _cleanup_scene_root(main)
+		return
+
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
+	_assert(round_label is Label, "El HUD Teams deberia seguir exponiendo el bloque de estado de ronda.")
+	if round_label is Label:
 		_assert(
-			_find_enabled_pickup(main) == null,
-			"El laboratorio 2v2 base no deberia activar municion/carga si solo un equipo trae skills propias."
+			String((round_label as Label).text).contains("municion"),
+			"El resumen `Borde | ...` deberia nombrar la municion/carga cuando forme parte del layout activo en Teams."
 		)
+
+	skill_robot.global_position = active_pickup.global_position
+	active_pickup.call("_on_body_entered", skill_robot)
+	await process_frame
+
+	_assert(
+		int(skill_robot.call("get_core_skill_charge_count")) == initial_charges,
+		"El pickup de municion/carga de Teams deberia restaurar la carga gastada del robot con skill propia."
+	)
 
 	await _disable_edge_pickups(main)
 	await _cleanup_scene_root(main)

@@ -380,6 +380,7 @@ var _energy_surge_remaining := 0.0
 var _mobility_boost_remaining := 0.0
 var _stability_boost_remaining := 0.0
 var _ram_skill_remaining := 0.0
+var _mobility_skill_remaining := 0.0
 var _stability_received_impulse_state_multiplier := 1.0
 var _core_skill_charges := 0
 var _core_skill_recharge_remaining := 0.0
@@ -568,6 +569,7 @@ func get_effective_leg_drive_multiplier() -> float:
 		* _get_leg_energy_multiplier()
 		* _get_mobility_pickup_drive_multiplier()
 		* _get_control_zone_drive_multiplier()
+		* _get_mobility_skill_drive_multiplier()
 		* _get_ram_skill_drive_multiplier()
 	)
 
@@ -634,6 +636,10 @@ func is_mobility_boost_active() -> bool:
 
 func get_mobility_boost_time_left() -> float:
 	return maxf(_mobility_boost_remaining, 0.0)
+
+
+func is_mobility_skill_active() -> bool:
+	return _mobility_skill_remaining > 0.0
 
 
 func is_control_zone_suppressed() -> bool:
@@ -796,6 +802,8 @@ func use_core_skill() -> bool:
 			used = _use_recovery_grab()
 		RobotArchetypeConfig.CoreSkillType.RAM_BOOST:
 			used = _use_ram_boost()
+		RobotArchetypeConfig.CoreSkillType.MOBILITY_BURST:
+			used = _use_mobility_burst()
 		_:
 			used = false
 
@@ -936,6 +944,26 @@ func _use_ram_boost() -> bool:
 	var previous_remaining := _ram_skill_remaining
 	_ram_skill_remaining = maxf(_ram_skill_remaining, duration)
 	if _ram_skill_remaining > previous_remaining:
+		_refresh_visual_state()
+
+	return true
+
+
+func _use_mobility_burst() -> bool:
+	var duration := _get_core_skill_active_duration()
+	if duration <= 0.0:
+		return false
+
+	var burst_direction := _get_mobility_skill_direction()
+	if burst_direction.length_squared() <= 0.0001:
+		return false
+
+	var burst_speed := maxf(max_move_speed * _get_core_skill_impulse_multiplier(), 0.1)
+	var previous_remaining := _mobility_skill_remaining
+	_mobility_skill_remaining = maxf(_mobility_skill_remaining, duration)
+	_planar_velocity += burst_direction * burst_speed
+	external_impulse += burst_direction * burst_speed * 0.32
+	if _mobility_skill_remaining > previous_remaining:
 		_refresh_visual_state()
 
 	return true
@@ -1149,6 +1177,7 @@ func reset_modular_state() -> void:
 	_mobility_boost_remaining = 0.0
 	_stability_boost_remaining = 0.0
 	_ram_skill_remaining = 0.0
+	_mobility_skill_remaining = 0.0
 	_stability_received_impulse_state_multiplier = 1.0
 	_reset_core_skill_state()
 	_clear_control_zone_suppression()
@@ -1897,6 +1926,11 @@ func _update_temporary_boosts(delta: float) -> void:
 		if _ram_skill_remaining == 0.0:
 			visuals_dirty = true
 
+	if _mobility_skill_remaining > 0.0:
+		_mobility_skill_remaining = maxf(_mobility_skill_remaining - delta, 0.0)
+		if _mobility_skill_remaining == 0.0:
+			visuals_dirty = true
+
 	if visuals_dirty:
 		_refresh_visual_state()
 
@@ -2038,6 +2072,7 @@ func _get_effective_leg_control_multiplier() -> float:
 		* _get_leg_energy_multiplier()
 		* _get_mobility_pickup_control_multiplier()
 		* _get_control_zone_control_multiplier()
+		* _get_mobility_skill_control_multiplier()
 	)
 
 
@@ -2068,6 +2103,24 @@ func _get_mobility_pickup_control_multiplier() -> float:
 		return 1.0
 
 	return mobility_pickup_control_multiplier
+
+
+func _get_mobility_skill_drive_multiplier() -> float:
+	if not is_mobility_skill_active():
+		return 1.0
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.core_skill_drive_multiplier, 1.0)
+
+
+func _get_mobility_skill_control_multiplier() -> float:
+	if not is_mobility_skill_active():
+		return 1.0
+	if archetype_config == null:
+		return 1.0
+
+	return maxf(archetype_config.core_skill_control_multiplier, 1.0)
 
 
 func _get_control_zone_drive_multiplier() -> float:
@@ -2211,6 +2264,20 @@ func _get_core_skill_active_duration() -> float:
 		return 0.0
 
 	return maxf(archetype_config.core_skill_active_duration, 0.0)
+
+
+func _get_mobility_skill_direction() -> Vector3:
+	var move_input := _get_move_input_vector()
+	var planar_direction := Vector3(move_input.x, 0.0, move_input.y)
+	if planar_direction.length_squared() > 0.0001:
+		return planar_direction.normalized()
+
+	var velocity_direction := _planar_velocity + external_impulse
+	velocity_direction.y = 0.0
+	if velocity_direction.length_squared() > 0.0001:
+		return velocity_direction.normalized()
+
+	return _get_combat_forward_vector()
 
 
 func _get_ram_skill_drive_multiplier() -> float:
@@ -3520,6 +3587,8 @@ func _get_core_skill_accent_color() -> Color:
 			return Color(0.66, 1.0, 0.72, 1.0)
 		RobotArchetypeConfig.CoreSkillType.RAM_BOOST:
 			return Color(1.0, 0.56, 0.18, 1.0)
+		RobotArchetypeConfig.CoreSkillType.MOBILITY_BURST:
+			return Color(0.22, 0.98, 0.76, 1.0)
 		_:
 			return _get_archetype_accent_color()
 
@@ -3545,6 +3614,8 @@ func _get_archetype_accent_core_skill_active_blend() -> float:
 		return 0.0
 	if is_ram_skill_active():
 		return 1.0
+	if is_mobility_skill_active():
+		return 0.92
 	if is_instance_valid(_active_control_beacon):
 		return 0.52
 
@@ -3581,7 +3652,7 @@ func _refresh_core_visuals() -> void:
 		var energy_blend := _get_energy_visual_blend()
 		var energy_surge_blend := 0.22 if is_energy_surge_active() else 0.0
 		var mobility_color := Color(0.2, 0.92, 0.78, 1.0)
-		var mobility_blend := 0.42 if is_mobility_boost_active() else 0.0
+		var mobility_blend := 0.66 if is_mobility_skill_active() else (0.42 if is_mobility_boost_active() else 0.0)
 		var ram_color := Color(1.0, 0.56, 0.18, 1.0)
 		var ram_blend := 0.48 if is_ram_skill_active() else 0.0
 		var core_skill_color := Color(0.22, 0.88, 1.0, 1.0)

@@ -59,11 +59,11 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - laboratorio FFA dedicado en `scenes/main/main_ffa.tscn`, reutilizando la misma arena/shared screen pero con `match_mode=FFA` y bootstrap que neutraliza las alianzas del layout 2v2 para que cada robot compita por su cuenta; ese mismo laboratorio ahora reemplaza los slots de `Grua` y `Cizalla` por `Aguja` y `Ancla` para probar poke + control/zona sin romper el 2v2 base
 - el bootstrap FFA ya tambien diferencia el espacio inicial: en cuanto `match_mode=FFA`, `Main` genera spawns diagonales sobre un radio comun y hace mirar a cada robot hacia el centro, evitando que el laboratorio libre herede las lineas cardinales del 2v2
 - laboratorio rapido FFA en `scenes/main/main_ffa_validation.tscn`, con `arena_ffa_validation.tscn`, `ffa_validation_match_config.tres`, `first-to-1`, rondas de 26s, reinicios cortos y radio de spawn FFA mas cerrado para reproducir third-party, rotacion de borde y cierres de ronda sin esperar el laboratorio libre base
-- primera capa de identidad de arquetipos apoyada sobre sistemas ya existentes, mas tres skills propias repartidas entre 2v2 y FFA:
+- primera capa de identidad de arquetipos apoyada sobre sistemas ya existentes, mas cinco skills propias repartidas entre 2v2 y FFA:
   - `Ariete`: mas vida/empuje, mas resistencia al impulso externo y ahora `Embestida`, una ventana corta de drive/impacto/estabilidad que refuerza pusher/tank sin proyectiles
   - `Grua`: mejor retorno de partes, estabiliza otra pieza dañada al completar un rescate y ahora convierte `throw_part` en `Iman` cuando no lleva carga, capturando piezas listas a distancia media para validar asistencia/recuperacion activa
   - `Cizalla`: mas daño/pressure modular y bonus extra contra piezas ya tocadas para validar dismantle
-  - `Patin`: mas velocidad/menos damping y ventanas de impulso mas largas para validar movilidad/reposition
+  - `Patin`: mas velocidad/menos damping, ventanas de impulso mas largas y ahora `Derrape`, una rafaga corta de reposicion que empuja al robot en su direccion actual y abre una ventana breve de drive/control reforzados sin sumar proyectiles
   - `Aguja`: convierte la accion `throw_part` en `Pulso` cuando no lleva una parte, con 2 cargas recargables y el mismo `PulseBolt` repulsor como base para validar poke/skillshot limpio
   - `Ancla`: convierte esa misma accion en `Baliza`, una zona persistente corta que ralentiza drive/control rivales, evita apilar varias balizas por robot y deja `zona` visible en el roster cuando afecta a alguien
   - `RobotArchetypeConfig` vive en recursos `.tres`, `RobotBase` lo aplica al arrancar y tambien lo consulta al resolver `apply_impulse`, retornos, daño modular y boosts temporales, sin abrir otra UI

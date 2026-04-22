@@ -90,6 +90,14 @@
    - Mientras `is_ram_skill_active()` dura, `RobotBase._refresh_core_visuals()` calienta el core hacia naranja y `MatchController._build_robot_status_line()` agrega `embestida` al roster compacto, conservando aparte `skill Embestida x/y` como estado de cargas.
    - Motivo: el buff necesitaba verse en pantalla compartida, pero no justificaba otro widget; repetir el mismo patron de “estado temporal corto dentro del roster existente + refuerzo diegetico en el robot” mantiene claridad sin inflar la UI.
 
+88. **`Patin` resuelve su skill propia como una rafaga corta dentro del mismo movimiento**
+   - `RobotArchetypeConfig` ahora soporta `CoreSkillType.MOBILITY_BURST` y un `core_skill_control_multiplier`; `patin_archetype.tres` lo expone como `Derrape`, y `RobotBase._use_mobility_burst()` reaprovecha `_planar_velocity`, `external_impulse` y los multiplicadores de piernas para meter desplazamiento inmediato + una ventana breve de drive/control reforzados.
+   - Motivo: el hueco restante del roster era que `Patin` seguia leyendo mas como tuning que como rol activo. Reusar el pipeline de movimiento preserva la fantasia principal de patinar/reposicionarse, evita otro proyectil o hazard y mantiene el proyecto legible para Godot principiante.
+
+89. **La lectura activa de `Derrape` tambien vive en cuerpo + roster**
+   - Mientras `is_mobility_skill_active()` dura, `RobotBase` sube el blend turquesa de core/accent y `MatchController._build_robot_status_line()` agrega `derrape` junto a `skill Derrape x/y`.
+   - Motivo: la skill de movilidad necesitaba verse en pantalla compartida sin abrir HUD nuevo; repetir el mismo patron de estado temporal corto evita ruido y deja claro cuando el reposition viene del propio arquetipo y no solo de un pickup de `impulso`.
+
 16. **Ajuste de ritmo de duelo via parámetros exportados**
    - Se prefirió reajustar el duelo 2P ajustando `RobotBase` en lugar de agregar una mecánica nueva.
    - Motivo: el equilibrio de inercia, alcance/impulso y daño de choque define la sensación principal del prototipo sin comprometer la simplicidad técnica existente.
@@ -341,7 +349,7 @@
 65. **La segunda capa de arquetipos reutiliza hooks ya existentes**
    - `RobotArchetypeConfig` ahora agrega pasivas chicas sin escenas ni botones nuevos: `Ariete` baja el impulso externo recibido, `Grua` estabiliza otra pieza dañada al devolver una parte, `Cizalla` castiga mas una pieza ya tocada y `Patin` estira la duracion de los boosts de movilidad.
    - `RobotBase` las resuelve dentro de `apply_impulse`, `restore_part`, `receive_attack_hit_from_robot` / `receive_collision_hit_from_robot` y `apply_mobility_boost`, mientras `PulseBolt` tambien pasa el atacante para no romper la identidad de `Cizalla` fuera del melee.
-   - Motivo: profundizar la identidad del roster sin abrir todavia skills activas, UI nueva ni ramas de codigo por robot; se apoya en sistemas que ya eran jugables y legibles en el laboratorio actual.
+   - Motivo: profundizar la identidad del roster con el menor costo tecnico posible; estas pasivas siguen vigentes incluso ahora que `Patin` ya gano `Derrape`, porque siguen diferenciando el valor de los pickups de movilidad respecto de su skill propia.
 
 65. **La identidad de jugador/equipo vive primero en el mundo, no en otro HUD**
    - `RobotBase` ahora expone `get_identity_color()` y reutiliza `FacingMarker` + `Left/RightCoreLight` como acentos ligeros por equipo en `Teams` y por jugador en `FFA`, sin tocar el cuerpo principal ni competir con la lectura de energia/daño.
