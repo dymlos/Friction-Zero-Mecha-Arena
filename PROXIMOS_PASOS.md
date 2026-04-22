@@ -98,6 +98,8 @@
 12. **Mejorar validacion jugable**
    - usar tambien `F6` para saltar en runtime entre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn` antes de volver al editor; si cambia el set de laboratorios, mantener sincronizados `LAB_SCENE_VARIANTS`, la linea `Escena | ...` y `lab_scene_selector_test.gd`.
    - usar `godot --headless --path . -s res://scripts/tests/test_runner.gd` como entrypoint comun antes de caer en loops shell manuales; si cambia el layout de `scripts/tests`, mantener tambien `test_suite_runner_test.gd` para no perder discovery en silencio.
+   - si un test depende de score real, derivar el valor esperado desde `MatchConfig`; si depende de lifecycle puro entre rondas, fijar `void/destruccion/inestable = 1` dentro del test.
+   - si un test necesita arrancar sin intro, anular `round_intro_duration_ffa/teams` en `MatchConfig`; no confiar solo en `MatchController.round_intro_duration`.
    - usar `main_teams_validation.tscn` y `main_ffa_validation.tscn` como rutas rapidas base antes de tocar `main.tscn` o `main_ffa.tscn`.
    - ajuste fino de valores de aceleracion, damping, empuje y danio usando esas escenas cortas para iterar mas rapido antes de tocar los laboratorios largos.
    - medir si el reset corto de ronda y el reinicio de match dejan suficiente tiempo de lectura o si necesitan delays algo mayores

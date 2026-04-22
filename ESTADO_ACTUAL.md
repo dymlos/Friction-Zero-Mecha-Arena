@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Alineación de suite headless (2026-04-22)
+
+- Estado: la suite completa `scripts/tests/*.gd` volvió a verde tras corregir falsos rojos de tests que seguían asumiendo contratos viejos de score/intro.
+- Hallazgos principales:
+  - varios tests FFA seguían hardcodeando `1` punto por cierre de ronda, aunque `MatchController` ya puntúa via `MatchConfig.get_round_victory_points_for_cause(...)`.
+  - algunos tests de timing seguían anulando `MatchController.round_intro_duration`, pero el intro real ahora sale de `MatchConfig.round_intro_duration_ffa/teams`.
+- Corrección aplicada:
+  - `ffa_round_resolution_test.gd`, `ffa_live_scoreboard_order_test.gd`, `ffa_live_standings_hud_test.gd` y `ffa_match_result_standings_test.gd` ahora derivan score esperado desde `MatchConfig`.
+  - `match_elimination_source_reset_test.gd` fija score `1/1/1` para seguir validando lifecycle entre rondas, no balance por causa.
+  - `progressive_space_reduction_test.gd` y `team_post_death_support_test.gd` anulan `round_intro_duration_teams` en la config efectiva para no quedar presos del intro por modo.
+- Resultado: `godot --headless --path . -s res://scripts/tests/test_runner.gd` vuelve a pasar con `Suite OK: 72 tests`.
+
 ## Auditoría de consistencia de escenas (2026-04-22)
 
 - Estado: se revisaron `main.tscn`, `main_ffa.tscn`, `main_teams_validation.tscn` y `main_ffa_validation.tscn`; todas sus dependencias de `ext_resource` principales existen en disco.

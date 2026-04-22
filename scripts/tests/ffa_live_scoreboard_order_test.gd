@@ -29,6 +29,11 @@ func _run() -> void:
 
 	match_controller.round_reset_delay = 0.2
 	match_controller.round_intro_duration = 0.0
+	var void_round_points := 1
+	if match_controller.match_config != null:
+		void_round_points = match_controller.match_config.get_round_victory_points_for_cause(
+			int(MatchController.EliminationCause.VOID)
+		)
 	for robot in robots:
 		robot.void_fall_y = -100.0
 
@@ -40,11 +45,15 @@ func _run() -> void:
 	await create_timer(0.05).timeout
 
 	var score_line := _find_line_with_prefix(match_controller.get_round_state_lines(), "Marcador |")
-	var player_four_fragment := "%s 1 [%s]" % [robots[3].display_name, robots[3].get_archetype_label()]
+	var player_four_fragment := "%s %s [%s]" % [
+		robots[3].display_name,
+		void_round_points,
+		robots[3].get_archetype_label(),
+	]
 	var player_one_fragment := "%s 0 [%s]" % [robots[0].display_name, robots[0].get_archetype_label()]
 	_assert(
 		score_line.contains(player_four_fragment),
-		"El marcador FFA deberia reflejar el punto del ganador."
+		"El marcador FFA deberia reflejar los puntos configurados para el ganador."
 	)
 	_assert(
 		_index_of_fragment(score_line, player_four_fragment) < _index_of_fragment(score_line, player_one_fragment),

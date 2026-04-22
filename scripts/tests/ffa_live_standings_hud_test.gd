@@ -29,6 +29,11 @@ func _run() -> void:
 
 	match_controller.round_reset_delay = 0.2
 	match_controller.round_intro_duration = 0.0
+	var void_round_points := 1
+	if match_controller.match_config != null:
+		void_round_points = match_controller.match_config.get_round_victory_points_for_cause(
+			int(MatchController.EliminationCause.VOID)
+		)
 	for robot in robots:
 		robot.void_fall_y = -100.0
 
@@ -58,8 +63,9 @@ func _run() -> void:
 		_has_prefix_line(round_lines, "Marcador | "),
 		"En cuanto la ronda FFA ya tiene score util, el HUD vivo deberia volver a mostrar el marcador."
 	)
-	var expected_standings := "Posiciones | 1. %s (1) | 2. %s (0) | 3. %s (0) | 4. %s (0)" % [
+	var expected_standings := "Posiciones | 1. %s (%s) | 2. %s (0) | 3. %s (0) | 4. %s (0)" % [
 		robots[3].display_name,
+		void_round_points,
 		robots[2].display_name,
 		robots[1].display_name,
 		robots[0].display_name,

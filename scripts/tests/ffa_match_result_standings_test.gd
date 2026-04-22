@@ -39,6 +39,11 @@ func _run() -> void:
 	match_controller.match_restart_delay = 0.2
 	match_controller.start_match()
 	await process_frame
+	var void_round_points := 1
+	if match_controller.match_config != null:
+		void_round_points = match_controller.match_config.get_round_victory_points_for_cause(
+			int(MatchController.EliminationCause.VOID)
+		)
 
 	for robot in robots:
 		robot.void_fall_y = -100.0
@@ -50,13 +55,17 @@ func _run() -> void:
 	robots[2].fall_into_void()
 	await create_timer(0.05).timeout
 
-	var expected_standings := "Posiciones | 1. %s (1) | 2. %s (0) | 3. %s (0) | 4. %s (0)" % [
+	var expected_standings := "Posiciones | 1. %s (%s) | 2. %s (0) | 3. %s (0) | 4. %s (0)" % [
 		robots[3].display_name,
+		void_round_points,
 		robots[2].display_name,
 		robots[1].display_name,
 		robots[0].display_name,
 	]
-	var expected_match_decision := "%s gana la partida con 1 punto" % robots[3].display_name
+	var expected_match_decision := "%s gana la partida con %s" % [
+		robots[3].display_name,
+		"%s punto" % void_round_points if void_round_points == 1 else "%s puntos" % void_round_points,
+	]
 	_assert(match_controller.is_match_over(), "Con objetivo 1 la ronda FFA deberia cerrar la partida.")
 	_assert(recap_panel.visible, "El cierre FFA deberia mostrar recap lateral.")
 	_assert(match_result_panel.visible, "El cierre FFA deberia mostrar panel final.")

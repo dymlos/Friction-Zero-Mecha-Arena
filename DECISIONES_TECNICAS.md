@@ -2,6 +2,15 @@
 
 ## Decisiones vigentes
 
+1. **Los tests de score deben leer `MatchConfig`; los tests de lifecycle deben fijar `1/1/1`**
+ - `MatchController._finish_round_with_winner()` suma puntos via `get_round_victory_points_for_cause(...)`, así que cualquier test de HUD/standings/resultado que espere score real debe derivarlo desde `MatchConfig`.
+ - Si el objetivo del test es el lifecycle entre rondas/partida y no el balance, debe pinnear `void/destruccion/inestable = 1` dentro del propio test para evitar falsos rojos cuando cambie el peso por causa.
+ - Motivo: separar contrato de score de contrato de lifecycle evita que la calibración de cierre rompa regresiones que en realidad validan otra cosa.
+
+1. **Los tests que necesiten un arranque sin intro deben tocar `MatchConfig.round_intro_duration_ffa/teams`**
+ - Desde la separación por modo, `_resolve_round_intro_duration()` prioriza `match_config.get_round_intro_duration(...)`; dejar solo `MatchController.round_intro_duration = 0.0` ya no garantiza un laboratorio sin intro.
+ - Motivo: los falsos rojos en presión de arena y soporte post-muerte salían de seguir anulando el seam viejo en vez de la config efectiva por modo.
+
 1. **El laboratorio admite toggle directo de `Easy/Hard` por slot con las teclas `1-8`**
  - `Main._unhandled_input()` ahora traduce `KEY_1..KEY_8` a `player_slot` y delega en `toggle_lab_control_mode_for_player_slot()`, que reaprovecha `_apply_lab_runtime_loadout(...)` para cambiar modo sin reabrir escena.
  - `F2/F3/F4` siguen como selector fino, pero el flujo corto de playtest ya no depende de recorrer slots uno por uno solo para comparar controles.

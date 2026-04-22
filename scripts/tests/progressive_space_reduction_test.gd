@@ -17,6 +17,8 @@ func _run() -> void:
 	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
 	if match_controller_preload != null:
 		match_controller_preload.round_intro_duration = 0.0
+		if match_controller_preload.match_config != null:
+			match_controller_preload.match_config.round_intro_duration_teams = 0.0
 	root.add_child(main)
 
 	await process_frame
@@ -36,6 +38,7 @@ func _run() -> void:
 	match_controller.round_reset_delay = 0.15
 	match_controller.match_config.round_time_seconds = 1
 	match_controller.match_config.progressive_space_reduction = true
+	match_controller.match_config.round_intro_duration_teams = 0.0
 	match_controller.space_reduction_start_ratio = 0.25
 	match_controller.space_reduction_min_scale = 0.5
 	match_controller.start_match()

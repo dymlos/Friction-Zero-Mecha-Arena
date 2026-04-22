@@ -28,6 +28,11 @@ func _run() -> void:
 		return
 
 	match_controller.round_reset_delay = 0.2
+	var void_round_points := 1
+	if match_controller.match_config != null:
+		void_round_points = match_controller.match_config.get_round_victory_points_for_cause(
+			int(MatchController.EliminationCause.VOID)
+		)
 	for robot in robots:
 		robot.void_fall_y = -100.0
 
@@ -60,8 +65,8 @@ func _run() -> void:
 		"La lectura de modo deberia persistir tambien cuando la ronda ya se resolvio."
 	)
 	_assert(
-		_has_line_with_fragment(resolved_round_lines, "Player 4 1"),
-		"El marcador FFA deberia reflejar el punto del robot ganador."
+		_has_line_with_fragment(resolved_round_lines, "%s %s" % [robots[3].display_name, void_round_points]),
+		"El marcador FFA deberia reflejar los puntos configurados para el robot ganador."
 	)
 
 	await create_timer(match_controller.round_reset_delay + 0.25).timeout

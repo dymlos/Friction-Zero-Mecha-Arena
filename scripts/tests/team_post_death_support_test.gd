@@ -21,6 +21,8 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
 	if match_controller_preload != null:
 		match_controller_preload.round_intro_duration = 0.0
+		if match_controller_preload.match_config != null:
+			match_controller_preload.match_config.round_intro_duration_teams = 0.0
 	root.add_child(main)
 
 	await process_frame
@@ -35,6 +37,8 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 	if match_controller == null or support_root == null or robots.size() < 4:
 		await _cleanup_main(main)
 		return
+	if match_controller.match_config != null:
+		match_controller.match_config.round_intro_duration_teams = 0.0
 
 	_assert(
 		support_root.get_child_count() == 0,
