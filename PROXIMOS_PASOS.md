@@ -4,9 +4,14 @@
 
 ## Prioridad inmediata tras la revision estricta (2026-04-22)
 
-1. Validar `score` por causa en playtest corto y decidir si `2/1/4` sigue siendo el perfil correcto sin volver dominante ninguna ruta de cierre, usando ahora `Cierre ronda | ...` + `Puntos cierre | ...` para leer cada recompensa y su contexto antes del final del match.
-2. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
+1. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
+2. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
+
+0. **No reabrir `ring-out 2 / destruccion total 1 / explosion inestable 4` por intuicion**
+ - La revision estricta ya volvio a pasar `match_elimination_victory_weights_test.gd`, `match_closing_cause_summary_test.gd`, `match_completion_test.gd` y la suite completa sin tocar produccion ni configs.
+ - `Puntos cierre | ...`, `Cierre ronda | ...` y `Cierre decisivo | ...` ya dejan visible el mismo perfil dentro del prototipo; el siguiente cambio solo se justifica con evidencia runtime/manual nueva de que una ruta esta cerrando demasiado facil o demasiado poco.
+ - Archivos objetivo si reaparece evidencia real: `data/config/default_match_config.tres`, `data/config/ffa_validation_match_config.tres`, `data/config/teams_validation_match_config.tres`, `scripts/tests/match_elimination_victory_weights_test.gd`.
 
 0. **No volver a dejar que solo uno de los dos paneles de cierre explique la ultima baja decisiva**
  - `MatchController` ya reutiliza `_build_closing_elimination_line()` tanto en `get_round_recap_panel_lines()` como en `get_match_result_lines()`; si se retocan recap o resultado final, mantener esa fuente de verdad compartida.

@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **No reabrir el perfil de score por causa `2/1/4` sin evidencia runtime/manual nueva**
+ - `MatchConfig` sigue fijando `void_elimination_round_points = 2`, `destruction_elimination_round_points = 1` y `unstable_elimination_round_points = 4` tanto en el recurso base como en las configs de validacion `FFA/Teams`.
+ - `match_elimination_victory_weights_test.gd` sigue congelando la mecanica en ambos modos (`ring-out` suma `2`, `explosion inestable` suma `4`), mientras `match_closing_cause_summary_test.gd` y `match_completion_test.gd` confirman que recap y cierre final siguen leyendo el mismo perfil visible dentro del prototipo.
+ - Motivo: el siguiente ajuste de balance ya no necesita otra ronda de wiring o wording; solo se justifica si una sesion runtime/manual demuestra que una ruta de cierre esta dominando de verdad.
+
 1. **Los dos paneles de cierre final deben repetir la misma linea `Cierre | <ultima baja>`**
  - `MatchController` ya guardaba `_last_elimination_summary`, pero solo `get_match_result_lines()` la mostraba. Ahora `_build_closing_elimination_line()` centraliza esa lectura y la reutiliza tambien en `get_round_recap_panel_lines()`.
  - `match_elimination_readability_test.gd` fija el contrato sobre el recap lateral: exige la linea tanto en el array del panel como en `RecapLabel`.

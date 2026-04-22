@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## El perfil actual de score por causa sigue validado y no requiere retoque sin evidencia nueva (2026-04-22)
+
+- Estado: el prototipo sigue usando `ring-out 2 / destruccion total 1 / explosion inestable 4` en `MatchConfig`, y la red actual vuelve a confirmar que ese perfil se refleja igual en `Teams`, `FFA`, recap y cierre final.
+- Validacion rehecha:
+  - `scripts/tests/match_elimination_victory_weights_test.gd` mantiene el contrato mecanico `2 + 4 = 6` en ambos modos.
+  - `scripts/tests/match_closing_cause_summary_test.gd` vuelve a fijar `Puntos cierre | ...`, `Cierre ronda | ...` y `Cierre decisivo | ...` en recap/resultados.
+  - `scripts/tests/match_completion_test.gd` conserva el cierre visible de `Teams` alineado con puntos, no rondas ambiguas.
+- Decision:
+  - no hubo cambio de produccion ni de config; la revision solo confirma que el perfil vigente sigue siendo consistente con la lectura del prototipo.
+  - el siguiente ajuste de balance sobre `2/1/4` queda bloqueado hasta tener evidencia runtime/manual nueva de dominancia real, no otra correccion cosmética de HUD.
+
 ## El recap lateral del cierre final ya repite tambien la ultima baja decisiva (2026-04-22)
 
 - Estado: cuando el match termina, `RecapPanel` ya no queda un paso atras del `MatchResultPanel`; ahora tambien incluye `Cierre | <ultima baja>` con la misma atribucion del rival responsable.

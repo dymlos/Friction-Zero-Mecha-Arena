@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Validado otra vez el perfil actual de cierre por causa (`ring-out 2 / destruccion total 1 / explosion inestable 4`) sin tocar producción:
+  - la revision estricta volvio a contrastar el perfil activo en `MatchConfig` (`default_match_config.tres`, `ffa_validation_match_config.tres`, `teams_validation_match_config.tres`) contra la red que ya lo congela en runtime y en superficies de cierre.
+  - la evidencia mecanica sigue alineada: `match_elimination_victory_weights_test.gd` confirma que `Teams` y `FFA` suman `2` por `ring-out` y luego `+4` por `explosion inestable`; `match_closing_cause_summary_test.gd` y `match_completion_test.gd` mantienen visible el mismo perfil en recap/resultado final con `Puntos cierre | ...`, `Cierre ronda | ...` y `Cierre decisivo | ...`.
+  - decision operativa: no reabrir el perfil `2/1/4` por intuicion o por otra iteracion de wording; el siguiente cambio de balance solo se justifica con evidencia runtime/manual nueva de que una ruta esta dominando demasiado.
+  - validacion: `godot --headless --path . -s res://scripts/tests/match_elimination_victory_weights_test.gd`, `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - El recap lateral del cierre final ahora repite tambien `Cierre | ...`, igual que el panel final:
   - la revision estricta detecto una asimetria residual en los dos paneles de cierre: `MatchResultPanel` ya reutilizaba la ultima baja decisiva, pero `RecapPanel` no la repetia aunque ambas superficies convivian al mismo tiempo.
   - `scripts/systems/match_controller.gd` ahora concentra esa linea en `_build_closing_elimination_line()` y la reutiliza tanto en `get_round_recap_panel_lines()` como en `get_match_result_lines()`.
