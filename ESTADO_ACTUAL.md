@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## HUD vivo Teams sin marcador neutro en la apertura (2026-04-22)
+
+- Estado: la apertura del laboratorio `Teams` ya no arranca con una línea de score 0-0 que todavía no explica nada del match.
+- Corrección aplicada:
+  - `scripts/systems/match_controller.gd` suma `_should_show_live_score_summary()`.
+  - `FFA` sigue usando `_should_show_live_ffa_standings()` como antes.
+  - `Teams` ahora muestra `Marcador | ...` solo cuando la ronda activa ya viene después de al menos una ronda decidida; recap y resultado final siguen mostrando score siempre que corresponde.
+  - `scripts/tests/teams_live_scoreboard_opening_test.gd` fija la regresión: opening sin `Marcador | ...`, cierre de ronda con score visible otra vez.
+- Resultado:
+  - el inicio del round queda más limpio y cercano al beat documentado de análisis/lectura antes de que el match tenga información competitiva real.
+  - `godot --headless --path . -s res://scripts/tests/teams_live_scoreboard_opening_test.gd`, `godot --headless --path . -s res://scripts/tests/ffa_live_standings_hud_test.gd`, `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd` y `godot --headless --path . -s res://scripts/tests/match_completion_test.gd` pasan.
+
 ## Referencia compacta de controles para el slot seleccionado (2026-04-22)
 
 - Estado: el laboratorio ya no obliga a mirar solo el roster o el `StatusLabel` para recordar que hace el slot actualmente seleccionado; el propio HUD round-state deja una chuleta compacta y persistente de sus bindings reales.

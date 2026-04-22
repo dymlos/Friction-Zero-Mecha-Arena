@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **El HUD vivo `Teams` no debe gastar una línea en un marcador 0-0 totalmente neutro**
+ - `MatchController._build_score_summary_line()` ahora delega en `_should_show_live_score_summary()`.
+ - `FFA` conserva su gating actual de standings/score útil; `Teams` solo oculta el marcador mientras la ronda activa sigue en el estado inicial sin rondas decididas (`_match_decided_rounds == 0`).
+ - `teams_live_scoreboard_opening_test.gd` fija que el opening no muestre `Marcador | ...`, pero que la línea reaparezca apenas una ronda ya cambió el estado competitivo real del match.
+ - Motivo: la documentación prioriza claridad y una apertura con espacio de lectura. En `Teams`, `Equipo 1 0 | Equipo 2 0` durante el segundo cero del round solo añadía ruido; esconderlo en ese momento limpia HUD sin perder información valiosa en recap o cierre.
+
 1. **La referencia de controles del laboratorio vive en el round-state del slot seleccionado**
  - `Main` agrega `get_lab_selected_controls_summary_line()` y suma `Control Pn | ...` a `_build_round_state_lines()` junto con `Escena | ...` y `Lab | ...`.
  - `RobotBase` centraliza el texto con `get_control_reference_hint()`, reutilizando el perfil local real para `mueve`, `aim` cuando aplica, `ataca`, `energia`, `overdrive` y `suelta`.

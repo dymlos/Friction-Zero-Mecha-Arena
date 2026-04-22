@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El HUD vivo `Teams` ya no gasta una línea completa en `Marcador | Equipo 1 0 | Equipo 2 0` durante la apertura totalmente neutra del primer round; el score vuelve solo cuando una ronda decidida ya aporta contexto competitivo real.
+- La corrección vive en `MatchController._should_show_live_score_summary()`: `FFA` conserva su gating propio de standings, mientras `Teams` oculta el marcador solo durante el match activo sin rondas decididas (`_match_decided_rounds == 0`), manteniendo recap y resultado final intactos.
+- `teams_live_scoreboard_opening_test.gd` fija el seam completo: el opening `Teams` no debe mostrar `Marcador | ...`, pero tras cerrar una ronda por vacío la línea vuelve a aparecer en el HUD vivo.
+- Validación focalizada: `godot --headless --path . -s res://scripts/tests/teams_live_scoreboard_opening_test.gd`, `godot --headless --path . -s res://scripts/tests/ffa_live_standings_hud_test.gd`, `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd` y `godot --headless --path . -s res://scripts/tests/match_completion_test.gd` pasan.
+
 - El laboratorio ahora deja una referencia compacta de controles para el slot seleccionado dentro del propio round-state (`Control Pn | mueve ... | aim ... | ataca ... | energia ... | overdrive ... | suelta ...`), de modo que el selector runtime ya no depende solo del roster o del `StatusLabel` para leer `Easy/Hard` en pantalla compartida.
 - La implementacion vive repartida en un seam chico y legible: `Main.get_lab_selected_controls_summary_line()` publica la linea en `_build_round_state_lines()`, mientras `RobotBase.get_control_reference_hint()` centraliza los labels por perfil (`WASD`, `flechas`, `numpad`, `IJKL`) y suma `aim ...` solo cuando el slot realmente esta en `Hard`.
 - `lab_runtime_selector_test.gd` fija la regresion completa: la linea existe al iniciar en `P1/Easy`, agrega `aim TFGX` al alternar el slot seleccionado a `Hard` y migra a `P2` con el perfil flechas al cambiar de slot.

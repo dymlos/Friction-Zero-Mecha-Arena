@@ -1619,7 +1619,7 @@ func _on_transition_timer_timeout() -> void:
 
 
 func _build_score_summary_line() -> String:
-	if match_mode == MatchMode.FFA and not _should_show_live_ffa_standings():
+	if not _should_show_live_score_summary():
 		return ""
 
 	var score_parts: Array[String] = []
@@ -1637,6 +1637,15 @@ func _build_score_summary_line() -> String:
 		score_parts.append("%s %s" % [competitor_label, competitor_score])
 
 	return "Marcador | %s" % " | ".join(score_parts)
+
+
+func _should_show_live_score_summary() -> bool:
+	if not _round_active:
+		return true
+	if match_mode == MatchMode.FFA:
+		return _should_show_live_ffa_standings()
+
+	return _match_decided_rounds > 0
 
 
 func _build_round_intro_status_line() -> String:

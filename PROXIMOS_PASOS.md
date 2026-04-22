@@ -2,6 +2,12 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No reabrir el marcador neutro de `Teams` al tocar el HUD vivo**
+ - `MatchController` ya oculta `Marcador | ...` mientras el match `Teams` sigue en la apertura sin rondas decididas; recap y resultado final no usan ese gating.
+ - Si se retocan `_build_score_summary_line()`, `_should_show_live_score_summary()` o el lifecycle de `_match_decided_rounds`, mantener `teams_live_scoreboard_opening_test.gd`; esa regresión ahora fija opening limpio + score visible otra vez tras cerrar una ronda.
+ - Reabrir solo si el HUD `Teams` cambia de layout o si se decide explícitamente que el score inicial también debe vivir en otra línea/contexto.
+ - Archivos objetivo: `scripts/systems/match_controller.gd`, `scripts/tests/teams_live_scoreboard_opening_test.gd`.
+
 0. **No perder la linea `Control Pn | ...` al tocar selector runtime o perfiles locales**
  - `Main` ya expone `get_lab_selected_controls_summary_line()` y la suma al round-state del laboratorio; `RobotBase.get_control_reference_hint()` concentra los labels por perfil y por `Easy/Hard`.
  - Si se retocan `_build_round_state_lines()`, `get_lab_selector_summary_line()`, `toggle_lab_control_mode_for_player_slot()` o los perfiles locales de `RobotBase`, mantener `lab_runtime_selector_test.gd`: ahora cubre que el HUD arranque con la chuleta de `P1`, sume `aim TFGX` al pasar a `Hard` y migre al perfil flechas al cambiar a `P2`.
