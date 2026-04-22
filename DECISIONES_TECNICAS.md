@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **Los contratos scene-level de `roster` vivo, marcador FFA y stats/cierre de apoyo tambien deben congelarse sobre escenas `base` y `validation`**
+ - `ffa_live_scoreboard_order_test.gd` ahora recorre `main_ffa.tscn` y `main_ffa_validation.tscn`; `live_roster_order_test.gd` ahora recorre `main_ffa.tscn` + `main_ffa_validation.tscn` para `FFA` y `main.tscn` + `main_teams_validation.tscn` para `Teams`; `support_match_stats_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`.
+ - No hubo cambio de produccion: la revision estricta confirmo que `MatchController`, `Main` y los laboratorios ya estaban alineados; el gap real era de cobertura scene-level sobre HUD vivo y cierre de apoyo.
+ - Motivo: opening, recap y cierre principal ya estaban tratados como contratos compartidos entre `base/validation`, pero todavia faltaba congelar tres lecturas de uso frecuente que siguen viviendo en las mismas superficies y tambien podian derivar en drift silencioso.
+
 1. **La resolucion de ronda, el reset de atribucion y la lectura de explosion inestable en `Teams` tambien deben congelarse sobre `main.tscn` y `main_teams_validation.tscn`**
  - `match_round_resolution_test.gd`, `match_elimination_source_reset_test.gd` y `match_unstable_explosion_readability_test.gd` ahora recorren `main.tscn` y `main_teams_validation.tscn`.
  - Hallazgo de fixture: `teams_validation_match_config.tres` usa `rounds_to_win = 1`, asi que el test de resolucion fija `match_config.rounds_to_win = 3` para validar el reset de ronda intermedio y no un cierre final accidental.

@@ -8,6 +8,12 @@
 2. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 
+0. **No volver a dejar drift entre escenas `base` y `validation` del roster vivo, el marcador FFA o los stats/cierres de apoyo**
+ - `ffa_live_scoreboard_order_test.gd` ya congela el marcador FFA ordenado por lider en `main_ffa.tscn` y `main_ffa_validation.tscn`.
+ - `live_roster_order_test.gd` ya congela el roster vivo `FFA` en `main_ffa.tscn` + `main_ffa_validation.tscn` y el roster `Teams` con `Apoyo activo` en `main.tscn` + `main_teams_validation.tscn`.
+ - `support_match_stats_test.gd` ya congela `Aporte de apoyo | ...` y `Stats | Equipo 1 | apoyo ...` en recap lateral y resultado final de las dos escenas `Teams`.
+ - Si se retocan HUD vivo, `RecapPanel`, `MatchResultPanel` o wiring del soporte post-muerte, tocar siempre la pareja `base/validation` como una misma superficie contractual y mantener estas tres regresiones.
+
 0. **No volver a dejar drift entre `main.tscn` y `main_teams_validation.tscn` en resolucion de ronda, reset de atribucion o explosion inestable**
  - `match_round_resolution_test.gd`, `match_elimination_source_reset_test.gd` y `match_unstable_explosion_readability_test.gd` ya congelan esos tres seams sobre las dos escenas `Teams`.
  - Si se retocan `MatchController`, `RecapPanel`, el lifecycle `round_reset_delay` o el wording de `explosion inestable`, tocar siempre `main.tscn` y `main_teams_validation.tscn` como una misma superficie contractual y mantener estas tres regresiones.

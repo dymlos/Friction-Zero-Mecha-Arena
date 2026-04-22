@@ -1,6 +1,9 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const TEAMS_SCENES := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
@@ -12,7 +15,13 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main = MAIN_SCENE.instantiate()
+	for scene_path in TEAMS_SCENES:
+		await _assert_support_match_stats_contract(scene_path)
+	_finish()
+
+
+func _assert_support_match_stats_contract(scene_path: String) -> void:
+	var main := await _instantiate_scene(scene_path)
 	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
 	if match_controller_preload != null:
 		match_controller_preload.round_intro_duration = 0.0
@@ -24,12 +33,17 @@ func _run() -> void:
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena principal deberia exponer MatchController para medir stats de soporte.")
-	_assert(support_root != null, "La escena principal deberia seguir reservando un SupportRoot para el soporte post-muerte.")
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para cerrar una partida Teams.")
+	_assert(match_controller != null, "La escena %s deberia exponer MatchController para medir stats de soporte." % scene_path)
+	_assert(
+		support_root != null,
+		"La escena %s deberia seguir reservando un SupportRoot para el soporte post-muerte." % scene_path
+	)
+	_assert(
+		robots.size() >= 4,
+		"La escena %s deberia ofrecer cuatro robots para cerrar una partida Teams." % scene_path
+	)
 	if match_controller == null or support_root == null or robots.size() < 4:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	match_controller.match_mode = MatchController.MatchMode.TEAMS
@@ -47,18 +61,16 @@ func _run() -> void:
 
 	_assert(
 		support_root.get_child_count() == 1,
-		"Al caer un aliado en Teams deberia aparecer una unica nave de apoyo."
+		"La escena %s deberia crear una unica nave de apoyo al caer un aliado en Teams." % scene_path
 	)
 	if support_root.get_child_count() != 1:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	var support_ship := support_root.get_child(0) as Node3D
 	_assert(support_ship != null, "La nave de apoyo deberia existir para poder alimentar stats de soporte.")
 	if support_ship == null:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	var support_pickups := get_nodes_in_group("pilot_support_pickups")
@@ -72,11 +84,10 @@ func _run() -> void:
 
 	_assert(
 		stabilizer_pickup != null,
-		"El carril de soporte deberia ofrecer al menos una carga estabilizadora para validar stats de uso."
+		"La escena %s deberia ofrecer al menos una carga estabilizadora para validar stats de uso." % scene_path
 	)
 	if stabilizer_pickup == null:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	robots[0].apply_damage_to_part("left_arm", robots[0].max_part_health * 0.35, Vector3.LEFT)
@@ -98,11 +109,10 @@ func _run() -> void:
 
 	_assert(
 		surge_pickup != null,
-		"El carril de soporte deberia ofrecer una segunda carga para desglosar stats por payload."
+		"La escena %s deberia ofrecer una segunda carga para desglosar stats por payload." % scene_path
 	)
 	if surge_pickup == null:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	support_ship.global_position = surge_pickup.global_position
@@ -117,38 +127,46 @@ func _run() -> void:
 	robots[3].fall_into_void()
 	await create_timer(0.05).timeout
 
-	_assert(match_controller.is_match_over(), "La ronda objetivo deberia cerrar la partida tras eliminar al equipo rival.")
+	_assert(match_controller.is_match_over(), "La escena %s deberia cerrar la partida tras eliminar al equipo rival." % scene_path)
 	_assert(
 		_has_line_containing(
 			match_controller.get_match_result_lines(),
 			"Aporte de apoyo | 1/1 rondas (100%) decisivas con apoyo"
 		),
-		"El cierre de partida deberia resumir cuantas rondas decisivas incluyeron apoyo real."
+		"La escena %s deberia resumir cuantas rondas decisivas incluyeron apoyo real." % scene_path
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_match_result_lines(),
 			"Stats | Equipo 1 | apoyo 2 (2 usos: estabilizador 1, energia 1) | rondas decisivas por apoyo 1/1 (100%) | bajas sufridas 1 (1 vacio)"
 		),
-		"El cierre de partida deberia distinguir pickups, payloads y rondas decisivas del soporte del equipo ganador."
+		"La escena %s deberia distinguir pickups, payloads y rondas decisivas del soporte del equipo ganador." % scene_path
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_round_recap_panel_lines(),
 			"Aporte de apoyo | 1/1 rondas (100%) decisivas con apoyo"
 		),
-		"El recap lateral deberia repetir el resumen global de aporte de apoyo."
+		"La escena %s deberia repetir el resumen global de aporte de apoyo dentro del recap lateral." % scene_path
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_round_recap_panel_lines(),
 			"Stats | Equipo 1 | apoyo 2 (2 usos: estabilizador 1, energia 1) | rondas decisivas por apoyo 1/1 (100%) | bajas sufridas 1 (1 vacio)"
 		),
-		"El recap lateral deberia reutilizar el mismo desglose compacto de payloads y rondas decisivas."
+		"La escena %s deberia reutilizar el mismo desglose compacto de payloads y rondas decisivas." % scene_path
 	)
 
 	await _cleanup_main(main)
-	_finish()
+
+
+func _instantiate_scene(scene_path: String) -> Node:
+	var packed_scene := load(scene_path)
+	_assert(packed_scene is PackedScene, "La escena %s deberia seguir existiendo." % scene_path)
+	if not (packed_scene is PackedScene):
+		return Node.new()
+
+	return (packed_scene as PackedScene).instantiate()
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:

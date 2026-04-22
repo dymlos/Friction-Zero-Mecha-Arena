@@ -4,6 +4,15 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los contratos scene-level de `roster` vivo, marcador FFA y stats/cierre de apoyo ahora tambien quedan congelados en escenas `base` y `validation`:
+  - la revision estricta encontro otro hueco scene-level: `ffa_live_scoreboard_order_test.gd`, `live_roster_order_test.gd` y `support_match_stats_test.gd` seguian usando una sola escena representativa aunque las mismas superficies viven tambien en `main_ffa_validation.tscn` y `main_teams_validation.tscn`.
+  - no hizo falta tocar produccion; `MatchController`, `Main` y los laboratorios ya estaban alineados. La correccion vive en la red de regresion:
+    - `scripts/tests/ffa_live_scoreboard_order_test.gd` ahora recorre `main_ffa.tscn` + `main_ffa_validation.tscn`.
+    - `scripts/tests/live_roster_order_test.gd` ahora recorre `main_ffa.tscn` + `main_ffa_validation.tscn` para roster `FFA` y `main.tscn` + `main_teams_validation.tscn` para `Teams`.
+    - `scripts/tests/support_match_stats_test.gd` ahora recorre `main.tscn` + `main_teams_validation.tscn`.
+  - decision operativa: tratar tambien `roster` vivo, score FFA ordenado por lider y stats/cierre de apoyo como contratos compartidos entre laboratorios `base/validation`, no como asserts de una sola escena.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/ffa_live_scoreboard_order_test.gd`, `live_roster_order_test.gd`, `support_match_stats_test.gd` y `test_runner.gd`.
+
 - Los contratos Teams de resolucion de ronda, reset de atribucion y explosion inestable ya quedan congelados tambien en `main_teams_validation.tscn`:
   - la revision estricta encontro otro hueco scene-level: `match_round_resolution_test.gd`, `match_elimination_source_reset_test.gd` y `match_unstable_explosion_readability_test.gd` seguian tratando `main.tscn` como unica escena representativa para un set de contratos `Teams` que tambien viven en el laboratorio rapido.
   - `match_round_resolution_test.gd` ahora recorre `main.tscn` y `main_teams_validation.tscn`; hallazgo de fixture: la escena de validacion usa `rounds_to_win = 1`, asi que el test fija `match_config.rounds_to_win = 3` para validar el reset intermedio real y no un cierre final accidental.

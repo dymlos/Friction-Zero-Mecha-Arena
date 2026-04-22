@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Los contratos scene-level de `roster` vivo, marcador FFA y stats/cierre de apoyo ya quedan congelados tambien en escenas `base` y `validation` (2026-04-22)
+
+- Estado: tres seams de HUD/cierre ya no dependen de una sola escena representativa por modo; la red ahora cubre tambien `main_ffa_validation.tscn` y `main_teams_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `MatchController`, `Main` y las escenas de validacion ya respetaban los mismos contratos; el gap real era de cobertura scene-level.
+  - `scripts/tests/ffa_live_scoreboard_order_test.gd` ahora valida el marcador FFA ordenado por score real en `main_ffa.tscn` y `main_ffa_validation.tscn`.
+  - `scripts/tests/live_roster_order_test.gd` ahora valida roster vivo `FFA` sobre `main_ffa.tscn` + `main_ffa_validation.tscn` y roster vivo `Teams` sobre `main.tscn` + `main_teams_validation.tscn`, incluyendo `Apoyo activo`, hints del soporte y limpieza de estado stale del robot caido.
+  - `scripts/tests/support_match_stats_test.gd` ahora valida en `main.tscn` y `main_teams_validation.tscn` el mismo cierre `Aporte de apoyo | ...` y `Stats | Equipo 1 | apoyo ...` dentro del recap lateral y del resultado final.
+- Resultado:
+  - los laboratorios `base/validation` dejan de tener otro punto ciego en HUD vivo y cierre de soporte; si una escena hermana pierde orden de roster, score FFA o stats de apoyo, la suite lo detecta antes de runtime.
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa con `Suite OK: 85 tests`.
+
 ## Los contratos Teams de resolucion de ronda, reset de atribucion y explosion inestable ya quedan congelados tambien en `main_teams_validation.tscn` (2026-04-22)
 
 - Estado: tres seams `Teams` que seguian atados solo a `main.tscn` ahora tambien quedan cubiertos en el laboratorio rapido `main_teams_validation.tscn`.
