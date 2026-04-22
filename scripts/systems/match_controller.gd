@@ -1175,7 +1175,10 @@ func _on_transition_timer_timeout() -> void:
 
 func _build_score_summary_line() -> String:
 	var score_parts: Array[String] = []
-	for competitor_key in _competitor_order:
+	var ordered_competitors := _competitor_order.duplicate()
+	if match_mode == MatchMode.FFA:
+		ordered_competitors.sort_custom(_compare_ffa_competitors_for_standings)
+	for competitor_key in ordered_competitors:
 		var competitor_label := _get_competitor_label_from_key(competitor_key)
 		var competitor_score := int(_competitor_scores.get(competitor_key, 0))
 		var archetype_label := str(_competitor_archetype_labels.get(competitor_key, ""))

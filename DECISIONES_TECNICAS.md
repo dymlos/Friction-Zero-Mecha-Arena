@@ -556,11 +556,15 @@
    - `MatchController` agrega `Desempate | score igual -> mejor cierre de la ronda final` junto a `Posiciones | ...` en recap/resultado final, pero solo si detecta al menos dos competidores con el mismo score acumulado.
    - Motivo: el ranking FFA ya usaba supervivencia de la ronda final como criterio secundario, pero el HUD no lo decía y los empates parecían arbitrarios. Explicitarlo solo en ese caso aclara el cierre sin meter otra pantalla ni ruido permanente.
 
-100. **Las `DetachedPart` deben configurarse antes de entrar al tree**
+100. **El marcador vivo FFA reutiliza el orden de standings, no el orden fijo de la escena**
+   - `_build_score_summary_line()` ahora duplica `_competitor_order` y, solo en `MatchMode.FFA`, lo ordena con `_compare_ffa_competitors_for_standings()` antes de armar `Marcador | ...`.
+   - Motivo: en shared-screen el cierre ya explicaba primero/segundo/tercero, pero durante la ronda el lider podia quedar escondido en medio de la linea por respetar el orden original de slots. Reusar el mismo comparator del recap refuerza supervivencia/oportunismo sin sumar otra UI ni otro criterio paralelo.
+
+101. **Las `DetachedPart` deben configurarse antes de entrar al tree**
    - `RobotBase._spawn_detached_part()` ahora llama `configure_from_visuals(...)` antes de `add_child(...)`, y el dueño refuerza el retorno con `RecoveryTargetFloorIndicator` ademas del marker alto ya existente.
    - Motivo: en el flujo real de `main.tscn`, `_ready()` de `DetachedPart` podia correr con `original_robot == null`, perdiendo el registro como pieza recuperable y apagando la lectura del objetivo de retorno justo cuando un aliado la cargaba o relanzaba. Corregir el orden arregla el hook real y permite sostener la nueva marca de piso sin trackers paralelos.
 
-101. **Los edge pickups diferencian tipo por silueta persistente, no solo por color**
+102. **Los edge pickups diferencian tipo por silueta persistente, no solo por color**
    - `edge_repair_pickup.tscn`, `edge_mobility_pickup.tscn`, `edge_energy_pickup.tscn`, `edge_pulse_pickup.tscn`, `edge_charge_pickup.tscn` y `edge_utility_pickup.tscn` ahora suman `Visuals/Accent`, un mesh liviano con material propio/emisivo y firma sobria por pickup que sigue visible sobre el mismo pedestal incluso cuando el núcleo entra en cooldown.
    - Motivo: el resumen `Borde | ...` ya aclaraba el layout activo y el pedestal persistente marcaba el punto de interés, pero en pantalla compartida todavía faltaba distinguir rápido “qué pickup es éste” sin depender del color del núcleo ni del HUD. Colgar esa lectura del propio pickup mantiene la claridad del borde y preserva el centro limpio.
 
