@@ -214,7 +214,7 @@ func get_round_state_lines() -> Array[String]:
 	lines.append(get_round_status_line())
 	if not contextual_hud:
 		lines.append("Modo | %s" % get_match_mode_label())
-		lines.append("Objetivo | Primero a %s" % get_rounds_to_win())
+		lines.append("Objetivo | Primero a %s pts" % get_rounds_to_win())
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)

@@ -154,7 +154,7 @@ func _run() -> void:
 	_assert(match_controller.get_team_score(1) == 2, "El score final del ganador deberia conservar la segunda ronda.")
 	_assert(
 		_has_target_score_line(match_controller.get_round_state_lines(), 2),
-		"El HUD deberia informar el objetivo de rondas del match."
+		"El HUD deberia informar el objetivo de puntos del match."
 	)
 	_assert(
 		_has_line_prefix(match_controller.get_round_state_lines(), "Reinicio | F5"),
@@ -191,7 +191,7 @@ func _eliminate_team_two(robots: Array[RobotBase]) -> void:
 
 func _has_target_score_line(lines: Array[String], target_score: int) -> bool:
 	for line in lines:
-		if line.contains("Primero a %s" % target_score):
+		if line == "Objetivo | Primero a %s pts" % target_score:
 			return true
 
 	return false

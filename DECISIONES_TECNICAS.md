@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El objetivo fijo del HUD debe nombrar puntos, no rondas, mientras el match use score ponderado**
+ - `MatchController.get_round_state_lines()` ahora publica `Objetivo | Primero a N pts` en HUD explicito.
+ - `match_completion_test.gd` fija el wording exacto para que el laboratorio no vuelva a ocultar la unidad del target.
+ - Motivo: despues de hacer visibles `Cierre ronda | ... (+N)` y `Puntos cierre | ...`, dejar `Primero a N` sin unidad seguia confundiendo si el match se cerraba por rondas o por puntos acumulados.
+
 1. **Cada ronda decidida debe explicar su propia causa de cierre y su puntaje, no solo el match final**
  - `MatchController` ya persistia `_last_round_closing_cause` para `Cierre decisivo | ...` al final del match; ahora reutiliza ese mismo dato en `_build_round_closing_line()` para publicar `Cierre ronda | <causa> (+N)` en `get_round_recap_panel_lines()` mientras la partida sigue abierta.
  - La linea no aparece en HUD vivo ni en el cierre final: queda limitada al recap lateral entre rondas para reforzar lectura sin sumar otra capa permanente.

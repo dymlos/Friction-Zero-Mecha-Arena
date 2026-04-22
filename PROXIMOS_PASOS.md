@@ -8,6 +8,11 @@
 2. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 
+0. **No volver a dejar ambiguo que el objetivo del match son puntos**
+ - `MatchController.get_round_state_lines()` ya publica `Objetivo | Primero a N pts`; mantener esa unidad mientras el match siga usando puntaje ponderado por causa.
+ - `match_completion_test.gd` fija el wording exacto dentro del HUD explicito; si se retocan `get_round_state_lines()` o la terminologia del target, conservar esa fixture.
+ - Reabrir solo si el laboratorio abandona score por puntos y vuelve a una semantica real de rondas iguales.
+
 0. **No volver a esconder la causa y los puntos del cierre de ronda intermedio**
  - `MatchController.get_round_recap_panel_lines()` ya publica `Cierre ronda | <causa> (+N)` cuando la ronda termino pero el match sigue abierto; la linea reutiliza `_last_round_closing_cause` y el score activo del `MatchConfig`.
  - Si se retocan `get_round_recap_panel_lines()`, `_finish_round_with_winner(...)`, `_build_round_closing_line()` o el wording del recap, mantener `match_closing_cause_summary_test.gd`; ahora cubre `Teams` y `FFA` antes del reset de la primera ronda.

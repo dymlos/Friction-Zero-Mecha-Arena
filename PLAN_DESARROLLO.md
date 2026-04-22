@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Objetivo del match mas claro dentro del HUD explicito:
+  - `MatchController` ya no rotula el target del match como `Primero a N` a secas; ahora publica `Objetivo | Primero a N pts`.
+  - el cambio alinea la lectura fija del laboratorio con el score ponderado por causa (`ring-out/destruccion total/explosion inestable`) que ya vive en recap y cierre final.
+  - validacion: `godot --headless --path . -s res://scripts/tests/match_completion_test.gd`, `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` (`Suite OK: 83 tests`).
+
 - El recap de cada ronda decidida ya expone tambien la causa del cierre y sus puntos:
   - `MatchController` ahora agrega `Cierre ronda | <causa> (+N)` en `get_round_recap_panel_lines()` cuando la ronda termino pero la partida sigue abierta.
   - la linea reutiliza `_last_round_closing_cause` y el perfil activo de `MatchConfig`, evitando que el score ponderado solo se entienda al final del match.

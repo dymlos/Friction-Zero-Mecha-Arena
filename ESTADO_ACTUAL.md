@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## El HUD explicito ya aclara que el objetivo del match son puntos (2026-04-22)
+
+- Estado: la linea fija `Objetivo | ...` ya no queda ambigua frente al score ponderado por causa; ahora explicita `Primero a N pts`.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` cambia el wording del objetivo solo en HUD explicito, sin sumar otra linea ni ruido nuevo al flujo contextual.
+  - `scripts/tests/match_completion_test.gd` congela el string exacto para evitar que futuras iteraciones vuelvan a presentar el target como si fueran rondas.
+- Resultado:
+  - el laboratorio ya deja mas claro que `rounds_to_win` hoy funciona como puntaje objetivo del match, alineado con `Cierre ronda | ... (+N)` y `Puntos cierre | ...`.
+  - `godot --headless --path . -s res://scripts/tests/match_completion_test.gd`, `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 83 tests`).
+
 ## El recap de ronda ya dice que causa la cerro y cuantos puntos dio (2026-04-22)
 
 - Estado: el score ponderado por causa ya no queda explicado solo en `Partida cerrada`; cada ronda decidida ahora publica `Cierre ronda | <causa> (+N)` mientras el match sigue abierto.
