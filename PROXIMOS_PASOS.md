@@ -5,6 +5,10 @@
 0. **Sincronizacion documental aplicada (2026-04-22)**
  - Decisión operativa: mantener el estado alineado y pasar directamente a validar sensibilidad de núcleo de combate en `main.tscn` y `main_teams_validation.tscn` antes de cambios de balance.
  - Criterio de continuidad: el falso rojo de cierre ya quedó resuelto a nivel headless; ahora sí priorizar 3 partidas 2v2 y 3 partidas FFA cortas, buscando choques claros, sin spam de contacto y sin que skills dominen el primer impacto.
+ - Ejecución reciente:
+   - `godot --headless --path . -s res://scripts/tests/robot_collision_pacing_test.gd` cubrió 4 escenas (`main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn`, `main_ffa_validation.tscn`) con 3 rondas cortas c/u.
+   - Los cierres ocurrieron en tiempos muy rápidos por lógica de forzado del test; no hubo fallos de aserción sobre daño de choque/telemetría.
+   - En esta pasada no hay ajuste de `RobotBase`; la siguiente ronda queda para validar choque con carga manual real y decidir si tocar solo `base_push_force`, `impact_force_multiplier` o `collision_damage_threshold`.
 
 1. **Afinar el perfil de cierre por causa con playtest corto**
   - Definir el ajuste final del peso de cierre por causa con base en sesiones reales:
