@@ -214,7 +214,9 @@ func get_round_state_lines() -> Array[String]:
 	lines.append(get_round_status_line())
 	if not contextual_hud:
 		lines.append("Modo | %s" % get_match_mode_label())
-		lines.append("Objetivo | Primero a %s pts" % get_rounds_to_win())
+		var target_score_line := _build_target_score_line()
+		if target_score_line != "":
+			lines.append(target_score_line)
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
@@ -373,6 +375,9 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var lines: Array[String] = []
 	if _round_status_line != "":
 		lines.append("Decision | %s" % _round_status_line)
+	var target_score_line := _build_target_score_line()
+	if target_score_line != "":
+		lines.append(target_score_line)
 
 	var score_line := _build_score_summary_line()
 	if score_line != "":
@@ -432,6 +437,9 @@ func get_match_result_lines() -> Array[String]:
 	var lines: Array[String] = []
 	if _round_status_line != "":
 		lines.append(_round_status_line)
+	var target_score_line := _build_target_score_line()
+	if target_score_line != "":
+		lines.append(target_score_line)
 
 	var score_line := _build_score_summary_line()
 	if score_line != "":
@@ -1707,6 +1715,10 @@ func _build_score_summary_line() -> String:
 		score_parts.append("%s %s" % [competitor_label, competitor_score])
 
 	return "Marcador | %s" % " | ".join(score_parts)
+
+
+func _build_target_score_line() -> String:
+	return "Objetivo | Primero a %s pts" % get_rounds_to_win()
 
 
 func _should_show_live_score_summary() -> bool:

@@ -107,6 +107,14 @@ func _run() -> void:
 		"El recap deberia dejar visible el resultado final del match."
 	)
 	_assert(
+		_has_line(match_controller.get_round_recap_panel_lines(), "Objetivo | Primero a 2 pts"),
+		"El recap lateral del cierre final deberia conservar tambien el objetivo del match."
+	)
+	_assert(
+		recap_label.text.contains("Objetivo | Primero a 2 pts"),
+		"El recap visible del cierre final deberia dejar claro a cuantos puntos se jugaba la partida."
+	)
+	_assert(
 		recap_label.text.contains("Player 3 / Cizalla | baja 1 | vacio"),
 		"El recap final deberia seguir explicando las bajas que cerraron la partida."
 	)
@@ -118,6 +126,14 @@ func _run() -> void:
 	_assert(
 		match_result_label.text.contains("Equipo 1 gana la partida 2-0"),
 		"El panel final deberia reiterar el ganador del match."
+	)
+	_assert(
+		_has_line(match_controller.get_match_result_lines(), "Objetivo | Primero a 2 pts"),
+		"El panel final deberia conservar el objetivo del match para que el score no quede sin contexto."
+	)
+	_assert(
+		match_result_label.text.contains("Objetivo | Primero a 2 pts"),
+		"El panel final visible deberia dejar claro a cuantos puntos se jugaba la partida."
 	)
 	_assert(
 		match_result_label.text.contains("Stats | Equipo 1 | rescates 1 | borde 1 | partes perdidas 1 (1 brazo) | bajas sufridas 0"),
@@ -192,6 +208,14 @@ func _eliminate_team_two(robots: Array[RobotBase]) -> void:
 func _has_target_score_line(lines: Array[String], target_score: int) -> bool:
 	for line in lines:
 		if line == "Objetivo | Primero a %s pts" % target_score:
+			return true
+
+	return false
+
+
+func _has_line(lines: Array[String], expected: String) -> bool:
+	for line in lines:
+		if line == expected:
 			return true
 
 	return false

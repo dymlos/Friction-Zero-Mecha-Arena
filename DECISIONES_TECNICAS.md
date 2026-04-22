@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **Los paneles de cierre tambien deben conservar el objetivo del match**
+ - `MatchController` ahora concentra `Objetivo | Primero a N pts` en `_build_target_score_line()` y la reutiliza en `get_round_state_lines()`, `get_round_recap_panel_lines()` y `get_match_result_lines()`.
+ - `match_round_recap_test.gd` fija el recap entre rondas; `match_completion_test.gd` fija el cierre final, en ambos casos tanto sobre arrays como sobre `RecapLabel` / `MatchResultLabel`.
+ - Motivo: despues de volver autosuficientes recap y resultado con `Resumen | ...`, el score seguia quedando sin contexto dentro de esos paneles. Reutilizar la misma fuente de verdad mantiene claridad y evita otro string divergente.
+
 1. **Los paneles de cierre deben incluir tambien la cadena compacta `Resumen | ...`**
  - `MatchController.get_round_recap_panel_lines()` y `get_match_result_lines()` ahora reutilizan `get_round_recap_line()` antes de `Momento inicial/final` y del detalle por robot.
  - `match_highlight_moments_test.gd` fija el contrato en tres superficies: el array del recap, `RecapLabel` y `MatchResultLabel`.

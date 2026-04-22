@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los paneles de cierre ahora tambien dejan visible el objetivo del match:
+  - `MatchController` extrae `Objetivo | Primero a N pts` a `_build_target_score_line()` y la reutiliza en HUD vivo explicito, `get_round_recap_panel_lines()` y `get_match_result_lines()`.
+  - el recap intermedio y el cierre final ya no dependen del bloque principal del HUD para entender si un `1-0`, `2-0` o `3 pts` estan cerca de match point o ya cierran la partida.
+  - `match_round_recap_test.gd` y `match_completion_test.gd` ahora congelan la presencia de esa linea tanto en arrays como en `RecapLabel` / `MatchResultLabel`.
+  - validacion: `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd`, `godot --headless --path . -s res://scripts/tests/match_highlight_moments_test.gd`, `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` (`Suite OK: 83 tests`).
+
 - El recap lateral y el panel final ahora son autosuficientes para leer el cierre:
   - `MatchController` ya no deja la cadena compacta `Resumen | ...` solo en el bloque principal del HUD; `get_round_recap_panel_lines()` y `get_match_result_lines()` la reutilizan tambien dentro de `RecapPanel` y `MatchResultPanel`.
   - la correccion se resolvio sin duplicar string-building: ambos cierres consumen `get_round_recap_line()` como unica fuente de verdad del recap textual.

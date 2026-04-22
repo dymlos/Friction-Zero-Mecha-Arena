@@ -64,6 +64,14 @@ func _run() -> void:
 		"El recap deberia reiterar la decision de la ronda."
 	)
 	_assert(
+		_has_line(match_controller.get_round_recap_panel_lines(), "Objetivo | Primero a 3 pts"),
+		"El recap lateral deberia dejar visible el objetivo del match para que el score no quede sin contexto."
+	)
+	_assert(
+		recap_label.text.contains("Objetivo | Primero a 3 pts"),
+		"El recap visible deberia dejar claro a cuantos puntos se juega el match."
+	)
+	_assert(
 		recap_label.text.contains("Player 3 / Cizalla | baja 1 | vacio"),
 		"El recap deberia explicar la primera baja con orden y causa."
 	)
@@ -105,6 +113,14 @@ func _has_recap_with_fragments(lines: Array[String], fragments: Array[String]) -
 				has_all_fragments = false
 				break
 		if has_all_fragments:
+			return true
+
+	return false
+
+
+func _has_line(lines: Array[String], expected: String) -> bool:
+	for line in lines:
+		if line == expected:
 			return true
 
 	return false

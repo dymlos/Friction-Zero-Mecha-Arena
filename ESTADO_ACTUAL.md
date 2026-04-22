@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## El recap lateral y el panel final ahora dejan visible tambien el objetivo del match (2026-04-22)
+
+- Estado: los paneles de cierre ya no quedan autosuficientes solo para score/causa/resumen; ahora tambien exponen `Objetivo | Primero a N pts`, evitando que el puntaje visible pierda contexto fuera del HUD principal.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` extrae `_build_target_score_line()` y reutiliza la misma linea en `get_round_state_lines()`, `get_round_recap_panel_lines()` y `get_match_result_lines()`.
+  - `scripts/tests/match_round_recap_test.gd` fija la regresion del recap intermedio y `scripts/tests/match_completion_test.gd` la del cierre final, validando arrays + labels visibles.
+- Resultado:
+  - el recap de ronda ya deja claro si el score actual esta lejos o cerca del cierre del match, y el panel final conserva el mismo contexto de objetivo sin depender de otra zona de HUD.
+  - `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd`, `godot --headless --path . -s res://scripts/tests/match_highlight_moments_test.gd`, `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 83 tests`).
+
 ## Recap y resultado final ahora incluyen tambien el `Resumen | ...` compacto (2026-04-22)
 
 - Estado: `RecapPanel` y `MatchResultPanel` ya no dependen del bloque principal del HUD para explicar de un vistazo la secuencia de bajas que cerro la ronda/partida.
