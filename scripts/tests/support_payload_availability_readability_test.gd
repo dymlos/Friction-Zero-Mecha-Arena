@@ -27,7 +27,7 @@ func _run() -> void:
 
 func _verify_stabilizer_warns_when_target_has_no_damage(scene_path: String) -> void:
 	var main := await _instantiate_scene(scene_path)
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel") as Label
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
 	_assert(roster_label != null, "La escena %s deberia seguir exponiendo el roster compacto." % scene_path)
@@ -77,7 +77,7 @@ func _verify_stabilizer_warns_when_target_has_no_damage(scene_path: String) -> v
 
 func _verify_surge_warns_when_target_already_has_full_boost_window(scene_path: String) -> void:
 	var main := await _instantiate_scene(scene_path)
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel") as Label
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
 	_assert(roster_label != null, "La escena %s deberia seguir exponiendo el roster compacto." % scene_path)
@@ -131,7 +131,7 @@ func _verify_surge_warns_when_target_already_has_full_boost_window(scene_path: S
 
 func _verify_mobility_warns_when_target_already_has_full_boost_window(scene_path: String) -> void:
 	var main := await _instantiate_scene(scene_path)
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel") as Label
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
 	_assert(roster_label != null, "La escena %s deberia seguir exponiendo el roster compacto." % scene_path)
@@ -185,7 +185,7 @@ func _verify_mobility_warns_when_target_already_has_full_boost_window(scene_path
 
 func _verify_interference_warns_when_target_has_stability(scene_path: String) -> void:
 	var main := await _instantiate_scene(scene_path)
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel") as Label
 	var support_root := main.get_node_or_null("SupportRoot")
 	var robots := _get_scene_robots(main)
 	_assert(roster_label != null, "La escena %s deberia seguir exponiendo el roster compacto." % scene_path)

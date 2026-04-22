@@ -1,0 +1,48 @@
+{
+  "name": "match_hud_overlay_layout_1280",
+  "scene": "res://scenes/qa/match_hud_overlay_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "overlay"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:match_hud_status"
+    },
+    {
+      "inside_viewport": "qa:match_hud_round"
+    },
+    {
+      "inside_viewport": "qa:match_hud_roster"
+    },
+    {
+      "no_overlap": {
+        "a": "qa:match_hud_status",
+        "b": "qa:match_hud_round"
+      }
+    },
+    {
+      "no_overlap": {
+        "a": "qa:match_hud_round",
+        "b": "qa:match_hud_roster"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_roster",
+        "expected": "Apoyo activo"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

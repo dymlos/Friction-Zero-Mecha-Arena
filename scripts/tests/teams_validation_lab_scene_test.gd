@@ -51,7 +51,7 @@ func _run() -> void:
 	var play_area_size := arena.get_safe_play_area_size()
 	_assert(play_area_size.x < 24.0 and play_area_size.y < 16.0, "La arena rapida deberia ser mas compacta que el blockout base.")
 	_assert(_robots_spawn_close_to_midrange(robots), "La escena rapida deberia dejar los spawns mas cerca del conflicto que el laboratorio base.")
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel")
 	_assert(round_label is Label, "La escena rapida deberia seguir exponiendo el bloque principal del HUD.")
 	if round_label is Label:
 		_assert(

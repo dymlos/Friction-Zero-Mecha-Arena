@@ -33,7 +33,7 @@ func _run() -> void:
 	_assert(robots[0].player_index == 1, "El primer robot deberia usar el slot del jugador 1.")
 	_assert(robots[1].player_index == 2, "El segundo robot deberia usar el slot del jugador 2.")
 
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel")
 	_assert(roster_label is Label, "El HUD deberia mostrar un roster compacto para leer el estado de los robots.")
 	if roster_label is Label:
 		var roster_text := (roster_label as Label).text

@@ -53,7 +53,7 @@ func _run() -> void:
 	_assert(_uses_distinct_ffa_spawn_layout(robots), "La escena rapida FFA deberia seguir usando spawns diagonales propios.")
 	_assert(_robots_spawn_close_to_midrange(robots), "La escena rapida FFA deberia arrancar mas cerca del conflicto que el laboratorio libre base.")
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel")
 	_assert(round_label is Label, "La escena rapida FFA deberia seguir exponiendo el bloque principal del HUD.")
 	if round_label is Label:
 		var round_text := String((round_label as Label).text)

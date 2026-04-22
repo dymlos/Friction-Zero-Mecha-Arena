@@ -45,7 +45,7 @@ func _run() -> void:
 		"La escena FFA deberia arrancar con un opening neutral limpio, sin `Marcador | ...` mientras nadie fue eliminado y todo sigue empatado."
 	)
 
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel")
 	_assert(roster_label is Label, "La escena FFA deberia conservar el roster compacto.")
 	if roster_label is Label:
 		var roster_text := (roster_label as Label).text

@@ -51,6 +51,9 @@ This file is the short current snapshot. Long dated history now lives in `docs/s
   - lifecycle/cleanup
   - stats/cierre
   - lectura accionable en HUD/roster
+- El repo ahora separa mejor la validacion visual por capa:
+  - `scripts/tests/support_camera_visibility_test.gd` congela el framing del helper post-muerte en la camara compartida
+  - `scripts/tests/hud_overlay_layout_test.gd` y `qa/scenarios/match_hud_overlay_layout_1280.json` congelan legibilidad/solapamiento del HUD superior
 - El opening ya tiene dos capas de confianza:
   - regresion tecnica para `lock -> unlock`
   - sonda runtime para medir deriva, borde y primer choque

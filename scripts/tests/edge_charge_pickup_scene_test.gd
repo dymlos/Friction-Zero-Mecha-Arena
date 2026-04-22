@@ -112,7 +112,7 @@ func _validate_charge_pickups_for_scene(
 		await _cleanup_scene_root(main)
 		return
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel")
 	_assert(round_label is Label, "El HUD de %s deberia seguir exponiendo el bloque de estado de ronda." % scene_path)
 	if round_label is Label:
 		_assert(

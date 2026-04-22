@@ -111,7 +111,7 @@ func _validate_main_scene_advances_pickup_layout_between_rounds() -> void:
 		initial_signature != "",
 		"La ronda inicial deberia arrancar con un layout activo de pickups, no con todos los bordes apagados."
 	)
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel")
 	_assert(round_label is Label, "La escena principal deberia seguir exponiendo el bloque de estado de ronda en HUD.")
 	if round_label is Label:
 		_assert(
@@ -177,7 +177,7 @@ func _validate_ffa_scene_uses_denser_edge_pickup_rotation() -> void:
 			"Cada tipo activo en FFA deberia seguir apareciendo como par espejado."
 		)
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel")
 	_assert(round_label is Label, "La escena FFA deberia seguir exponiendo el bloque de estado de ronda en HUD.")
 	if round_label is Label:
 		var round_text := String((round_label as Label).text)

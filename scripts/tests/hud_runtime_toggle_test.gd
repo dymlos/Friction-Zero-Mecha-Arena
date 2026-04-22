@@ -16,8 +16,8 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
-	var status_label := main.get_node_or_null("UI/MatchHud/Root/StatusLabel")
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel")
+	var status_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/StatusLabel")
 	_assert(round_label is Label, "La escena principal deberia seguir exponiendo RoundLabel.")
 	_assert(status_label is Label, "La escena principal deberia seguir exponiendo StatusLabel.")
 	_assert(main.has_method("cycle_hud_detail_mode"), "Main deberia exponer un toggle runtime para el HUD.")
@@ -45,7 +45,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 
-	var fresh_round_label := fresh_main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
+	var fresh_round_label := fresh_main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel")
 	_assert(fresh_round_label is Label, "Una nueva instancia deberia seguir exponiendo RoundLabel.")
 	if fresh_round_label is Label:
 		var fresh_round := (fresh_round_label as Label).text

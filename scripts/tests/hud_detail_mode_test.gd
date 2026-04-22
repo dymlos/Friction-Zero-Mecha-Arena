@@ -20,8 +20,8 @@ func _run() -> void:
 	await process_frame
 
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
-	var round_label := main.get_node("UI/MatchHud/Root/RoundLabel") as Label
-	var roster_label := main.get_node("UI/MatchHud/Root/RosterLabel") as Label
+	var round_label := main.get_node("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
+	var roster_label := main.get_node("UI/MatchHud/Root/TopLeftStack/RosterLabel") as Label
 	var robots := _get_scene_robots(main)
 
 	_assert(match_controller != null, "La escena principal deberia exponer MatchController.")

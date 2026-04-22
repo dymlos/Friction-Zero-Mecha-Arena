@@ -112,7 +112,7 @@ func _validate_teams_lab_roster_reads_the_mobility_skill_state() -> void:
 		await _cleanup_node(main)
 		return
 
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel")
 	_assert(roster_label is Label, "El laboratorio Teams deberia seguir exponiendo el roster compacto.")
 	if not (roster_label is Label):
 		await _cleanup_node(main)

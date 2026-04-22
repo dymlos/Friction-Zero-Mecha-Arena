@@ -37,7 +37,7 @@ func _run() -> void:
 	if grua.has_method("get_core_skill_label"):
 		_assert(String(grua.call("get_core_skill_label")) == "Iman", "La skill propia de Grua deberia leerse como Iman.")
 
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel")
 	_assert(roster_label is Label, "La escena 2v2 deberia seguir exponiendo el roster compacto.")
 	if roster_label is Label:
 		var roster_text := (roster_label as Label).text

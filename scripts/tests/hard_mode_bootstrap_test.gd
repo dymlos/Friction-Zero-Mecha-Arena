@@ -32,7 +32,7 @@ func _run() -> void:
 	_assert(main.hard_mode_player_slots.has(1), "El array global debe conservar P1 en modo Hard.")
 	_assert(main.hard_mode_player_slots.has(4), "El array global debe conservar P4 en modo Hard.")
 
-	var status_label := main.get_node_or_null("UI/MatchHud/Root/StatusLabel")
+	var status_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/StatusLabel")
 	_assert(status_label is Label, "El HUD deberia exponer el estado inicial del laboratorio.")
 	if status_label is Label:
 		var startup_status_text := (status_label as Label).text
@@ -46,7 +46,7 @@ func _run() -> void:
 	await process_frame
 	_assert(main.hard_mode_player_slots.has(2), "El selector por slot debe habilitar Hard en el jugador elegido.")
 	_assert(robots[1].control_mode == RobotBase.ControlMode.HARD, "P2 debe pasar a Hard desde el selector de slot.")
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel")
 	_assert(roster_label is Label, "El HUD deberia seguir mostrando el roster compacto.")
 	if roster_label is Label:
 		var roster_text_hard_p2 := (roster_label as Label).text

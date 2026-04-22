@@ -40,7 +40,7 @@ func _run_scene_case(scene_path: String) -> void:
 	await process_frame
 	await process_frame
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 	var arena := _find_active_arena(main)
 	var robots := _get_scene_robots(main)
 	_assert(match_controller != null, "La escena %s deberia seguir exponiendo MatchController." % scene_path)

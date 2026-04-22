@@ -58,7 +58,7 @@ func _assert_opening_runtime_buffer(scene_spec: Dictionary) -> void:
 	await process_frame
 	await process_frame
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 	var arena := _get_active_arena(main)
 	var robots := _get_scene_robots(main)
 	_assert(match_controller != null, "La escena %s deberia exponer MatchController." % label)

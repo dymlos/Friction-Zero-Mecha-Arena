@@ -13,6 +13,7 @@ class_name MatchHud
 
 
 func _ready() -> void:
+	_install_qa_ids()
 	show_status("Friction Zero: prototipo base")
 	show_recap("", [])
 	show_match_result("", [])
@@ -53,3 +54,11 @@ func show_match_result(title: String, lines: Array[String]) -> void:
 
 	match_result_title_label.text = title
 	match_result_label.text = "\n".join(lines)
+
+
+func _install_qa_ids() -> void:
+	status_label.set_meta("qa_id", "match_hud_status")
+	round_label.set_meta("qa_id", "match_hud_round")
+	roster_label.set_meta("qa_id", "match_hud_roster")
+	recap_panel.set_meta("qa_id", "match_hud_recap_panel")
+	match_result_panel.set_meta("qa_id", "match_hud_result_panel")

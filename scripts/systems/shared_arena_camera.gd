@@ -2,6 +2,7 @@ extends Camera3D
 class_name SharedArenaCamera
 
 @export var target_root_path: NodePath = NodePath("../RobotRoot")
+@export var extra_target_root_paths: Array[NodePath] = [NodePath("../SupportRoot")]
 @export var camera_height := 18.0
 @export var camera_back_offset := 14.0
 @export var base_orthographic_size := 18.0
@@ -21,12 +22,20 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var target_center := _get_targets_center()
-	var follow_weight := 1.0 - exp(-follow_smoothing * delta)
-	_smoothed_center = _smoothed_center.lerp(target_center, follow_weight)
+	var center_shift := _smoothed_center.distance_to(target_center)
+	if center_shift > target_padding:
+		_smoothed_center = target_center
+	else:
+		var follow_weight := 1.0 - exp(-follow_smoothing * delta)
+		_smoothed_center = _smoothed_center.lerp(target_center, follow_weight)
 	_place_camera(_smoothed_center)
 
-	var zoom_weight := 1.0 - exp(-zoom_smoothing * delta)
-	size = lerpf(size, _get_target_orthographic_size(), zoom_weight)
+	var target_size := _get_target_orthographic_size()
+	if target_size > size:
+		size = target_size
+	else:
+		var zoom_weight := 1.0 - exp(-zoom_smoothing * delta)
+		size = lerpf(size, target_size, zoom_weight)
 
 
 func _place_camera(center: Vector3) -> void:
@@ -40,11 +49,19 @@ func _get_targets_center() -> Vector3:
 	if targets.is_empty():
 		return Vector3.ZERO
 
-	var center := Vector3.ZERO
+	var min_position := targets[0].global_position
+	var max_position := targets[0].global_position
 	for target in targets:
-		center += target.global_position
+		min_position.x = minf(min_position.x, target.global_position.x)
+		min_position.z = minf(min_position.z, target.global_position.z)
+		max_position.x = maxf(max_position.x, target.global_position.x)
+		max_position.z = maxf(max_position.z, target.global_position.z)
 
-	return center / targets.size()
+	return Vector3(
+		(min_position.x + max_position.x) * 0.5,
+		0.0,
+		(min_position.z + max_position.z) * 0.5
+	)
 
 
 func _get_target_orthographic_size() -> float:
@@ -70,9 +87,16 @@ func _get_target_orthographic_size() -> float:
 
 func _get_camera_targets() -> Array[Node3D]:
 	var targets: Array[Node3D] = []
-	var target_root := get_node_or_null(target_root_path)
+	_collect_targets_from_root(target_root_path, targets)
+	for root_path in extra_target_root_paths:
+		_collect_targets_from_root(root_path, targets)
+	return targets
+
+
+func _collect_targets_from_root(root_path: NodePath, targets: Array[Node3D]) -> void:
+	var target_root := get_node_or_null(root_path)
 	if target_root == null:
-		return targets
+		return
 
 	for child in target_root.get_children():
 		if not (child is Node3D):
@@ -81,5 +105,3 @@ func _get_camera_targets() -> Array[Node3D]:
 		var target := child as Node3D
 		if target.visible:
 			targets.append(target)
-
-	return targets

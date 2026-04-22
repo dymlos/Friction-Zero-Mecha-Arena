@@ -56,7 +56,7 @@ func _validate_lab_scene_selector_cycles_between_variants() -> void:
 		"El resumen runtime deberia arrancar identificando la escena base de Equipos."
 	)
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 	_assert(round_label != null, "El HUD deberia seguir exponiendo RoundLabel.")
 	if round_label != null:
 		_assert(
@@ -94,7 +94,7 @@ func _validate_lab_scene_selector_cycles_between_variants() -> void:
 				"Cada laboratorio deberia anunciar su variante activa al cargarse."
 			)
 
-		round_label = active_scene.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+		round_label = active_scene.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 		_assert(round_label != null, "Cada laboratorio deberia seguir exponiendo RoundLabel.")
 		if round_label != null:
 			_assert(
@@ -214,8 +214,8 @@ func _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants() -
 		await _cleanup_current_scene()
 		return
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
-	var status_label := main.get_node_or_null("UI/MatchHud/Root/StatusLabel") as Label
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
+	var status_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/StatusLabel") as Label
 	_assert(round_label != null, "La escena principal deberia seguir exponiendo RoundLabel para validar HUD runtime.")
 	_assert(status_label != null, "La escena principal deberia seguir exponiendo StatusLabel para validar HUD runtime.")
 	if round_label == null or status_label == null:
@@ -254,8 +254,8 @@ func _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants() -
 	if active_scene == null:
 		return
 
-	var reloaded_round_label := active_scene.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
-	var reloaded_status_label := active_scene.get_node_or_null("UI/MatchHud/Root/StatusLabel") as Label
+	var reloaded_round_label := active_scene.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
+	var reloaded_status_label := active_scene.get_node_or_null("UI/MatchHud/Root/TopLeftStack/StatusLabel") as Label
 	_assert(reloaded_round_label != null, "La escena recargada deberia seguir exponiendo RoundLabel.")
 	_assert(reloaded_status_label != null, "La escena recargada deberia seguir exponiendo StatusLabel.")
 	if reloaded_round_label == null or reloaded_status_label == null:
@@ -292,7 +292,7 @@ func _validate_lab_scene_selector_clears_selected_support_state_between_variants
 		if match_controller.match_config != null:
 			match_controller.match_config.round_intro_duration_teams = 0.0
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 	var robots := _get_scene_robots(main)
 	_assert(round_label != null, "La escena principal deberia seguir exponiendo RoundLabel para validar el salto de escena desde `Apoyo activo`.")
 	_assert(robots.size() >= 2, "La escena principal deberia exponer suficientes robots para entrar en `Apoyo activo` antes de cambiar de laboratorio.")
@@ -336,7 +336,7 @@ func _validate_lab_scene_selector_clears_selected_support_state_between_variants
 	if active_scene == null:
 		return
 
-	round_label = active_scene.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	round_label = active_scene.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 	robots = _get_scene_robots(active_scene)
 	_assert(round_label != null, "La escena recargada deberia seguir exponiendo RoundLabel tras un salto desde `Apoyo activo`.")
 	_assert(robots.size() >= 1, "La escena recargada deberia conservar al menos el slot seleccionado para validar su reset.")

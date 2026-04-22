@@ -53,7 +53,7 @@ func _verify_support_ship_spawns_in_teams(scene_path: String) -> void:
 		support_root.get_child_count() == 1,
 		"Cuando un jugador cae en Teams y aun queda un aliado, deberia aparecer una nave de apoyo."
 	)
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel") as Label
 	_assert(roster_label != null, "El HUD deberia seguir exponiendo el roster compacto.")
 	if roster_label != null:
 		_assert(

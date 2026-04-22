@@ -49,8 +49,8 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 		await _cleanup_node(main)
 		return
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel")
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel")
 	_assert(round_label is Label, "El HUD deberia seguir exponiendo RoundLabel.")
 	_assert(roster_label is Label, "El HUD deberia seguir exponiendo RosterLabel.")
 	if not (round_label is Label) or not (roster_label is Label):
@@ -200,7 +200,7 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 	await process_frame
 	await process_frame
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 	var robots := _get_scene_robots(main)
 	_assert(round_label != null, "El HUD deberia seguir exponiendo RoundLabel en el laboratorio Teams.")
 	_assert(robots.size() >= 2, "El laboratorio Teams deberia seguir exponiendo al menos dos robots aliados para el soporte.")
@@ -293,7 +293,7 @@ func _validate_lab_selector_cycles_between_robot_and_active_support_slots() -> v
 	await process_frame
 	await process_frame
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 	var robots := _get_scene_robots(main)
 	_assert(round_label != null, "El laboratorio Teams deberia seguir exponiendo RoundLabel para validar `F2` entre robot y `Apoyo activo`.")
 	_assert(robots.size() >= 2, "La escena principal deberia seguir exponiendo dos slots jugables para validar `F2` con soporte post-muerte.")
@@ -386,7 +386,7 @@ func _validate_lab_runtime_loadout_reset_clears_support_immediately() -> void:
 	await process_frame
 	await process_frame
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 	var robots := _get_scene_robots(main)
 	var support_root := main.get_node_or_null("SupportRoot")
 	_assert(round_label != null, "El laboratorio Teams deberia seguir exponiendo RoundLabel para validar F3/F4 desde `Apoyo activo`.")
@@ -492,7 +492,7 @@ func _validate_lab_selector_recovers_from_support_after_manual_restart() -> void
 	await process_frame
 	await process_frame
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 	var robots := _get_scene_robots(main)
 	_assert(round_label != null, "El HUD deberia seguir exponiendo RoundLabel para validar reinicio manual del selector runtime.")
 	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController para validar reinicio manual.")
@@ -594,7 +594,7 @@ func _validate_lab_selector_recovers_from_support_after_round_reset() -> void:
 	await process_frame
 	await process_frame
 
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
 	var robots := _get_scene_robots(main)
 	_assert(round_label != null, "El HUD deberia seguir exponiendo RoundLabel para validar el reset automatico del selector runtime.")
 	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController para validar el reset automatico.")

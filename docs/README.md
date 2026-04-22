@@ -34,6 +34,8 @@ This folder keeps the long-form project history that no longer needs to live in 
   - Previous long-form roadmap and next-step documents.
 - `qa/scenarios/`
   - Committed `godot-qa` smoke scenarios that complement the native `scripts/tests/test_runner.gd` suite.
+  - `main_smoke.json`: minimal runtime smoke for the main scene.
+  - `match_hud_overlay_layout_1280.json`: HUD readability contract for overlay containment/overlap with the current `godot-qa` assertion surface.
 
 ## Current archive entrypoints
 
@@ -47,3 +49,8 @@ This folder keeps the long-form project history that no longer needs to live in 
 - Keep root docs small enough to load independently.
 - Move dated narrative detail into `docs/`.
 - Keep active rules duplicated in the root summaries when they still constrain day-to-day work; archives should preserve detail, not hide requirements.
+
+## Validation split
+
+- Native GDScript scene tests remain the right place for world/camera contracts that current `godot-qa` still cannot express, such as keeping a post-death support ship inside the shared camera frame.
+- `godot-qa` scenarios remain the right place for Control/HUD contracts that can already be expressed through `assert.inside_viewport` and `assert.no_overlap`.

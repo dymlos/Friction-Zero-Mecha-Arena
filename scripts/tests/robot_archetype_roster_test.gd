@@ -82,7 +82,7 @@ func _validate_lab_hud_surfaces_the_roster_identity() -> void:
 	await process_frame
 	await process_frame
 
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel")
 	_assert(roster_label is Label, "El HUD deberia seguir exponiendo el roster compacto.")
 	if roster_label is Label:
 		var roster_text := (roster_label as Label).text
@@ -107,7 +107,7 @@ func _validate_lab_hud_surfaces_the_roster_identity() -> void:
 			score_line == "",
 			"El opening neutral FFA no deberia reintroducir `Marcador | ...` solo para mostrar arquetipos."
 		)
-	var ffa_roster_label := ffa.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	var ffa_roster_label := ffa.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel")
 	_assert(ffa_roster_label is Label, "La escena FFA deberia conservar el roster compacto como lectura de identidad.")
 	if ffa_roster_label is Label:
 		var ffa_roster_text := (ffa_roster_label as Label).text

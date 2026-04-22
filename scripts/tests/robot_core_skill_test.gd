@@ -242,7 +242,7 @@ func _validate_ffa_lab_exposes_the_new_archetype_identity() -> void:
 	await process_frame
 	await process_frame
 
-	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel")
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel")
 	_assert(roster_label is Label, "La escena FFA deberia seguir exponiendo el roster compacto.")
 	if roster_label is Label:
 		var roster_text := (roster_label as Label).text
