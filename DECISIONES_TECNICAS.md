@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **La referencia `Control Pn | ...` del laboratorio debe seguir el soporte post-muerte**
+ - `Main.get_lab_selected_controls_summary_line()` sigue publicando la chuleta del slot seleccionado, pero antes de usar `RobotBase.get_control_reference_hint()` consulta `_find_post_death_support_ship(robot)`.
+ - Si el jugador ya tiene una `PilotSupportShip` activa, la línea pasa a `robot.get_support_input_hint()` (`usa ... | objetivo ...`) en vez de seguir mostrando los controles de combate del robot caído.
+ - `lab_runtime_selector_test.gd` fija el contrato: `P1` arranca con `mueve WASD...`, cae en `Teams` y la línea persistente cambia a `Control P1 | usa C | objetivo Q/E` sin conservar el hint stale del robot.
+ - Motivo: el laboratorio ya había vuelto persistente la chuleta de controles del slot seleccionado, pero seguía mintiendo justo en el slice post-muerte `Teams`, donde el jugador ya no conduce el robot sino la nave de apoyo. Resolverlo en `Main` mantiene una sola línea fiel al estado jugable real sin abrir otra UI.
+
 1. **El laboratorio deja visible el modo HUD activo dentro del round-state**
  - `Main` agrega `get_lab_hud_mode_summary_line()` y publica `HUD | explicito/contextual | F1 cambia` junto a `Escena | ...`, `Lab | ...` y `Control Pn | ...`.
  - La linea deriva de `MatchController.get_hud_detail_mode_label()` y no de otro flag local, asi que sigue el override runtime real de `F1` y tambien persiste al saltar de laboratorio con `F6`.

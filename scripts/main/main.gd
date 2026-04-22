@@ -244,7 +244,12 @@ func get_lab_selected_controls_summary_line() -> String:
 	if robot == null:
 		return ""
 
-	return "Control P%s | %s" % [robot.player_index, robot.get_control_reference_hint()]
+	var controls_hint := robot.get_control_reference_hint()
+	var support_ship := _find_post_death_support_ship(robot)
+	if support_ship != null:
+		controls_hint = robot.get_support_input_hint()
+
+	return "Control P%s | %s" % [robot.player_index, controls_hint]
 
 
 func get_lab_scene_variant_summary_line() -> String:

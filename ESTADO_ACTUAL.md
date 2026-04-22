@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Referencia compacta de controles alineada con `Apoyo activo` (2026-04-22)
+
+- Estado: la línea persistente `Control Pn | ...` del laboratorio ya no queda stale cuando el slot seleccionado pasa de robot activo a nave de soporte en `Teams`.
+- Corrección aplicada:
+  - `scripts/main/main.gd` ahora hace que `get_lab_selected_controls_summary_line()` consulte `_find_post_death_support_ship(robot)` antes de armar la chuleta.
+  - si el jugador seleccionado sigue en combate, la línea conserva `robot.get_control_reference_hint()`.
+  - si ya existe `PilotSupportShip` para ese owner, la línea cambia a `robot.get_support_input_hint()` y publica `usa ... | objetivo ...`.
+  - `scripts/tests/lab_runtime_selector_test.gd` fija la regresión: `P1` arranca con controles normales, cae al vacío y la misma línea persistente migra a los controles reales del soporte sin conservar `mueve WASD`.
+- Resultado:
+  - el selector runtime del laboratorio sigue siendo una referencia fiel de lo que el jugador seleccionado puede hacer en ese frame, también durante el slice post-muerte de `Teams`.
+  - `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `godot --headless --path . -s res://scripts/tests/live_roster_order_test.gd`, `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd` y `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` pasan.
+
 ## Referencia persistente del modo HUD en el laboratorio (2026-04-22)
 
 - Estado: el laboratorio ya no depende solo del `StatusLabel` temporal para recordar si el HUD quedo en modo explicito o contextual; el propio round-state deja visible `HUD | explicito/contextual | F1 cambia`.

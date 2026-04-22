@@ -14,6 +14,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await _validate_lab_selector_cycles_roster_and_control_mode()
+	await _validate_lab_selected_controls_follow_support_ship()
 	await _validate_ffa_scoreboard_refreshes_after_runtime_loadout_change()
 	_finish()
 
@@ -181,6 +182,49 @@ func _validate_ffa_scoreboard_refreshes_after_runtime_loadout_change() -> void:
 	)
 
 	await _cleanup_node(ffa)
+
+
+func _validate_lab_selected_controls_follow_support_ship() -> void:
+	var main := MAIN_SCENE.instantiate()
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller != null:
+		match_controller.round_intro_duration = 0.0
+		if match_controller.match_config != null:
+			match_controller.match_config.round_intro_duration_teams = 0.0
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var robots := _get_scene_robots(main)
+	_assert(round_label != null, "El HUD deberia seguir exponiendo RoundLabel en el laboratorio Teams.")
+	_assert(robots.size() >= 2, "El laboratorio Teams deberia seguir exponiendo al menos dos robots aliados para el soporte.")
+	if round_label == null or robots.size() < 2:
+		await _cleanup_node(main)
+		return
+
+	_assert(
+		round_label.text.contains("Control P1 | mueve WASD | ataca Space | energia Q/E | overdrive R | suelta C"),
+		"Antes de una baja, la referencia compacta deberia seguir mostrando los controles normales del slot seleccionado."
+	)
+
+	robots[0].fall_into_void()
+	await process_frame
+	await process_frame
+	await process_frame
+	await process_frame
+
+	_assert(
+		round_label.text.contains("Control P1 | usa C | objetivo Q/E"),
+		"Si el slot seleccionado pasa a `Apoyo activo`, la referencia compacta deberia migrar a los controles reales de la nave de soporte."
+	)
+	_assert(
+		not round_label.text.contains("Control P1 | mueve WASD"),
+		"Cuando el jugador ya esta en la nave de apoyo, la referencia compacta no deberia seguir mostrando los controles del robot caido."
+	)
+
+	await _cleanup_node(main)
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:

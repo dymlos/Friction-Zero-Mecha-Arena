@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No volver a dejar stale la línea `Control Pn | ...` cuando el slot entra en `Apoyo activo`**
+ - `Main.get_lab_selected_controls_summary_line()` ya consulta `_find_post_death_support_ship(robot)` y cambia de `robot.get_control_reference_hint()` a `robot.get_support_input_hint()` cuando el slot seleccionado cayó y sigue jugando desde la nave de apoyo.
+ - Si se retoca el selector runtime, el lifecycle del soporte o el round-state del laboratorio, mantener `lab_runtime_selector_test.gd`: ahora cubre el cambio real `controles de robot -> controles de soporte` para `P1` sin depender solo del roster.
+ - Reabrir solo si el laboratorio deja de usar una sola línea persistente para controles o si el soporte post-muerte cambia de botones/flujo.
+
 0. **No perder la linea `HUD | ... | F1 cambia` al tocar el HUD dual o el ciclo de escenas**
  - `Main` ya expone `get_lab_hud_mode_summary_line()` y la suma al round-state del laboratorio; la fuente de verdad sigue siendo `MatchController.get_hud_detail_mode_label()`.
  - Si se retocan `_build_round_state_lines()`, `cycle_hud_detail_mode()`, `apply_runtime_hud_detail_mode()` o el salto `F6`, mantener `lab_scene_selector_test.gd`: ahora cubre arranque `explicito`, cambio a `contextual` y persistencia de la misma linea tras recargar otra escena.

@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- La referencia persistente `Control Pn | ...` del laboratorio ya sigue tambien el soporte post-muerte en `Teams`: cuando el slot seleccionado cae y pasa a `Apoyo activo`, la linea deja de mostrar los controles del robot caido y migra a `usa ... | objetivo ...`, alineada con la nave real.
+- La correccion vive en `Main.get_lab_selected_controls_summary_line()`: el selector runtime sigue usando `RobotBase.get_control_reference_hint()` para robots activos, pero consulta `_find_post_death_support_ship(robot)` antes de publicar la chuleta y, si el soporte existe, reutiliza `robot.get_support_input_hint()` en vez del hint de combate.
+- `lab_runtime_selector_test.gd` fija este seam dentro del mismo flujo de laboratorio: `P1` arranca con `mueve/ataca/energia/...`, cae al vacio en `Teams` y la referencia persistente pasa a `Control P1 | usa C | objetivo Q/E` sin arrastrar `mueve WASD`.
+- Validacion focalizada: `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `godot --headless --path . -s res://scripts/tests/live_roster_order_test.gd`, `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd` y `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` pasan.
+
 - El laboratorio ahora deja tambien una referencia persistente del modo HUD activo dentro del round-state (`HUD | explicito/contextual | F1 cambia`), evitando que el override runtime de `F1` quede visible solo en el `StatusLabel` temporal.
 - La implementacion vive en `Main`: `get_lab_hud_mode_summary_line()` deriva el label real desde `MatchController.get_hud_detail_mode_label()` y `_build_round_state_lines()` la publica junto a `Escena | ...`, `Lab | ...` y `Control Pn | ...`, por lo que tambien sobrevive al salto `F6` entre laboratorios sin otra persistencia manual.
 - `lab_scene_selector_test.gd` fija el seam completo: el laboratorio arranca con `HUD | explicito | F1 cambia`, cambia a `HUD | contextual | F1 cambia` al alternar `F1` y conserva esa misma linea tras recargar la siguiente escena con `F6`.
