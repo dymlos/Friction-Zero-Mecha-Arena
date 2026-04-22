@@ -4,6 +4,7 @@
 
 El proyecto ya tiene una base jugable en Godot 4.6 con:
 
+- entrypoint comun de validacion restaurado: `scripts/tests/test_runner.gd` ahora corre la suite headless completa descubriendo todos los `*_test.gd` del proyecto y omitiendose a si mismo; `test_suite_runner_test.gd` deja cubierto el contrato minimo de discovery para que la automatizacion no vuelva a romperse en silencio.
 - cleanup mas robusto del warning diegetico de explosion diferida: al salir del estado inutilizado, `RobotBase` vuelve a sincronizar en `_process()` la visibilidad de `DisabledWarningIndicator` con el estado gameplay real para que no quede `visible` stale durante el respawn.
 - arena flotante legible con bordes visibles y caida al vacio
 - camara compartida ortografica con seguimiento de los robots visibles

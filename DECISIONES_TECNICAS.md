@@ -38,6 +38,10 @@
    - Al impactar o agotar lifetime, `PulseBolt` entra primero en un estado corto de despawn: deja de procesar, oculta el visual, desactiva `monitoring`/`CollisionShape3D` y solo despues hace `queue_free()`.
    - Motivo: evitar eventos stale de `Area3D` durante el teardown del proyectil y dejar el contrato del skillshot mas robusto para tests y runtime.
 
+10. **La suite headless vive en un runner Godot del propio repo**
+   - `scripts/tests/test_runner.gd` descubre cualquier `*_test.gd` bajo `scripts/tests`, se excluye a si mismo y ejecuta cada script como subproceso del mismo binario Godot con `--headless --path ... -s ...`; `test_suite_runner_test.gd` protege ese discovery.
+   - Motivo: el proyecto ya dependia de “suite completa `scripts/tests/*.gd`” como verificacion recurrente, pero habia perdido el entrypoint comun; reinstalarlo dentro del mismo repo deja la validacion repetible para futuras iteraciones sin shell ad-hoc ni conocimiento oculto.
+
 10. **Bootstrap local desde `main` en vez de confiar en la escena armada a mano**
    - `main.gd` ahora asigna spawns y slots locales a los robots ya presentes en la escena.
    - Motivo: deja el prototipo mas facil de entender y evita escenas "correctas por casualidad" cuando se suman mas jugadores o se cambian spawns.

@@ -78,6 +78,7 @@
   - medir si `unstable_disabled_explosion_radius_multiplier`, `unstable_disabled_explosion_impulse_multiplier` y `unstable_disabled_explosion_damage_multiplier` vuelven especial la sobrecarga sin transformar el overdrive en una ruta dominante de remate
 
 10. **Mejorar validacion jugable**
+   - usar `godot --headless --path . -s res://scripts/tests/test_runner.gd` como entrypoint comun antes de caer en loops shell manuales; si cambia el layout de `scripts/tests`, mantener tambien `test_suite_runner_test.gd` para no perder discovery en silencio.
    - usar `main_teams_validation.tscn` y `main_ffa_validation.tscn` como rutas rapidas base antes de tocar `main.tscn` o `main_ffa.tscn`.
    - ajuste fino de valores de aceleracion, damping, empuje y danio usando esas escenas cortas para iterar mas rapido antes de tocar los laboratorios largos.
    - medir si el reset corto de ronda y el reinicio de match dejan suficiente tiempo de lectura o si necesitan delays algo mayores
