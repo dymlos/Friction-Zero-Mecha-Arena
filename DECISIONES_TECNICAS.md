@@ -604,6 +604,10 @@
    - `MatchController.get_robot_status_lines()` ya no itera `registered_robots` en scene-order; ahora delega en un helper compartido que aplica los comparators ya usados por recap/resultado final.
    - Motivo: despues de corregir `Marcador`, `Posiciones`, detalle de cierre y `Stats | ...`, quedaba una fuga lateral donde el roster activo seguia mostrando primero al slot original en vez del lider FFA o del aliado que todavia seguia en pie en Teams. Reusar la misma ruta de orden mantiene una sola lectura competitiva sin agregar reglas nuevas.
 
+104. **El rescate ahora dice tambien cuando el handoff ya esta listo**
+   - `RobotBase` expone `is_carried_part_return_ready()` y reutiliza ese estado para intensificar `CarryReturnIndicator` cuando el portador entra en el radio real de retorno; `RecoveryTargetFloorIndicator` del dueño tambien refuerza brillo/pulso si un aliado ya puede completar la devolucion.
+   - Motivo: pieza en suelo, dueño y portador ya explicaban urgencia/pertenencia/destino, pero seguia faltando el “ya” tactico. Reusar los mismos cues del rescate evita otro HUD y vuelve mas legible el momento exacto de devolver la parte en pantalla compartida.
+
 ## Criterios mantenidos
 
 - Priorizar sensacion de movimiento y choque antes que sistemas avanzados.

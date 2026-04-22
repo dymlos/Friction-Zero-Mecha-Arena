@@ -499,6 +499,10 @@ func has_recoverable_detached_parts() -> bool:
 	return not _recoverable_detached_part_ids.is_empty()
 
 
+func is_carried_part_return_ready() -> bool:
+	return _is_carried_part_return_ready_with_owner(_get_carried_part_owner())
+
+
 func get_carried_item_display_name() -> String:
 	return str(CARRIED_ITEM_LABELS.get(_carried_item_name, _carried_item_name))
 
@@ -3243,9 +3247,17 @@ func _refresh_carry_return_indicator() -> void:
 	var owner_material := _carry_return_indicator.material_override as StandardMaterial3D
 	if owner_material != null:
 		var owner_color := owner_robot.get_identity_color()
-		owner_material.albedo_color = Color(owner_color.r, owner_color.g, owner_color.b, 0.72)
-		owner_material.emission = owner_color
-		owner_material.emission_energy_multiplier = 1.45
+		var return_ready := _is_carried_part_return_ready_with_owner(owner_robot)
+		var cue_color := owner_color
+		var cue_alpha := 0.72
+		var cue_emission := 1.45
+		if return_ready:
+			cue_color = owner_color.lerp(Color(1.0, 0.96, 0.78, 1.0), 0.35)
+			cue_alpha = 0.92
+			cue_emission = 2.35
+		owner_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, cue_alpha)
+		owner_material.emission = cue_color
+		owner_material.emission_energy_multiplier = cue_emission
 
 	var local_direction := global_transform.basis.inverse() * world_direction.normalized()
 	local_direction.y = 0.0
@@ -3300,9 +3312,15 @@ func _update_carry_indicator_animation(delta: float) -> void:
 			TAU
 		)
 	if _carry_return_indicator != null and _carry_return_indicator.visible:
-		var return_pulse := 1.0 + wave * carry_indicator_pulse_amount * 0.65
+		var return_ready := is_carried_part_return_ready()
+		var return_pulse := 1.0 + wave * carry_indicator_pulse_amount * (1.1 if return_ready else 0.65)
+		if return_ready:
+			return_pulse += 0.08
 		_carry_return_indicator.scale = Vector3(return_pulse, 1.0, return_pulse)
-		_carry_return_indicator.position.y = carry_return_indicator_height + wave * carry_indicator_bob_height * 0.45
+		_carry_return_indicator.position.y = (
+			carry_return_indicator_height
+			+ wave * carry_indicator_bob_height * (0.7 if return_ready else 0.45)
+		)
 
 
 func _update_recovery_target_indicator_animation(delta: float) -> void:
@@ -3326,7 +3344,13 @@ func _update_recovery_target_indicator_animation(delta: float) -> void:
 	_recovery_target_indicator.position.y = recovery_target_indicator_base_height + wave * recovery_target_indicator_bob_height
 	_recovery_target_indicator.rotation.y = fmod(_recovery_target_indicator.rotation.y + delta * 0.7, TAU)
 	if _recovery_target_floor_indicator != null:
-		var floor_pulse := 1.0 + (wave - 0.5) * recovery_target_floor_indicator_pulse_amount * 2.0
+		var return_ready := _has_return_ready_recoverable_detached_part()
+		var floor_pulse_amount := recovery_target_floor_indicator_pulse_amount
+		if return_ready:
+			floor_pulse_amount *= 1.8
+		var floor_pulse := 1.0 + (wave - 0.5) * floor_pulse_amount * 2.0
+		if return_ready:
+			floor_pulse += 0.08
 		_recovery_target_floor_indicator.scale = Vector3(floor_pulse, 1.0, floor_pulse)
 		_recovery_target_floor_indicator.position.y = recovery_target_floor_indicator_height
 		_recovery_target_floor_indicator.rotation.y = fmod(
@@ -3336,9 +3360,16 @@ func _update_recovery_target_indicator_animation(delta: float) -> void:
 		var floor_material := _recovery_target_floor_indicator.material_override as StandardMaterial3D
 		if floor_material != null:
 			var identity_color := get_identity_color()
-			floor_material.albedo_color = Color(identity_color.r, identity_color.g, identity_color.b, 0.22 + wave * 0.12)
-			floor_material.emission = identity_color
-			floor_material.emission_energy_multiplier = 0.72 + wave * 0.26
+			var cue_color := identity_color
+			var cue_alpha := 0.22 + wave * 0.12
+			var cue_emission := 0.72 + wave * 0.26
+			if return_ready:
+				cue_color = identity_color.lerp(Color(1.0, 0.96, 0.78, 1.0), 0.28)
+				cue_alpha = 0.34 + wave * 0.16
+				cue_emission = 1.18 + wave * 0.42
+			floor_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, cue_alpha)
+			floor_material.emission = cue_color
+			floor_material.emission_energy_multiplier = cue_emission
 
 
 func _update_lab_selection_indicator(delta: float) -> void:
@@ -3509,6 +3540,44 @@ func _get_carried_part_owner() -> RobotBase:
 		return owner_node as RobotBase
 
 	return null
+
+
+func _is_carried_part_return_ready_with_owner(owner_robot: RobotBase) -> bool:
+	if owner_robot == null or owner_robot == self:
+		return false
+	if not is_instance_valid(_carried_part):
+		return false
+	if not is_ally_of(owner_robot):
+		return false
+
+	return global_position.distance_to(owner_robot.global_position) <= carried_part_return_range
+
+
+func _has_return_ready_recoverable_detached_part() -> bool:
+	if _is_respawning:
+		return false
+	if get_tree() == null:
+		return false
+
+	for node in get_tree().get_nodes_in_group("detached_parts"):
+		if not (node is DetachedPart):
+			continue
+
+		var detached_part := node as DetachedPart
+		if detached_part.get_original_robot() != self:
+			continue
+		if not detached_part.is_carried():
+			continue
+		if not (detached_part.carrier_robot is RobotBase):
+			continue
+
+		var carrier_robot := detached_part.carrier_robot as RobotBase
+		if not is_ally_of(carrier_robot):
+			continue
+		if carrier_robot.global_position.distance_to(global_position) <= carrier_robot.carried_part_return_range:
+			return true
+
+	return false
 
 
 func _get_energy_readability_part_name() -> String:

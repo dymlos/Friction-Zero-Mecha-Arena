@@ -40,7 +40,7 @@
 
 4. **Hacer visible y testeable el rescate/negacion**
    - usar `scenes/main/main_teams_validation.tscn` como escena corta de referencia y el coverage headless 2v2/validacion como red de seguridad mientras se hacen sesiones reales con la contraccion de arena ya activa.
-   - medir si el nuevo combo `disco de recuperacion + aro de pertenencia + RecoveryTargetIndicator + RecoveryTargetFloorIndicator + CarryOwnerIndicator + CarryReturnIndicator` realmente alcanza para leer urgencia/ownership/objetivo de retorno tambien durante el transporte en 2v2 y FFA o si todavia hace falta compactar escala/contraste/ritmo de esos cues.
+   - medir si el nuevo combo `disco de recuperacion + aro de pertenencia + RecoveryTargetIndicator + RecoveryTargetFloorIndicator + CarryOwnerIndicator + CarryReturnIndicator`, ahora con refuerzo extra cuando la devolucion ya esta lista, realmente alcanza para leer urgencia/ownership/objetivo/handoff tambien durante el transporte en 2v2 y FFA o si todavia hace falta compactar escala/contraste/ritmo de esos cues.
    - comprobar en playtest si la nueva linea `negaciones N` realmente explica bien cuando el rival mando una pieza al vacio o si el cierre final todavia necesita distinguir mejor entre negacion enemiga y auto-error aliado.
    - confirmar por playtest si pausar la ventana de `DetachedPart` mientras viaja en mano mantiene bien la tension de rescate/negacion o si el proximo ajuste debe venir por `cleanup_time`/`throw_pickup_delay`, no por volver a resets implícitos.
    - medir en partida si `throw_pickup_delay`/`pickup_delay` se sienten justos o demasiado punitivos ahora que perder una ronda sí importa y el espacio se va cerrando.
