@@ -1,6 +1,9 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const TEAM_SCENES := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
@@ -12,19 +15,19 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main = MAIN_SCENE.instantiate()
-	root.add_child(main)
+	for scene_path in TEAM_SCENES:
+		await _verify_modular_loss_stats(scene_path)
+	_finish()
 
-	await process_frame
-	await process_frame
 
+func _verify_modular_loss_stats(scene_path: String) -> void:
+	var main := await _instantiate_main_scene(scene_path)
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
 	var robots := _get_scene_robots(main)
-	_assert(match_controller != null, "La escena principal deberia instanciar MatchController.")
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para medir desgaste modular por competidor.")
+	_assert(match_controller != null, "%s deberia instanciar MatchController." % scene_path)
+	_assert(robots.size() >= 4, "%s deberia ofrecer cuatro robots para medir desgaste modular por competidor." % scene_path)
 	if match_controller == null or robots.size() < 4:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	match_controller.match_mode = MatchController.MatchMode.TEAMS
@@ -47,31 +50,40 @@ func _run() -> void:
 	robots[3].fall_into_void()
 	await create_timer(0.05).timeout
 
-	_assert(match_controller.is_match_over(), "La ronda objetivo deberia cerrar la partida.")
+	_assert(match_controller.is_match_over(), "%s deberia cerrar la partida en la ronda objetivo." % scene_path)
 	_assert(
 		_has_line_containing(
 			match_controller.get_match_result_lines(),
 			"Stats | Equipo 1 | partes perdidas 1 (1 brazo) | bajas sufridas 0"
 		),
-		"El cierre de partida deberia resumir el desgaste modular del equipo ganador."
+		"%s deberia resumir el desgaste modular del equipo ganador en el cierre." % scene_path
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_match_result_lines(),
 			"Stats | Equipo 2 | partes perdidas 3 (1 brazo, 2 piernas) | bajas sufridas 2 (2 vacio)"
 		),
-		"El cierre de partida deberia distinguir cuantas piernas y brazos perdio el equipo derrotado."
+		"%s deberia distinguir cuantas piernas y brazos perdio el equipo derrotado." % scene_path
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_round_recap_panel_lines(),
 			"Stats | Equipo 2 | partes perdidas 3 (1 brazo, 2 piernas) | bajas sufridas 2 (2 vacio)"
 		),
-		"El recap lateral deberia compartir la misma lectura de desgaste modular del cierre."
+		"%s deberia compartir la misma lectura de desgaste modular en el recap lateral." % scene_path
 	)
 
 	await _cleanup_main(main)
-	_finish()
+
+
+func _instantiate_main_scene(scene_path: String) -> Node:
+	var scene := load(scene_path) as PackedScene
+	var main := scene.instantiate()
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+	return main
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:

@@ -35,6 +35,18 @@
 - Implicacion:
   - si se vuelve a tocar cleanup post-muerte en `Main`, `PilotSupportShip`, `SupportLaneGate` o restart/reset de `MatchController`, mantener esta regresion sobre las dos escenas `Teams`.
 
+## 2026-04-22 - Los stats `Teams` de desgaste modular y negacion tambien deben congelarse sobre `main_teams_validation.tscn`
+
+- Que se hizo:
+  - `match_modular_loss_stats_test.gd` y `match_part_denial_stats_test.gd` ahora recorren `main.tscn` y `main_teams_validation.tscn`.
+- Decision:
+  - tratar tambien las lineas `Stats | ... partes perdidas ...` y `Stats | ... negaciones ...` como contratos scene-level compartidos entre las dos escenas `Teams`.
+- Razon:
+  - ambas lecturas viven en `RecapPanel` y `MatchResultPanel`, pero las regresiones seguian validandolas solo en `main.tscn`.
+  - la corrida verde en las dos escenas confirmo que el gap era de cobertura, no de produccion.
+- Implicacion:
+  - si se retocan builders de stats en `MatchController` o el wiring de cierre `Teams`, mantener estas dos regresiones sobre `main.tscn` + `main_teams_validation.tscn`.
+
 ## 2026-04-22 - El opening runtime fija lock/unlock; el primer choque queda como metrica, no como gate
 
 - Que se hizo:

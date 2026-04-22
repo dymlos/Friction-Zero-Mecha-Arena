@@ -21,6 +21,11 @@
  - Si se retocan `Main._clear_post_death_support()`, `SupportRoot`, `SupportLaneGate`, spawn/cleanup de `PilotSupportShip` o el restart/reset de `MatchController`, tocar siempre `main.tscn` y `main_teams_validation.tscn` como una misma superficie contractual y mantener esta regresion.
  - Reabrir solo si una de las dos escenas vuelve a dejar nave stale, `support_state` stale o carril externo activo despues del cleanup.
 
+0. **No volver a dejar los stats `Teams` de desgaste modular o negacion congelados solo en `main.tscn`**
+ - `match_modular_loss_stats_test.gd` y `match_part_denial_stats_test.gd` ya recorren `main.tscn` + `main_teams_validation.tscn`.
+ - Si se retocan `Stats | ...`, `RecapPanel`, `MatchResultPanel`, builders de `partes perdidas` o `negaciones`, tocar siempre `main.tscn` y `main_teams_validation.tscn` como una misma superficie contractual y mantener estas dos regresiones.
+ - Reabrir solo si una escena hermana pierde el detalle de `brazo/pierna` o deja de acreditar negaciones en recap/cierre final.
+
 0. **No volver a dejar el soporte post-muerte `Teams` congelado solo en `main.tscn`**
  - `team_post_death_support_test.gd`, `team_post_death_support_targeting_test.gd`, `support_payload_actionability_test.gd` y `support_payload_availability_readability_test.gd` ya recorren `main.tscn` + `main_teams_validation.tscn`; `team_post_death_support_test.gd` tambien cubre `main_ffa.tscn` + `main_ffa_validation.tscn` para confirmar soporte desactivado.
  - La fixture del soporte ya neutraliza `intro + pressure drift` (`round_intro_duration_teams = 0`, `progressive_space_reduction = false`, `round_time_seconds >= 120`); no volver a medir targeting/lifecycle en la escena rapida con su pacing corto si el objetivo del test no es justamente ese pacing.

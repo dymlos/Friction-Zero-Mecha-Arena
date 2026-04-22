@@ -4,6 +4,14 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los stats scene-level de desgaste modular y negacion de partes ya quedan congelados tambien en `main_teams_validation.tscn`:
+  - la revision estricta encontro otro hueco scene-level: `match_modular_loss_stats_test.gd` y `match_part_denial_stats_test.gd` seguian validando recap + resultado final solo en `main.tscn`, aunque esas mismas superficies existen tambien en la escena rapida `Teams`.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion:
+    - `scripts/tests/match_modular_loss_stats_test.gd` ahora recorre `main.tscn` + `main_teams_validation.tscn`.
+    - `scripts/tests/match_part_denial_stats_test.gd` ahora recorre `main.tscn` + `main_teams_validation.tscn`.
+  - decision operativa: tratar tambien `Stats | ... partes perdidas ...` y `Stats | ... negaciones ...` como contratos compartidos entre laboratorios `Teams base/validation`, no como asserts de una sola escena.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/match_modular_loss_stats_test.gd`, `match_part_denial_stats_test.gd` y `test_runner.gd`.
+
 - El cleanup/lifecycle scene-level del soporte post-muerte `Teams` ya queda congelado tambien en `main_teams_validation.tscn`:
   - la revision estricta encontro otro hueco scene-level: `support_lifecycle_cleanup_test.gd` seguia validando reset de ronda + `F5` solo en `main.tscn`, aunque el mismo lifecycle tambien vive en la escena rapida `Teams`.
   - no hizo falta tocar produccion; la correccion vive en la red de regresion:

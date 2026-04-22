@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Los stats scene-level de desgaste modular y negacion de partes ya quedan congelados tambien en `main_teams_validation.tscn` (2026-04-22)
+
+- Estado: dos seams de stats/cierre `Teams` ya no dependen solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: `MatchController`, `RobotBase` y `DetachedPart` ya respetaban el mismo contrato; el gap real era de cobertura scene-level.
+  - `scripts/tests/match_modular_loss_stats_test.gd` ahora valida en `main.tscn` + `main_teams_validation.tscn` la lectura `Stats | ... partes perdidas ...` tanto en resultado final como en recap.
+  - `scripts/tests/match_part_denial_stats_test.gd` ahora valida en `main.tscn` + `main_teams_validation.tscn` la lectura `Stats | ... negaciones ...` tanto en resultado final como en recap.
+- Resultado:
+  - `Teams base/validation` deja de tener otro punto ciego en telemetria de desgaste modular y negacion de partes; si una escena hermana pierde ese detalle en `RecapPanel` o `MatchResultPanel`, la suite lo detecta antes de runtime.
+  - `godot --headless --path . -s res://scripts/tests/match_modular_loss_stats_test.gd`, `match_part_denial_stats_test.gd` y `test_runner.gd` pasan; la suite completa sigue en `Suite OK: 86 tests`.
+
 ## El cleanup/lifecycle scene-level del soporte post-muerte `Teams` ya queda congelado tambien en `main_teams_validation.tscn` (2026-04-22)
 
 - Estado: el lifecycle de soporte `spawn -> ronda reseteada -> cleanup` y `spawn -> match cerrado -> F5 -> cleanup` ya no depende solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`.
