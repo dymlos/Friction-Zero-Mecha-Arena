@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- La suite de targeting post-muerte ya no queda flaky por esperar el loop incorrecto:
+  - la revision detecto que `team_post_death_support_targeting_test.gd` fallaba de forma intermitente aun sin tocar produccion; el soporte actualiza targeting en `_physics_process()`, pero la fixture esperaba solo `process_frame`.
+  - la correccion minima vive en la propia regresion: `_wait_frames()` ahora espera primero `physics_frame` y luego `process_frame`, alineando el helper con el seam real de `PilotSupportShip`.
+  - no hizo falta tocar `scripts/support/pilot_support_ship.gd`; el problema estaba en la observacion del test, no en el auto-target runtime.
+  - validacion: `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd` paso repetido, y `godot --headless --path . -s res://scripts/tests/test_runner.gd` volvio a `Suite OK: 84 tests`.
+
 - El cierre final `Teams` ahora explicita que el score del match son puntos:
   - la revision estricta detecto otro hueco de lectura: aunque HUD, recap y panel final ya mostraban `Objetivo | Primero a N pts`, la decision principal seguia cerrando como `Equipo X gana la partida 2-0`, ambigua entre rondas y puntos.
   - `scripts/systems/match_controller.gd` ahora hace que `_build_match_victory_status_line()` publique `Equipo X gana la partida por A-B pts` solo en `Teams`; `FFA` conserva su lectura propia `con N punto(s)`.

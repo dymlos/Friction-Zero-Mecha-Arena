@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## El targeting post-muerte de soporte ya tiene regresion estable sobre el loop fisico real (2026-04-22)
+
+- Estado: `team_post_death_support_targeting_test.gd` ya no cae de forma intermitente al validar `interferencia` y el regreso desde override manual al modo auto.
+- Correccion aplicada:
+  - la investigacion confirmo que `PilotSupportShip` actualiza seleccion en `_physics_process()`, mientras el helper local `_wait_frames()` esperaba solo `process_frame`.
+  - `scripts/tests/team_post_death_support_targeting_test.gd` ahora espera `physics_frame` y luego `process_frame` por paso, sin tocar logica de produccion.
+- Resultado:
+  - el test deja de observar estados a mitad de tick fisico y vuelve a ser una red fiable para auto-targeting / override manual.
+  - `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd` pasa de forma repetida y `godot --headless --path . -s res://scripts/tests/test_runner.gd` vuelve a `Suite OK: 84 tests`.
+
 ## El cierre final `Teams` ya nombra explicitamente los puntos del match (2026-04-22)
 
 - Estado: la decision principal del match en `Teams` ya no cierra como un `2-0` ambiguo; ahora publica `Equipo X gana la partida por A-B pts`, alineada con el resto del HUD que ya explicita `Objetivo | Primero a N pts`.

@@ -603,6 +603,7 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 
 func _wait_frames(count: int) -> void:
 	for _step in range(count):
+		await physics_frame
 		await process_frame
 
 

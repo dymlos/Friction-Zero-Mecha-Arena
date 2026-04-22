@@ -8,6 +8,10 @@
 2. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 
+0. **No volver a esperar solo `process_frame` en regresiones del soporte que dependen de `_physics_process()`**
+ - `team_post_death_support_targeting_test.gd` ya fija `_wait_frames()` sobre `physics_frame + process_frame`; si se agregan asserts nuevos para targeting/override/input del soporte, reutilizar ese helper y no volver a leer estados a mitad del tick fisico.
+ - Reabrir solo si `PilotSupportShip` deja de resolver targeting en `_physics_process()` o si el harness de tests cambia a otro loop compartido.
+
 0. **No volver a cerrar `Teams` con un `A-B` ambiguo cuando el match usa puntos**
  - `MatchController._build_match_victory_status_line()` ya publica `Equipo X gana la partida por A-B pts`; si se retoca el cierre final, mantener esa unidad mientras el score siga siendo ponderado por causa.
  - `match_completion_test.gd` ahora fija el contrato en `round_status_line`, `RecapLabel` y `MatchResultLabel`; no alcanza con dejar visible `Objetivo | Primero a N pts` en lineas secundarias si la decision principal vuelve a ser ambigua.

@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **Los tests del soporte post-muerte deben esperar ticks fisicos, no solo frames visuales**
+ - `PilotSupportShip` refresca targeting y override en `_physics_process()`, asi que la fixture `team_post_death_support_targeting_test.gd` ahora hace que `_wait_frames()` espere `physics_frame` y luego `process_frame`.
+ - No hubo cambio en `scripts/support/pilot_support_ship.gd`; la correccion vive en la observacion del test.
+ - Motivo: la falla intermitente no nacía del auto-target, sino de leer estados entre ticks. Alinear la espera con el loop real vuelve confiable la regresion sin enmascarar produccion.
+
 1. **El cierre final de `Teams` debe nombrar puntos y no un score `A-B` ambiguo**
  - `MatchController._build_match_victory_status_line()` ahora publica `Equipo X gana la partida por A-B pts` cuando el modo es `Teams`; `FFA` conserva su lectura propia `con N punto(s)`.
  - `match_completion_test.gd` fija el contrato en `round_status_line`, `RecapLabel` y `MatchResultLabel`.
