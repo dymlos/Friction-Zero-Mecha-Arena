@@ -33,6 +33,7 @@ func _run() -> void:
 	await _validate_lab_scene_selector_cycles_between_variants()
 	await _validate_lab_scene_selector_preserves_runtime_loadout_between_variants()
 	await _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants()
+	await _validate_lab_scene_selector_clears_selected_support_state_between_variants()
 	_finish()
 
 
@@ -272,6 +273,96 @@ func _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants() -
 	_assert(
 		reloaded_status_label.text.contains("HUD contextual"),
 		"Tras cambiar de escena con F6, el estado visible deberia seguir anunciando el HUD persistido."
+	)
+
+	await _cleanup_current_scene()
+
+
+func _validate_lab_scene_selector_clears_selected_support_state_between_variants() -> void:
+	var main := MAIN_SCENE.instantiate()
+	root.add_child(main)
+	current_scene = main
+
+	await process_frame
+	await process_frame
+
+	var match_controller := main.get_node_or_null("Systems/MatchController")
+	if match_controller != null:
+		match_controller.round_intro_duration = 0.0
+		if match_controller.match_config != null:
+			match_controller.match_config.round_intro_duration_teams = 0.0
+
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var robots := _get_scene_robots(main)
+	_assert(round_label != null, "La escena principal deberia seguir exponiendo RoundLabel para validar el salto de escena desde `Apoyo activo`.")
+	_assert(robots.size() >= 2, "La escena principal deberia exponer suficientes robots para entrar en `Apoyo activo` antes de cambiar de laboratorio.")
+	if round_label == null or robots.size() < 2:
+		await _cleanup_current_scene()
+		return
+
+	main.call("cycle_selected_lab_archetype")
+	await process_frame
+	await process_frame
+	main.call("toggle_selected_lab_control_mode")
+	await process_frame
+	await process_frame
+
+	robots[0].fall_into_void()
+	await process_frame
+	await process_frame
+	await process_frame
+	await process_frame
+
+	_assert(
+		String(main.call("get_lab_selector_summary_line")).contains("Apoyo activo"),
+		"Antes de cambiar de laboratorio, el selector runtime deberia reflejar que el slot seleccionado ya paso a `Apoyo activo`."
+	)
+	_assert(
+		round_label.text.contains("Control P1 | usa C | objetivo Q/E"),
+		"Antes de cambiar de laboratorio, la referencia compacta deberia seguir los controles reales del soporte seleccionado."
+	)
+	_assert(
+		round_label.text.contains("Apoyo P1 | sin carga"),
+		"Antes de cambiar de laboratorio, el round-state deberia seguir exponiendo la capa accionable del soporte seleccionado."
+	)
+
+	current_scene.call("cycle_lab_scene_variant")
+	await process_frame
+	await process_frame
+	await process_frame
+
+	var active_scene := current_scene
+	_assert(active_scene != null, "El cambio de laboratorio desde `Apoyo activo` deberia dejar una escena activa.")
+	if active_scene == null:
+		return
+
+	round_label = active_scene.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	robots = _get_scene_robots(active_scene)
+	_assert(round_label != null, "La escena recargada deberia seguir exponiendo RoundLabel tras un salto desde `Apoyo activo`.")
+	_assert(robots.size() >= 1, "La escena recargada deberia conservar al menos el slot seleccionado para validar su reset.")
+	if round_label == null or robots.is_empty():
+		await _cleanup_current_scene()
+		return
+
+	_assert(
+		String(active_scene.call("get_lab_scene_variant_summary_line")).contains("Equipos rapido"),
+		"Tras `F6`, el laboratorio deberia avanzar al siguiente variante esperada."
+	)
+	_assert(
+		String(active_scene.call("get_lab_selector_summary_line")).contains("P1 Grua Hard"),
+		"Tras `F6`, el selector runtime deberia recuperar el loadout runtime del slot seleccionado y volver a describir el robot activo."
+	)
+	_assert(
+		not String(active_scene.call("get_lab_selector_summary_line")).contains("Apoyo activo"),
+		"Tras `F6`, el selector runtime no deberia arrastrar el estado `Apoyo activo` del laboratorio anterior."
+	)
+	_assert(
+		round_label.text.contains("Control P1 | mueve WASD | aim TFGX | ataca Space | energia Q/E | overdrive R | suelta C"),
+		"Tras `F6`, la referencia compacta deberia volver a los controles del robot con el modo Hard runtime restaurado."
+	)
+	_assert(
+		not round_label.text.contains("Apoyo P1 |"),
+		"Tras `F6`, el round-state no deberia conservar la linea accionable del soporte del laboratorio anterior."
 	)
 
 	await _cleanup_current_scene()

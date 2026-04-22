@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No reabrir el salto `F6` desde `Apoyo activo` al tocar selector runtime o persistencia entre laboratorios**
+ - `lab_scene_selector_test.gd` ahora cubre el flujo `P1 Grua Hard -> Apoyo activo -> F6 -> Equipos rapido`; el contrato es que la escena nueva recupere `Lab | P1 Grua Hard ...`, controles de robot Hard y no arrastre `Apoyo P1 | ...`.
+ - Si se retocan `cycle_lab_scene_variant()`, `_store_lab_runtime_session_state()`, `_restore_lab_runtime_session_settings()`, `_apply_restored_lab_runtime_loadouts()` o el lifecycle del soporte post-muerte, mantener esa fixture.
+ - Reabrir solo si el cambio de escena deja de reconstruir una partida limpia por laboratorio o si se decide explícitamente persistir también estados transitorios de match entre escenas.
+
 0. **No reabrir el restart manual `F5` del selector runtime sobre una reproduccion invalida**
  - `lab_runtime_selector_test.gd` ahora cubre el camino real `slot seleccionado -> Apoyo activo -> cierre de match -> F5`; si se toca el restart manual, el soporte post-muerte o el round-state del laboratorio, mantener ese flujo y no sustituirlo por un `F5` a mitad de ronda, porque `MatchController.request_match_restart()` solo vale con `_match_over`.
  - El contrato actual es: tras `F5`, el selector runtime vuelve a `Lab | P1 Grua Hard ...`, la línea `Control P1 | ...` retoma los controles del robot y desaparece `Apoyo P1 | ...`.

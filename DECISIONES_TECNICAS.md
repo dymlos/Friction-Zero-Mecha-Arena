@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El salto `F6` entre laboratorios debe limpiar `Apoyo activo` pero conservar el loadout runtime**
+ - `Main.cycle_lab_scene_variant()` sigue persistiendo solo slot seleccionado, overrides `Easy/Hard`, modo HUD y paths de arquetipo dentro de `_lab_runtime_session_state`; no guarda estado transitorio del soporte post-muerte.
+ - `lab_scene_selector_test.gd` ahora fija el contrato completo: si `P1` cae, entra en `Apoyo activo` y luego cambia a la siguiente escena con `F6`, la escena recargada debe volver a `Lab | P1 Grua Hard ...`, `Control P1 | mueve ... aim ...` y ninguna línea `Apoyo P1 | ...`.
+ - Motivo: era el seam runtime vecino al fix reciente de `F5`; congelarlo evita que futuras iteraciones sobre selector/HUD/scene-switch mezclen persistencia útil de laboratorio con estado stale del soporte.
+
 1. **El restart manual `F5` del laboratorio queda cubierto en el camino real `Apoyo activo -> match cerrado`**
  - `lab_runtime_selector_test.gd` ahora fija el flujo completo: `P1` cambia runtime a `Grua Hard`, cae a `Apoyo activo`, el equipo pierde la ronda/match y recién entonces se dispara `F5`.
  - La investigación dejó explícito que `MatchController.request_match_restart()` solo acepta el reinicio con `_match_over == true`; probar `F5` durante una ronda viva no valida nada del seam de restart.

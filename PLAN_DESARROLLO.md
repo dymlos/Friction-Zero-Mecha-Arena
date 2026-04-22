@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El salto runtime `F6` entre laboratorios ya tiene regresión explícita también cuando el slot seleccionado venía de `Apoyo activo`: el cambio de escena debe limpiar la nave post-muerte, restaurar el robot del slot con su loadout runtime (`Grua Hard` en la fixture) y borrar la línea `Apoyo P1 | ...` en la escena nueva.
+- La decisión fue congelar el seam en cobertura, no tocar producción: `cycle_lab_scene_variant()` ya persistía solo slot/loadout/HUD en `_lab_runtime_session_state`, y la escena recargada rearmaba un laboratorio limpio sin arrastrar soporte stale.
+- `lab_scene_selector_test.gd` ahora cubre el flujo completo `P1 Grua Hard -> Apoyo activo -> F6 -> Equipos rapido`: antes del salto exige `Lab | P1 Apoyo activo`, `Control P1 | usa C | objetivo Q/E` y `Apoyo P1 | sin carga`; después del salto exige `Lab | P1 Grua Hard`, controles de robot Hard y ausencia de `Apoyo P1 | ...`.
+- Validación focalizada: `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - El laboratorio ya tiene regresión explícita para el camino completo `robot seleccionado -> Apoyo activo -> cierre de match -> F5`: si `P1` cae, pasa a la nave post-muerte y luego su equipo pierde la ronda/partida, el reinicio manual vuelve a mostrar el robot seleccionado (`Lab | P1 Grua Hard ...`, `Control P1 | mueve ...`) y limpia la línea `Apoyo P1 | ...`.
 - La iteración no necesitó tocar producción: el path real ya quedaba bien resuelto entre `MatchController.request_match_restart()`, `Main._on_round_started()` y `_clear_post_death_support()`. El hueco era de cobertura, no de lógica.
 - `lab_runtime_selector_test.gd` ahora fija el seam real con match cerrado: primero convierte `P1` en `Apoyo activo`, luego cierra el match eliminando también a `P2`, dispara `F5` y exige que el selector runtime recupere el loadout runtime (`Grua Hard`) sin arrastrar soporte stale.

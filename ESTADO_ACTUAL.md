@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Cambio de laboratorio `F6` desde `Apoyo activo` cubierto (2026-04-22)
+
+- Estado: el selector runtime ya tiene cobertura headless para el caso donde el slot seleccionado cae en `Teams`, pasa a `Apoyo activo` y luego salta de laboratorio con `F6`.
+- Cobertura aplicada:
+  - `scripts/tests/lab_scene_selector_test.gd` ahora recorre el flujo `P1 Grua Hard -> P1 Apoyo activo -> F6`.
+  - antes del cambio de escena exige `Lab | P1 Apoyo activo`, `Control P1 | usa C | objetivo Q/E` y `Apoyo P1 | sin carga`.
+  - tras cargar `main_teams_validation.tscn`, exige que el selector runtime vuelva a `P1 Grua Hard`, que la referencia compacta retome los controles del robot Hard y que desaparezca `Apoyo P1 | ...`.
+  - la revisión confirmó que no hacía falta tocar producción: `_store_lab_runtime_session_state()` persiste solo slot/loadout/HUD y la escena nueva se recompone sin soporte post-muerte stale.
+- Resultado:
+  - queda congelado el seam entre selector runtime, persistencia `F6` y cleanup del soporte post-muerte.
+  - `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan.
+
 ## Reinicio manual `F5` con selector runtime tras `Apoyo activo` cubierto (2026-04-22)
 
 - Estado: el laboratorio ya tiene cobertura headless para el caso donde el slot seleccionado entra en `Apoyo activo`, el match se cierra y luego se reinicia manualmente con `F5`.
