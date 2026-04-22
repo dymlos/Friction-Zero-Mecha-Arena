@@ -67,6 +67,8 @@
   - medir si `Resumen | ...` + `Ultima baja | ...` + `Momento inicial/final` + `Fuera | vacio/explosion/explosion inestable` + `Inutilizado | explota/inestable` + atribucion `por Player X` + `DisabledWarningIndicator` + `Stats | ...` con `partes perdidas` + `RecapPanel` + `MatchResultPanel` + detalle `Player X | baja N | causa | N/4 partes | sin ...` ya explican suficientemente bien la derrota inmediata o si la siguiente capa debe ser una pantalla post-ronda/post-partida más fuerte.
 
 8. **Afinar la nueva presion de arena**
+   - playtestear si el nuevo `round_intro_duration` de 0.8s deja el beat correcto entre respawn y primer choque o si necesita recortarse/estirarse segun `Equipos` vs `FFA`.
+   - medir si la linea `Ronda N | arranca en ...` alcanza como telegraph de apertura o si todavia falta una pista diegetica muy sutil en mundo para que el countdown no dependa solo del HUD.
    - playtestear si el inicio del cierre (`space_reduction_start_ratio`) llega demasiado tarde o demasiado pronto.
    - revisar si el minimo de contraccion deja espacio suficiente para un cierre legible en 2v2 y FFA.
    - medir si las nuevas bandas de piso alcanzan para anunciar la contraccion en camara compartida o si su contraste/inset todavia necesita ajuste fino.

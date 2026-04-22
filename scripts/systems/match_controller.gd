@@ -20,6 +20,7 @@ const SUPPORT_PAYLOAD_LABELS := {
 @export var match_config: MatchConfig
 @export_range(0.2, 6.0, 0.1) var round_reset_delay := 1.8
 @export_range(0.5, 8.0, 0.1) var match_restart_delay := 2.6
+@export_range(0.0, 3.0, 0.05) var round_intro_duration := 0.0
 @export_range(0.0, 0.95, 0.05) var space_reduction_start_ratio := 0.55
 @export_range(0.35, 1.0, 0.05) var space_reduction_min_scale := 0.55
 
@@ -43,6 +44,7 @@ var _robot_support_state: Dictionary = {}
 var _last_elimination_summary := ""
 var _round_status_line := ""
 var _round_elapsed_seconds := 0.0
+var _round_intro_remaining := 0.0
 var _hud_detail_mode_override := -1
 var _round_lifecycle_token := 0
 var _match_restart_deadline_msec := 0
@@ -77,6 +79,14 @@ func _process(delta: float) -> void:
 	if not _round_active or _round_reset_pending:
 		return
 
+	if _round_intro_remaining > 0.0:
+		_round_intro_remaining = maxf(_round_intro_remaining - delta, 0.0)
+		if _round_intro_remaining > 0.0:
+			_round_status_line = _build_round_intro_status_line()
+		else:
+			_round_status_line = "Ronda %s en juego" % _round_number
+		return
+
 	_round_elapsed_seconds += delta
 
 
@@ -105,8 +115,9 @@ func start_match() -> void:
 			_register_competitor(robot)
 
 	_round_elapsed_seconds = 0.0
+	_round_intro_remaining = maxf(round_intro_duration, 0.0)
 	_match_restart_deadline_msec = 0
-	_round_status_line = "Ronda %s en juego" % _round_number
+	_round_status_line = _build_round_intro_status_line() if is_round_intro_active() else "Ronda %s en juego" % _round_number
 	round_started.emit(_round_number)
 
 
@@ -120,6 +131,14 @@ func is_round_active() -> bool:
 
 func is_round_reset_pending() -> bool:
 	return _round_reset_pending
+
+
+func is_round_intro_active() -> bool:
+	return _round_active and not _round_reset_pending and _round_intro_remaining > 0.0
+
+
+func get_round_intro_time_left() -> float:
+	return maxf(_round_intro_remaining, 0.0)
 
 
 func get_round_status_line() -> String:
@@ -203,6 +222,8 @@ func get_match_mode_label() -> String:
 
 func get_current_play_area_scale() -> float:
 	if not _round_active or _round_reset_pending:
+		return 1.0
+	if is_round_intro_active():
 		return 1.0
 	if not is_progressive_space_reduction_enabled():
 		return 1.0
@@ -1109,8 +1130,9 @@ func _reset_round() -> void:
 	_round_active = true
 	_round_reset_pending = false
 	_round_elapsed_seconds = 0.0
+	_round_intro_remaining = maxf(round_intro_duration, 0.0)
 	_match_restart_deadline_msec = 0
-	_round_status_line = "Ronda %s en juego" % _round_number
+	_round_status_line = _build_round_intro_status_line() if is_round_intro_active() else "Ronda %s en juego" % _round_number
 	round_started.emit(_round_number)
 
 
@@ -1164,6 +1186,10 @@ func _build_score_summary_line() -> String:
 		score_parts.append("%s %s" % [competitor_label, competitor_score])
 
 	return "Marcador | %s" % " | ".join(score_parts)
+
+
+func _build_round_intro_status_line() -> String:
+	return "Ronda %s | arranca en %.1fs" % [_round_number, snappedf(get_round_intro_time_left(), 0.1)]
 
 
 func _get_highest_losing_score(winner_key: String) -> int:

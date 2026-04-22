@@ -14,6 +14,9 @@ func _init() -> void:
 
 func _run() -> void:
 	var main = MAIN_SCENE.instantiate()
+	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller_preload != null:
+		match_controller_preload.round_intro_duration = 0.0
 	root.add_child(main)
 
 	await process_frame

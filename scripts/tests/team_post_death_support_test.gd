@@ -18,6 +18,9 @@ func _run() -> void:
 
 func _verify_support_ship_spawns_only_in_teams() -> void:
 	var main = MAIN_SCENE.instantiate()
+	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller_preload != null:
+		match_controller_preload.round_intro_duration = 0.0
 	root.add_child(main)
 
 	await process_frame

@@ -85,6 +85,7 @@ func _ready() -> void:
 	_connect_match_flow()
 	_register_existing_robots()
 	match_controller.start_match()
+	_sync_round_intro_locks()
 	_apply_match_pressure_to_arena()
 	_sync_lab_selector_visuals()
 	_report_startup_structure()
@@ -94,6 +95,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	_apply_match_pressure_to_arena()
+	_sync_round_intro_locks()
 	_sync_post_death_support_state()
 	_refresh_hud()
 
@@ -246,6 +248,13 @@ func _configure_playable_prototype() -> void:
 		robot.capture_spawn_transform()
 		if robot.is_player_controlled:
 			robot.refresh_input_setup()
+		robot.set_round_intro_locked(false)
+
+
+func _sync_round_intro_locks() -> void:
+	var intro_locked := match_controller != null and match_controller.is_round_intro_active()
+	for robot in _get_scene_robots():
+		robot.set_round_intro_locked(intro_locked)
 
 
 func _apply_match_mode_bootstrap(robots: Array[RobotBase]) -> void:

@@ -399,6 +399,7 @@ var _control_zone_control_state_multiplier := 1.0
 var _active_control_beacon: Node = null
 var _disabled_explosion_is_unstable := false
 var _last_disabled_explosion_was_unstable := false
+var _round_intro_locked := false
 var _archetype_base_values: Dictionary = {}
 var _archetype_accent_root: Node3D = null
 var _is_lab_selected := false
@@ -1249,6 +1250,20 @@ func refresh_input_setup() -> void:
 	_report_joypad_status()
 
 
+func set_round_intro_locked(value: bool) -> void:
+	_round_intro_locked = value
+	if not _round_intro_locked:
+		return
+
+	_attack_cooldown_remaining = 0.0
+	_planar_velocity = Vector3.ZERO
+	external_impulse = Vector3.ZERO
+
+
+func is_round_intro_locked() -> bool:
+	return _round_intro_locked
+
+
 func get_restored_part_health_amount() -> float:
 	return maxf(max_part_health * restored_part_health_ratio, 1.0)
 
@@ -1572,6 +1587,8 @@ func _update_prototype_movement(delta: float) -> void:
 
 func _update_prototype_attack() -> void:
 	if not is_player_controlled or _is_disabled:
+		return
+	if _round_intro_locked:
 		return
 	if is_instance_valid(_carried_part):
 		return
@@ -1996,6 +2013,8 @@ func _update_core_skill_state(delta: float) -> void:
 func _update_energy_controls() -> void:
 	if not is_player_controlled or _is_disabled:
 		return
+	if _round_intro_locked:
+		return
 
 	if _is_throw_part_just_pressed():
 		if is_instance_valid(_carried_part):
@@ -2047,6 +2066,8 @@ func throw_carried_part(throw_direction: Vector2 = Vector2.ZERO, throw_speed: fl
 func _get_move_input_vector() -> Vector2:
 	if not is_player_controlled or _is_disabled:
 		return Vector2.ZERO
+	if _round_intro_locked:
+		return Vector2.ZERO
 
 	var keyboard_vector := Input.get_vector(
 		_player_action_name("move_left"),
@@ -2063,6 +2084,8 @@ func _get_move_input_vector() -> Vector2:
 
 func _get_aim_input_vector() -> Vector2:
 	if not is_player_controlled or _is_disabled or control_mode != ControlMode.HARD:
+		return Vector2.ZERO
+	if _round_intro_locked:
 		return Vector2.ZERO
 
 	var keyboard_vector := Input.get_vector(

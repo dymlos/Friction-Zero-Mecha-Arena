@@ -2,6 +2,10 @@
 
 ## Decisiones vigentes
 
+1. **El arranque legible de ronda vive en `MatchController`, no en otra UI o escena**
+   - `MatchController` ahora expone `round_intro_duration`, mantiene `_round_intro_remaining`, publica `Ronda N | arranca en ...` y no deja avanzar tiempo/contraccion mientras sigue ese beat inicial; `Main` solo sincroniza el lock hacia `RobotBase`.
+   - Motivo: el hueco contra `Documentación/07` era de ritmo, no de presentación. Resolverlo en el lifecycle de ronda preserva el laboratorio existente, evita duplicar escenas/countdowns y deja el “inicio parejo -> análisis -> escalada” como comportamiento real del match.
+
 1. **La atribucion de bajas vive estrictamente por ronda**
    - `MatchController._reset_round()` ahora limpia `_round_elimination_source_robot_ids` junto con recap/orden/cierre.
    - Motivo: `Ultima baja` usa el agresor del evento actual, pero `RecapPanel` y `MatchResultPanel` reconstruyen `por Player X` leyendo ese mapa; si no se limpiaba al reset, una baja sin agresor en la ronda nueva heredaba autoria vieja y rompia la explicacion de derrota.

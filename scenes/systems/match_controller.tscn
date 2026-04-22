@@ -7,3 +7,4 @@
 script = ExtResource("1_controller")
 match_mode = 1
 match_config = ExtResource("2_config")
+round_intro_duration = 0.8
