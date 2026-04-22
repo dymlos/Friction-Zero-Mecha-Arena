@@ -114,9 +114,8 @@ func _verify_interference_defaults_to_unsuppressed_enemy() -> void:
 	var suppressed_enemy := robots[2]
 	var fresh_enemy := robots[3]
 	var ship_position := Vector3(0.0, support_ship.global_position.y, 0.0)
-	support_ship.global_position = ship_position
-	suppressed_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.0)
-	fresh_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.9)
+	_stabilize_support_target_candidate(support_ship, suppressed_enemy, ship_position + Vector3(0.0, 0.0, 1.0))
+	_stabilize_support_target_candidate(support_ship, fresh_enemy, ship_position + Vector3(0.0, 0.0, 1.9))
 	var suppressed := suppressed_enemy.apply_control_zone_suppression(1.5, 0.7, 0.7)
 	_assert(suppressed, "El rival de control ya suprimido deberia poder prepararse para el test.")
 
@@ -169,9 +168,8 @@ func _verify_interference_defaults_to_enemy_without_stability() -> void:
 	var stable_enemy := robots[2]
 	var fresh_enemy := robots[3]
 	var ship_position := Vector3(0.0, support_ship.global_position.y, 0.0)
-	support_ship.global_position = ship_position
-	stable_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.0)
-	fresh_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.9)
+	_stabilize_support_target_candidate(support_ship, stable_enemy, ship_position + Vector3(0.0, 0.0, 1.0))
+	_stabilize_support_target_candidate(support_ship, fresh_enemy, ship_position + Vector3(0.0, 0.0, 1.9))
 	var stabilized := stable_enemy.apply_stability_boost(1.5)
 	_assert(stabilized, "El rival protegido por utility deberia poder prepararse para el test.")
 
@@ -224,9 +222,8 @@ func _verify_interference_retargets_when_auto_selected_enemy_becomes_immune() ->
 	var auto_target_enemy := robots[3]
 	var fallback_enemy := robots[2]
 	var ship_position := Vector3(0.0, support_ship.global_position.y, 0.0)
-	support_ship.global_position = ship_position
-	auto_target_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.0)
-	fallback_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.8)
+	_stabilize_support_target_candidate(support_ship, auto_target_enemy, ship_position + Vector3(0.0, 0.0, 1.0))
+	_stabilize_support_target_candidate(support_ship, fallback_enemy, ship_position + Vector3(0.0, 0.0, 1.8))
 
 	var stored := support_ship.store_support_payload(PilotSupportPickup.PAYLOAD_INTERFERENCE)
 	_assert(stored, "La nave deberia aceptar una carga de interferencia directa para validar retargeting runtime.")
@@ -286,9 +283,8 @@ func _verify_interference_keeps_manual_override_when_selected_enemy_becomes_immu
 	var auto_target_enemy := robots[3]
 	var manually_selected_enemy := robots[2]
 	var ship_position := Vector3(0.0, support_ship.global_position.y, 0.0)
-	support_ship.global_position = ship_position
-	auto_target_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.0)
-	manually_selected_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.8)
+	_stabilize_support_target_candidate(support_ship, auto_target_enemy, ship_position + Vector3(0.0, 0.0, 1.0))
+	_stabilize_support_target_candidate(support_ship, manually_selected_enemy, ship_position + Vector3(0.0, 0.0, 1.8))
 
 	var stored := support_ship.store_support_payload(PilotSupportPickup.PAYLOAD_INTERFERENCE)
 	_assert(stored, "La nave deberia aceptar una carga de interferencia directa para validar override manual.")
@@ -358,9 +354,8 @@ func _verify_interference_resumes_auto_targeting_after_manual_cycle_back_to_defa
 	var auto_target_enemy := robots[3]
 	var alternate_enemy := robots[2]
 	var ship_position := Vector3(0.0, support_ship.global_position.y, 0.0)
-	support_ship.global_position = ship_position
-	auto_target_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.0)
-	alternate_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.8)
+	_stabilize_support_target_candidate(support_ship, auto_target_enemy, ship_position + Vector3(0.0, 0.0, 1.0))
+	_stabilize_support_target_candidate(support_ship, alternate_enemy, ship_position + Vector3(0.0, 0.0, 1.8))
 
 	var stored := support_ship.store_support_payload(PilotSupportPickup.PAYLOAD_INTERFERENCE)
 	_assert(stored, "La nave deberia aceptar una carga de interferencia directa para validar el regreso al modo auto.")
@@ -551,6 +546,22 @@ func _assert(condition: bool, message: String) -> void:
 
 	_failed = true
 	push_error(message)
+
+
+func _stabilize_support_target_candidate(
+	support_ship: PilotSupportShip,
+	robot: RobotBase,
+	target_position: Vector3
+) -> void:
+	if support_ship != null:
+		support_ship.global_position = Vector3(0.0, support_ship.global_position.y, 0.0)
+	if robot == null:
+		return
+
+	robot.global_position = target_position
+	robot.velocity = Vector3.ZERO
+	robot.set("_planar_velocity", Vector3.ZERO)
+	robot.set("external_impulse", Vector3.ZERO)
 
 
 func _cleanup_main(main: Node) -> void:

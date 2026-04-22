@@ -77,7 +77,7 @@
    - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` usando tambien el toggle `F1` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.
    - revisar si el modo contextual realmente limpia sin esconder decisiones tacticas como `Foco`, `item`, `carga`, `impulso`, `energia` o `3/4 partes`.
    - confirmar por playtest que el roster vivo ahora acompana bien al resto de la lectura competitiva: lider primero en FFA y aliados supervivientes antes que caidos en Teams, sin perder claridad de ownership en pantalla compartida.
-   - decidir si el toggle runtime actual alcanza para laboratorio o si la siguiente capa necesita persistencia/preset mas visible por modo, ademas del `MatchConfig`.
+   - decidir si el toggle runtime actual alcanza para laboratorio ahora que `F1` tambien sobrevive al salto `F6`, o si la siguiente capa necesita un preset/indicador mas visible por modo ademas del `MatchConfig`.
    - medir si `RecapPanel` lateral + `MatchResultPanel` centrado + `Stats | ...` (incluyendo `partes perdidas`) + los nuevos `Momento inicial/final` + el detalle repetido `Player X / <Arquetipo> | baja N | causa | N/4 partes | sin ...` explican suficientemente bien `Decision + Marcador + como perdi` sin necesitar otra escena/post-ronda.
    - playtestear si `damage_feedback_threshold`, `critical_damage_feedback_threshold` y la nueva pose floja de brazos/piernas se leen bien con cuatro robots y arena en contracción.
    - decidir si el feedback geométrico actual ya alcanza o si conviene migrarlo a humo/chispas más ricos sin ensuciar pantalla compartida.
@@ -134,7 +134,7 @@
   - medir si `unstable_disabled_explosion_radius_multiplier`, `unstable_disabled_explosion_impulse_multiplier` y `unstable_disabled_explosion_damage_multiplier` vuelven especial la sobrecarga sin transformar el overdrive en una ruta dominante de remate
 
 12. **Mejorar validacion jugable**
-   - usar tambien `F6` para saltar en runtime entre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn` antes de volver al editor; si cambia el set de laboratorios, mantener sincronizados `LAB_SCENE_VARIANTS`, la linea `Escena | ...` y la persistencia de loadout cubierta en `lab_scene_selector_test.gd`.
+   - usar tambien `F6` para saltar en runtime entre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn` antes de volver al editor; si cambia el set de laboratorios, mantener sincronizados `LAB_SCENE_VARIANTS`, la linea `Escena | ...` y la persistencia de loadout + HUD cubierta en `lab_scene_selector_test.gd`.
    - si cambia el wiring base de cualquiera de esas cuatro escenas, mantener tambien `main_scene_runtime_smoke_test.gd`: ahora es la red minima que fija carga runtime real, `MatchConfig`, HUD, arena y bootstrap por modo.
    - usar `godot --headless --path . -s res://scripts/tests/test_runner.gd` como entrypoint comun antes de caer en loops shell manuales; si cambia el layout de `scripts/tests`, mantener tambien `test_suite_runner_test.gd` para no perder discovery en silencio.
    - si un test depende de score real, derivar el valor esperado desde `MatchConfig`; si depende de lifecycle puro entre rondas, fijar `void/destruccion/inestable = 1` dentro del test.

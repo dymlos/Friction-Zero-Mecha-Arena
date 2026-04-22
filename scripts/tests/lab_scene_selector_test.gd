@@ -32,6 +32,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_lab_scene_selector_cycles_between_variants()
 	await _validate_lab_scene_selector_preserves_runtime_loadout_between_variants()
+	await _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants()
 	_finish()
 
 
@@ -190,6 +191,75 @@ func _validate_lab_scene_selector_preserves_runtime_loadout_between_variants() -
 	_assert(
 		String(active_scene.call("get_lab_selector_summary_line")).contains("P2 Cizalla Easy"),
 		"El resumen runtime de la escena recargada deberia reflejar el slot y loadout persistidos."
+	)
+
+	await _cleanup_current_scene()
+
+
+func _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants() -> void:
+	var main := MAIN_SCENE.instantiate()
+	root.add_child(main)
+	current_scene = main
+
+	await process_frame
+	await process_frame
+
+	_assert(main.has_method("cycle_hud_detail_mode"), "Main deberia poder alternar el HUD runtime antes de saltar de escena.")
+	if not main.has_method("cycle_hud_detail_mode"):
+		await _cleanup_current_scene()
+		return
+
+	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var status_label := main.get_node_or_null("UI/MatchHud/Root/StatusLabel") as Label
+	_assert(round_label != null, "La escena principal deberia seguir exponiendo RoundLabel para validar HUD runtime.")
+	_assert(status_label != null, "La escena principal deberia seguir exponiendo StatusLabel para validar HUD runtime.")
+	if round_label == null or status_label == null:
+		await _cleanup_current_scene()
+		return
+
+	_assert(
+		round_label.text.contains("Modo |"),
+		"El laboratorio base deberia arrancar en HUD explicito para validar el override runtime."
+	)
+
+	main.call("cycle_hud_detail_mode")
+	await process_frame
+	await process_frame
+
+	_assert(
+		not round_label.text.contains("Modo |"),
+		"Antes del salto de escena, F1 deberia haber movido el HUD al modo contextual."
+	)
+	_assert(
+		status_label.text.contains("HUD contextual"),
+		"El status runtime deberia anunciar el HUD contextual antes de persistirlo entre escenas."
+	)
+
+	current_scene.call("cycle_lab_scene_variant")
+	await process_frame
+	await process_frame
+	await process_frame
+
+	var active_scene := current_scene
+	_assert(active_scene != null, "El salto de laboratorio deberia dejar una escena activa para validar HUD persistido.")
+	if active_scene == null:
+		return
+
+	var reloaded_round_label := active_scene.get_node_or_null("UI/MatchHud/Root/RoundLabel") as Label
+	var reloaded_status_label := active_scene.get_node_or_null("UI/MatchHud/Root/StatusLabel") as Label
+	_assert(reloaded_round_label != null, "La escena recargada deberia seguir exponiendo RoundLabel.")
+	_assert(reloaded_status_label != null, "La escena recargada deberia seguir exponiendo StatusLabel.")
+	if reloaded_round_label == null or reloaded_status_label == null:
+		await _cleanup_current_scene()
+		return
+
+	_assert(
+		not reloaded_round_label.text.contains("Modo |"),
+		"Tras cambiar de escena con F6, el override runtime del HUD deberia seguir en contextual."
+	)
+	_assert(
+		reloaded_status_label.text.contains("HUD contextual"),
+		"Tras cambiar de escena con F6, el estado visible deberia seguir anunciando el HUD persistido."
 	)
 
 	await _cleanup_current_scene()

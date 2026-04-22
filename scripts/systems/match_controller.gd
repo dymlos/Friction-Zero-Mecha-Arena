@@ -184,6 +184,18 @@ func cycle_hud_detail_mode() -> MatchConfig.HudDetailMode:
 	return next_mode
 
 
+func apply_runtime_hud_detail_mode(next_mode: int) -> void:
+	if next_mode < 0:
+		_hud_detail_mode_override = -1
+		return
+
+	_hud_detail_mode_override = next_mode
+
+
+func get_runtime_hud_detail_mode() -> int:
+	return int(get_hud_detail_mode())
+
+
 func is_contextual_hud_enabled() -> bool:
 	return get_hud_detail_mode() == MatchConfig.HudDetailMode.CONTEXTUAL
 

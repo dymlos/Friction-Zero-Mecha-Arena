@@ -329,8 +329,8 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - selector runtime de escena/laboratorio para acelerar playtests
   - `Main` ahora deja ciclar con `F6` entre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`, sin pasar por el editor de Godot
   - el HUD suma `Escena | ... | F6 cambia`, asi el laboratorio activo sigue legible mientras se compara Teams/FFA o base/rapido en pantalla compartida
-  - ese cambio de escena ahora tambien preserva el estado activo del laboratorio (`slot` elegido, overrides `Easy/Hard` y `RobotArchetypeConfig` por jugador) para no rearmar manualmente el setup al saltar entre variantes
-  - `lab_scene_selector_test.gd` cubre el cambio real de escena, el wrap del ciclo completo y que el loadout runtime sobreviva al salto junto con la pista de HUD
+  - ese cambio de escena ahora tambien preserva el estado activo del laboratorio (`slot` elegido, overrides `Easy/Hard`, `RobotArchetypeConfig` por jugador y HUD `explicito/contextual`) para no rearmar manualmente el setup al saltar entre variantes
+  - `lab_scene_selector_test.gd` cubre el cambio real de escena, el wrap del ciclo completo y que loadout + HUD runtime sobrevivan al salto junto con la pista de HUD
 - partes desprendidas con propietario original, pickup por cercania y retorno parcial
 - transporte de partes que bloquea el ataque prototipo
 - negacion basica de partes si el portador cae al vacio
@@ -703,7 +703,7 @@ Resultado: la suite headless actual pasa y el proyecto sigue iniciando sin error
   - el countdown ya no depende de `LifetimeTimer.time_left`, que podia consumirse entero durante frames de setup/headless
   - la ventana ahora se drena en script mientras la pieza esta en el piso, se pausa al cargarla y se reanuda al volver a lanzarla
   - el contrato visual (`RecoveryIndicator` + `OwnershipIndicator`) vuelve a arrancar casi completo al spawn y ya no regala una ventana nueva solo por levantar y tirar la pieza
-- El HUD dual ya existe y ahora puede alternarse en runtime con `F1` sobre un override local; sigue pendiente decidir por playtest que modo conviene dejar por defecto en `Equipos` y `FFA`, y si hace falta persistencia/preset por modo ademas del toggle de laboratorio.
+- El HUD dual ya existe y ahora puede alternarse en runtime con `F1` sobre un override local que tambien sobrevive al salto `F6` entre laboratorios; sigue pendiente decidir por playtest que modo conviene dejar por defecto en `Equipos` y `FFA`, y si hace falta algo mas visible que el toggle/persistencia actual.
 - La nueva lectura de daño es deliberadamente simple: combina marcadores geométricos sobrios (`Smoke`/`Spark`) con poses flojas por extremidad, no partículas finales ni VFX de producción. Falta playtestear si alcanza o si conviene enriquecer humo/chispas sin perder claridad.
 - La validacion automatica ya cubre el caso 2v2 base y el cierre de ronda; sigue faltando prueba manual de sensación para decidir si `pickup_delay` y `throw_pickup_delay` son demasiado severos o permisivos bajo presión real de ronda.
 - El cierre de match ya no es solo “ganador + reinicio”: ahora suma stats simples por competidor (`rescates`, `borde`, `partes perdidas` por tipo y `bajas` por causa) dentro del mismo HUD; sigue faltando decidir por playtest si esa telemetria ya basta o si la version final pide otra capa de post-partida.

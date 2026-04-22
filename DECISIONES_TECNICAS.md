@@ -415,7 +415,7 @@
    - Motivo: el proyecto ya tenia cuatro rutas utiles de playtest pero seguir saltando desde el editor hacia lenta la iteracion; resolverlo dentro del mismo runtime conserva el prototipo beginner-friendly, mejora la comparacion Teams/FFA y reutiliza escenas ya mantenidas sin agregar otra UI o bootstrap paralelo.
 
 40a. **`F6` persiste el setup activo del laboratorio entre escenas**
-   - Antes de llamar `change_scene_to_file(...)`, `Main` serializa en memoria de sesion el `player_slot` seleccionado, `hard_mode_player_slots` y el `resource_path` del `RobotArchetypeConfig` activo por robot; al boot de la escena siguiente consume ese estado y lo reaplica antes de refrescar HUD/selector.
+   - Antes de llamar `change_scene_to_file(...)`, `Main` serializa en memoria de sesion el `player_slot` seleccionado, `hard_mode_player_slots`, el `resource_path` del `RobotArchetypeConfig` activo por robot y el HUD activo (`MatchController.get_runtime_hud_detail_mode()`); al boot de la escena siguiente consume ese estado y lo reaplica antes de refrescar HUD/selector.
    - Motivo: sin esa persistencia, comparar `Equipos` vs `FFA` o laboratorio base vs rapido exigia reconstruir manualmente el mismo setup en cada salto, metiendo friccion justo en el flujo de playtest que `F6` queria acelerar.
 
 41. **Incentivo de borde via pickup de reparacion instantanea**

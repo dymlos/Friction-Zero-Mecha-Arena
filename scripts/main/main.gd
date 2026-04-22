@@ -351,6 +351,7 @@ func _store_lab_runtime_session_state() -> void:
 	var state := {
 		"selected_player_slot": _lab_selected_player_slot,
 		"hard_mode_player_slots": Array(hard_mode_player_slots),
+		"hud_detail_mode": match_controller.get_runtime_hud_detail_mode(),
 		"archetype_paths": {},
 	}
 	var archetype_paths: Dictionary = state["archetype_paths"]
@@ -390,6 +391,10 @@ func _restore_lab_runtime_session_settings() -> void:
 		for slot in restored_hard_slots_value:
 			next_slots.append(int(slot))
 		hard_mode_player_slots = next_slots
+
+	var restored_hud_detail_mode := int(_pending_lab_runtime_session_state.get("hud_detail_mode", -1))
+	if match_controller != null and restored_hud_detail_mode >= 0:
+		match_controller.apply_runtime_hud_detail_mode(restored_hud_detail_mode)
 
 
 func _apply_restored_lab_runtime_loadouts(robots: Array[RobotBase]) -> void:
