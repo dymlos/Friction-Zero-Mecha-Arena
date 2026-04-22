@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **Los recaps entre rondas tambien deben explicar explicitamente un empate como `sin ganador (+0)`**
+ - `MatchController` ahora persiste `_last_round_was_draw` y hace que `_build_round_closing_line()` pueda devolver `Cierre ronda | sin ganador (+0)` cuando la ronda termino sin winner pero el match sigue abierto.
+ - La decision evita inferir el empate desde `_round_status_line` y mantiene el seam de lectura del cierre en un solo builder, igual que para `ring-out`, `destruccion total` y `explosion inestable`.
+ - `match_round_draw_recap_test.gd` fija el contrato en el recap lateral y en el `RecapLabel`.
+ - Motivo: despues de volver legible `Cierre ronda | <causa> (+N)`, el caso empate seguia siendo una excepcion muda justo en la misma superficie de cierre. El recap ahora es autosuficiente tambien cuando no se otorgan puntos.
+
 1. **El recap entre rondas tambien debe mostrar el perfil activo `Puntos cierre | ...`**
  - `MatchController._build_closing_points_profile_line()` ya no depende de `_match_over`; ahora solo se oculta mientras `_round_active`, de modo que `get_round_recap_panel_lines()` puede reutilizar el mismo builder en cierres intermedios y `get_match_result_lines()` lo conserva para el cierre final.
  - `match_closing_cause_summary_test.gd` fija el contrato en `Teams` y `FFA`: despues de la primera ronda por `ring-out`, el recap debe mostrar `Puntos cierre | ...` aun con el match abierto.

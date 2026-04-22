@@ -2,6 +2,16 @@
 
 ## Estado del prototipo
 
+## El recap entre rondas ahora explica tambien las rondas sin ganador (2026-04-22)
+
+- Estado: cuando una ronda termina en empate, el recap intermedio ya no deja solo `Decision | Ronda N sin ganador`; ahora agrega una linea propia `Cierre ronda | sin ganador (+0)` para dejar claro que no hubo causa premiada ni puntos sumados.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` agrega `_last_round_was_draw` como estado minimo del cierre y hace que `_build_round_closing_line()` publique el wording de cero puntos solo cuando la ronda termino sin ganador y el match sigue abierto.
+  - `scripts/tests/match_round_draw_recap_test.gd` fija la regresion minima en `FFA`, validando tanto `get_round_recap_panel_lines()` como el texto visible del `RecapLabel`.
+- Resultado:
+  - el recap entre rondas queda autosuficiente tambien en el caso empate, alineado con la decision previa de explicar `Cierre ronda | <causa> (+N)` cuando si hubo ganador.
+  - `godot --headless --path . -s res://scripts/tests/match_round_draw_recap_test.gd`, `godot --headless --path . -s res://scripts/tests/match_round_recap_test.gd`, `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd` y `godot --headless --path . -s res://scripts/tests/match_completion_test.gd` pasan.
+
 ## El recap entre rondas ahora muestra tambien `Puntos cierre | ...` antes del final del match (2026-04-22)
 
 - Estado: el playtest corto ya no necesita esperar a `Partida cerrada` para leer el perfil activo `ring-out / destruccion total / explosion inestable`; el recap entre rondas ahora publica tambien `Puntos cierre | ...`.

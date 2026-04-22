@@ -8,6 +8,11 @@
 2. Medir en playtest corto si la combinacion `facing inward + OpeningTelegraph + carriles listos` mejora realmente la lectura del primer choque en `main.tscn` y `main_teams_validation.tscn`, o si todavia falta ajustar contraste/longitud/timing del cue.
 3. Mantener `laboratorio + Apoyo activo` en modo mantenimiento: solo tocarlo si aparece un rojo nuevo en la red actual o una observacion runtime clara.
 
+0. **No volver a dejar mudo el recap de una ronda sin ganador**
+ - `MatchController` ya publica `Cierre ronda | sin ganador (+0)` cuando `_finish_round_draw()` cerro la ronda y el match sigue abierto; la fuente de verdad sigue siendo `_build_round_closing_line()`, no otra rama de HUD.
+ - Si se retocan `_finish_round_draw()`, `_reset_round()`, `_build_round_closing_line()` o el recap lateral, mantener `match_round_draw_recap_test.gd`; esa regresion ahora fija tanto el array del recap como el `RecapLabel` visible en `FFA`.
+ - Reabrir solo si el prototipo cambia la semantica del empate o si otra capa igual de visible reemplaza explicitamente esa lectura de `+0`.
+
 0. **No volver a dejar que recap/resultados pierdan el objetivo del match**
  - `MatchController` ya reutiliza `_build_target_score_line()` en HUD vivo, `get_round_recap_panel_lines()` y `get_match_result_lines()`; si se retocan esos builders, mantener una sola fuente de verdad para `Objetivo | Primero a N pts`.
  - `match_round_recap_test.gd` fija el recap intermedio y `match_completion_test.gd` el cierre final; ambos esperan la linea tanto en los arrays como en el texto visible de `RecapLabel` / `MatchResultLabel`.

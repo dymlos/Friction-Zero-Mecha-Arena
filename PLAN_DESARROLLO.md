@@ -4,6 +4,12 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Las rondas sin ganador ahora tambien se explican dentro del recap intermedio:
+  - la revision estricta detecto un hueco real: cuando la ronda terminaba en empate, el panel mostraba `Decision | Ronda N sin ganador` y el marcador, pero no dejaba una linea propia que aclarara que no hubo causa de cierre ni puntos otorgados.
+  - `scripts/systems/match_controller.gd` ahora persiste `_last_round_was_draw` y hace que `_build_round_closing_line()` publique `Cierre ronda | sin ganador (+0)` solo en cierres intermedios, sin ensuciar el HUD vivo ni el cierre final del match.
+  - `scripts/tests/match_round_draw_recap_test.gd` agrega la regresion headless minima sobre `main_ffa.tscn`: al forzar `_finish_round_draw()`, el recap lateral y su label visible deben repetir esa lectura de cero puntos.
+  - validacion: rojo inicial en `godot --headless --path . -s res://scripts/tests/match_round_draw_recap_test.gd`; despues pasaron ese test, `match_round_recap_test.gd`, `match_closing_cause_summary_test.gd` y `match_completion_test.gd`.
+
 - El recap entre rondas ahora deja visible tambien el perfil activo de puntos por causa:
   - `MatchController` ya no reserva `Puntos cierre | ring-out N | destruccion total N | explosion inestable N` solo para `Partida cerrada`; la misma linea tambien aparece en `get_round_recap_panel_lines()` apenas una ronda termina.
   - la correccion mantiene el gating en superficies de cierre (`_round_active == false`), sin sumar ruido al HUD vivo mientras el combate sigue abierto.

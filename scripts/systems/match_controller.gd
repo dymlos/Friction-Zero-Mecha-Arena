@@ -60,6 +60,7 @@ var _match_decided_rounds_with_support := 0
 var _transition_timer: Timer = null
 var _pending_transition := ""
 var _last_round_closing_cause := -1
+var _last_round_was_draw := false
 
 
 func _ready() -> void:
@@ -126,6 +127,7 @@ func start_match() -> void:
 	_competitor_order.clear()
 	_robot_support_state.clear()
 	_last_round_closing_cause = -1
+	_last_round_was_draw = false
 
 	for robot in registered_robots:
 		if is_instance_valid(robot):
@@ -1010,6 +1012,8 @@ func _build_round_closing_line() -> String:
 		return ""
 	if _match_over:
 		return ""
+	if _last_round_was_draw:
+		return "Cierre ronda | sin ganador (+0)"
 	if _last_round_closing_cause < 0:
 		return ""
 
@@ -1561,6 +1565,7 @@ func _finish_round_with_winner(winner_key: String, finishing_cause: EliminationC
 	_round_active = false
 	_round_reset_pending = true
 	_last_round_closing_cause = int(finishing_cause)
+	_last_round_was_draw = false
 	_match_closing_cause_counts[int(finishing_cause)] = int(_match_closing_cause_counts.get(int(finishing_cause), 0)) + 1
 	_match_decided_rounds += 1
 	if _round_support_usage_by_competitor.has(winner_key):
@@ -1581,6 +1586,7 @@ func _finish_round_draw() -> void:
 	_round_active = false
 	_round_reset_pending = true
 	_round_status_line = "Ronda %s sin ganador" % _round_number
+	_last_round_was_draw = true
 	_schedule_round_reset()
 
 
@@ -1642,6 +1648,7 @@ func _reset_round() -> void:
 	_round_support_highlight_by_competitor.clear()
 	_robot_support_state.clear()
 	_last_round_closing_cause = -1
+	_last_round_was_draw = false
 	_round_number += 1
 	_round_active = true
 	_round_reset_pending = false
