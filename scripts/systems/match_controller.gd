@@ -903,7 +903,7 @@ func _build_part_denial_stats_segment(stats: Dictionary) -> String:
 func _build_elimination_stats_segment(stats: Dictionary) -> String:
 	var total_eliminations := int(stats.get("eliminations", 0))
 	if total_eliminations <= 0:
-		return "bajas 0"
+		return "bajas sufridas 0"
 
 	var breakdown: Array[String] = []
 	var void_eliminations := int(stats.get("void_eliminations", 0))
@@ -917,9 +917,9 @@ func _build_elimination_stats_segment(stats: Dictionary) -> String:
 		breakdown.append("%s explosion inestable" % unstable_eliminations)
 
 	if breakdown.is_empty():
-		return "bajas %s" % total_eliminations
+		return "bajas sufridas %s" % total_eliminations
 
-	return "bajas %s (%s)" % [total_eliminations, ", ".join(breakdown)]
+	return "bajas sufridas %s (%s)" % [total_eliminations, ", ".join(breakdown)]
 
 
 func _build_plural_segment(amount: int, singular_label: String, plural_label: String) -> String:

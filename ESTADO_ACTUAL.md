@@ -4,6 +4,7 @@
 
 El proyecto ya tiene una base jugable en Godot 4.6 con:
 
+- stats de cierre mas claros: la linea `Stats | ...` del recap/resultado final ahora deja explicito `bajas sufridas N (...)` cuando resume eliminaciones acumuladas por causa, evitando que ese dato se lea como bajas infligidas cuando en realidad describe derrotas recibidas por el competidor
 - cierre Teams mas coherente tambien en el detalle fino: `MatchController` ya no deja que el bloque por robot de recap/resultado final siga el orden fijo de la escena cuando gana el segundo equipo; ahora agrupa primero al equipo que sigue en pie, deja luego al derrotado y conserva el orden real de bajas dentro de ese equipo para que el cierre no contradiga la decision del match
 - cierre FFA mas coherente tambien en la frase de victoria: cuando libre para todos cierra la partida, `MatchController` ya no recicla el wording `X-Y` de `Equipos`; ahora anuncia `Player X gana la partida con N punto(s)` y deja que `Marcador` / `Posiciones` expliquen el resto del ranking
 - cierre FFA mas coherente tambien en el detalle fino: `MatchController` ya no deja que el bloque por robot de recap/resultado final siga el orden fijo de la escena; ahora reutiliza el mismo orden real de posiciones/desempate del match para que ganador, empates y primer eliminado queden alineados con `Marcador`, `Posiciones` y `Desempate`

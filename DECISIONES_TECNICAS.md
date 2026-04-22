@@ -477,7 +477,7 @@
 
 75. **Las stats de post-partida se agregan desde hooks ya existentes**
    - `Main` reenvia a `MatchController` los eventos ya cableados de rescate (`part_restored`), destruccion de partes (`part_destroyed`) y pickups de borde (`edge_*_pickup_collected`); `record_robot_elimination()` completa la telemetria con causas finales de baja.
-   - `MatchController` agrega solo durante ronda activa y expone lineas compactas `Stats | Competidor | rescates N | borde N | partes perdidas N (brazos/piernas) | bajas N (...)` tanto en `RecapPanel` como en `MatchResultPanel`.
+   - `MatchController` agrega solo durante ronda activa y expone lineas compactas `Stats | Competidor | rescates N | borde N | partes perdidas N (brazos/piernas) | bajas sufridas N (...)` tanto en `RecapPanel` como en `MatchResultPanel`.
    - Motivo: cumplir el pedido de “stats simples de fin de partida” y reforzar el “como perdi” con desgaste modular real, sin abrir otra escena, sin duplicar estado en `Main` y sin permitir padding accidental durante el tiempo muerto posterior al cierre.
 
 76. **La ventana de recuperacion vive sobre la pieza, no en otra banda del HUD**

@@ -51,21 +51,21 @@ func _run() -> void:
 	_assert(
 		_has_line_containing(
 			match_controller.get_match_result_lines(),
-			"Stats | Equipo 1 | partes perdidas 1 (1 brazo) | bajas 0"
+			"Stats | Equipo 1 | partes perdidas 1 (1 brazo) | bajas sufridas 0"
 		),
 		"El cierre de partida deberia resumir el desgaste modular del equipo ganador."
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_match_result_lines(),
-			"Stats | Equipo 2 | partes perdidas 3 (1 brazo, 2 piernas) | bajas 2 (2 vacio)"
+			"Stats | Equipo 2 | partes perdidas 3 (1 brazo, 2 piernas) | bajas sufridas 2 (2 vacio)"
 		),
 		"El cierre de partida deberia distinguir cuantas piernas y brazos perdio el equipo derrotado."
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_round_recap_panel_lines(),
-			"Stats | Equipo 2 | partes perdidas 3 (1 brazo, 2 piernas) | bajas 2 (2 vacio)"
+			"Stats | Equipo 2 | partes perdidas 3 (1 brazo, 2 piernas) | bajas sufridas 2 (2 vacio)"
 		),
 		"El recap lateral deberia compartir la misma lectura de desgaste modular del cierre."
 	)

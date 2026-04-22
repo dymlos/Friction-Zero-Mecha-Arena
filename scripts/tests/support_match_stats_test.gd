@@ -121,14 +121,14 @@ func _run() -> void:
 	_assert(
 		_has_line_containing(
 			match_controller.get_match_result_lines(),
-			"Stats | Equipo 1 | apoyo 2 (2 usos: estabilizador 1, energia 1) | bajas 1 (1 vacio)"
+			"Stats | Equipo 1 | apoyo 2 (2 usos: estabilizador 1, energia 1) | bajas sufridas 1 (1 vacio)"
 		),
 		"El cierre de partida deberia distinguir pickups y payloads usados por el soporte del equipo ganador."
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_round_recap_panel_lines(),
-			"Stats | Equipo 1 | apoyo 2 (2 usos: estabilizador 1, energia 1) | bajas 1 (1 vacio)"
+			"Stats | Equipo 1 | apoyo 2 (2 usos: estabilizador 1, energia 1) | bajas sufridas 1 (1 vacio)"
 		),
 		"El recap lateral deberia reutilizar el mismo desglose compacto de payloads de soporte."
 	)

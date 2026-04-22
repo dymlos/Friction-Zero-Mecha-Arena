@@ -78,14 +78,14 @@ func _run() -> void:
 	_assert(
 		_has_line_containing(
 			match_controller.get_match_result_lines(),
-			"Stats | Equipo 2 | negaciones 1 | bajas 2 (2 vacio)"
+			"Stats | Equipo 2 | negaciones 1 | bajas sufridas 2 (2 vacio)"
 		),
 		"El cierre de partida deberia acreditar la negacion exitosa al equipo que lanzo la pieza al vacio."
 	)
 	_assert(
 		_has_line_containing(
 			match_controller.get_round_recap_panel_lines(),
-			"Stats | Equipo 2 | negaciones 1 | bajas 2 (2 vacio)"
+			"Stats | Equipo 2 | negaciones 1 | bajas sufridas 2 (2 vacio)"
 		),
 		"El recap lateral deberia reutilizar la misma lectura compacta de negaciones."
 	)
