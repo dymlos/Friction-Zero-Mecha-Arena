@@ -16,6 +16,7 @@ func _run() -> void:
 	await _verify_stabilizer_warns_when_target_has_no_damage()
 	await _verify_surge_warns_when_target_already_has_full_boost_window()
 	await _verify_mobility_warns_when_target_already_has_full_boost_window()
+	await _verify_interference_warns_when_target_has_stability()
 	_finish()
 
 
@@ -180,6 +181,69 @@ func _verify_mobility_warns_when_target_already_has_full_boost_window() -> void:
 	_assert(
 		not roster_label.text.contains("ya activo"),
 		"Cuando la ventana activa de `movilidad` baja por debajo de lo que aportaria la nave, la advertencia de redundancia deberia limpiarse sola."
+	)
+
+	await _cleanup_main(main)
+
+
+func _verify_interference_warns_when_target_has_stability() -> void:
+	var main := await _instantiate_main_scene()
+	var roster_label := main.get_node_or_null("UI/MatchHud/Root/RosterLabel") as Label
+	var support_root := main.get_node_or_null("SupportRoot")
+	var robots := _get_scene_robots(main)
+	_assert(roster_label != null, "El HUD deberia seguir exponiendo el roster compacto.")
+	_assert(support_root != null, "La escena Teams deberia seguir exponiendo SupportRoot.")
+	_assert(robots.size() >= 4, "La escena Teams deberia seguir ofreciendo cuatro robots.")
+	if roster_label == null or support_root == null or robots.size() < 4:
+		await _cleanup_main(main)
+		return
+
+	robots[1].fall_into_void()
+	await _wait_frames(4)
+
+	var support_ship := support_root.get_child(0) as PilotSupportShip
+	_assert(support_ship != null, "La nave de apoyo deberia existir para validar inmunidad utility.")
+	if support_ship == null:
+		await _cleanup_main(main)
+		return
+
+	var interference_pickup := _find_support_pickup("interference")
+	_assert(interference_pickup != null, "El carril deberia seguir ofreciendo un pickup `interference`.")
+	if interference_pickup == null:
+		await _cleanup_main(main)
+		return
+
+	var stable_enemy := robots[2]
+	var fresh_enemy := robots[3]
+	var ship_position := Vector3(0.0, support_ship.global_position.y, 0.0)
+	support_ship.global_position = ship_position
+	stable_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.0)
+	fresh_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.9)
+	stable_enemy.apply_stability_boost(1.5)
+	support_ship.global_position = interference_pickup.global_position
+	await _wait_support_spawn_grace(support_ship)
+	await _wait_frames(2)
+
+	Input.action_press("p2_energy_next")
+	await _wait_frames(2)
+	Input.action_release("p2_energy_next")
+	await _wait_frames(2)
+
+	_assert(
+		roster_label.text.contains("interferencia"),
+		"El roster deberia seguir mostrando cuando la nave lleva una carga `interference`."
+	)
+	_assert(
+		roster_label.text.contains("estable"),
+		"Si el rival seleccionado esta protegido por `estabilidad`, el roster deberia explicitar que la interferencia no entraria."
+	)
+
+	await create_timer(1.6).timeout
+	await _wait_frames(2)
+
+	_assert(
+		not roster_label.text.contains("estable"),
+		"Cuando la ventana de `estabilidad` termina, la advertencia de inmunidad deberia limpiarse sola."
 	)
 
 	await _cleanup_main(main)

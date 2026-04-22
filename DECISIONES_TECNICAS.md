@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **`Interferencia` tambien debe explicar cuando el objetivo sigue inmune por `estabilidad`**
+ - `PilotSupportShip.get_status_summary()` ahora agrega `estable` si la carga actual es `interferencia`, existe un target seleccionado y ese rival mantiene `stability_boost` activo.
+ - `_get_interference_target_priority(...)` tambien penaliza esa inmunidad, asi que el target por defecto ya prioriza un rival afectable antes que otro protegido por utility.
+ - Motivo: `EdgeUtilityPickup` ya existia como contrajuego directo contra `zona/interferencia`, pero el soporte seguia pudiendo parecer “listo” sobre un objetivo inmune. Mantener la regla en targeting + summary conserva HUD y gameplay alineados sin otra UI.
+
 1. **`Surge` y `movilidad` tambien deben explicar cuando reutilizarlos seria un no-op**
  - `PilotSupportShip.get_status_summary()` ahora agrega `ya activo` si la carga actual es `surge` o `movilidad`, existe un target seleccionado y ese aliado ya conserva al menos toda la ventana útil que aportaría otra activación del mismo payload.
  - `surge` compara contra `support_energy_surge_duration`; `movilidad` usa la duración efectiva del target (`support_mobility_boost_duration * get_mobility_boost_duration_multiplier()`), para no falsear el warning en arquetipos con boosts más largos.

@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Interferencia inmune por `estabilidad` visible en roster (2026-04-22)
+
+- Estado: el soporte post-muerte `Teams` ya no sugiere presión útil de `interferencia` sobre un rival que sigue protegido por `estabilidad`.
+- Correccion aplicada:
+  - `PilotSupportShip.get_status_summary()` ahora agrega `estable` si la carga actual es `interferencia` y el target seleccionado mantiene `stability_boost` activo.
+  - el targeting por defecto de `interferencia` ahora tambien penaliza rivales inmunes, igual que ya evitaba reciclar targets no óptimos por rango o supresión.
+  - `support_payload_availability_readability_test.gd` fija la advertencia textual y `team_post_death_support_targeting_test.gd` fija que, con dos rivales válidos, se priorice al que sí puede ser afectado.
+- Resultado:
+  - el carril ya no deja otra versión de fallo silencioso en el contrajuego `utility` vs soporte; el roster explica por qué el payload no entraría y el target inicial sigue mejor la utilidad real.
+  - `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd` y `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd` pasan.
+
 ## `Surge` / `movilidad` redundantes visibles en roster (2026-04-22)
 
 - Estado: la nave de apoyo `Teams` ya explica cuando una carga de `surge` o `movilidad` no aportaria nada inmediato porque el aliado seleccionado ya conserva toda la ventana útil de ese buff.

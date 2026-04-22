@@ -4,6 +4,8 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El soporte post-muerte ya no queda “armado en falso” contra rivales con `estabilidad`: `PilotSupportShip` ahora prioriza para `interferencia` a enemigos que no esten protegidos por utility y, si el jugador cicla igual a uno inmune, el roster compacta el bloqueo como `estable`.
+- `support_payload_availability_readability_test.gd` y `team_post_death_support_targeting_test.gd` ahora cubren ese contrajuego entre `interferencia` y `estabilidad`, de modo que el carril no vuelva a ofrecer presión aparente sobre un target que gameplay ya vuelve inmune.
 - El soporte post-muerte ya no deja `surge` o `movilidad` como cargas aparentemente listas cuando el aliado seleccionado ya tiene toda la ventana útil del buff: `PilotSupportShip.get_status_summary()` ahora agrega `ya activo` solo si volver a usar esa carga sería un no-op real en ese target.
 - La regla se calcula con la duración efectiva del payload en el objetivo (`support_energy_surge_duration` o `support_mobility_boost_duration * target.get_mobility_boost_duration_multiplier()`), así que el warning desaparece solo cuando la ventana restante ya cayó por debajo del valor que aportaría una nueva activación.
 - `support_payload_availability_readability_test.gd` ahora cubre cuatro casos de disponibilidad del carril (`stabilizer`, `interferencia`, `surge`, `movilidad`) para que la legibilidad compacta no vuelva a degradarse payload por payload.

@@ -16,6 +16,7 @@ func _init() -> void:
 func _run() -> void:
 	await _verify_stabilizer_defaults_to_most_damaged_ally()
 	await _verify_interference_defaults_to_unsuppressed_enemy()
+	await _verify_interference_defaults_to_enemy_without_stability()
 	_finish()
 
 
@@ -121,6 +122,61 @@ func _verify_interference_defaults_to_unsuppressed_enemy() -> void:
 	_assert(
 		support_ship.get_selected_target_robot() == fresh_enemy,
 		"Si hay mas de un rival valido, `interferencia` deberia priorizar a uno no suprimido antes que reciclar el ya afectado."
+	)
+
+	await _cleanup_main(main)
+
+
+func _verify_interference_defaults_to_enemy_without_stability() -> void:
+	var main := await _instantiate_main_scene()
+	var robots := _get_scene_robots(main)
+	var support_root := main.get_node_or_null("SupportRoot")
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar inmunidad utility.")
+	_assert(support_root != null, "La escena principal deberia seguir exponiendo SupportRoot.")
+	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController.")
+	if robots.size() < 4 or support_root == null or match_controller == null:
+		await _cleanup_main(main)
+		return
+
+	match_controller.match_mode = MatchController.MatchMode.TEAMS
+	match_controller.match_config.round_intro_duration_teams = 0.0
+	match_controller.start_match()
+	await _wait_frames(2)
+
+	robots[1].fall_into_void()
+	await _wait_frames(4)
+
+	_assert(
+		support_root.get_child_count() == 1,
+		"Al caer un aliado en Teams deberia aparecer una nave de apoyo para validar immunity-targeting."
+	)
+	if support_root.get_child_count() != 1:
+		await _cleanup_main(main)
+		return
+
+	var support_ship := support_root.get_child(0) as PilotSupportShip
+	_assert(support_ship != null, "La nave de apoyo deberia existir para validar interferencia contra utility.")
+	if support_ship == null:
+		await _cleanup_main(main)
+		return
+
+	var stable_enemy := robots[2]
+	var fresh_enemy := robots[3]
+	var ship_position := Vector3(0.0, support_ship.global_position.y, 0.0)
+	support_ship.global_position = ship_position
+	stable_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.0)
+	fresh_enemy.global_position = ship_position + Vector3(0.0, 0.0, 1.9)
+	var stabilized := stable_enemy.apply_stability_boost(1.5)
+	_assert(stabilized, "El rival protegido por utility deberia poder prepararse para el test.")
+
+	var stored := support_ship.store_support_payload(PilotSupportPickup.PAYLOAD_INTERFERENCE)
+	_assert(stored, "La nave deberia aceptar una carga de interferencia directa para validar immunity-targeting.")
+	await _wait_frames(2)
+
+	_assert(
+		support_ship.get_selected_target_robot() == fresh_enemy,
+		"Si hay mas de un rival valido, `interferencia` deberia priorizar al que no esta protegido por `estabilidad`."
 	)
 
 	await _cleanup_main(main)

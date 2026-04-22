@@ -312,6 +312,8 @@ func _get_payload_availability_label() -> String:
 		return ""
 	if _support_payload_name != PilotSupportPickup.PAYLOAD_INTERFERENCE:
 		return ""
+	if _is_target_immune_to_interference(target_robot):
+		return "estable"
 	if _is_target_in_interference_range(target_robot):
 		return ""
 
@@ -498,12 +500,21 @@ func _get_mobility_target_priority(candidate: RobotBase) -> float:
 
 func _get_interference_target_priority(candidate: RobotBase) -> float:
 	var priority := 0.0
+	if not _is_target_immune_to_interference(candidate):
+		priority += 6.0
 	if _is_target_in_interference_range(candidate):
 		priority += 5.0
 	if not candidate.is_control_zone_suppressed():
 		priority += 4.0
 	priority -= _get_target_planar_distance_squared(candidate) * 0.1
 	return priority
+
+
+func _is_target_immune_to_interference(target_robot: RobotBase) -> bool:
+	if target_robot == null:
+		return false
+
+	return target_robot.is_stability_boost_active()
 
 
 func _get_total_missing_active_part_health(candidate: RobotBase) -> float:
