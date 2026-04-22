@@ -15,6 +15,12 @@
 3. Validar con sesiones reales si el perfil `2/1/4` necesita retoque por dominancia jugable; no reabrir configs ni HUD de cierre mientras la evidencia automatizada siga alineada.
 4. Revisar si queda algun seam scene-level de `Teams/FFA` todavia atado a una sola escena antes de volver a tocar produccion.
 
+0. **No volver a dejar los pickups de borde congelados solo en escenas base**
+ - `edge_repair_pickup_test.gd`, `edge_energy_pickup_test.gd`, `edge_mobility_pickup_test.gd`, `edge_utility_pickup_test.gd` y `edge_charge_pickup_scene_test.gd` ya recorren `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn` segun corresponda.
+ - No volver a resolver el arena scene-level por `ArenaRoot/ArenaBlockout`: las escenas `validation` usan nombres distintos para el hijo (`ArenaTeamsValidation` / `ArenaFFAValidation`), asi que el helper correcto es “buscar `ArenaBase` real”.
+ - Si se retocan pickups de borde, layouts de arena o HUD breve de adquisicion, tocar siempre la pareja `base/validation` del modo y mantener estas regresiones.
+ - Reabrir solo si una escena hermana pierde pickups cerca del borde, deja de habilitar una familia de pickup en layouts validos o rompe la lectura corta en roster/HUD.
+
 0. **No volver a dejar la presion de arena / reduccion progresiva congelada solo en `main.tscn`**
  - `progressive_space_reduction_test.gd` ya recorre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
  - Mantener la fixture actual si el objetivo sigue siendo reset del arena y no pacing de fin de ronda:

@@ -1,11 +1,16 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
 const ARENA_SCENE := preload("res://scenes/arenas/arena_blockout.tscn")
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
+const MAIN_SCENES := [
+	{"path": "res://scenes/main/main.tscn", "rounds": 5},
+	{"path": "res://scenes/main/main_teams_validation.tscn", "rounds": 5},
+	{"path": "res://scenes/main/main_ffa.tscn", "rounds": 5},
+	{"path": "res://scenes/main/main_ffa_validation.tscn", "rounds": 5},
+]
 
 var _failed := false
 
@@ -126,68 +131,78 @@ func _validate_pickup_cooldown_telegraph() -> void:
 
 
 func _validate_main_scene_energy_pickups() -> void:
-	var main = MAIN_SCENE.instantiate()
-	root.add_child(main)
-
-	await process_frame
-	await process_frame
-
-	var arena := main.get_node_or_null("ArenaRoot/ArenaBlockout")
-	var match_controller := main.get_node_or_null("Systems/MatchController")
-	_assert(arena is ArenaBase, "La escena principal deberia seguir montando un ArenaBase real.")
-	_assert(match_controller is MatchController, "La escena principal deberia seguir exponiendo MatchController para el roster compacto.")
-	if not (arena is ArenaBase) or not (match_controller is MatchController):
-		await _cleanup_node(main)
-		return
-
-	var edge_pickups := get_nodes_in_group("edge_energy_pickups")
-	_assert(edge_pickups.size() >= 2, "La arena principal deberia ofrecer al menos dos pickups de energia.")
-
-	var arena_base := arena as ArenaBase
-	var half_size := arena_base.get_safe_play_area_size() * 0.5
-	var pickup_near_edge := false
-	for pickup in edge_pickups:
-		if not (pickup is Node3D):
+	for scene_config in MAIN_SCENES:
+		var scene_path := String(scene_config["path"])
+		var loaded_scene := load(scene_path)
+		_assert(loaded_scene is PackedScene, "La prueba de energia necesita una PackedScene valida: %s" % scene_path)
+		if not (loaded_scene is PackedScene):
 			continue
 
-		var local_position := arena_base.to_local((pickup as Node3D).global_position)
-		var edge_ratio := maxf(
-			absf(local_position.x) / maxf(half_size.x, 0.01),
-			absf(local_position.z) / maxf(half_size.y, 0.01)
+		var main = (loaded_scene as PackedScene).instantiate()
+		root.add_child(main)
+
+		await process_frame
+		await process_frame
+
+		var arena := _find_scene_arena(main)
+		var match_controller := main.get_node_or_null("Systems/MatchController")
+		_assert(arena is ArenaBase, "La escena %s deberia seguir montando un ArenaBase real." % scene_path)
+		_assert(
+			match_controller is MatchController,
+			"La escena %s deberia seguir exponiendo MatchController para el roster compacto." % scene_path
 		)
-		if edge_ratio >= 0.55:
-			pickup_near_edge = true
-			break
+		if not (arena is ArenaBase) or not (match_controller is MatchController):
+			await _cleanup_node(main)
+			continue
 
-	_assert(pickup_near_edge, "Los pickups de energia deberian vivir cerca del riesgo de borde, no en el centro limpio.")
+		var edge_pickups := _get_edge_energy_pickups(main)
+		_assert(edge_pickups.size() >= 2, "La escena %s deberia ofrecer pickups de energia en borde." % scene_path)
 
-	var scene_robots := _get_scene_robots(main)
-	var active_pickup := _find_enabled_pickup(main, "edge_energy_pickups")
-	if active_pickup == null:
-		for round_number in range(1, 5):
-			arena_base.activate_edge_pickup_layout_for_round(round_number)
-			await process_frame
-			active_pickup = _find_enabled_pickup(main, "edge_energy_pickups")
-			if active_pickup != null:
+		var arena_base := arena as ArenaBase
+		var half_size := arena_base.get_safe_play_area_size() * 0.5
+		var pickup_near_edge := false
+		for pickup in edge_pickups:
+			var local_position := arena_base.to_local(pickup.global_position)
+			var edge_ratio := maxf(
+				absf(local_position.x) / maxf(half_size.x, 0.01),
+				absf(local_position.z) / maxf(half_size.y, 0.01)
+			)
+			if edge_ratio >= 0.55:
+				pickup_near_edge = true
 				break
 
-	_assert(active_pickup != null, "La escena principal deberia habilitar energia en al menos un layout del borde.")
-
-	if active_pickup != null and scene_robots.size() > 0:
-		if (match_controller as MatchController).is_round_intro_active():
-			await create_timer((match_controller as MatchController).get_round_intro_time_left() + 0.15).timeout
-			await process_frame
-		var robot := scene_robots[0]
-		robot.global_position = active_pickup.global_position
-		active_pickup.call("_on_body_entered", robot)
-		await process_frame
-		var roster_lines := (match_controller as MatchController).get_robot_status_lines()
 		_assert(
-			roster_lines.any(func(line: String) -> bool: return line.contains(robot.display_name) and line.contains("energia")),
-			"El roster compacto deberia dejar visible cuando un robot tiene la recarga de energia activa."
+			pickup_near_edge,
+			"Los pickups de energia de %s deberian vivir cerca del riesgo de borde, no en el centro limpio." % scene_path
 		)
 
-	await _cleanup_node(main)
+		var scene_robots := _get_scene_robots(main)
+		var active_pickup := _find_enabled_pickup(main, "edge_energy_pickups")
+		if active_pickup == null:
+			for round_number in range(1, int(scene_config["rounds"]) + 1):
+				arena_base.activate_edge_pickup_layout_for_round(round_number)
+				await process_frame
+				active_pickup = _find_enabled_pickup(main, "edge_energy_pickups")
+				if active_pickup != null:
+					break
+
+		_assert(active_pickup != null, "La escena %s deberia habilitar energia en al menos un layout del borde." % scene_path)
+
+		if active_pickup != null and scene_robots.size() > 0:
+			if (match_controller as MatchController).is_round_intro_active():
+				await create_timer((match_controller as MatchController).get_round_intro_time_left() + 0.15).timeout
+				await process_frame
+			var robot := scene_robots[0]
+			robot.global_position = active_pickup.global_position
+			active_pickup.call("_on_body_entered", robot)
+			await process_frame
+			var roster_lines := (match_controller as MatchController).get_robot_status_lines()
+			_assert(
+				roster_lines.any(func(line: String) -> bool: return line.contains(robot.display_name) and line.contains("energia")),
+				"El roster compacto deberia dejar visible la recarga de energia tambien en %s." % scene_path
+			)
+
+		await _cleanup_node(main)
 
 
 func _validate_pickups_follow_arena_contraction() -> void:
@@ -255,6 +270,14 @@ func _load_edge_energy_pickup_scene() -> PackedScene:
 	_assert(loaded_scene is PackedScene, "Deberia existir una escena dedicada para el pickup de energia de borde.")
 	if loaded_scene is PackedScene:
 		return loaded_scene as PackedScene
+
+	return null
+
+
+func _find_scene_arena(root_node: Node) -> ArenaBase:
+	for child in root_node.find_children("*", "Node3D", true, false):
+		if child is ArenaBase:
+			return child as ArenaBase
 
 	return null
 

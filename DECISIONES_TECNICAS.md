@@ -1,5 +1,19 @@
 # DECISIONES_TECNICAS.md - Friction Zero: Mecha Arena
 
+## 2026-04-22 - Los pickups de borde tambien deben congelarse sobre `Teams/FFA base/validation`, resolviendo el arena por tipo
+
+- Que se hizo:
+  - `edge_repair_pickup_test.gd`, `edge_energy_pickup_test.gd`, `edge_mobility_pickup_test.gd`, `edge_utility_pickup_test.gd` y `edge_charge_pickup_scene_test.gd` ahora recorren tambien `main_teams_validation.tscn` y `main_ffa_validation.tscn`.
+- Decision:
+  - tratar tambien los pickups de borde como contrato scene-level compartido entre los cuatro laboratorios jugables.
+  - en tests scene-level de pickups, buscar el arena por `ArenaBase` y no por el path fijo `ArenaRoot/ArenaBlockout`.
+- Razon:
+  - el primer rojo era falso: las escenas `validation` comparten el mismo gameplay, pero montan el arena con nombres distintos (`ArenaTeamsValidation` / `ArenaFFAValidation`).
+  - la corrida verde confirmo que el gap era de cobertura y de fixture brittle, no de produccion.
+- Implicacion:
+  - futuros tests scene-level de pickups/arena no deberian asumir el nombre exacto del hijo bajo `ArenaRoot`.
+  - si reaparece un rojo en `validation`, comprobar primero si el helper sigue resolviendo `ArenaBase` real antes de tocar pickups, `Main` o arenas.
+
 ## 2026-04-22 - La presion de arena tambien debe congelarse sobre `Teams/FFA base/validation`, con cierre de ronda dependiente del modo
 
 - Que se hizo:

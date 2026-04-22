@@ -1,12 +1,17 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
 const ARENA_SCENE := preload("res://scenes/arenas/arena_blockout.tscn")
 const PICKUP_SCENE := preload("res://scenes/pickups/edge_repair_pickup.tscn")
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 const EdgeRepairPickup = preload("res://scripts/pickups/edge_repair_pickup.gd")
+const MAIN_SCENE_PATHS := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+	"res://scenes/main/main_ffa.tscn",
+	"res://scenes/main/main_ffa_validation.tscn",
+]
 
 var _failed := false
 
@@ -96,36 +101,42 @@ func _validate_pickup_cooldown_telegraph() -> void:
 
 
 func _validate_main_scene_edge_pickups() -> void:
-	var main = MAIN_SCENE.instantiate()
-	root.add_child(main)
-
-	await process_frame
-	await process_frame
-
-	var arena := main.get_node_or_null("ArenaRoot/ArenaBlockout")
-	_assert(arena is ArenaBase, "La escena principal deberia seguir montando un ArenaBase real.")
-	if not (arena is ArenaBase):
-		await _cleanup_node(main)
-		return
-
-	var edge_pickups := get_nodes_in_group("edge_repair_pickups")
-	_assert(edge_pickups.size() >= 2, "La arena principal deberia ofrecer pickups universales en los bordes.")
-
-	var arena_base := arena as ArenaBase
-	var half_size := arena_base.get_safe_play_area_size() * 0.5
-	var pickup_near_edge := false
-	for pickup in edge_pickups:
-		if not (pickup is Node3D):
+	for scene_path in MAIN_SCENE_PATHS:
+		var scene := load(scene_path)
+		_assert(scene is PackedScene, "La prueba de pickups repair necesita una PackedScene valida: %s" % scene_path)
+		if not (scene is PackedScene):
 			continue
 
-		var local_position := arena_base.to_local((pickup as Node3D).global_position)
-		if absf(local_position.x) >= half_size.x * 0.55 or absf(local_position.z) >= half_size.y * 0.55:
-			pickup_near_edge = true
-			break
+		var main = (scene as PackedScene).instantiate()
+		root.add_child(main)
 
-	_assert(pickup_near_edge, "Los pickups nuevos deberian vivir cerca del riesgo de borde, no en el centro limpio.")
+		await process_frame
+		await process_frame
 
-	await _cleanup_node(main)
+		var arena := _find_scene_arena(main)
+		_assert(arena is ArenaBase, "La escena %s deberia seguir montando un ArenaBase real." % scene_path)
+		if not (arena is ArenaBase):
+			await _cleanup_node(main)
+			continue
+
+		var edge_pickups := _get_edge_pickups(main)
+		_assert(edge_pickups.size() >= 2, "La escena %s deberia ofrecer pickups repair en los bordes." % scene_path)
+
+		var arena_base := arena as ArenaBase
+		var half_size := arena_base.get_safe_play_area_size() * 0.5
+		var pickup_near_edge := false
+		for pickup in edge_pickups:
+			var local_position := arena_base.to_local(pickup.global_position)
+			if absf(local_position.x) >= half_size.x * 0.55 or absf(local_position.z) >= half_size.y * 0.55:
+				pickup_near_edge = true
+				break
+
+		_assert(
+			pickup_near_edge,
+			"Los pickups repair de %s deberian vivir cerca del riesgo de borde, no en el centro limpio." % scene_path
+		)
+
+		await _cleanup_node(main)
 
 
 func _validate_pickups_follow_arena_contraction() -> void:
@@ -187,6 +198,14 @@ func _get_edge_pickups(root_node: Node) -> Array[EdgeRepairPickup]:
 			pickups.append(child as EdgeRepairPickup)
 
 	return pickups
+
+
+func _find_scene_arena(root_node: Node) -> ArenaBase:
+	for child in root_node.find_children("*", "Node3D", true, false):
+		if child is ArenaBase:
+			return child as ArenaBase
+
+	return null
 
 
 func _cleanup_node(node: Node) -> void:

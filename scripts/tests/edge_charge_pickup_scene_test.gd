@@ -1,9 +1,15 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
-const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
+const TEAMS_SCENES := [
+	"res://scenes/main/main.tscn",
+	"res://scenes/main/main_teams_validation.tscn",
+]
+const FFA_SCENES := [
+	"res://scenes/main/main_ffa.tscn",
+	"res://scenes/main/main_ffa_validation.tscn",
+]
 
 var _failed := false
 
@@ -19,70 +25,99 @@ func _run() -> void:
 
 
 func _validate_default_teams_scene_enables_charge_pickups_when_both_teams_have_skills() -> void:
-	var main = MAIN_SCENE.instantiate()
+	for scene_path in TEAMS_SCENES:
+		await _validate_charge_pickups_for_scene(
+			scene_path,
+			7,
+			"El laboratorio Teams deberia conservar al menos un robot con skill propia para probar la municion/carga.",
+			"El laboratorio Teams %s deberia activar municion/carga cuando ambos equipos ya traen al menos una skill propia."
+		)
+
+
+func _validate_ffa_scene_enables_charge_pickups_for_skill_robots() -> void:
+	for scene_path in FFA_SCENES:
+		await _validate_charge_pickups_for_scene(
+			scene_path,
+			9,
+			"La escena FFA deberia conservar al menos un robot con skill propia para justificar la municion/carga.",
+			"FFA %s deberia habilitar municion/carga cuando el roster libre si tiene skills propias que aprovechar."
+		)
+
+
+func _validate_charge_pickups_for_scene(
+	scene_path: String,
+	max_rounds: int,
+	missing_skill_message: String,
+	missing_pickup_message_template: String
+) -> void:
+	var scene := load(scene_path)
+	_assert(scene is PackedScene, "La prueba de municion/carga necesita una PackedScene valida: %s" % scene_path)
+	if not (scene is PackedScene):
+		return
+
+	var main = (scene as PackedScene).instantiate()
 	root.add_child(main)
 
 	await process_frame
 	await process_frame
 
-	var arena := main.get_node_or_null("ArenaRoot/ArenaBlockout")
+	var arena := _find_scene_arena(main)
 	var match_controller := main.get_node_or_null("Systems/MatchController")
-	_assert(arena is ArenaBase, "La escena principal deberia seguir montando un ArenaBase real.")
+	_assert(arena is ArenaBase, "La escena %s deberia seguir montando un ArenaBase real." % scene_path)
 	if not (arena is ArenaBase):
 		await _cleanup_scene_root(main)
 		return
 
+	var robots := _get_scene_robots(main)
+	_assert(robots.size() >= 4, "La escena %s deberia seguir ofreciendo cuatro robots." % scene_path)
+	if robots.size() < 4:
+		await _cleanup_scene_root(main)
+		return
+
 	var charge_pickups := _get_charge_pickups(main)
-	_assert(charge_pickups.size() >= 2, "La arena principal deberia reservar al menos dos pedestales para municion/carga.")
+	_assert(charge_pickups.size() >= 2, "La escena %s deberia reservar al menos dos pedestales para municion/carga." % scene_path)
 	if charge_pickups.size() < 2:
 		await _cleanup_scene_root(main)
 		return
 
-	var robots := _get_scene_robots(main)
 	var skill_robot: RobotBase = null
 	for robot in robots:
 		if robot.has_method("has_core_skill") and bool(robot.call("has_core_skill")):
 			skill_robot = robot
 			break
 
-	_assert(
-		skill_robot != null,
-		"El laboratorio 2v2 base deberia conservar al menos un robot con skill propia para probar la municion/carga."
-	)
+	_assert(skill_robot != null, missing_skill_message)
 	if skill_robot == null:
 		await _cleanup_scene_root(main)
 		return
 
 	var initial_charges := int(skill_robot.call("get_core_skill_charge_count"))
 	var used := bool(skill_robot.call("use_core_skill"))
-	_assert(used, "La escena Teams deberia poder gastar una carga antes de buscar el pickup de municion.")
+	_assert(used, "La escena %s deberia poder gastar una carga antes de buscar el pickup de municion." % scene_path)
 	if not used:
 		await _cleanup_scene_root(main)
 		return
 
 	var arena_base := arena as ArenaBase
 	var active_pickup: Node3D = null
-	for round_number in range(1, 7):
+	for round_number in range(1, max_rounds):
 		arena_base.activate_edge_pickup_layout_for_round(round_number)
 		await process_frame
 		active_pickup = _find_enabled_pickup(main)
 		if active_pickup != null:
 			break
 
-	_assert(
-		active_pickup != null,
-		"El laboratorio 2v2 base deberia activar municion/carga cuando ambos equipos ya traen al menos una skill propia."
-	)
+	_assert(active_pickup != null, missing_pickup_message_template % scene_path)
 	if active_pickup == null:
 		await _cleanup_scene_root(main)
 		return
 
 	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
-	_assert(round_label is Label, "El HUD Teams deberia seguir exponiendo el bloque de estado de ronda.")
+	_assert(round_label is Label, "El HUD de %s deberia seguir exponiendo el bloque de estado de ronda." % scene_path)
 	if round_label is Label:
 		_assert(
 			String((round_label as Label).text).contains("municion"),
-			"El resumen `Borde | ...` deberia nombrar la municion/carga cuando forme parte del layout activo en Teams."
+			"El resumen `Borde | ...` deberia nombrar la municion/carga tambien en %s." % scene_path
 		)
 
 	if match_controller != null and bool(match_controller.call("is_round_intro_active")):
@@ -94,86 +129,12 @@ func _validate_default_teams_scene_enables_charge_pickups_when_both_teams_have_s
 
 	_assert(
 		int(skill_robot.call("get_core_skill_charge_count")) == initial_charges,
-		"El pickup de municion/carga de Teams deberia restaurar la carga gastada del robot con skill propia."
-	)
-
-	await _disable_edge_pickups(main)
-	await _cleanup_scene_root(main)
-
-
-func _validate_ffa_scene_enables_charge_pickups_for_skill_robots() -> void:
-	var main = FFA_SCENE.instantiate()
-	root.add_child(main)
-
-	await process_frame
-	await process_frame
-
-	var arena := main.get_node_or_null("ArenaRoot/ArenaBlockout")
-	var match_controller := main.get_node_or_null("Systems/MatchController")
-	_assert(arena is ArenaBase, "La escena FFA deberia seguir montando un ArenaBase real.")
-	if not (arena is ArenaBase):
-		await _cleanup_scene_root(main)
-		return
-
-	var robots := _get_scene_robots(main)
-	_assert(robots.size() >= 4, "La escena FFA deberia seguir ofreciendo cuatro robots.")
-	if robots.size() < 4:
-		await _cleanup_scene_root(main)
-		return
-
-	var skill_robot := robots[1]
-	_assert(
-		skill_robot.has_method("has_core_skill") and bool(skill_robot.call("has_core_skill")),
-		"La escena FFA deberia conservar al menos un robot con skill propia para justificar la municion/carga."
-	)
-	if not (skill_robot.has_method("has_core_skill") and bool(skill_robot.call("has_core_skill"))):
-		await _cleanup_scene_root(main)
-		return
-
-	var initial_charges := int(skill_robot.call("get_core_skill_charge_count"))
-	var used := bool(skill_robot.call("use_core_skill"))
-	_assert(used, "La escena FFA deberia poder gastar una carga antes de buscar el pickup de municion.")
-	if not used:
-		await _cleanup_scene_root(main)
-		return
-
-	var arena_base := arena as ArenaBase
-	var active_pickup: Node3D = null
-	for round_number in range(1, 9):
-		arena_base.activate_edge_pickup_layout_for_round(round_number)
-		await process_frame
-		active_pickup = _find_enabled_pickup(main)
-		if active_pickup != null:
-			break
-
-	_assert(active_pickup != null, "FFA deberia habilitar municion/carga cuando el roster libre si tiene skills propias que aprovechar.")
-	if active_pickup == null:
-		await _cleanup_scene_root(main)
-		return
-
-	var round_label := main.get_node_or_null("UI/MatchHud/Root/RoundLabel")
-	_assert(round_label is Label, "El HUD FFA deberia seguir exponiendo el bloque de estado de ronda.")
-	if round_label is Label:
-		_assert(
-			String((round_label as Label).text).contains("municion"),
-			"El resumen `Borde | ...` deberia nombrar la municion/carga cuando forme parte del layout activo."
-		)
-
-	if match_controller != null and bool(match_controller.call("is_round_intro_active")):
-		await create_timer(float(match_controller.call("get_round_intro_time_left")) + 0.15).timeout
-		await process_frame
-	skill_robot.global_position = active_pickup.global_position
-	active_pickup.call("_on_body_entered", skill_robot)
-	await process_frame
-
-	_assert(
-		int(skill_robot.call("get_core_skill_charge_count")) == initial_charges,
-		"El pickup de municion/carga deberia restaurar la carga gastada del robot con skill propia."
+		"El pickup de municion/carga deberia restaurar la carga gastada del robot con skill propia tambien en %s." % scene_path
 	)
 	var status_message := String(main.ui.status_label.text)
 	_assert(
 		status_message.contains("municion") or status_message.contains("carga"),
-		"El HUD deberia publicar una linea breve cuando alguien recarga su skill en el borde."
+		"El HUD deberia publicar la recarga de skill en el borde tambien en %s." % scene_path
 	)
 
 	await _disable_edge_pickups(main)
@@ -190,6 +151,14 @@ func _get_charge_pickups(root_node: Node) -> Array[Node3D]:
 			pickups.append(node as Node3D)
 
 	return pickups
+
+
+func _find_scene_arena(root_node: Node) -> ArenaBase:
+	for child in root_node.find_children("*", "Node3D", true, false):
+		if child is ArenaBase:
+			return child as ArenaBase
+
+	return null
 
 
 func _find_enabled_pickup(root_node: Node) -> Node3D:

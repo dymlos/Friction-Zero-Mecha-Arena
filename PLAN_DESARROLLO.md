@@ -4,6 +4,19 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- Los contratos scene-level de pickups de borde ya quedan congelados tambien en laboratorios `base/validation` de `Teams` y `FFA`:
+  - la revision estricta encontro otro hueco scene-level: los tests de `repair`, `energy`, `mobility`, `utility` y `charge` seguian validando solo escenas base, aunque los laboratorios de validacion comparten el mismo contrato de pickups cercanos al borde, layouts activos y lectura corta en HUD/roster.
+  - no hizo falta tocar produccion; la correccion vive en la red de regresion:
+    - `scripts/tests/edge_repair_pickup_test.gd`
+    - `scripts/tests/edge_energy_pickup_test.gd`
+    - `scripts/tests/edge_mobility_pickup_test.gd`
+    - `scripts/tests/edge_utility_pickup_test.gd`
+    - `scripts/tests/edge_charge_pickup_scene_test.gd`
+    ahora recorren tambien `main_teams_validation.tscn` y `main_ffa_validation.tscn`.
+  - hallazgo de fixture: las escenas `validation` no montan el arena como `ArenaRoot/ArenaBlockout`; usan nombres hermanos (`ArenaTeamsValidation` / `ArenaFFAValidation`), asi que los tests scene-level deben resolver `ArenaBase` por tipo y no por nombre fijo del hijo.
+  - decision operativa: tratar tambien los pickups de borde como contrato compartido entre laboratorios `Teams/FFA base/validation`, no como assert de las escenas base.
+  - validacion focalizada: `godot --headless --path . -s res://scripts/tests/edge_repair_pickup_test.gd`, `edge_energy_pickup_test.gd`, `edge_mobility_pickup_test.gd`, `edge_utility_pickup_test.gd`, `edge_charge_pickup_scene_test.gd` y `test_runner.gd`.
+
 - La presion de arena / reduccion progresiva ya queda congelada tambien en escenas `base/validation` de `Teams` y `FFA`:
   - la revision estricta encontro otro hueco scene-level: `progressive_space_reduction_test.gd` seguia usando solo `main.tscn`, aunque el mismo seam `warning -> contraccion -> reset del arena` vive tambien en `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
   - no hizo falta tocar produccion; la correccion vive en la red de regresion:

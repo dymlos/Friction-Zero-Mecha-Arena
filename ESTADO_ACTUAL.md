@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Los contratos scene-level de pickups de borde ya quedan congelados tambien en `Teams/FFA base/validation` (2026-04-22)
+
+- Estado: los seams scene-level de pickups `repair`, `energy`, `mobility`, `utility` y `charge` ya no dependen solo de las escenas base; la red ahora tambien cubre `main_teams_validation.tscn` y `main_ffa_validation.tscn`.
+- Correccion aplicada:
+  - no hubo cambio de produccion: arenas, pickups, HUD y roster ya respetaban el mismo contrato; el gap real era de cobertura scene-level.
+  - `scripts/tests/edge_repair_pickup_test.gd`, `edge_energy_pickup_test.gd`, `edge_mobility_pickup_test.gd`, `edge_utility_pickup_test.gd` y `edge_charge_pickup_scene_test.gd` ahora validan tambien las escenas `validation`.
+  - hallazgo de fixture: las escenas `validation` no usan el hijo `ArenaBlockout`; los tests ahora resuelven `ArenaBase` por tipo para no confundir naming distinto con drift real.
+- Resultado:
+  - `Teams/FFA base/validation` deja de tener un punto ciego en pickups cercanos al borde, layouts activos de borde y lectura corta de adquisicion en HUD/roster.
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` vuelve a pasar con `Suite OK: 86 tests`.
+
 ## La presion de arena / reduccion progresiva ya queda congelada tambien en `Teams/FFA base/validation` (2026-04-22)
 
 - Estado: el seam scene-level `warning -> contraccion -> reset del arena` ya no depende solo de `main.tscn`; la red ahora tambien cubre `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`.
