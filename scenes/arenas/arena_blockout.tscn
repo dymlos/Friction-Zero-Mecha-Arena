@@ -194,41 +194,55 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.9, 0.3, 5.4)
 
 [node name="NorthSupportPickup" parent="." instance=ExtResource("8_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -10.8)
+respawn_delay = 3.4
 
 [node name="SouthSupportPickup" parent="." instance=ExtResource("8_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 10.8)
+respawn_delay = 3.4
 
 [node name="NorthSupportMobilityPickup" parent="." instance=ExtResource("8_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.4, 0.45, -10.8)
 payload_name = "mobility"
+respawn_delay = 3.9
 
 [node name="SouthSupportMobilityPickup" parent="." instance=ExtResource("8_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4, 0.45, 10.8)
 payload_name = "mobility"
+respawn_delay = 3.9
 
 [node name="WestSupportPickup" parent="." instance=ExtResource("8_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.2, 0.45, 0)
 payload_name = "surge"
+respawn_delay = 4.2
 
 [node name="EastSupportPickup" parent="." instance=ExtResource("8_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2, 0.45, 0)
 payload_name = "surge"
+respawn_delay = 4.2
 
 [node name="NorthWestSupportInterferencePickup" parent="." instance=ExtResource("8_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.2, 0.45, -4.4)
 payload_name = "interference"
+respawn_delay = 4.8
 
 [node name="SouthEastSupportInterferencePickup" parent="." instance=ExtResource("8_support_pickup")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2, 0.45, 4.4)
 payload_name = "interference"
+respawn_delay = 4.8
 
 [node name="NorthSupportGate" parent="." instance=ExtResource("9_support_gate")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.8, 0.45, -10.8)
+closed_duration = 0.9
+open_duration = 1.75
 
 [node name="EastSupportGate" parent="." instance=ExtResource("9_support_gate")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 13.2, 0.45, 4.4)
 phase_offset = 0.7
+closed_duration = 0.9
+open_duration = 1.75
 
 [node name="SouthSupportGate" parent="." instance=ExtResource("9_support_gate")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.8, 0.45, 10.8)
 phase_offset = 1.1
+closed_duration = 0.9
+open_duration = 1.75
