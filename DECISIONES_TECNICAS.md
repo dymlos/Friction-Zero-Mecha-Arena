@@ -214,27 +214,31 @@
    - Se mantiene `WASD + TFGX` como unico camino Hard/local totalmente por teclado; el resto de los perfiles Hard queda explicitamente joypad-first y esa advertencia sigue visible al arrancar, ademas de persistir en el roster cuando el HUD esta en modo `explicito`.
    - Motivo: evitar nuevos solapes de teclas y UX confusa en teclado compartido hasta tener evidencia de playtests que justifique reabrir mappings o sumar selector runtime.
 
-40. **Incentivo de borde via pickup de reparacion instantanea**
+40. **Los laboratorios principales se ciclan runtime desde `Main`, no desde menues o el editor**
+   - `Main` ahora mantiene `LAB_SCENE_VARIANTS`, expone `cycle_lab_scene_variant()` / `get_lab_scene_variant_summary_line()` y cambia escena con `F6` entre `main`, `main_teams_validation`, `main_ffa` y `main_ffa_validation`.
+   - Motivo: el proyecto ya tenia cuatro rutas utiles de playtest pero seguir saltando desde el editor hacia lenta la iteracion; resolverlo dentro del mismo runtime conserva el prototipo beginner-friendly, mejora la comparacion Teams/FFA y reutiliza escenas ya mantenidas sin agregar otra UI o bootstrap paralelo.
+
+41. **Incentivo de borde via pickup de reparacion instantanea**
    - El primer objetivo real de borde se resolvio con `EdgeRepairPickup`: un pickup universal simple, fijo y visible que cura la parte activa mas dañada al tocarlo; en cooldown mantiene el pedestal y apaga solo el nucleo.
    - Motivo: volver los flancos tentadores ya en el laboratorio sin introducir todavía inventario, rareza o una capa de items que opaque el nucleo de patinar/chocar.
 
-41. **La reparacion de borde no revive piezas destruidas**
+42. **La reparacion de borde no revive piezas destruidas**
    - `RobotBase` expone `repair_most_damaged_part(...)` y solo repara partes que sigan activas; los miembros destruidos siguen dependiendo del loop de partes desprendidas.
    - Motivo: sumar sustain tactico y comeback parcial sin invalidar rescate aliado, negacion enemiga ni el peso de perder una pierna o un brazo.
 
-42. **Legibilidad modular reforzada sobre la propia pieza**
+43. **Legibilidad modular reforzada sobre la propia pieza**
    - `RobotBase` crea marcadores runtime `DamageFeedback/Smoke` y `DamageFeedback/Spark` sobre cada extremidad, escalando solo cuando esa parte realmente está dañada o crítica.
    - Motivo: acercar la lectura a “humo/chispas sobre el robot” que piden los docs sin sumar HUD nuevo, assets externos ni un sistema de partículas difícil de mantener en este prototipo.
 
-43. **Cobertura de borde acompasada con la contracción del arena**
+44. **Cobertura de borde acompasada con la contracción del arena**
    - `arena_blockout.tscn` suma dos bloques estáticos simples bajo `CoverBlocks`, y `ArenaBase` reubica esas coberturas según el tamaño actual del área segura.
    - Motivo: validar duelo/cobertura en bordes sin romper la presión de endgame ni dejar geometría desfasada cuando el mapa se achica.
 
-44. **Pickups de borde acompasados con la contracción del arena**
+45. **Pickups de borde acompasados con la contracción del arena**
    - `ArenaBase` ahora cachea la posicion local original de los nodos del grupo `edge_repair_pickups` y los reubica con la misma escala X/Z que el area segura.
    - Motivo: si el pickup quedaba fijo mientras la arena se cerraba, el incentivo de borde se salia del espacio jugable y rompia el duelo riesgo/recompensa del endgame.
 
-45. **Bootstrap FFA con layout radial en `Main`, no con markers duplicados**
+46. **Bootstrap FFA con layout radial en `Main`, no con markers duplicados**
    - Cuando `MatchController` arranca en `FFA`, `Main` ya no consume los `SpawnPlayerX` cardinales del arena blockout; genera un set radial/diagonal mirando al centro mediante `ffa_spawn_radius` y `ffa_spawn_angle_offset_degrees`.
    - Motivo: separar la identidad espacial del free-for-all del laboratorio 2v2 sin duplicar la escena de arena ni abrir otra capa de config/map loading prematura.
 

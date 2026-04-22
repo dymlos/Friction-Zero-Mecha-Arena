@@ -33,6 +33,10 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
   - el slot elegido por ese selector ahora tambien prende `LabSelectionIndicator`, un anillo diegético sobrio a nivel piso sobre el robot activo, para que la referencia no dependa solo del texto del HUD
   - `RobotBase` ya puede reaplicar un `RobotArchetypeConfig` en runtime recuperando primero sus valores base, para que el cambio de arquetipo no acumule multiplicadores stale
   - `MatchController.start_match()` ahora invalida resets/restarts pendientes antes de recomenzar, evitando que el selector runtime deje timers viejos disparando sobre el laboratorio nuevo
+- selector runtime de escena/laboratorio para acelerar playtests
+  - `Main` ahora deja ciclar con `F6` entre `main.tscn`, `main_teams_validation.tscn`, `main_ffa.tscn` y `main_ffa_validation.tscn`, sin pasar por el editor de Godot
+  - el HUD suma `Escena | ... | F6 cambia`, asi el laboratorio activo sigue legible mientras se compara Teams/FFA o base/rapido en pantalla compartida
+  - `lab_scene_selector_test.gd` cubre el cambio real de escena, el wrap del ciclo completo y la persistencia de esa pista de HUD en cada variante
 - partes desprendidas con propietario original, pickup por cercania y retorno parcial
 - transporte de partes que bloquea el ataque prototipo
 - negacion basica de partes si el portador cae al vacio

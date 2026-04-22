@@ -28,6 +28,7 @@ const LAB_SELECTOR_SLOT_KEY := KEY_F2
 const LAB_SELECTOR_ARCHETYPE_KEY := KEY_F3
 const LAB_SELECTOR_CONTROL_KEY := KEY_F4
 const MATCH_RESTART_KEY := KEY_F5
+const LAB_SCENE_CYCLE_KEY := KEY_F6
 const DEFAULT_LAB_ARCHETYPES := [
 	ARIETE_ARCHETYPE,
 	GRUA_ARCHETYPE,
@@ -35,6 +36,24 @@ const DEFAULT_LAB_ARCHETYPES := [
 	PATIN_ARCHETYPE,
 	AGUJA_ARCHETYPE,
 	ANCLA_ARCHETYPE,
+]
+const LAB_SCENE_VARIANTS := [
+	{
+		"path": "res://scenes/main/main.tscn",
+		"label": "Equipos base",
+	},
+	{
+		"path": "res://scenes/main/main_teams_validation.tscn",
+		"label": "Equipos rapido",
+	},
+	{
+		"path": "res://scenes/main/main_ffa.tscn",
+		"label": "FFA base",
+	},
+	{
+		"path": "res://scenes/main/main_ffa_validation.tscn",
+		"label": "FFA rapido",
+	},
 ]
 
 @export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
@@ -89,6 +108,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if key_event.keycode == MATCH_RESTART_KEY and match_controller.request_match_restart():
 		ui.show_status(_build_hud_toggle_status())
 		_refresh_hud()
+		get_viewport().set_input_as_handled()
+		return
+	if key_event.keycode == LAB_SCENE_CYCLE_KEY:
+		cycle_lab_scene_variant()
 		get_viewport().set_input_as_handled()
 		return
 	if key_event.keycode != HUD_DETAIL_TOGGLE_KEY:
@@ -173,6 +196,21 @@ func get_lab_selector_summary_line() -> String:
 		return ""
 
 	return "Lab | %s | F2 slot | F3 arquetipo | F4 modo" % _get_lab_robot_brief(robot)
+
+
+func get_lab_scene_variant_summary_line() -> String:
+	var scene_variant := _get_current_lab_scene_variant()
+	return "Escena | %s | F6 cambia" % String(scene_variant.get("label", "laboratorio"))
+
+
+func cycle_lab_scene_variant() -> void:
+	var current_index := _get_current_lab_scene_variant_index()
+	var next_index := wrapi(current_index + 1, 0, LAB_SCENE_VARIANTS.size())
+	var next_scene_path := String(LAB_SCENE_VARIANTS[next_index].get("path", ""))
+	if next_scene_path == "":
+		return
+
+	get_tree().change_scene_to_file(next_scene_path)
 
 
 func _register_existing_robots() -> void:
@@ -444,6 +482,20 @@ func _build_startup_status() -> String:
 	]
 
 
+func _get_current_lab_scene_variant() -> Dictionary:
+	return LAB_SCENE_VARIANTS[_get_current_lab_scene_variant_index()]
+
+
+func _get_current_lab_scene_variant_index() -> int:
+	var current_scene_path := String(scene_file_path)
+	for index in range(LAB_SCENE_VARIANTS.size()):
+		var variant: Dictionary = LAB_SCENE_VARIANTS[index]
+		if String(variant.get("path", "")) == current_scene_path:
+			return index
+
+	return 0
+
+
 func _build_hud_toggle_status() -> String:
 	return "%s | %s con F1" % [
 		_build_startup_status(),
@@ -453,6 +505,7 @@ func _build_hud_toggle_status() -> String:
 
 func _build_round_state_lines() -> Array[String]:
 	var lines := match_controller.get_round_state_lines()
+	lines.append(get_lab_scene_variant_summary_line())
 	var lab_selector_line := get_lab_selector_summary_line()
 	if lab_selector_line != "":
 		lines.append(lab_selector_line)
