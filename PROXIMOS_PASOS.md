@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No perder el resumen final `Cierres | ...` al tocar score o wording del cierre**
+ - `MatchController` ya resume en recap/resultado final que rutas cerraron rondas a lo largo del match (`ring-out`, `destruccion total`, `explosion inestable`) usando `_match_closing_cause_counts`.
+ - Si se retocan `_finish_round_with_winner(...)`, `get_round_recap_panel_lines()`, `get_match_result_lines()` o el wording del cierre, mantener `match_closing_cause_summary_test.gd`; esa regresion ahora cubre `Teams` y `FFA` con un match mixto `ring-out + explosion inestable`.
+ - Usar esa linea como lectura base para futuros playtests del score ponderado antes de sumar otra telemetria o panel nuevo.
+
 0. **No volver a dejar que `MatchConfig.new()` derive del recurso base**
  - `scripts/tests/match_config_defaults_test.gd` ya fija que los defaults runtime de `scripts/systems/match_config.gd` coincidan con `data/config/default_match_config.tres` en `local_player_count`, intros por modo y score por causa.
  - Si cambia el perfil base del laboratorio, actualizar `match_config.gd` y `default_match_config.tres` en el mismo cambio; no aceptar que uno quede viejo “solo para tests”.

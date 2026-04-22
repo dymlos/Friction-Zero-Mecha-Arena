@@ -39,6 +39,7 @@ var _round_elimination_order_by_robot_id: Dictionary = {}
 var _round_elimination_cause_counts: Dictionary = {}
 var _round_elimination_recap_entries: Array[String] = []
 var _round_elimination_highlight_entries: Array[String] = []
+var _match_closing_cause_counts: Dictionary = {}
 var _competitor_scores: Dictionary = {}
 var _competitor_labels: Dictionary = {}
 var _competitor_archetype_labels: Dictionary = {}
@@ -111,6 +112,7 @@ func start_match() -> void:
 	_round_elimination_cause_counts.clear()
 	_round_elimination_recap_entries.clear()
 	_round_elimination_highlight_entries.clear()
+	_match_closing_cause_counts.clear()
 	_last_elimination_summary = ""
 	_round_support_usage_by_competitor.clear()
 	_round_support_highlight_by_competitor.clear()
@@ -373,6 +375,9 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	var match_closing_cause_line := _build_match_closing_cause_summary_line()
+	if match_closing_cause_line != "":
+		lines.append(match_closing_cause_line)
 	var elimination_cause_line := _build_round_elimination_cause_summary_line()
 	if elimination_cause_line != "":
 		lines.append(elimination_cause_line)
@@ -417,6 +422,9 @@ func get_match_result_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	var match_closing_cause_line := _build_match_closing_cause_summary_line()
+	if match_closing_cause_line != "":
+		lines.append(match_closing_cause_line)
 	var elimination_cause_line := _build_round_elimination_cause_summary_line()
 	if elimination_cause_line != "":
 		lines.append(elimination_cause_line)
@@ -911,6 +919,28 @@ func _build_round_elimination_cause_summary_line() -> String:
 		return ""
 
 	return "Causa bajas | %s" % " | ".join(segments)
+
+
+func _build_match_closing_cause_summary_line() -> String:
+	if not _match_over:
+		return ""
+
+	var void_count := int(_match_closing_cause_counts.get(EliminationCause.VOID, 0))
+	var explosion_count := int(_match_closing_cause_counts.get(EliminationCause.EXPLOSION, 0))
+	var unstable_count := int(_match_closing_cause_counts.get(EliminationCause.UNSTABLE_EXPLOSION, 0))
+	var segments: Array[String] = []
+
+	if void_count > 0:
+		segments.append("ring-out %s" % void_count)
+	if explosion_count > 0:
+		segments.append("destruccion total %s" % explosion_count)
+	if unstable_count > 0:
+		segments.append("explosion inestable %s" % unstable_count)
+
+	if segments.is_empty():
+		return ""
+
+	return "Cierres | %s" % " | ".join(segments)
 
 
 func _get_elimination_source_suffix(robot: RobotBase) -> String:
@@ -1454,6 +1484,7 @@ func _get_remaining_competitor_keys() -> Array[String]:
 func _finish_round_with_winner(winner_key: String, finishing_cause: EliminationCause) -> void:
 	_round_active = false
 	_round_reset_pending = true
+	_match_closing_cause_counts[int(finishing_cause)] = int(_match_closing_cause_counts.get(int(finishing_cause), 0)) + 1
 	_match_decided_rounds += 1
 	if _round_support_usage_by_competitor.has(winner_key):
 		_match_decided_rounds_with_support += 1

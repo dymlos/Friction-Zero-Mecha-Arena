@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Resumen acumulado de cierres por causa en el final de match (2026-04-22)
+
+- Estado: el recap lateral y el resultado final ya no muestran solo la causa del ultimo knockout; ahora tambien resumen la mezcla de rutas que cerraron rondas a lo largo de toda la partida.
+- Correccion aplicada:
+  - `scripts/systems/match_controller.gd` suma `_match_closing_cause_counts` y lo actualiza en `_finish_round_with_winner(...)` con la causa que dio los puntos de esa ronda.
+  - `get_round_recap_panel_lines()` y `get_match_result_lines()` agregan `Cierres | ...` solo cuando `_match_over`, manteniendo `Causa bajas | ...` como lectura de la ronda final y separando ambas capas.
+  - `scripts/tests/match_closing_cause_summary_test.gd` fija la regresion real en `Teams` y `FFA`: una ronda por `ring-out` y otra por `explosion inestable` deben terminar en `Cierres | ring-out 1 | explosion inestable 1`.
+- Resultado:
+  - el propio HUD final ya explica mejor el perfil de riesgo/recompensa del score ponderado por causa, sin abrir otro panel ni depender de notas externas.
+  - `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd`, `godot --headless --path . -s res://scripts/tests/match_elimination_victory_weights_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 81 tests`).
+
 ## Defaults runtime de `MatchConfig` alineados con el prototipo base (2026-04-22)
 
 - Estado: crear `MatchConfig.new()` ya no produce un perfil runtime distinto al de `default_match_config.tres`.

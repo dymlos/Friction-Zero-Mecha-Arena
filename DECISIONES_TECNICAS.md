@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **El cierre del match debe resumir tambien la mezcla acumulada de causas que decidieron rondas**
+ - `MatchController` ahora guarda `_match_closing_cause_counts` y lo incrementa en `_finish_round_with_winner(...)`, o sea en el mismo punto donde una causa concreta ya se traduce en score.
+ - `get_round_recap_panel_lines()` y `get_match_result_lines()` exponen `Cierres | ...` solo cuando el match ya termino; `Causa bajas | ...` sigue reservado para la ronda final activa/cerrada.
+ - `match_closing_cause_summary_test.gd` fija el contrato completo en `Teams` y `FFA` con una partida de dos rondas (`ring-out` + `explosion inestable`).
+ - Motivo: `Stats | ...` ya explicaba bajas sufridas por competidor y `Ultima baja` explicaba el evento final, pero faltaba una lectura corta de “que tipo de cierres gano esta partida” para evaluar el peso por causa dentro del propio prototipo.
+
 1. **`MatchConfig.new()` debe heredar el mismo perfil base que las escenas del prototipo**
  - `scripts/systems/match_config.gd` ahora usa como defaults exportados el mismo paquete que `default_match_config.tres`: `local_player_count=4`, intro `FFA=1.0`, intro `Teams=0.6`, score por causa `2/1/4`.
  - `scripts/tests/match_config_defaults_test.gd` fija el drift comparando la instancia in-memory contra `res://data/config/default_match_config.tres`.

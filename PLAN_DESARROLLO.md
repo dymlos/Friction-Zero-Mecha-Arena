@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El cierre del match ahora resume tambien la mezcla acumulada de rutas que decidieron rondas (`Cierres | ring-out N | destruccion total N | explosion inestable N`) para que el peso por causa se lea dentro del propio prototipo y no solo en notas o tests aislados.
+- La implementacion vive en `MatchController`: `_finish_round_with_winner(...)` registra la causa que cerro cada ronda ganada en `_match_closing_cause_counts`, y `get_round_recap_panel_lines()` / `get_match_result_lines()` publican esa lectura solo cuando la partida ya termino.
+- `match_closing_cause_summary_test.gd` fija el seam en `Teams` y `FFA`: una ronda cerrada por vacio y otra por explosion inestable deben terminar mostrando `Cierres | ring-out 1 | explosion inestable 1` tanto en recap como en resultado final.
+- Validacion cerrada: `godot --headless --path . -s res://scripts/tests/match_closing_cause_summary_test.gd`, `godot --headless --path . -s res://scripts/tests/match_completion_test.gd`, `godot --headless --path . -s res://scripts/tests/match_elimination_victory_weights_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan.
+
 - `MatchConfig.new()` ya no cae en un perfil runtime distinto al prototipo jugable cuando un test o un laboratorio crea configs en memoria en vez de cargar un `.tres`.
 - La correccion vive en `scripts/systems/match_config.gd`: los defaults exportados ahora coinciden con `default_match_config.tres` en los campos que afectan el comportamiento base del laboratorio (`local_player_count=4`, intro `FFA=1.0` / `Teams=0.6`, score por causa `vacio=2`, `destruccion=1`, `inestable=4`).
 - `match_config_defaults_test.gd` fija explicitamente ese seam y compara `MatchConfig.new()` contra `res://data/config/default_match_config.tres` para evitar que futuras iteraciones reintroduzcan drift silencioso entre runtime in-memory y escenas base.
