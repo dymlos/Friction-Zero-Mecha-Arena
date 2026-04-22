@@ -2,6 +2,10 @@
 
 ## Decisiones vigentes
 
+1. **La decision final de FFA usa wording propio, no score tipo duelo**
+   - `MatchController._finish_match_with_winner()` ahora delega en `_build_match_victory_status_line()`: en `FFA` devuelve `Player X gana la partida con N punto(s)` y en `Equipos` conserva `Equipo X gana la partida A-B`.
+   - Motivo: el cierre FFA ya muestra `Marcador`, `Posiciones` y `Desempate`; repetir arriba un `X-Y` heredado de duelo confundia la lectura de un match con mas de dos competidores.
+
 1. **El detalle por robot del cierre Teams tambien sigue el resultado real**
    - `_get_recap_ordered_robots()` ahora ordena `Teams` con `_compare_team_robots_for_recap()` en vez de devolver `registered_robots` crudo; el comparator prioriza al equipo que sigue en pie en la ronda cerrada, desempata por score de match y, dentro de cada equipo, deja primero sobrevivientes/robots aun no eliminados y luego las bajas en el orden real de `_round_elimination_order_by_robot_id`.
    - Motivo: despues de cerrar la incoherencia equivalente en `FFA`, dejar `Teams` en scene-order seguia mezclando la explicacion del cierre cuando ganaba el segundo equipo del laboratorio. Reusar un orden derivado del estado real mantiene el recap legible sin inventar otra UI ni tocar el sistema de score.

@@ -1254,12 +1254,22 @@ func _finish_round_draw() -> void:
 func _finish_match_with_winner(winner_key: String, winner_score: int) -> void:
 	_match_over = true
 	_match_restart_deadline_msec = Time.get_ticks_msec() + int(round(match_restart_delay * 1000.0))
-	_round_status_line = "%s gana la partida %s-%s" % [
+	_round_status_line = _build_match_victory_status_line(winner_key, winner_score)
+	_schedule_match_restart()
+
+
+func _build_match_victory_status_line(winner_key: String, winner_score: int) -> String:
+	if match_mode == MatchMode.FFA:
+		return "%s gana la partida con %s" % [
+			_get_competitor_label_from_key(winner_key),
+			_build_plural_segment(winner_score, "punto", "puntos"),
+		]
+
+	return "%s gana la partida %s-%s" % [
 		_get_competitor_label_from_key(winner_key),
 		winner_score,
 		_get_highest_losing_score(winner_key),
 	]
-	_schedule_match_restart()
 
 
 func _schedule_round_reset() -> void:

@@ -56,9 +56,14 @@ func _run() -> void:
 		robots[1].display_name,
 		robots[0].display_name,
 	]
+	var expected_match_decision := "%s gana la partida con 1 punto" % robots[3].display_name
 	_assert(match_controller.is_match_over(), "Con objetivo 1 la ronda FFA deberia cerrar la partida.")
 	_assert(recap_panel.visible, "El cierre FFA deberia mostrar recap lateral.")
 	_assert(match_result_panel.visible, "El cierre FFA deberia mostrar panel final.")
+	_assert(
+		match_controller.get_round_status_line() == expected_match_decision,
+		"El cierre FFA deberia anunciar al ganador con una lectura propia de varios competidores, no con un score tipo duelo."
+	)
 	_assert(
 		_has_line(match_controller.get_round_recap_panel_lines(), expected_standings),
 		"El recap FFA deberia explicitar el orden final de posiciones."
@@ -72,8 +77,16 @@ func _run() -> void:
 		"El recap visible FFA deberia incluir la linea compacta de posiciones."
 	)
 	_assert(
+		recap_label.text.contains(expected_match_decision),
+		"El recap visible FFA deberia repetir la decision final con una lectura propia de FFA."
+	)
+	_assert(
 		match_result_label.text.contains(expected_standings),
 		"El panel final FFA deberia incluir la linea compacta de posiciones."
+	)
+	_assert(
+		match_result_label.text.contains(expected_match_decision),
+		"El panel final FFA deberia repetir la decision final con una lectura propia de FFA."
 	)
 	_assert(
 		match_result_label.text.contains("%s | baja 3 | vacio" % robots[2].display_name),
