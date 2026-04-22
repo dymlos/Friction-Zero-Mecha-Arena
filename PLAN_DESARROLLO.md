@@ -4,6 +4,8 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- La nave de apoyo `Teams` ya no puede gastar `surge` o `movilidad` sobre un target que su propia lectura compacta ya marca como `ya activo`; `_resolve_support_target_for_payload()` ahora reutiliza `_is_payload_actionable_on_target(...)`, así que la carga queda disponible para redirigirla a un aliado realmente útil.
+- `support_payload_actionability_test.gd` fija ambas regresiones reales: `surge` y `movilidad` sobre aliados con toda la ventana útil ya cubierta.
 - El soporte post-muerte ya no deja envejecerse el default en runtime: si el target auto-seleccionado deja de ser accionable durante la ronda y existe otro objetivo útil, `PilotSupportShip` resincroniza solo hacia ese nuevo mejor target sin obligar a corregirlo manualmente.
 - La regla no pisa la intención del jugador: `PilotSupportShip` distingue ahora entre selección automática y ciclo manual, así que solo auto-retargetea defaults; si el jugador eligió otro target a propósito, la nave conserva esa selección.
 - `team_post_death_support_targeting_test.gd` suma una regresión runtime concreta para `interferencia`: arranca sobre el rival útil, ese rival gana `estabilidad`, y la nave debe saltar sola al siguiente rival afectable.

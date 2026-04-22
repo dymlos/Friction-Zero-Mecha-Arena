@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **La ejecución del soporte debe respetar la misma accionabilidad que ya comunica el roster**
+ - `_resolve_support_target_for_payload()` ahora reutiliza `_is_payload_actionable_on_target(target_robot)` y no deja llegar a `apply_energy_surge()` / `apply_mobility_boost()` cuando el target ya estaba en `ya activo`.
+ - `support_payload_actionability_test.gd` fija el bug real: `surge` y `movilidad` antes se consumían aunque no agregaran ventana útil; ahora fallan limpio y la carga queda disponible.
+ - Motivo: el slice ya habia alineado targeting, warnings y cues diegéticos, pero seguía existiendo drift entre “lo que dice el soporte” y “lo que realmente gasta” justo en los buffs. Resolverlo en el seam de resolución mantiene una sola definición de utilidad sin duplicar checks por payload.
+
 1. **El auto-target del soporte debe seguir la utilidad real tambien cuando el estado cambia durante la ronda**
  - `PilotSupportShip` ahora distingue target default de override manual con `_manual_target_override`.
  - `_refresh_target_selection()` puede resincronizar al mejor default solo si el target actual seguia en auto-target y perdió accionabilidad mientras otro candidato sí la conserva.

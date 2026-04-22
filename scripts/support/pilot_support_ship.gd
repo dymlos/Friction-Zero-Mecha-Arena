@@ -247,9 +247,8 @@ func _resolve_support_target_for_payload() -> RobotBase:
 	var target_robot := get_selected_target_robot()
 	if target_robot == null:
 		return null
-	if _support_payload_name == PilotSupportPickup.PAYLOAD_INTERFERENCE:
-		if not _is_target_in_interference_range(target_robot):
-			return null
+	if not _is_payload_actionable_on_target(target_robot):
+		return null
 
 	return target_robot
 

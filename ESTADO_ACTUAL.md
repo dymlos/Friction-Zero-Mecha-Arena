@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## `Surge` / `movilidad` ya no se consumen sobre targets redundantes (2026-04-22)
+
+- Estado: la nave de apoyo `Teams` ya no quema una carga de buff sobre el mismo target que su roster ya marcaba como `ya activo`.
+- Corrección aplicada:
+  - `_resolve_support_target_for_payload()` ahora reutiliza `_is_payload_actionable_on_target(...)` en vez de dejar que `surge`/`movilidad` lleguen al `apply_*` aunque no fueran a agregar ventana real.
+  - la regla no agrega otra capa de disponibilidad: reaprovecha exactamente la misma noción de accionabilidad que ya gobernaba el warning `ya activo` y la atenuación diegética del target.
+  - nuevo `support_payload_actionability_test.gd` fija que ambas cargas fallen limpio y permanezcan disponibles cuando el objetivo ya conserva toda la ventana útil del buff.
+- Resultado:
+  - la lectura compacta y la ejecución del payload vuelven a coincidir; si el soporte dice `ya activo`, gastar la carga deja de ser posible hasta reorientarla hacia un aliado útil.
+  - `godot --headless --path . -s res://scripts/tests/support_payload_actionability_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 79 tests`).
+
 ## Auto-target del soporte resincronizado en runtime (2026-04-22)
 
 - Estado: la nave de apoyo `Teams` ya no queda clavada en un target default envejecido cuando ese objetivo pierde utilidad durante la ronda.
@@ -12,7 +23,7 @@
   - `team_post_death_support_targeting_test.gd` fija las dos caras del contrato con `interferencia`: target útil inicial + salto automático al siguiente rival afectable cuando el default envejece, y permanencia en el rival elegido por el jugador cuando la selección ya era manual.
 - Resultado:
   - el support slice ya no queda alineado con utilidad real solo al recoger payloads; también se mantiene coherente cuando el estado de los robots cambia en vivo.
-  - `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 78 tests`).
+  - `godot --headless --path . -s res://scripts/tests/team_post_death_support_targeting_test.gd`, `godot --headless --path . -s res://scripts/tests/support_payload_availability_readability_test.gd`, `godot --headless --path . -s res://scripts/tests/team_post_death_support_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 79 tests`).
 
 ## Marcadores diegéticos del soporte alineados con payloads útiles (2026-04-22)
 

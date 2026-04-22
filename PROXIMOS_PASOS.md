@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **Medir si el bloqueo de no-ops mejora el valor real del soporte**
+ - `PilotSupportShip` ya no gasta `surge` ni `movilidad` sobre targets marcados como `ya activo`; el próximo playtest corto Teams debería confirmar si ese gating mejora decisiones reales o si deja a la nave demasiado tiempo “cargando una mala elección” cuando el jugador no recicla target.
+ - Si se retoca este seam, mantener `support_payload_actionability_test.gd` junto con `support_payload_availability_readability_test.gd`: ahora una cubre la lectura `ya activo` y la otra que esa misma lectura también gobierne el consumo real.
+ - Archivos objetivo: `scripts/support/pilot_support_ship.gd`, `scripts/tests/support_payload_actionability_test.gd`, `scripts/tests/support_payload_availability_readability_test.gd`.
+
 0. **Validar legibilidad del nuevo estado `Apoyo activo`**
  - El roster vivo `Teams` ya distingue a la baja que sigue influyendo desde la nave de soporte, el HUD explicito ya no mezcla los controles del robot caido con los de la nave, la línea `Apoyo activo` ya no arrastra `skill`, energía ni `item` del robot muerto, `interferencia` explicita `fuera de rango` y también `estable`, `stabilizer` marca `sin daño`, `surge/movilidad` publican `ya activo` cuando el buff seleccionado sería redundante, los tres cues diegéticos (`SupportTargetIndicator`, `SupportTargetFloorIndicator`, `InterferenceRangeIndicator`) se atenúan cuando el payload sería un no-op real, el auto-target ya vuelve solo al mejor objetivo útil si el default envejece durante la ronda y el override manual ya tiene regresión propia para no volver a pelear contra el jugador. La siguiente sesión corta debe confirmar si ese paquete compacto alcanza por sí solo o si todavía hace falta ajustar orden/contraste antes de sumar otra UI.
  - Mantener `live_roster_order_test.gd`, `team_post_death_support_test.gd`, `team_post_death_support_targeting_test.gd` y `support_payload_availability_readability_test.gd` como red mínima si se retoca `support_state`, `get_status_summary()`, el builder de roster o la lectura diegética del target; ahora cubren warnings de disponibilidad, defaults útiles, resincronización runtime, preservación del override manual y también la atenuación visual sobre objetivos inmunes/no-op.
