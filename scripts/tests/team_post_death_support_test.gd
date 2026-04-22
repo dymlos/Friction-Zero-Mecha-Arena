@@ -456,7 +456,7 @@ func _verify_support_ship_spawns_only_in_teams() -> void:
 
 	if roster_label != null:
 		_assert(
-			roster_label.text.contains("apoyo"),
+			roster_label.text.contains("Apoyo activo |"),
 			"El roster deberia dejar visible que un jugador eliminado sigue activo como apoyo."
 		)
 	var support_pickup_after_cleanup := support_pickups[0] as Node3D if not support_pickups.is_empty() else null

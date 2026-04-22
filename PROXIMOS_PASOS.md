@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **Validar legibilidad del nuevo estado `Apoyo activo`**
+ - El roster vivo `Teams` ya distingue a la baja que sigue influyendo desde la nave de soporte, pero la siguiente sesión corta debe confirmar si ese wording alcanza por sí solo o si todavía hace falta ajustar orden/contraste antes de sumar otra UI.
+ - Mantener `live_roster_order_test.gd` y `team_post_death_support_test.gd` como red mínima si se retoca `support_state`, `get_status_summary()` o el builder de roster.
+ - Archivos objetivo: `scripts/systems/match_controller.gd`, `scripts/support/pilot_support_ship.gd`, `scripts/tests/live_roster_order_test.gd`, `scripts/tests/team_post_death_support_test.gd`.
+
 0. **Validación runtime de choque cerrada (2026-04-22)**
  - Decisión operativa: congelar el tuning reciente de `RobotBase` y mover el siguiente playtest a capas de cierre/legibilidad, no a otro ajuste de empuje por intuición.
  - Evidencia nueva:

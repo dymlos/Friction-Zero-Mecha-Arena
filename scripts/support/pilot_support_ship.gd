@@ -85,19 +85,20 @@ func belongs_to_owner(robot: RobotBase) -> bool:
 
 
 func get_status_summary() -> String:
-	var summary := "apoyo"
+	var segments: Array[String] = []
 	if is_instance_valid(owner_robot):
-		summary += " %s" % owner_robot.get_support_input_hint()
+		segments.append(owner_robot.get_support_input_hint())
 	if is_gate_disrupted():
-		summary += " interferido"
+		segments.append("interferido")
 	var payload_label := get_support_payload_label()
 	if payload_label != "":
-		summary += " %s" % payload_label
+		var payload_summary := payload_label
 		var target_label := _get_selected_target_label()
 		if target_label != "":
-			summary += " > %s" % target_label
+			payload_summary += " > %s" % target_label
+		segments.append(payload_summary)
 
-	return summary
+	return " | ".join(segments)
 
 
 func get_selected_target_robot() -> RobotBase:

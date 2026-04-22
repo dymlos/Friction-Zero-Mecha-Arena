@@ -15,6 +15,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_ffa_live_roster_uses_standings_order()
 	await _validate_teams_live_roster_prioritizes_surviving_teammate()
+	await _validate_teams_live_roster_marks_support_active_players()
 	_finish()
 
 
@@ -91,6 +92,43 @@ func _validate_teams_live_roster_prioritizes_surviving_teammate() -> void:
 	await _cleanup_node(main)
 
 
+func _validate_teams_live_roster_marks_support_active_players() -> void:
+	var main := MAIN_SCENE.instantiate()
+	var match_controller_preload := main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller_preload != null:
+		match_controller_preload.round_intro_duration = 0.0
+		if match_controller_preload.match_config != null:
+			match_controller_preload.match_config.round_intro_duration_teams = 0.0
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	var robots := _get_scene_robots(main)
+	_assert(match_controller != null, "La escena Teams deberia exponer MatchController.")
+	_assert(robots.size() >= 4, "La escena Teams deberia ofrecer cuatro robots para validar el soporte activo en roster.")
+	if match_controller == null or robots.size() < 4:
+		await _cleanup_node(main)
+		return
+
+	robots[0].fall_into_void()
+	await _wait_frames(4)
+
+	var roster_lines := match_controller.get_robot_status_lines()
+	var player_one_line := _find_line_containing(roster_lines, robots[0].display_name)
+	_assert(
+		player_one_line.contains("Apoyo activo | vacio"),
+		"El roster vivo Teams deberia marcar cuando un jugador eliminado sigue aportando desde la nave de apoyo."
+	)
+	_assert(
+		player_one_line.contains("usa "),
+		"El roster vivo Teams deberia conservar el hint de uso mientras el apoyo post-muerte sigue activo."
+	)
+
+	await _cleanup_node(main)
+
+
 func _get_scene_robots(main: Node) -> Array[RobotBase]:
 	var robots: Array[RobotBase] = []
 	var robot_root := main.get_node("RobotRoot")
@@ -107,6 +145,19 @@ func _find_line_index_containing(lines: Array[String], fragment: String) -> int:
 			return index
 
 	return -1
+
+
+func _find_line_containing(lines: Array[String], fragment: String) -> String:
+	for line in lines:
+		if line.contains(fragment):
+			return line
+
+	return ""
+
+
+func _wait_frames(count: int) -> void:
+	for _step in range(count):
+		await process_frame
 
 
 func _assert(condition: bool, message: String) -> void:

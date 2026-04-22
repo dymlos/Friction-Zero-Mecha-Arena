@@ -66,8 +66,8 @@ func _run() -> void:
 
 	var exploded_line := _find_robot_status_line(match_controller, robots[2])
 	_assert(
-		exploded_line.contains("Fuera"),
-		"Tras explotar, el roster deberia marcar al robot como fuera de la ronda."
+		exploded_line.contains("Fuera") or exploded_line.contains("Apoyo activo"),
+		"Tras explotar, el roster deberia dejar claro que el robot ya salio del combate principal."
 	)
 	_assert(
 		exploded_line.contains("explosion"),

@@ -598,10 +598,12 @@ func record_robot_elimination(
 
 func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 	var control_label := "P%s" % robot.player_index if robot.is_player_controlled else "CPU"
+	var support_state := get_robot_support_state(robot)
+	var has_active_support := match_mode == MatchMode.TEAMS and support_state != ""
 	var state_label := "Activo"
 	var state_detail := ""
 	if is_robot_eliminated(robot):
-		state_label = "Fuera"
+		state_label = "Apoyo activo" if has_active_support else "Fuera"
 		state_detail = _get_elimination_cause_label(_get_robot_elimination_cause(robot))
 	elif robot.is_disabled_state():
 		state_label = "Inutilizado"
@@ -651,7 +653,6 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		segments.append("item %s" % robot.get_carried_item_display_name())
 	if robot.is_carrying_part():
 		segments.append("carga %s" % RobotBase.get_part_display_name(robot.get_carried_part_name()))
-	var support_state := get_robot_support_state(robot)
 	if support_state != "":
 		segments.append(support_state)
 

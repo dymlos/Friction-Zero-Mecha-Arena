@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Roster vivo de apoyo activo (2026-04-22)
+
+- Estado: en `Teams`, un jugador eliminado que sigue influyendo con `PilotSupportShip` ya no se lee como una baja completamente cerrada en el roster vivo.
+- Corrección aplicada:
+  - `MatchController._build_robot_status_line()` ahora publica `Apoyo activo | <causa>` cuando el robot ya cayó pero todavía tiene `support_state`.
+  - `PilotSupportShip.get_status_summary()` compacta el texto del roster a hints útiles (`usa ...`, `interferido`, `payload > objetivo`) sin repetir el prefijo `apoyo`.
+  - `live_roster_order_test.gd` y `team_post_death_support_test.gd` fijan el contrato nuevo en HUD vivo y en el slice post-muerte Teams.
+- Resultado:
+  - el jugador muerto sigue siendo legible como actor relevante del round, no como una línea más de eliminados.
+  - `godot --headless --path . -s res://scripts/tests/live_roster_order_test.gd` pasa.
+
 ## Highlight de apoyo decisivo en el cierre (2026-04-22)
 
 - Estado: el soporte post-muerte Teams ya no queda solo como telemetría agregada; el cierre ahora explica qué acción concreta acompañó la ronda decisiva.

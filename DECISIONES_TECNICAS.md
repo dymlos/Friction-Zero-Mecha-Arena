@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **El roster vivo Teams debe marcar `Apoyo activo` cuando una baja sigue influyendo con la nave**
+ - `MatchController._build_robot_status_line()` ya no deja `Fuera | ...` para un robot eliminado que todavía tiene `support_state`; en ese caso publica `Apoyo activo | <causa>`.
+ - `PilotSupportShip.get_status_summary()` devuelve un resumen compacto (`usa ...`, `interferido`, `payload > objetivo`) para que el roster conserve hints y target sin repetir `apoyo` varias veces.
+ - Motivo: en el slice post-muerte Teams, un jugador eliminado sigue siendo actor táctico. Leerlo igual que una baja cerrada escondía valor real del carril y empeoraba claridad sin necesidad.
+
 1. **El soporte decisivo debe quedar explicado en el cierre, no solo contado**
  - `Main._on_post_death_support_payload_used(...)` ahora pasa el `target_robot` real a `MatchController.record_support_payload_use(...)`.
  - `MatchController` conserva un solo highlight compacto por ronda/competidor (`Apoyo decisivo | <owner> <payload> > <objetivo>`) y lo expone solo en recap/resultado para el ganador Teams.
