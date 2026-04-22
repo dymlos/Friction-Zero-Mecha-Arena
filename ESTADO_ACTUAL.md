@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Cleanup del soporte post-muerte cubierto en reset/restart (2026-04-22)
+
+- Estado: el soporte post-muerte Teams ya tiene regresión explícita para evitar restos stale entre rounds o tras `F5`.
+- Cobertura aplicada:
+  - `support_lifecycle_cleanup_test.gd` valida dos caminos reales:
+    - cierre de ronda no final -> `_reset_round()` -> ronda 2 sin nave, sin `support_state` y con carril externo apagado.
+    - cierre de match -> `F5` -> `start_match()` limpio desde ronda 1, también sin restos del soporte previo.
+  - el rojo inicial no reveló un bug de juego sino un falso supuesto del test: para lifecycle hubo que fijar `void_elimination_round_points`, `destruction_elimination_round_points` y `unstable_elimination_round_points` a `1`, porque el score ponderado actual puede cerrar el match en una sola ronda.
+- Resultado:
+  - el seam de cleanup del soporte ya no depende de revisión manual ni del test genérico de restart.
+  - `godot --headless --path . -s res://scripts/tests/support_lifecycle_cleanup_test.gd` y `godot --headless --path . -s res://scripts/tests/match_manual_restart_test.gd` pasan.
+
 ## Roster `Apoyo activo` sin estado stale del robot caído (2026-04-22)
 
 - Estado: en `Teams`, la línea de un jugador en `Apoyo activo` ya no conserva datos de combate del robot que acaba de quedar fuera.

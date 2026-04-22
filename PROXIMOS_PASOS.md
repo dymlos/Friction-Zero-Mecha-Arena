@@ -27,6 +27,7 @@
 2. **Cerrar soporte post-muerte con datos reales**
   - El targeting base ya quedo corregido: cuando haya varios objetivos vivos, `PilotSupportShip` ahora prioriza utilidad del payload en vez de `scene-order`. No reabrir ese punto salvo rojo nuevo en `team_post_death_support_targeting_test.gd`.
   - El cierre ya explica tambien el ultimo payload decisivo del ganador (`Apoyo decisivo | ...`). No volver a esconder ese dato en agregado si se retoca `record_support_payload_use(...)` o `_build_round_highlight_lines()`.
+  - El cleanup basico ya quedo cubierto: si se toca `_clear_post_death_support()`, `_on_round_started()`, `start_match()` o el carril externo, mantener tambien `support_lifecycle_cleanup_test.gd` para que no reaparezcan naves/hints/pickups stale entre rounds o tras `F5`.
   - Partir de `support_use_total`, `support_payload_use_*` y `support_rounds_decided` ya registrados en `MatchStats` para guiar ajustes.
   - Ajustar `PilotSupportShip` y gates de carril solo con evidencia de sesiones cortas de Teams; evitar cambios sin efecto en rondas decisivas.
   - El siguiente foco de este slice ya no es “a quien apunta por defecto”, sino validar si el valor tactico real del carril justifica `stabilizer/surge/mobility/interference` en 2v2 y escenas futuras con mas aliados.

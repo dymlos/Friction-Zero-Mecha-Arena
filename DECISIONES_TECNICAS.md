@@ -2,6 +2,10 @@
 
 ## Decisiones vigentes
 
+1. **Los tests de lifecycle del soporte deben neutralizar score ponderado antes de afirmar round reset**
+ - `support_lifecycle_cleanup_test.gd` fija `void_elimination_round_points`, `destruction_elimination_round_points` y `unstable_elimination_round_points` a `1` cuando el objetivo es validar cleanup entre rounds.
+ - Motivo: en el prototipo actual una sola ronda por `ring_out` puede cerrar el match completo; si el test quiere cubrir `_reset_round()` o limpieza de `SupportRoot`, debe pinnear score lifecycle y no depender del balance vigente.
+
 1. **`Apoyo activo` solo debe mostrar informacion accionable del soporte**
  - `MatchController._build_robot_status_line()` corta estados de combate del robot cuando este ya está eliminado o inutilizado: no deja `skill ...`, foco/resumen de energía, buffs, `item ...` ni `carga ...` de un cuerpo que ya no puede actuar.
  - Si existe `support_state`, ese bloque queda como única fuente de información dinámica del jugador eliminado (`usa ...`, `interferido`, `payload > objetivo`).
