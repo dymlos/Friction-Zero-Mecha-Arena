@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- `MatchConfig.new()` ya no cae en un perfil runtime distinto al prototipo jugable cuando un test o un laboratorio crea configs en memoria en vez de cargar un `.tres`.
+- La correccion vive en `scripts/systems/match_config.gd`: los defaults exportados ahora coinciden con `default_match_config.tres` en los campos que afectan el comportamiento base del laboratorio (`local_player_count=4`, intro `FFA=1.0` / `Teams=0.6`, score por causa `vacio=2`, `destruccion=1`, `inestable=4`).
+- `match_config_defaults_test.gd` fija explicitamente ese seam y compara `MatchConfig.new()` contra `res://data/config/default_match_config.tres` para evitar que futuras iteraciones reintroduzcan drift silencioso entre runtime in-memory y escenas base.
+- Validacion cerrada: `godot --headless --path . -s res://scripts/tests/match_config_defaults_test.gd`, `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd`, `godot --headless --path . -s res://scripts/tests/match_elimination_victory_weights_test.gd`, `godot --headless --path . -s res://scripts/tests/main_scene_runtime_smoke_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 80 tests`).
+
 - El soporte aliado post-muerte ya no se queda clavado en un auto-target simplemente “todavia util” cuando aparece otro aliado claramente mas urgente durante la misma ronda.
 - La correccion vive en `PilotSupportShip._should_resync_to_default_target(...)`: para `estabilizador`, `energia` y `movilidad`, si no hubo override manual y el target default sube de prioridad real, la nave resincroniza al mejor aliado; `interferencia` conserva el criterio previo de no rebotar salvo que el target actual deje de ser accionable.
 - `_refresh_target_selection()` tambien limpia overrides manuales stale si el estado runtime ya convergio otra vez al mismo target default, evitando que ese flag bloquee resincronizaciones posteriores sin aportar una intencion real del jugador.

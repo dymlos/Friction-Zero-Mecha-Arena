@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No volver a dejar que `MatchConfig.new()` derive del recurso base**
+ - `scripts/tests/match_config_defaults_test.gd` ya fija que los defaults runtime de `scripts/systems/match_config.gd` coincidan con `data/config/default_match_config.tres` en `local_player_count`, intros por modo y score por causa.
+ - Si cambia el perfil base del laboratorio, actualizar `match_config.gd` y `default_match_config.tres` en el mismo cambio; no aceptar que uno quede viejo “solo para tests”.
+ - Archivos objetivo: `scripts/systems/match_config.gd`, `data/config/default_match_config.tres`, `scripts/tests/match_config_defaults_test.gd`.
+
 0. **No reabrir el estado manual del soporte cuando el target visible ya coincide con el default**
  - `PilotSupportShip` ya limpia `_manual_target_override` si el jugador cicla manualmente de vuelta al mismo target que `_get_default_support_target(candidates)` habría elegido en ese frame.
  - Si se retoca `_cycle_selected_target()`, conservar `team_post_death_support_targeting_test.gd`: ahora también cubre el caso “override manual -> vuelta al default -> target default se vuelve inmune -> resincronización automática”.

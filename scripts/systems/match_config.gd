@@ -4,7 +4,7 @@ class_name MatchConfig
 enum HudDetailMode { EXPLICIT, CONTEXTUAL }
 
 @export_range(2, 8) var max_players := 4
-@export_range(1, 4) var local_player_count := 2
+@export_range(1, 4) var local_player_count := 4
 @export var round_time_seconds := 60
 @export_range(1, 9) var rounds_to_win := 3
 @export var allow_team_mode := true
@@ -12,11 +12,11 @@ enum HudDetailMode { EXPLICIT, CONTEXTUAL }
 @export var hud_detail_mode: HudDetailMode = HudDetailMode.EXPLICIT
 @export var hud_detail_mode_ffa: HudDetailMode = HudDetailMode.EXPLICIT
 @export var hud_detail_mode_teams: HudDetailMode = HudDetailMode.EXPLICIT
-@export_range(0, 12, 1) var void_elimination_round_points := 1
+@export_range(0, 12, 1) var void_elimination_round_points := 2
 @export_range(0, 12, 1) var destruction_elimination_round_points := 1
-@export_range(0, 12, 1) var unstable_elimination_round_points := 1
-@export_range(0.0, 3.0, 0.05) var round_intro_duration_ffa := 0.8
-@export_range(0.0, 3.0, 0.05) var round_intro_duration_teams := 0.8
+@export_range(0, 12, 1) var unstable_elimination_round_points := 4
+@export_range(0.0, 3.0, 0.05) var round_intro_duration_ffa := 1.0
+@export_range(0.0, 3.0, 0.05) var round_intro_duration_teams := 0.6
 
 
 func get_default_hud_detail_mode(is_ffa_mode: bool) -> HudDetailMode:

@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **`MatchConfig.new()` debe heredar el mismo perfil base que las escenas del prototipo**
+ - `scripts/systems/match_config.gd` ahora usa como defaults exportados el mismo paquete que `default_match_config.tres`: `local_player_count=4`, intro `FFA=1.0`, intro `Teams=0.6`, score por causa `2/1/4`.
+ - `scripts/tests/match_config_defaults_test.gd` fija el drift comparando la instancia in-memory contra `res://data/config/default_match_config.tres`.
+ - Motivo: varios tests/laboratorios crean configs en memoria para mutar un solo campo; si esos defaults no coinciden con el recurso base, el prototipo puede cambiar timing o score silenciosamente sin pasar por los `.tres` que las escenas reales sí cargan.
+
 1. **Volver manualmente al target default debe reactivar el modo auto del soporte**
  - `_cycle_selected_target()` ya no deja `_manual_target_override = true` por inercia cuando el jugador cicla de vuelta al mismo target que `_get_default_support_target(candidates)` elegiría en ese frame.
  - Si el target visible vuelve a coincidir con el default, la nave limpia el override manual y recupera el auto-retarget frente a cambios runtime de accionabilidad.

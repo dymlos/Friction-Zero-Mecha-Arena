@@ -2,6 +2,20 @@
 
 ## Estado del prototipo
 
+## Defaults runtime de `MatchConfig` alineados con el prototipo base (2026-04-22)
+
+- Estado: crear `MatchConfig.new()` ya no produce un perfil runtime distinto al de `default_match_config.tres`.
+- Corrección aplicada:
+  - `scripts/systems/match_config.gd` ahora replica en sus defaults exportados los valores base que ya usaban las escenas del prototipo:
+    - `local_player_count = 4`
+    - `round_intro_duration_ffa = 1.0`
+    - `round_intro_duration_teams = 0.6`
+    - `void/destruccion/inestable = 2/1/4`
+  - `scripts/tests/match_config_defaults_test.gd` agrega la regresión explícita y compara `MatchConfig.new()` contra `res://data/config/default_match_config.tres` en esos campos gameplay-facing.
+- Resultado:
+  - los tests o helpers que crean configs en memoria ya no quedan con timings/score viejos por accidente.
+  - `godot --headless --path . -s res://scripts/tests/match_config_defaults_test.gd`, `godot --headless --path . -s res://scripts/tests/hud_detail_mode_test.gd`, `godot --headless --path . -s res://scripts/tests/match_elimination_victory_weights_test.gd`, `godot --headless --path . -s res://scripts/tests/main_scene_runtime_smoke_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 80 tests`).
+
 ## Volver al target default ya reactiva el auto-target del soporte (2026-04-22)
 
 - Estado: la nave de apoyo `Teams` ya no arrastra un override manual stale si el jugador cicla de vuelta al mismo target que el auto-target ya habría elegido por defecto.
