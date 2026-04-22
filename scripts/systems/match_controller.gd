@@ -24,6 +24,7 @@ const SUPPORT_PAYLOAD_LABELS := {
 # Scenes that inherit this script can tune round intro directly en este campo.
 @export_range(0.0, 3.0, 0.05) var round_intro_duration := 0.0
 @export_range(0.0, 0.95, 0.05) var space_reduction_start_ratio := 0.55
+@export_range(0.0, 8.0, 0.1) var space_reduction_warning_seconds := 3.5
 @export_range(0.35, 1.0, 0.05) var space_reduction_min_scale := 0.55
 
 var registered_robots: Array[RobotBase] = []
@@ -216,7 +217,10 @@ func get_round_state_lines() -> Array[String]:
 	var elimination_cause_line := _build_round_elimination_cause_summary_line()
 	if elimination_cause_line != "":
 		lines.append(elimination_cause_line)
-	if is_space_reduction_active():
+	var space_reduction_warning_line := _build_space_reduction_warning_line()
+	if space_reduction_warning_line != "":
+		lines.append(space_reduction_warning_line)
+	elif is_space_reduction_active():
 		lines.append("Arena cerrandose | %s%%" % int(round(get_current_play_area_scale() * 100.0)))
 	return lines
 
@@ -259,6 +263,45 @@ func get_current_play_area_scale() -> float:
 
 func is_space_reduction_active() -> bool:
 	return get_current_play_area_scale() < 0.999
+
+
+func get_space_reduction_warning_strength() -> float:
+	if not _round_active or _round_reset_pending:
+		return 0.0
+	if is_round_intro_active():
+		return 0.0
+	if is_space_reduction_active():
+		return 0.0
+	if not is_progressive_space_reduction_enabled():
+		return 0.0
+
+	var time_until_reduction := get_time_until_space_reduction()
+	if time_until_reduction <= 0.0:
+		return 0.0
+
+	var warning_window := _get_space_reduction_warning_window()
+	if warning_window <= 0.0 or time_until_reduction > warning_window:
+		return 0.0
+
+	return clampf(1.0 - (time_until_reduction / warning_window), 0.0, 1.0)
+
+
+func get_time_until_space_reduction() -> float:
+	if not _round_active or _round_reset_pending:
+		return 0.0
+	if is_round_intro_active():
+		return 0.0
+	if not is_progressive_space_reduction_enabled():
+		return 0.0
+
+	var round_duration := maxf(float(match_config.round_time_seconds), 0.01)
+	var reduction_start_time := round_duration * space_reduction_start_ratio
+	return maxf(reduction_start_time - _round_elapsed_seconds, 0.0)
+
+
+func _get_space_reduction_warning_window() -> float:
+	var time_until_reduction := maxf(float(match_config.round_time_seconds) * space_reduction_start_ratio, 0.0)
+	return minf(space_reduction_warning_seconds, time_until_reduction)
 
 
 func get_alive_robots() -> Array[RobotBase]:
@@ -608,6 +651,13 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		segments.append(support_state)
 
 	return "%s %s | %s" % [control_label, robot.get_roster_display_name(), " | ".join(segments)]
+
+
+func _build_space_reduction_warning_line() -> String:
+	if get_space_reduction_warning_strength() <= 0.0:
+		return ""
+
+	return "Arena se cierra en %.1fs" % snappedf(get_time_until_space_reduction(), 0.1)
 
 
 func _build_robot_recap_panel_line(robot: RobotBase) -> String:

@@ -402,6 +402,7 @@ func _apply_match_pressure_to_arena() -> void:
 		return
 
 	_arena.set_play_area_scale(match_controller.get_current_play_area_scale())
+	_arena.set_pressure_warning_strength(match_controller.get_space_reduction_warning_strength())
 
 
 func _refresh_hud() -> void:

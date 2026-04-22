@@ -39,6 +39,7 @@ func _run() -> void:
 	match_controller.match_config.round_time_seconds = 1
 	match_controller.match_config.progressive_space_reduction = true
 	match_controller.match_config.round_intro_duration_teams = 0.0
+	match_controller.space_reduction_warning_seconds = 0.2
 	match_controller.space_reduction_start_ratio = 0.25
 	match_controller.space_reduction_min_scale = 0.5
 	match_controller.start_match()
@@ -47,6 +48,13 @@ func _run() -> void:
 		robot.void_fall_y = -100.0
 
 	var initial_size := arena.get_safe_play_area_size()
+	await create_timer(0.12).timeout
+	await process_frame
+
+	_assert(
+		match_controller.get_round_state_lines().any(func(line: String) -> bool: return line.contains("Arena se cierra en")),
+		"El HUD de ronda deberia avisar un instante antes de que empiece la contraccion real."
+	)
 	await create_timer(0.45).timeout
 	await process_frame
 

@@ -41,6 +41,36 @@ func _run() -> void:
 				"El telegraph no deberia ensuciar la arena mientras el borde vivo siga en su tamano completo."
 			)
 
+	arena.set_pressure_warning_strength(0.55)
+	await process_frame
+
+	var full_half_size := arena.safe_play_area_size * 0.5
+	for band in bands:
+		_assert(
+			band.visible,
+			"La advertencia diegetica deberia poder anticipar la contraccion antes de que el borde vivo empiece a cerrarse."
+		)
+		var local_warning_position := arena.to_local(band.global_position)
+		if absf(local_warning_position.x) > absf(local_warning_position.z):
+			_assert(
+				absf(local_warning_position.x) >= full_half_size.x * 0.7,
+				"Durante la advertencia previa, las bandas laterales deberian quedarse sobre el borde vivo actual."
+			)
+		else:
+			_assert(
+				absf(local_warning_position.z) >= full_half_size.y * 0.7,
+				"Durante la advertencia previa, las bandas frontal/trasera deberian quedarse sobre el borde vivo actual."
+			)
+
+	arena.set_pressure_warning_strength(0.0)
+	await process_frame
+
+	for band in bands:
+		_assert(
+			not band.visible,
+			"Al apagar la advertencia previa, el telegraph deberia limpiarse si la arena aun no esta cerrandose."
+		)
+
 	arena.set_play_area_scale(0.65)
 	await process_frame
 

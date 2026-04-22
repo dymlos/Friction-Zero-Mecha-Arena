@@ -2,6 +2,18 @@
 
 ## Estado del prototipo
 
+## Warning previo de contracción (2026-04-22)
+
+- Estado: la presión final del arena ahora se lee también antes de que el borde vivo empiece a cerrarse.
+- Corrección aplicada:
+  - `MatchController` suma `space_reduction_warning_seconds`, calcula `get_time_until_space_reduction()` / `get_space_reduction_warning_strength()` y publica `Arena se cierra en Xs` mientras la contracción todavía no arrancó.
+  - `Main._apply_match_pressure_to_arena()` ahora cablea tanto la escala real del área segura como la intensidad del warning.
+  - `ArenaBase` agrega `set_pressure_warning_strength()` y reutiliza `PressureTelegraph` con intensidad baja para preview, sin mover todavía el borde vivo.
+  - `progressive_space_reduction_test.gd` y `arena_pressure_telegraph_test.gd` fijan el contrato nuevo en HUD + telegraph diegético.
+- Resultado:
+  - el cierre acompaña mejor el beat documentado de análisis -> escalada -> final explosivo.
+  - `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasa con `Suite OK: 75 tests`.
+
 ## Targeting util del soporte post-muerte Teams (2026-04-22)
 
 - Estado: la nave de apoyo ya no fija por defecto el primer aliado/rival valido cuando hay varios candidatos vivos.

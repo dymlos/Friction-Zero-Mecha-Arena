@@ -97,6 +97,8 @@
 
 10. **Afinar la nueva presion de arena**
   - playtestear si `round_intro_duration_ffa` (actualmente 1.0) y `round_intro_duration_teams` (actualmente 0.6) dejan el beat correcto entre respawn y primer choque.
+  - validar por playtest si `space_reduction_warning_seconds = 3.5` avisa con tiempo suficiente sin volverse ruido constante en rondas largas; si cambia, mantener `progressive_space_reduction_test.gd` como red de seguridad del warning.
+  - revisar si la intensidad baja actual del `PressureTelegraph` previo alcanza en camara compartida o si todavia necesita otro ajuste fino de alpha/emission antes de tocar contrastes mas grandes.
    - medir si la combinacion `Ronda N | arranca en ...` + `RoundIntroIndicator` ya alcanza como telegraph de apertura o si el cue de piso todavia necesita ajuste fino de tamano/contraste/ritmo en camara compartida.
    - playtestear si el inicio del cierre (`space_reduction_start_ratio`) llega demasiado tarde o demasiado pronto.
    - revisar si el minimo de contraccion deja espacio suficiente para un cierre legible en 2v2 y FFA.

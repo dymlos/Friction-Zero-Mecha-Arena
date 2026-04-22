@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **La presión final del arena debe avisar antes del shrink real**
+ - `MatchController` mantiene la contracción real en `get_current_play_area_scale()`, pero ahora abre un warning separado con `space_reduction_warning_seconds`, `get_time_until_space_reduction()` y `get_space_reduction_warning_strength()`.
+ - `Main` sigue siendo el cable fino entre match y arena: envía `set_play_area_scale(...)` para el shrink y `set_pressure_warning_strength(...)` para el preview.
+ - `ArenaBase` reutiliza el mismo `PressureTelegraph` con alpha/emission más bajos durante el warning, sin achicar todavía el borde vivo.
+ - Motivo: la versión anterior solo comunicaba la presión cuando ya estaba ocurriendo; este paso refuerza lectura y pacing sin sumar otro sistema ni ruido visual.
+
 1. **El soporte post-muerte Teams prioriza utilidad del payload y no `scene-order` cuando hay varios objetivos vivos**
  - `PilotSupportShip` ahora calcula prioridad por payload y la usa tanto para el target inicial como para el orden de ciclado.
  - `stabilizer` mira vida faltante en partes activas; `surge`/`mobility` penalizan buffs redundantes; `interference` prefiere rivales en rango y no suprimidos antes de volver a distancia.

@@ -74,6 +74,7 @@ var _edge_pickup_layout_cycle: Array[PackedStringArray] = []
 var _edge_pickup_allowed_ids := PackedStringArray(DEFAULT_EDGE_PICKUP_ALLOWED_IDS)
 var _active_edge_pickup_layout := PackedStringArray()
 var _pressure_band_materials: Array[StandardMaterial3D] = []
+var _pressure_warning_strength := 0.0
 
 
 func _ready() -> void:
@@ -103,6 +104,15 @@ func get_safe_play_area_size() -> Vector2:
 func set_play_area_scale(scale_ratio: float) -> void:
 	var clamped_ratio := clampf(scale_ratio, 0.35, 1.0)
 	set_current_play_area_size(safe_play_area_size * clamped_ratio)
+
+
+func set_pressure_warning_strength(warning_strength: float) -> void:
+	var next_warning_strength := clampf(warning_strength, 0.0, 1.0)
+	if is_equal_approx(_pressure_warning_strength, next_warning_strength):
+		return
+
+	_pressure_warning_strength = next_warning_strength
+	_update_pressure_telegraph(get_safe_play_area_size())
 
 
 func set_current_play_area_size(new_size: Vector2) -> void:
@@ -479,7 +489,8 @@ func _update_pressure_telegraph(current_size: Vector2) -> void:
 		return
 
 	var shrink_strength := _get_pressure_telegraph_strength(current_size)
-	var telegraph_visible := shrink_strength > 0.001
+	var telegraph_strength := maxf(shrink_strength, _pressure_warning_strength)
+	var telegraph_visible := telegraph_strength > 0.001
 	pressure_telegraph_root.visible = telegraph_visible
 	for band in [
 		north_pressure_band,
@@ -515,12 +526,15 @@ func _update_pressure_telegraph(current_size: Vector2) -> void:
 		Basis().scaled(Vector3(pressure_band_thickness, 1.0, vertical_length)),
 		Vector3(half_width - inset, band_height, 0.0)
 	)
-	_update_pressure_telegraph_materials(shrink_strength)
+	_update_pressure_telegraph_materials(telegraph_strength, shrink_strength > 0.001)
 
 
-func _update_pressure_telegraph_materials(shrink_strength: float) -> void:
-	var alpha := lerpf(0.1, 0.28, shrink_strength)
-	var emission_energy := lerpf(0.2, 0.9, shrink_strength)
+func _update_pressure_telegraph_materials(telegraph_strength: float, shrinking: bool) -> void:
+	var alpha := lerpf(0.08, 0.28, telegraph_strength)
+	var emission_energy := lerpf(0.16, 0.9, telegraph_strength)
+	if not shrinking:
+		alpha = minf(alpha, 0.18)
+		emission_energy = minf(emission_energy, 0.42)
 	for material in _pressure_band_materials:
 		if material == null:
 			continue

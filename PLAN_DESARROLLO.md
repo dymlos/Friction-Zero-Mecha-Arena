@@ -4,6 +4,8 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- La presión final del arena ya no aparece “de golpe”: `MatchController` suma `space_reduction_warning_seconds` y publica `Arena se cierra en Xs` antes de pasar a `Arena cerrandose | N%`.
+- `Main` sigue siendo el puente mínimo entre match y arena, pero ahora además de la escala real envía una intensidad previa al `PressureTelegraph`; `ArenaBase` reutiliza esas bandas de piso con alpha/emission más bajos para avisar el cierre sin achicar todavía el borde vivo.
 - El soporte post-muerte Teams ya no depende de `scene-order` cuando hay varios candidatos vivos: `PilotSupportShip` ahora prioriza objetivos segun utilidad del payload (`estabilizador` al aliado mas dañado, `surge`/`movilidad` evitando buffs redundantes, `interferencia` sobre rivales no suprimidos y en rango antes que reciclar el mismo objetivo).
 - La apertura base de `Equipos` ya no depende de un layout en cruz: `arena_blockout.tscn` ahora agrupa a cada pareja en su mismo lateral, de modo que `main.tscn` arranca con aliados más cerca entre sí que del rival más cercano y la escena larga conserva mejor el beat de coordinación/rescate del laboratorio rápido.
 - La base de escenas jugables ya tiene smoke runtime real: `main_scene_runtime_smoke_test.gd` instancia `main`, `main_ffa`, `main_teams_validation` y `main_ffa_validation`, comprueba arena/HUD/robots/MatchController y fija además que las escenas base también cargan `default_match_config.tres` vía `match_controller.tscn`.
