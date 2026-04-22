@@ -4,6 +4,7 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- La apertura base de `Equipos` ya no depende de un layout en cruz: `arena_blockout.tscn` ahora agrupa a cada pareja en su mismo lateral, de modo que `main.tscn` arranca con aliados más cerca entre sí que del rival más cercano y la escena larga conserva mejor el beat de coordinación/rescate del laboratorio rápido.
 - La base de escenas jugables ya tiene smoke runtime real: `main_scene_runtime_smoke_test.gd` instancia `main`, `main_ffa`, `main_teams_validation` y `main_ffa_validation`, comprueba arena/HUD/robots/MatchController y fija además que las escenas base también cargan `default_match_config.tres` vía `match_controller.tscn`.
 - El laboratorio ahora permite alternar modo de control por jugador sin tocar la escena: `Main` acepta `1-8` para alternar `Easy/Hard` directamente sobre el slot indicado, mantiene `F2/F3/F4` para selector fino y deja el HUD en estado `Lab: Pn ...` tras cada cambio para que la sesión corta no dependa del editor.
 - La telemetría de soporte post-muerte ahora distingue también si el apoyo estuvo presente en rondas realmente decisivas: `MatchController` agrega `Aporte de apoyo | X/Y rondas ...` y `rondas decisivas por apoyo ...` dentro de `Stats | ...`, dejando el carry real del soporte visible sin abrir otra capa de post-partida.

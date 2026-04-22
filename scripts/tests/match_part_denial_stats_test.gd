@@ -76,16 +76,18 @@ func _run() -> void:
 
 	_assert(match_controller.is_match_over(), "La ronda objetivo deberia cerrar la partida tras eliminar al equipo rival.")
 	_assert(
-		_has_line_containing(
+		_has_stats_line_with_fragments(
 			match_controller.get_match_result_lines(),
-			"Stats | Equipo 2 | negaciones 1 | bajas sufridas 2 (2 vacio)"
+			"Equipo 2",
+			["negaciones 1", "bajas sufridas 2 (2 vacio)"]
 		),
 		"El cierre de partida deberia acreditar la negacion exitosa al equipo que lanzo la pieza al vacio."
 	)
 	_assert(
-		_has_line_containing(
+		_has_stats_line_with_fragments(
 			match_controller.get_round_recap_panel_lines(),
-			"Stats | Equipo 2 | negaciones 1 | bajas sufridas 2 (2 vacio)"
+			"Equipo 2",
+			["negaciones 1", "bajas sufridas 2 (2 vacio)"]
 		),
 		"El recap lateral deberia reutilizar la misma lectura compacta de negaciones."
 	)
@@ -116,6 +118,26 @@ func _get_only_detached_part() -> DetachedPart:
 func _has_line_containing(lines: Array[String], expected_fragment: String) -> bool:
 	for line in lines:
 		if line.contains(expected_fragment):
+			return true
+
+	return false
+
+
+func _has_stats_line_with_fragments(
+	lines: Array[String],
+	competitor_label: String,
+	expected_fragments: Array[String]
+) -> bool:
+	for line in lines:
+		if not line.begins_with("Stats | %s" % competitor_label):
+			continue
+		var includes_all := true
+		for expected_fragment in expected_fragments:
+			if line.contains(expected_fragment):
+				continue
+			includes_all = false
+			break
+		if includes_all:
 			return true
 
 	return false

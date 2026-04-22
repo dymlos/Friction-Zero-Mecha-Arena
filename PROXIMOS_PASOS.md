@@ -25,12 +25,18 @@
   - Mantener la telemetría compacta si comunica valor; si no mejora `support_rounds_decided`, priorizar estabilidad de loops antes que tuning.
   - Archivos objetivo: `scripts/systems/match_controller.gd`, `scenes/main/main.tscn`, `scenes/main/main_teams_validation.tscn`, `data/config/teams_validation_match_config.tres`.
 
-3. **Cerrar el ciclo documental de causa y ranking**
+3. **Validar la nueva apertura coordinada de Teams en playtest corto**
+  - usar `main.tscn` y `main_teams_validation.tscn` para confirmar que el cambio de spawn mejora lectura de parejas, rescate temprano y primera colisión sin volver demasiado segura la apertura lateral.
+  - si el arranque sigue sintiéndose frío o muy espejo, ajustar primero offsets de `SpawnPlayer` en `arena_blockout.tscn` / `arena_teams_validation.tscn`; no abrir todavía un sistema runtime de reasignación por equipo.
+  - mantener `teams_spawn_coordination_test.gd` si cambia el layout: el contrato mínimo sigue siendo “aliado más cerca que rival” al iniciar.
+  - Archivos objetivo: `scenes/arenas/arena_blockout.tscn`, `scenes/arenas/arena_teams_validation.tscn`, `scripts/tests/teams_spawn_coordination_test.gd`.
+
+4. **Cerrar el ciclo documental de causa y ranking**
   - Consolidar wording idéntico en `PLAN_DESARROLLO.md`, `ESTADO_ACTUAL.md`, `PROXIMOS_PASOS.md` y `DECISIONES_TECNICAS.md` para `cierre por causa`, `desempate`, `1-8 modo` y `Stats | ...`.
   - Mantener el ajuste de `support_rounds_decided` y el bloque de apoyo dentro de `Stats` como único resumen de soporte hasta necesitar más capa de post-mortem.
   - Archivos objetivo: `PLAN_DESARROLLO.md`, `ESTADO_ACTUAL.md`, `DECISIONES_TECNICAS.md`, `PROXIMOS_PASOS.md`.
 
-4. **Validar el nuevo roster de arquetipos**
+5. **Validar el nuevo roster de arquetipos**
    - usar `1-8` junto con `F2/F3/F4` para recorrer cruces reales entre `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla` en `main.tscn` y `main_ffa.tscn` sin editar escenas entre partidas, validando tambien si el nuevo `LabSelectionIndicator` evita errores de slot en pantalla compartida.
    - correr sesiones reales con `Ariete`, `Grua`, `Cizalla` y `Patin` en `main.tscn`, y con `Aguja` + `Ancla` en `main_ffa.tscn`, para decidir si la mezcla actual de pasivas + skills propias ya produce identidades claras.
    - medir si las pasivas/skills actuales se entienden por playtest sin otra capa de UI: `Ariete` activando `Embestida` para comprometer choques, `Grua` estabilizando rescates y usando `Iman`, `Cizalla` rematando partes tocadas con el nuevo combo `corte` + pulso corporal + `DismantleCue` sobre la pieza enemiga castigada y `Patin` activando `Derrape` para reposicionarse sin perder legibilidad.
@@ -43,7 +49,7 @@
    - medir si el roster actual (`Player X / <Arquetipo>` + `[<Arquetipo>]` en marcador FFA + `skill Embestida/Iman/Derrape/Pulso/Baliza x/y` + estados `embestida/derrape/zona`) mas los nuevos acentos en mundo (`FacingMarker/CoreLight` por identidad + `ArchetypeAccent` por rol/skill + `StatusEffectIndicator` para `estabilidad/zona`) alcanzan como legibilidad de laboratorio o si conviene compactarlo mas.
    - decidir si el selector runtime actual ya alcanza como flujo de laboratorio o si el siguiente paso debe ser persistencia/presets por escena, mas claridad visual o reforzar con otra skill/regla al arquetipo que siga borroso.
 
-5. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
+6. **Validar el nuevo HUD dual y la nueva lectura de daño modular**
    - correr sesiones con `hud_detail_mode=EXPLICIT` y `hud_detail_mode=CONTEXTUAL` usando tambien el toggle `F1` para decidir que variante debe quedar por defecto en `Equipos` y en `FFA`.
    - revisar si el modo contextual realmente limpia sin esconder decisiones tacticas como `Foco`, `item`, `carga`, `impulso`, `energia` o `3/4 partes`.
    - confirmar por playtest que el roster vivo ahora acompana bien al resto de la lectura competitiva: lider primero en FFA y aliados supervivientes antes que caidos en Teams, sin perder claridad de ownership en pantalla compartida.
@@ -53,7 +59,7 @@
    - decidir si el feedback geométrico actual ya alcanza o si conviene migrarlo a humo/chispas más ricos sin ensuciar pantalla compartida.
    - ajustar posición/escala de marcadores y amplitud de la pose de desgaste antes de sumar más VFX o UI.
 
-6. **Hacer visible y testeable el rescate/negacion**
+7. **Hacer visible y testeable el rescate/negacion**
    - usar `scenes/main/main_teams_validation.tscn` como escena corta de referencia y el coverage headless 2v2/validacion como red de seguridad mientras se hacen sesiones reales con la contraccion de arena ya activa.
    - medir si el nuevo combo `disco de recuperacion + aro de pertenencia + RecoveryTargetIndicator + RecoveryTargetFloorIndicator + CarryOwnerIndicator + CarryReturnIndicator`, ahora con refuerzo extra cuando la devolucion ya esta lista, realmente alcanza para leer urgencia/ownership/objetivo/handoff tambien durante el transporte en 2v2 y FFA o si todavia hace falta compactar escala/contraste/ritmo de esos cues.
    - comprobar en playtest si la nueva linea `negaciones N` realmente explica bien cuando el rival mando una pieza al vacio o si el cierre final todavia necesita distinguir mejor entre negacion enemiga y auto-error aliado.

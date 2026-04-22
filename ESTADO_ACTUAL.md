@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Apertura Teams coordinada (2026-04-22)
+
+- Estado: `main.tscn` ya no arranca con un layout en cruz que separaba a aliados más de lo que acercaba a rivales.
+- Corrección aplicada:
+  - `scenes/arenas/arena_blockout.tscn` reubicó los cuatro `SpawnPlayer` en dos laterales (`Team 1` a la izquierda, `Team 2` a la derecha).
+  - `scenes/main/main.tscn` quedó alineada con esos mismos offsets para que el editor y el runtime muestren la misma apertura.
+  - `teams_spawn_coordination_test.gd` fija el contrato jugable: en escenas Teams, cada robot debe abrir más cerca de su aliado que del rival más cercano.
+- Resultado:
+  - `godot --headless --path . -s res://scripts/tests/teams_spawn_coordination_test.gd` pasa.
+  - `main_scene_runtime_smoke_test.gd` y `teams_validation_lab_scene_test.gd` siguen verdes tras el cambio.
+
 ## Alineación de suite headless (2026-04-22)
 
 - Estado: la suite completa `scripts/tests/*.gd` volvió a verde tras corregir falsos rojos de tests que seguían asumiendo contratos viejos de score/intro.

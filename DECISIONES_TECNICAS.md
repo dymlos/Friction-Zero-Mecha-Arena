@@ -2,6 +2,11 @@
 
 ## Decisiones vigentes
 
+1. **La apertura base de Teams debe priorizar cercanía entre aliados antes que simetría en cruz**
+ - `Main._get_bootstrap_spawn_transforms()` ya reutiliza el orden de `ArenaBase.get_spawn_points()` en Equipos, así que la fuente de verdad correcta para esa apertura es el layout del arena, no una capa extra de reasignación en runtime.
+ - `arena_blockout.tscn` pasó de un layout en cruz a dos laterales por equipo; `teams_spawn_coordination_test.gd` fija que cada robot quede más cerca de su aliado que del rival más cercano en `main.tscn` y `main_teams_validation.tscn`.
+ - Motivo: la identidad Teams pide coordinación/rescate desde el primer beat. Corregir el arena mantiene el sistema simple para un proyecto Godot principiante y evita abrir heurísticas extra de spawn assignment.
+
 1. **Los tests de score deben leer `MatchConfig`; los tests de lifecycle deben fijar `1/1/1`**
  - `MatchController._finish_round_with_winner()` suma puntos via `get_round_victory_points_for_cause(...)`, así que cualquier test de HUD/standings/resultado que espere score real debe derivarlo desde `MatchConfig`.
  - Si el objetivo del test es el lifecycle entre rondas/partida y no el balance, debe pinnear `void/destruccion/inestable = 1` dentro del propio test para evitar falsos rojos cuando cambie el peso por causa.
