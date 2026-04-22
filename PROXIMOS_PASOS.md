@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No reabrir el restart manual `F5` del selector runtime sobre una reproduccion invalida**
+ - `lab_runtime_selector_test.gd` ahora cubre el camino real `slot seleccionado -> Apoyo activo -> cierre de match -> F5`; si se toca el restart manual, el soporte post-muerte o el round-state del laboratorio, mantener ese flujo y no sustituirlo por un `F5` a mitad de ronda, porque `MatchController.request_match_restart()` solo vale con `_match_over`.
+ - El contrato actual es: tras `F5`, el selector runtime vuelve a `Lab | P1 Grua Hard ...`, la línea `Control P1 | ...` retoma los controles del robot y desaparece `Apoyo P1 | ...`.
+ - Archivos objetivo: `scripts/tests/lab_runtime_selector_test.gd`, `scripts/tests/match_manual_restart_test.gd`, `scripts/main/main.gd`, `scripts/systems/match_controller.gd`.
+
 0. **No perder la linea `Apoyo Pn | ...` al tocar el soporte seleccionado del laboratorio**
  - `Main` ya expone `get_lab_selected_support_summary_line()` y la suma al round-state solo cuando `_find_post_death_support_ship(robot)` existe para el slot seleccionado.
  - `PilotSupportShip.get_actionable_status_summary()` es ahora la fuente de verdad de esa linea; si cambian warnings, payload labels o target summaries del soporte, actualizar ese helper y no duplicar string-building en `Main`.

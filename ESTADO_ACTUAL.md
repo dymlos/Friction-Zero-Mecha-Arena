@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Reinicio manual `F5` con selector runtime tras `Apoyo activo` cubierto (2026-04-22)
+
+- Estado: el laboratorio ya tiene cobertura headless para el caso donde el slot seleccionado entra en `Apoyo activo`, el match se cierra y luego se reinicia manualmente con `F5`.
+- Cobertura aplicada:
+  - `scripts/tests/lab_runtime_selector_test.gd` ahora recorre el flujo real `P1 Grua Hard -> P1 Apoyo activo -> derrota de equipo -> F5`.
+  - tras el reinicio manual exige que el selector runtime vuelva a `Lab | P1 Grua Hard ...`, que la referencia `Control P1 | ...` retome los controles del robot y que desaparezca `Apoyo P1 | ...`.
+  - la investigación confirmó que no hacía falta tocar producción: `MatchController.request_match_restart()` solo acepta `F5` con match cerrado y, en ese camino real, `Main._on_round_started()` + `_clear_post_death_support()` ya limpian correctamente el soporte post-muerte.
+- Resultado:
+  - queda congelado el seam entre reinicio manual y selector runtime del laboratorio para evitar futuros falsos fixes o regresiones alrededor de `Apoyo activo`.
+  - `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`, `godot --headless --path . -s res://scripts/tests/match_manual_restart_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan.
+
 ## Estado accionable persistente del soporte en el round-state del laboratorio (2026-04-22)
 
 - Estado: cuando el slot seleccionado del laboratorio ya paso a `Apoyo activo` en `Teams`, el round-state ahora deja visible tambien la capa accionable del soporte y no obliga a mirar solo el roster para saber si la nave esta `sin carga`, `interferida` o que payload/target tiene listo.

@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El laboratorio ya tiene regresión explícita para el camino completo `robot seleccionado -> Apoyo activo -> cierre de match -> F5`: si `P1` cae, pasa a la nave post-muerte y luego su equipo pierde la ronda/partida, el reinicio manual vuelve a mostrar el robot seleccionado (`Lab | P1 Grua Hard ...`, `Control P1 | mueve ...`) y limpia la línea `Apoyo P1 | ...`.
+- La iteración no necesitó tocar producción: el path real ya quedaba bien resuelto entre `MatchController.request_match_restart()`, `Main._on_round_started()` y `_clear_post_death_support()`. El hueco era de cobertura, no de lógica.
+- `lab_runtime_selector_test.gd` ahora fija el seam real con match cerrado: primero convierte `P1` en `Apoyo activo`, luego cierra el match eliminando también a `P2`, dispara `F5` y exige que el selector runtime recupere el loadout runtime (`Grua Hard`) sin arrastrar soporte stale.
+- Validación focalizada: `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`, `godot --headless --path . -s res://scripts/tests/match_manual_restart_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd`.
+
 - El round-state del laboratorio ahora deja visible tambien el estado accionable del slot seleccionado cuando ese jugador ya paso a `Apoyo activo` en `Teams`: junto a `Lab | P1 Apoyo activo` y `Control P1 | usa C | objetivo Q/E`, aparece `Apoyo P1 | ...` con la carga/target real del soporte (`sin carga`, `interferencia > ...`, warnings como `fuera de rango`, etc.).
 - La implementacion se repartio en un seam chico para no duplicar reglas: `PilotSupportShip.get_status_summary()` sigue armando la linea completa del roster y ahora delega la parte accionable en `get_actionable_status_summary()`, mientras `Main.get_lab_selected_support_summary_line()` reutiliza ese helper y publica la nueva linea solo cuando el slot seleccionado realmente tiene nave post-muerte.
 - `lab_runtime_selector_test.gd` fija el seam en dos pasos: antes de la baja no debe aparecer ninguna linea `Apoyo P1 | ...`; despues de la caida del slot seleccionado, el round-state debe mostrar `Apoyo P1 | sin carga`.

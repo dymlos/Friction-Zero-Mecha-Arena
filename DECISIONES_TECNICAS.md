@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **El restart manual `F5` del laboratorio queda cubierto en el camino real `Apoyo activo -> match cerrado`**
+ - `lab_runtime_selector_test.gd` ahora fija el flujo completo: `P1` cambia runtime a `Grua Hard`, cae a `Apoyo activo`, el equipo pierde la ronda/match y recién entonces se dispara `F5`.
+ - La investigación dejó explícito que `MatchController.request_match_restart()` solo acepta el reinicio con `_match_over == true`; probar `F5` durante una ronda viva no valida nada del seam de restart.
+ - No hubo cambio de producción: en el camino real, `Main._on_round_started()` ya ejecuta `_clear_post_death_support()` y el selector runtime vuelve solo al robot seleccionado con su loadout runtime.
+ - Motivo: congelar el contrato correcto evita reabrir fixes falsos en `Main`/`MatchController` por confundir un `F5` inválido de mitad de ronda con un bug real de limpieza del soporte.
+
 1. **El round-state del laboratorio tambien debe dejar visible el estado accionable del soporte seleccionado**
  - `PilotSupportShip.get_status_summary()` ya no mezcla dos responsabilidades internamente: sigue armando la linea completa del roster, pero delega la parte reutilizable de gameplay en `get_actionable_status_summary()`.
  - `Main.get_lab_selected_support_summary_line()` consulta `_find_post_death_support_ship(robot)` y, solo si el slot seleccionado realmente ya paso a la nave post-muerte, publica `Apoyo Pn | ...` dentro de `_build_round_state_lines()`.
