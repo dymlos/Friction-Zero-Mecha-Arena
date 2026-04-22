@@ -15,6 +15,7 @@ func _init() -> void:
 func _run() -> void:
 	await _validate_archetype_configs_exist_and_drive_stats()
 	await _validate_lab_hud_surfaces_the_roster_identity()
+	await _validate_cizalla_passive_reaches_the_roster()
 	_finish()
 
 
@@ -106,6 +107,44 @@ func _validate_lab_hud_surfaces_the_roster_identity() -> void:
 		_assert(score_line.contains("Patin"), "El marcador FFA deberia mantener visible el roster de movilidad.")
 
 	await _cleanup_node(ffa)
+
+
+func _validate_cizalla_passive_reaches_the_roster() -> void:
+	var main := MAIN_SCENE.instantiate()
+	root.add_child(main)
+
+	await process_frame
+	await process_frame
+
+	var robots := _get_scene_robots(main)
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	_assert(robots.size() >= 3, "La escena principal deberia seguir exponiendo a Cizalla en el slot 3.")
+	_assert(match_controller != null, "La escena principal deberia seguir exponiendo MatchController para el roster.")
+	if robots.size() < 3 or match_controller == null:
+		await _cleanup_node(main)
+		return
+
+	var cizalla := robots[2]
+	var victim := robots[0]
+	victim.apply_damage_to_part("right_arm", 12.0, Vector3.RIGHT)
+	victim.receive_attack_hit_from_robot(Vector3.RIGHT, 18.0, cizalla)
+	await process_frame
+	await physics_frame
+
+	var roster_lines := match_controller.get_robot_status_lines()
+	var cizalla_line := ""
+	for line in roster_lines:
+		if line.contains("Cizalla"):
+			cizalla_line = line
+			break
+
+	_assert(cizalla_line != "", "El roster deberia seguir exponiendo una linea para Cizalla.")
+	_assert(
+		cizalla_line.contains("corte"),
+		"Cuando Cizalla castiga una parte ya tocada, el roster compacto deberia mostrar ese cue sin abrir otra UI."
+	)
+
+	await _cleanup_node(main)
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:

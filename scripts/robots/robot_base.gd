@@ -299,6 +299,7 @@ const KEYBOARD_PROFILE_BINDINGS := {
 @export_range(0.4, 1.0, 0.05) var damage_feedback_threshold := 0.8
 @export_range(0.1, 0.8, 0.05) var critical_damage_feedback_threshold := 0.45
 @export var damage_feedback_height := 0.24
+@export_range(0.1, 2.0, 0.05) var damaged_part_bonus_highlight_duration := 0.8
 @export_range(0.0, 0.2, 0.01) var damaged_part_pose_drop := 0.08
 @export_range(0.0, 0.15, 0.01) var damaged_arm_pose_side_offset := 0.05
 @export_range(0.0, 0.15, 0.01) var damaged_leg_pose_back_offset := 0.08
@@ -349,6 +350,7 @@ var _material_base_values: Dictionary = {}
 var _part_visual_base_transforms: Dictionary = {}
 var _damage_feedback_nodes: Dictionary = {}
 var _collision_damage_ready_at: Dictionary = {}
+var _damaged_part_bonus_remaining := 0.0
 var _carried_part: DetachedPart = null
 var _carried_item_name := ""
 var _carry_indicator: MeshInstance3D = null
@@ -606,6 +608,13 @@ func get_damaged_part_bonus_damage_multiplier() -> float:
 		return 1.0
 
 	return maxf(archetype_config.damaged_part_bonus_damage_multiplier, 1.0)
+
+
+func get_passive_status_summary() -> String:
+	if _damaged_part_bonus_remaining <= 0.0:
+		return ""
+
+	return "corte"
 
 
 func get_return_support_repair_ratio() -> float:
@@ -1133,6 +1142,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
+	_update_passive_status_state(delta)
 	_update_recent_elimination_source(delta)
 	_update_energy_state(delta)
 	_update_control_zone_state(delta)
@@ -1167,6 +1177,7 @@ func reset_modular_state() -> void:
 	disabled_explosion_timer.stop()
 	_part_flash_strength.clear()
 	_collision_damage_ready_at.clear()
+	_damaged_part_bonus_remaining = 0.0
 	_selected_energy_part_name = "left_arm"
 	_energy_shift_cooldown_remaining = 0.0
 	_overdrive_part_name = ""
@@ -1442,6 +1453,7 @@ func apply_damage_to_part(
 	var effective_damage := damage_amount
 	if is_instance_valid(source_robot) and current_health < max_part_health:
 		effective_damage *= source_robot.get_damaged_part_bonus_damage_multiplier()
+		source_robot._trigger_damaged_part_bonus_feedback()
 	_remember_recent_elimination_source(source_robot)
 
 	part_health[part_name] = maxf(current_health - effective_damage, 0.0)
@@ -3524,6 +3536,24 @@ func _get_damaged_part_pose_severity(health_ratio: float) -> float:
 	return 1.0 - clampf(health_ratio / threshold, 0.0, 1.0)
 
 
+func _update_passive_status_state(delta: float) -> void:
+	if _damaged_part_bonus_remaining <= 0.0:
+		return
+
+	_damaged_part_bonus_remaining = maxf(_damaged_part_bonus_remaining - delta, 0.0)
+	_refresh_visual_state()
+
+
+func _trigger_damaged_part_bonus_feedback() -> void:
+	if get_damaged_part_bonus_damage_multiplier() <= 1.0:
+		return
+
+	var previous_remaining := _damaged_part_bonus_remaining
+	_damaged_part_bonus_remaining = maxf(_damaged_part_bonus_remaining, damaged_part_bonus_highlight_duration)
+	if _damaged_part_bonus_remaining > previous_remaining:
+		_refresh_visual_state()
+
+
 func _refresh_archetype_accent_visuals() -> void:
 	if _archetype_accent_visual_nodes.is_empty():
 		return
@@ -3532,6 +3562,8 @@ func _refresh_archetype_accent_visuals() -> void:
 	var core_skill_color := _get_core_skill_accent_color()
 	var core_skill_ready_blend := _get_archetype_accent_core_skill_ready_blend()
 	var core_skill_active_blend := _get_archetype_accent_core_skill_active_blend()
+	var passive_color := Color(1.0, 0.42, 0.16, 1.0)
+	var passive_blend := _get_passive_accent_blend()
 	var intact_ratio := 1.0
 	if not BODY_PARTS.is_empty():
 		var alive_parts := 0.0
@@ -3552,11 +3584,13 @@ func _refresh_archetype_accent_visuals() -> void:
 		material.albedo_color = base_albedo.lerp(archetype_color, 0.78)
 		material.albedo_color = material.albedo_color.lerp(core_skill_color, core_skill_ready_blend * 0.12)
 		material.albedo_color = material.albedo_color.lerp(core_skill_color.lightened(0.16), core_skill_active_blend * 0.18)
+		material.albedo_color = material.albedo_color.lerp(passive_color, passive_blend * 0.22)
 		material.albedo_color = material.albedo_color.lerp(Color(0.1, 0.1, 0.1, 1.0), damage_blend + disabled_blend)
 		if material.emission_enabled:
 			material.emission = base_emission.lerp(archetype_color, 0.95)
 			material.emission = material.emission.lerp(core_skill_color, core_skill_ready_blend * 0.72)
 			material.emission = material.emission.lerp(core_skill_color.lightened(0.2), core_skill_active_blend)
+			material.emission = material.emission.lerp(passive_color, passive_blend)
 			material.emission = material.emission.lerp(Color(0.18, 0.12, 0.1, 1.0), disabled_blend * 0.8)
 			material.emission_energy_multiplier = maxf(
 				0.18,
@@ -3565,6 +3599,7 @@ func _refresh_archetype_accent_visuals() -> void:
 				- disabled_blend * 0.22
 				+ core_skill_ready_blend * 0.28
 				+ core_skill_active_blend * 0.62
+				+ passive_blend * 0.55
 			)
 
 
@@ -3621,6 +3656,18 @@ func _get_archetype_accent_core_skill_active_blend() -> float:
 		return 0.52
 
 	return 0.0
+
+
+func _get_passive_accent_blend() -> float:
+	if _damaged_part_bonus_remaining <= 0.0:
+		return 0.0
+	if damaged_part_bonus_highlight_duration <= 0.0:
+		return 1.0
+
+	var time_ratio := clampf(_damaged_part_bonus_remaining / damaged_part_bonus_highlight_duration, 0.0, 1.0)
+	var wave := (sin(_carry_indicator_animation_time * 8.0) + 1.0) * 0.5
+	var pulse := 0.82 + wave * 0.18
+	return clampf(time_ratio * pulse, 0.0, 1.0)
 
 
 func _refresh_core_visuals() -> void:

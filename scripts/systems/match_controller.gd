@@ -533,6 +533,9 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 	var core_skill_summary := robot.get_core_skill_status_summary()
 	if core_skill_summary != "":
 		segments.append(core_skill_summary)
+	var passive_summary := robot.get_passive_status_summary()
+	if passive_summary != "":
+		segments.append(passive_summary)
 	if robot.is_energy_surge_active():
 		segments.append("energia")
 	if robot.is_mobility_boost_active():

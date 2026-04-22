@@ -64,7 +64,7 @@ El proyecto ya tiene una base jugable en Godot 4.6 con:
 - primera capa de identidad de arquetipos apoyada sobre sistemas ya existentes, mas cinco skills propias repartidas entre 2v2 y FFA:
   - `Ariete`: mas vida/empuje, mas resistencia al impulso externo y ahora `Embestida`, una ventana corta de drive/impacto/estabilidad que refuerza pusher/tank sin proyectiles
   - `Grua`: mejor retorno de partes, estabiliza otra pieza dañada al completar un rescate y ahora convierte `throw_part` en `Iman` cuando no lleva carga, capturando piezas listas a distancia media para validar asistencia/recuperacion activa
-  - `Cizalla`: mas daño/pressure modular y bonus extra contra piezas ya tocadas para validar dismantle
+  - `Cizalla`: mas daño/pressure modular y bonus extra contra piezas ya tocadas para validar dismantle; ese castigo ahora tambien deja un cue corto `corte` en el roster y un pulso breve sobre `ArchetypeAccent` cuando realmente conecta sobre una parte herida
   - `Patin`: mas velocidad/menos damping, ventanas de impulso mas largas y ahora `Derrape`, una rafaga corta de reposicion que empuja al robot en su direccion actual y abre una ventana breve de drive/control reforzados sin sumar proyectiles
   - `Aguja`: convierte la accion `throw_part` en `Pulso` cuando no lleva una parte, con 2 cargas recargables y el mismo `PulseBolt` repulsor como base para validar poke/skillshot limpio
   - `Ancla`: convierte esa misma accion en `Baliza`, una zona persistente corta que ralentiza drive/control rivales, evita apilar varias balizas por robot y deja `zona` visible en el roster cuando afecta a alguien

@@ -4,6 +4,7 @@ const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 const ARIETE_ARCHETYPE := preload("res://data/config/robots/ariete_archetype.tres")
 const AGUJA_ARCHETYPE := preload("res://data/config/robots/aguja_archetype.tres")
 const ANCLA_ARCHETYPE := preload("res://data/config/robots/ancla_archetype.tres")
+const CIZALLA_ARCHETYPE := preload("res://data/config/robots/cizalla_archetype.tres")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 var _failed := false
@@ -17,6 +18,7 @@ func _run() -> void:
 	await _validate_archetype_accent_nodes_exist_and_differ()
 	await _validate_runtime_loadout_rebuilds_the_accent()
 	await _validate_core_skill_states_refresh_archetype_accent()
+	await _validate_cizalla_dismantle_window_surfaces_on_body_and_roster()
 	_finish()
 
 
@@ -163,6 +165,48 @@ func _validate_core_skill_states_refresh_archetype_accent() -> void:
 
 	await _cleanup_robot(aguja)
 	await _cleanup_robot(ariete)
+
+
+func _validate_cizalla_dismantle_window_surfaces_on_body_and_roster() -> void:
+	var cizalla := _spawn_robot(CIZALLA_ARCHETYPE, 1, Vector3(-1.5, 0.0, 0.0))
+	var victim := _spawn_robot(ARIETE_ARCHETYPE, 2, Vector3(1.5, 0.0, 0.0))
+	await process_frame
+	await physics_frame
+
+	_assert(
+		cizalla.has_method("get_passive_status_summary"),
+		"RobotBase deberia exponer un resumen corto para pasivas que necesitan leerse en el roster."
+	)
+	if not cizalla.has_method("get_passive_status_summary"):
+		await _cleanup_robot(cizalla)
+		await _cleanup_robot(victim)
+		return
+
+	var baseline_summary := String(cizalla.call("get_passive_status_summary"))
+	var baseline_energy := _get_accent_peak_emission_energy(cizalla)
+	_assert(
+		baseline_summary == "",
+		"Cizalla no deberia arrancar con el cue de desarme prendido si aun no castigó una parte tocada."
+	)
+
+	victim.apply_damage_to_part("right_arm", 12.0, Vector3.RIGHT)
+	victim.receive_attack_hit_from_robot(Vector3.RIGHT, 18.0, cizalla)
+	await process_frame
+	await physics_frame
+
+	var triggered_summary := String(cizalla.call("get_passive_status_summary"))
+	var triggered_energy := _get_accent_peak_emission_energy(cizalla)
+	_assert(
+		triggered_summary == "corte",
+		"Cuando Cizalla cobra el bonus sobre una parte ya dañada, el roster deberia mostrar un cue corto de corte."
+	)
+	_assert(
+		triggered_energy > baseline_energy + 0.08,
+		"El acento corporal de Cizalla deberia reforzarse brevemente cuando activa su castigo sobre una parte tocada."
+	)
+
+	await _cleanup_robot(cizalla)
+	await _cleanup_robot(victim)
 
 
 func _spawn_robot(archetype: Resource, player_index: int, position: Vector3) -> RobotBase:

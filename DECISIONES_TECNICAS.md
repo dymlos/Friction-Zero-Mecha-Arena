@@ -414,6 +414,11 @@
    - `apply_runtime_loadout()` reconstruye ese acento cuando cambia el loadout, y `robot_archetype_readability_test.gd` cubre que exista, cambie por arquetipo y no quede stale tras usar `F3`.
    - Motivo: los seis arquetipos ya tenian texto en roster y algunas luces/skills propias, pero en pantalla compartida seguia faltando una pista corporal minima para leer roles sin abrir otro HUD ni depender de memoria externa.
 
+73. **La pasiva de `Cizalla` se telegraphia solo cuando realmente cobra valor**
+   - Cuando `RobotBase.apply_damage_to_part()` aplica el multiplicador extra sobre una pieza ya dañada, el atacante con `damaged_part_bonus_damage_multiplier > 1.0` abre una ventana corta `_damaged_part_bonus_remaining`; `get_passive_status_summary()` la expone como `corte` y `MatchController` la reusa en el roster compacto igual que `derrape` o `embestida`.
+   - Ese mismo estado tambien sube por un instante la emision del `ArchetypeAccent`, sin crear otro mesh/HUD nuevo ni depender de mirar números de daño.
+   - Motivo: `Cizalla` ya hacia más daño modular, pero era una identidad invisible frente al resto del roster; ligar el cue al momento exacto en que castiga una parte tocada lo vuelve legible sin convertir la pasiva en otro modo permanente.
+
 72. **El recap de cierre vive en el mismo HUD, pero solo entre rondas**
    - `MatchController` ahora deriva un recap estructurado (`Decision`, `Marcador` y un estado final por robot con `sigue en pie` o `baja N | causa`) a partir de la misma telemetria de eliminacion ya existente, y `MatchHud` lo muestra en un `RecapPanel` lateral oculto durante la ronda activa.
    - Motivo: reforzar el “como perdi” y el cierre de match sin abrir otra escena/post-partida prematura ni sumar texto que tape el combate mientras la ronda sigue viva.
