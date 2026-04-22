@@ -2,6 +2,11 @@
 
 ## Siguiente iteracion recomendada
 
+0. **No perder la linea `Control Pn | ...` al tocar selector runtime o perfiles locales**
+ - `Main` ya expone `get_lab_selected_controls_summary_line()` y la suma al round-state del laboratorio; `RobotBase.get_control_reference_hint()` concentra los labels por perfil y por `Easy/Hard`.
+ - Si se retocan `_build_round_state_lines()`, `get_lab_selector_summary_line()`, `toggle_lab_control_mode_for_player_slot()` o los perfiles locales de `RobotBase`, mantener `lab_runtime_selector_test.gd`: ahora cubre que el HUD arranque con la chuleta de `P1`, sume `aim TFGX` al pasar a `Hard` y migre al perfil flechas al cambiar a `P2`.
+ - Reabrir solo si cambia de verdad el layout del HUD del laboratorio o si aparece una referencia previa al match que vuelva redundante esta linea.
+
 0. **No perder el resumen final `Cierres | ...` al tocar score o wording del cierre**
  - `MatchController` ya resume en recap/resultado final que rutas cerraron rondas a lo largo del match (`ring-out`, `destruccion total`, `explosion inestable`) usando `_match_closing_cause_counts`.
  - Si se retocan `_finish_round_with_winner(...)`, `get_round_recap_panel_lines()`, `get_match_result_lines()` o el wording del cierre, mantener `match_closing_cause_summary_test.gd`; esa regresion ahora cubre `Teams` y `FFA` con un match mixto `ring-out + explosion inestable`.

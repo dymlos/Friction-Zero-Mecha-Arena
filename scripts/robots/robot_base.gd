@@ -95,6 +95,34 @@ const KEYBOARD_PROFILE_HARD_AIM_LABELS := {
 	KeyboardProfile.NUMPAD: "KP7/KP9/KP//KP*",
 }
 
+const KEYBOARD_PROFILE_ATTACK_LABELS := {
+	KeyboardProfile.WASD_SPACE: "Space",
+	KeyboardProfile.ARROWS_ENTER: "Enter",
+	KeyboardProfile.NUMPAD: "KP0",
+	KeyboardProfile.IJKL: "U",
+}
+
+const KEYBOARD_PROFILE_ENERGY_LABELS := {
+	KeyboardProfile.WASD_SPACE: "Q/E",
+	KeyboardProfile.ARROWS_ENTER: ",/.",
+	KeyboardProfile.NUMPAD: "KP1/KP3",
+	KeyboardProfile.IJKL: "Y/H",
+}
+
+const KEYBOARD_PROFILE_THROW_LABELS := {
+	KeyboardProfile.WASD_SPACE: "C",
+	KeyboardProfile.ARROWS_ENTER: "/",
+	KeyboardProfile.NUMPAD: "KP+",
+	KeyboardProfile.IJKL: "N",
+}
+
+const KEYBOARD_PROFILE_OVERDRIVE_LABELS := {
+	KeyboardProfile.WASD_SPACE: "R",
+	KeyboardProfile.ARROWS_ENTER: "M",
+	KeyboardProfile.NUMPAD: "KP5",
+	KeyboardProfile.IJKL: "B",
+}
+
 const IDENTITY_COLORS := [
 	Color(1.0, 0.62, 0.18, 1.0),
 	Color(0.24, 0.78, 1.0, 1.0),
@@ -893,6 +921,27 @@ func get_support_input_hint() -> String:
 				return "usa apoyo | objetivo previo/siguiente"
 
 	return "usa X | objetivo LB/RB"
+
+
+func get_control_reference_hint() -> String:
+	if uses_keyboard_input():
+		var segments: Array[String] = [
+			"mueve %s" % str(KEYBOARD_PROFILE_LABELS.get(keyboard_profile, "teclado")),
+		]
+		if control_mode == ControlMode.HARD:
+			segments.append(
+				"aim %s" % str(KEYBOARD_PROFILE_HARD_AIM_LABELS.get(keyboard_profile, "stick derecho"))
+			)
+		segments.append("ataca %s" % str(KEYBOARD_PROFILE_ATTACK_LABELS.get(keyboard_profile, "?")))
+		segments.append("energia %s" % str(KEYBOARD_PROFILE_ENERGY_LABELS.get(keyboard_profile, "?/?")))
+		segments.append("overdrive %s" % str(KEYBOARD_PROFILE_OVERDRIVE_LABELS.get(keyboard_profile, "?")))
+		segments.append("suelta %s" % str(KEYBOARD_PROFILE_THROW_LABELS.get(keyboard_profile, "?")))
+		return " | ".join(segments)
+
+	if control_mode == ControlMode.HARD:
+		return "mueve stick izq | aim stick der | ataca Sur | energia LB/RB | overdrive Norte | suelta Oeste"
+
+	return "mueve stick izq | ataca Sur | energia LB/RB | overdrive Norte | suelta Oeste"
 
 
 func get_player_move_input_vector() -> Vector2:

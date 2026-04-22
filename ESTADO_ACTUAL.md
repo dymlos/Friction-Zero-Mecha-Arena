@@ -2,6 +2,17 @@
 
 ## Estado del prototipo
 
+## Referencia compacta de controles para el slot seleccionado (2026-04-22)
+
+- Estado: el laboratorio ya no obliga a mirar solo el roster o el `StatusLabel` para recordar que hace el slot actualmente seleccionado; el propio HUD round-state deja una chuleta compacta y persistente de sus bindings reales.
+- Correccion aplicada:
+  - `scripts/main/main.gd` agrega `get_lab_selected_controls_summary_line()` y publica `Control Pn | ...` dentro de `_build_round_state_lines()` junto con `Escena | ...` y `Lab | ...`.
+  - `scripts/robots/robot_base.gd` centraliza el texto en `get_control_reference_hint()`, reutilizando el perfil local real para `mueve`, `aim` si corresponde, `ataca`, `energia`, `overdrive` y `suelta`.
+  - `scripts/tests/lab_runtime_selector_test.gd` fija la regresion concreta en tres pasos: linea presente al iniciar, `aim TFGX` visible al pasar `P1` a `Hard`, y migracion del resumen a `P2/flechas` al cambiar de slot.
+- Resultado:
+  - el selector runtime queda mas autoexplicativo en pantalla compartida, especialmente cuando el HUD esta en modo contextual y los jugadores alternan `Easy/Hard` sin salir de la escena.
+  - `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`, `godot --headless --path . -s res://scripts/tests/hard_mode_bootstrap_test.gd`, `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 81 tests`).
+
 ## Resumen acumulado de cierres por causa en el final de match (2026-04-22)
 
 - Estado: el recap lateral y el resultado final ya no muestran solo la causa del ultimo knockout; ahora tambien resumen la mezcla de rutas que cerraron rondas a lo largo de toda la partida.

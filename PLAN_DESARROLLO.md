@@ -4,6 +4,11 @@ Este plan ordena el desarrollo para validar primero la identidad real del juego:
 
 ## Checkpoint actual - 2026-04-22
 
+- El laboratorio ahora deja una referencia compacta de controles para el slot seleccionado dentro del propio round-state (`Control Pn | mueve ... | aim ... | ataca ... | energia ... | overdrive ... | suelta ...`), de modo que el selector runtime ya no depende solo del roster o del `StatusLabel` para leer `Easy/Hard` en pantalla compartida.
+- La implementacion vive repartida en un seam chico y legible: `Main.get_lab_selected_controls_summary_line()` publica la linea en `_build_round_state_lines()`, mientras `RobotBase.get_control_reference_hint()` centraliza los labels por perfil (`WASD`, `flechas`, `numpad`, `IJKL`) y suma `aim ...` solo cuando el slot realmente esta en `Hard`.
+- `lab_runtime_selector_test.gd` fija la regresion completa: la linea existe al iniciar en `P1/Easy`, agrega `aim TFGX` al alternar el slot seleccionado a `Hard` y migra a `P2` con el perfil flechas al cambiar de slot.
+- Validacion cerrada: `godot --headless --path . -s res://scripts/tests/lab_runtime_selector_test.gd`, `godot --headless --path . -s res://scripts/tests/hard_mode_bootstrap_test.gd`, `godot --headless --path . -s res://scripts/tests/lab_scene_selector_test.gd` y `godot --headless --path . -s res://scripts/tests/test_runner.gd` pasan (`Suite OK: 81 tests`).
+
 - El cierre del match ahora resume tambien la mezcla acumulada de rutas que decidieron rondas (`Cierres | ring-out N | destruccion total N | explosion inestable N`) para que el peso por causa se lea dentro del propio prototipo y no solo en notas o tests aislados.
 - La implementacion vive en `MatchController`: `_finish_round_with_winner(...)` registra la causa que cerro cada ronda ganada en `_match_closing_cause_counts`, y `get_round_recap_panel_lines()` / `get_match_result_lines()` publican esa lectura solo cuando la partida ya termino.
 - `match_closing_cause_summary_test.gd` fija el seam en `Teams` y `FFA`: una ronda cerrada por vacio y otra por explosion inestable deben terminar mostrando `Cierres | ring-out 1 | explosion inestable 1` tanto en recap como en resultado final.

@@ -2,6 +2,12 @@
 
 ## Decisiones vigentes
 
+1. **La referencia de controles del laboratorio vive en el round-state del slot seleccionado**
+ - `Main` agrega `get_lab_selected_controls_summary_line()` y suma `Control Pn | ...` a `_build_round_state_lines()` junto con `Escena | ...` y `Lab | ...`.
+ - `RobotBase` centraliza el texto con `get_control_reference_hint()`, reutilizando el perfil local real para `mueve`, `aim` cuando aplica, `ataca`, `energia`, `overdrive` y `suelta`.
+ - `lab_runtime_selector_test.gd` fija que la línea exista al iniciar, sume `aim TFGX` al alternar `P1` a `Hard` y migre al perfil flechas al pasar a `P2`.
+ - Motivo: el selector runtime ya decía qué slot/arquetipo/modo estaba activo, pero seguía faltando una chuleta persistente de los botones reales en pantalla compartida, sobre todo con HUD contextual. Resolverlo en el round-state mantiene el roster centrado en estado competitivo y evita abrir otro panel.
+
 1. **El cierre del match debe resumir tambien la mezcla acumulada de causas que decidieron rondas**
  - `MatchController` ahora guarda `_match_closing_cause_counts` y lo incrementa en `_finish_round_with_winner(...)`, o sea en el mismo punto donde una causa concreta ya se traduce en score.
  - `get_round_recap_panel_lines()` y `get_match_result_lines()` exponen `Cierres | ...` solo cuando el match ya termino; `Causa bajas | ...` sigue reservado para la ronda final activa/cerrada.

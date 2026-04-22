@@ -57,6 +57,10 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 	_assert(initial_summary.contains("Ariete"), "El resumen inicial deberia reflejar el arquetipo base del slot 1.")
 	_assert(initial_summary.contains("Easy"), "El selector runtime deberia reflejar el modo de control inicial.")
 	_assert((round_label as Label).text.contains("Lab |"), "El HUD deberia dejar visible el selector runtime en el laboratorio.")
+	_assert(
+		(round_label as Label).text.contains("Control P1 | mueve WASD | ataca Space | energia Q/E | overdrive R | suelta C"),
+		"El HUD deberia dejar una referencia compacta de controles para el slot seleccionado aunque el roster este en modo contextual."
+	)
 	_assert(robots[0].has_method("is_lab_selected"), "RobotBase deberia exponer si el selector runtime lo tiene elegido.")
 	if robots[0].has_method("is_lab_selected"):
 		_assert(bool(robots[0].call("is_lab_selected")), "El slot inicial deberia quedar marcado como seleccionado.")
@@ -93,6 +97,10 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 		"El resumen del selector runtime deberia reflejar el nuevo modo de control."
 	)
 	_assert(
+		(round_label as Label).text.contains("Control P1 | mueve WASD | aim TFGX | ataca Space | energia Q/E | overdrive R | suelta C"),
+		"Al pasar el slot seleccionado a Hard, la referencia compacta deberia sumar el aim dedicado real."
+	)
+	_assert(
 		(roster_label as Label).text.contains("Hard"),
 		"El roster deberia reflejar el modo Hard tras alternarlo runtime."
 	)
@@ -104,6 +112,10 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 	_assert(
 		String(main.call("get_lab_selector_summary_line")).contains("P2"),
 		"El selector runtime deberia poder moverse al siguiente slot."
+	)
+	_assert(
+		(round_label as Label).text.contains("Control P2 | mueve flechas | ataca Enter | energia ,/. | overdrive M | suelta /"),
+		"Al cambiar de slot, la referencia compacta deberia seguir al nuevo jugador seleccionado."
 	)
 	if robots[0].has_method("is_lab_selected") and robots[1].has_method("is_lab_selected"):
 		_assert(not bool(robots[0].call("is_lab_selected")), "Al cambiar de slot la seleccion anterior deberia apagarse.")

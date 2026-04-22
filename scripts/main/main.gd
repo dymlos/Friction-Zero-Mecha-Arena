@@ -236,6 +236,17 @@ func get_lab_selector_summary_line() -> String:
 	return "Lab | %s | 1-8 modo | F2 slot | F3 arquetipo | F4 modo" % _get_lab_robot_brief(robot)
 
 
+func get_lab_selected_controls_summary_line() -> String:
+	if not lab_runtime_selector_enabled:
+		return ""
+
+	var robot := _get_selected_lab_robot()
+	if robot == null:
+		return ""
+
+	return "Control P%s | %s" % [robot.player_index, robot.get_control_reference_hint()]
+
+
 func get_lab_scene_variant_summary_line() -> String:
 	var scene_variant := _get_current_lab_scene_variant()
 	return "Escena | %s | F6 cambia" % String(scene_variant.get("label", "laboratorio"))
@@ -650,6 +661,9 @@ func _build_round_state_lines() -> Array[String]:
 	var lab_selector_line := get_lab_selector_summary_line()
 	if lab_selector_line != "":
 		lines.append(lab_selector_line)
+	var controls_line := get_lab_selected_controls_summary_line()
+	if controls_line != "":
+		lines.append(controls_line)
 	if _arena == null:
 		return lines
 
