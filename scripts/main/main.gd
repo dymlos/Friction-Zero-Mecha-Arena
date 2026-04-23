@@ -99,6 +99,9 @@ var _pending_lab_runtime_session_state: Dictionary = {}
 var _pending_match_launch_config: MatchLaunchConfig = null
 var _player_shell_local_slots: Array[Dictionary] = []
 var _hud_refresh_queued := false
+var _last_audio_music_state := ""
+var _round_close_audio_fired := false
+var _final_pressure_warning_audio_fired := false
 
 
 func _ready() -> void:
@@ -127,6 +130,7 @@ func _ready() -> void:
 	_cleanup_detached_parts()
 	_sync_lab_selector_visuals()
 	_report_startup_structure()
+	_sync_audio_music_state(true)
 	ui.show_status(_build_hud_toggle_status())
 	_refresh_hud()
 
@@ -137,6 +141,8 @@ func _process(_delta: float) -> void:
 	_sync_round_intro_locks()
 	_sync_opening_telegraph()
 	_sync_post_death_support_state()
+	_sync_final_pressure_audio()
+	_sync_audio_music_state()
 	_queue_hud_refresh()
 
 
@@ -196,6 +202,7 @@ func request_pause_for_slot(player_slot: int) -> bool:
 		return false
 
 	_sync_pause_state()
+	_play_audio_cue("pause")
 	return true
 
 
@@ -204,6 +211,7 @@ func request_resume_for_slot(player_slot: int) -> bool:
 		return false
 
 	_sync_pause_state()
+	_play_audio_cue("resume")
 	return true
 
 
@@ -398,6 +406,7 @@ func _register_existing_robots() -> void:
 			child.part_restored.connect(_on_robot_part_restored)
 			child.robot_disabled.connect(_on_robot_disabled)
 			child.robot_exploded.connect(_on_robot_exploded)
+			child.meaningful_collision.connect(_on_robot_meaningful_collision)
 
 
 func get_local_session() -> LocalSession:
@@ -1148,6 +1157,7 @@ func _on_robot_part_destroyed(robot: RobotBase, part_name: String, _detached_par
 	if _detached_part != null and not _detached_part.recovery_lost.is_connected(_on_detached_part_recovery_lost):
 		_detached_part.recovery_lost.connect(_on_detached_part_recovery_lost)
 	match_controller.record_part_loss(robot, part_name)
+	_play_audio_cue("part_destroyed")
 	ui.show_status("%s perdio %s" % [robot.display_name, RobotBase.get_part_display_name(part_name)])
 	_cleanup_detached_parts()
 
@@ -1192,6 +1202,14 @@ func _on_robot_disabled(robot: RobotBase) -> void:
 	ui.show_status("%s quedo inutilizado" % robot.display_name)
 
 
+func _on_robot_meaningful_collision(_robot: RobotBase, _other_robot: RobotBase, closing_speed: float) -> void:
+	if closing_speed >= 6.0:
+		_play_audio_cue("impact_heavy")
+		return
+
+	_play_audio_cue("impact_medium")
+
+
 func _on_robot_exploded(robot: RobotBase) -> void:
 	var cause := MatchController.EliminationCause.UNSTABLE_EXPLOSION if robot.was_last_disabled_explosion_unstable() else MatchController.EliminationCause.EXPLOSION
 	var message := match_controller.record_robot_elimination(
@@ -1206,6 +1224,7 @@ func _on_robot_exploded(robot: RobotBase) -> void:
 
 func _on_edge_repair_pickup_collected(robot: RobotBase, repaired_part_name: String) -> void:
 	match_controller.record_edge_pickup_collection(robot)
+	_play_audio_cue("pickup_taken")
 	ui.show_status("%s estabilizo %s en borde" % [
 		robot.display_name,
 		RobotBase.get_part_display_name(repaired_part_name),
@@ -1214,6 +1233,7 @@ func _on_edge_repair_pickup_collected(robot: RobotBase, repaired_part_name: Stri
 
 func _on_edge_mobility_pickup_collected(robot: RobotBase, boost_duration: float) -> void:
 	match_controller.record_edge_pickup_collection(robot)
+	_play_audio_cue("pickup_taken")
 	ui.show_status("%s activo impulso de borde (%.1fs)" % [
 		robot.display_name,
 		boost_duration,
@@ -1222,6 +1242,7 @@ func _on_edge_mobility_pickup_collected(robot: RobotBase, boost_duration: float)
 
 func _on_edge_energy_pickup_collected(robot: RobotBase, surge_duration: float) -> void:
 	match_controller.record_edge_pickup_collection(robot)
+	_play_audio_cue("pickup_taken")
 	ui.show_status("%s recargo energia de borde (%.1fs)" % [
 		robot.display_name,
 		surge_duration,
@@ -1230,6 +1251,7 @@ func _on_edge_energy_pickup_collected(robot: RobotBase, surge_duration: float) -
 
 func _on_edge_pulse_pickup_collected(robot: RobotBase, item_name: String) -> void:
 	match_controller.record_edge_pickup_collection(robot)
+	_play_audio_cue("pickup_taken")
 	var item_label := robot.get_carried_item_display_name()
 	if item_label == "":
 		item_label = item_name
@@ -1242,6 +1264,7 @@ func _on_edge_pulse_pickup_collected(robot: RobotBase, item_name: String) -> voi
 
 func _on_edge_charge_pickup_collected(robot: RobotBase, restored_charges: int) -> void:
 	match_controller.record_edge_pickup_collection(robot)
+	_play_audio_cue("pickup_taken")
 	var skill_label := robot.get_core_skill_label()
 	if skill_label == "":
 		skill_label = "skill"
@@ -1255,6 +1278,7 @@ func _on_edge_charge_pickup_collected(robot: RobotBase, restored_charges: int) -
 
 func _on_edge_utility_pickup_collected(robot: RobotBase, stability_duration: float) -> void:
 	match_controller.record_edge_pickup_collection(robot)
+	_play_audio_cue("pickup_taken")
 	ui.show_status("%s activo estabilidad de borde (%.1fs)" % [
 		robot.display_name,
 		stability_duration,
@@ -1262,12 +1286,68 @@ func _on_edge_utility_pickup_collected(robot: RobotBase, stability_duration: flo
 
 
 func _on_round_started(round_number: int) -> void:
+	_round_close_audio_fired = false
+	_final_pressure_warning_audio_fired = false
+	_play_audio_cue("round_start")
 	_clear_post_death_support()
 	_cleanup_detached_parts()
 	if _arena == null:
 		return
 
 	_arena.activate_edge_pickup_layout_for_round(round_number)
+
+
+func _sync_final_pressure_audio() -> void:
+	if match_controller == null:
+		return
+	if match_controller.is_round_intro_active():
+		return
+	if match_controller.is_space_reduction_active():
+		return
+
+	var warning_active := match_controller.get_space_reduction_warning_strength() > 0.01
+	if warning_active and not _final_pressure_warning_audio_fired:
+		_final_pressure_warning_audio_fired = true
+		_play_audio_cue("pressure_warning")
+
+
+func _sync_audio_music_state(force: bool = false) -> void:
+	var next_state := _resolve_audio_music_state()
+	if not force and next_state == _last_audio_music_state:
+		return
+
+	var previous_state := _last_audio_music_state
+	_last_audio_music_state = next_state
+	var audio_director := get_node_or_null("/root/AudioDirector")
+	if audio_director != null and audio_director.has_method("set_music_state"):
+		audio_director.call("set_music_state", next_state)
+	if previous_state == "match_intro" and next_state == "match_live":
+		_play_audio_cue("round_unlock")
+	if (next_state == "results" or (next_state == "match_live" and match_controller != null and match_controller.is_round_reset_pending())) and not _round_close_audio_fired:
+		_round_close_audio_fired = true
+		_play_audio_cue("match_close" if next_state == "results" else "round_close")
+
+
+func _resolve_audio_music_state() -> String:
+	if _pause_controller.is_paused():
+		return "pause"
+	if match_controller == null:
+		return ""
+	if match_controller.is_match_over():
+		return "results"
+	if match_controller.is_round_intro_active():
+		return "match_intro"
+	if match_controller.is_space_reduction_active():
+		return "final_pressure"
+	return "match_live"
+
+
+func _play_audio_cue(cue_id: String) -> void:
+	var audio_director := get_node_or_null("/root/AudioDirector")
+	if audio_director == null or not audio_director.has_method("play_cue"):
+		return
+
+	audio_director.call("play_cue", cue_id)
 
 
 func _cleanup_detached_parts() -> void:

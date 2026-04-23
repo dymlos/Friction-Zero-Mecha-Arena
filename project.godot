@@ -15,6 +15,10 @@ run/main_scene="res://scenes/shell/game_shell.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+AudioDirector="*res://scripts/audio/audio_director.gd"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

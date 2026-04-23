@@ -18,6 +18,7 @@ var _shell_session := ShellSession.new()
 
 
 func _ready() -> void:
+	_set_shell_music_state()
 	open_main_menu()
 
 
@@ -94,19 +95,35 @@ func _wire_screen(screen: Control) -> void:
 		return
 
 	if screen.has_signal("play_local_requested"):
-		screen.play_local_requested.connect(open_local_setup)
+		screen.play_local_requested.connect(func() -> void:
+			_play_audio_cue("ui_confirm")
+			open_local_setup()
+		)
 	if screen.has_signal("characters_requested"):
-		screen.characters_requested.connect(open_characters)
+		screen.characters_requested.connect(func() -> void:
+			_play_audio_cue("ui_confirm")
+			open_characters()
+		)
 	if screen.has_signal("how_to_play_requested"):
-		screen.how_to_play_requested.connect(open_how_to_play)
+		screen.how_to_play_requested.connect(func() -> void:
+			_play_audio_cue("ui_confirm")
+			open_how_to_play()
+		)
 	if screen.has_signal("exit_requested"):
 		screen.exit_requested.connect(func() -> void:
+			_play_audio_cue("ui_back")
 			get_tree().quit()
 		)
 	if screen.has_signal("back_requested"):
-		screen.back_requested.connect(_on_back_requested)
+		screen.back_requested.connect(func() -> void:
+			_play_audio_cue("ui_back")
+			_on_back_requested()
+		)
 	if screen.has_signal("start_requested"):
-		screen.start_requested.connect(launch_local_match)
+		screen.start_requested.connect(func(launch_config: MatchLaunchConfig) -> void:
+			_play_audio_cue("ui_confirm")
+			launch_local_match(launch_config)
+		)
 
 
 func _on_back_requested() -> void:
@@ -156,3 +173,19 @@ func _restore_focus_after_how_to_play_return(target_screen_id: String) -> void:
 
 	if target_screen_id in ["main_menu", "local_match_setup"] and _active_screen.has_method("focus_how_to_play_button"):
 		_active_screen.call_deferred("focus_how_to_play_button")
+
+
+func _play_audio_cue(cue_id: String) -> void:
+	var audio_director := get_node_or_null("/root/AudioDirector")
+	if audio_director == null or not audio_director.has_method("play_cue"):
+		return
+
+	audio_director.call("play_cue", cue_id)
+
+
+func _set_shell_music_state() -> void:
+	var audio_director := get_node_or_null("/root/AudioDirector")
+	if audio_director == null or not audio_director.has_method("set_music_state"):
+		return
+
+	audio_director.call("set_music_state", "shell")

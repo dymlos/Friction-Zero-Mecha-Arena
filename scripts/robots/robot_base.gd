@@ -13,6 +13,7 @@ signal part_destroyed(robot: RobotBase, part_name: String, detached_part: Detach
 signal robot_disabled(robot: RobotBase)
 signal part_restored(robot: RobotBase, part_name: String, restored_by: RobotBase)
 signal robot_exploded(robot: RobotBase)
+signal meaningful_collision(robot: RobotBase, other_robot: RobotBase, closing_speed: float)
 
 enum ControlMode { EASY, HARD }
 enum KeyboardProfile { NONE, WASD_SPACE, ARROWS_ENTER, NUMPAD, IJKL }
@@ -1832,6 +1833,7 @@ func _try_apply_collision_damage(other_robot: RobotBase, push_direction: Vector3
 
 	_mark_collision_damage_cooldown(other_robot)
 	other_robot.receive_collision_hit_from_robot(push_direction, damage_amount, self)
+	meaningful_collision.emit(self, other_robot, closing_speed)
 
 
 func _is_collision_damage_ready(other_robot: RobotBase) -> bool:
