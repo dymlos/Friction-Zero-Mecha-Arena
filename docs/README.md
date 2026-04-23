@@ -30,6 +30,8 @@ Esta es la capa documental activa del proyecto. Debe mantenerse corta, revisable
 
 ## QA y validacion
 
+- `godot-qa` ya esta listo para chequeos livianos de runtime y escenarios comprometidos del repo. Conviene usarlo primero cuando el cambio toque HUD, overlays, prompts, layout de `Control` o smoke visual de escenas.
+- El entrypoint corto para agentes es: `godot-qa --project . doctor`, `godot-qa --project . scenario list` y luego un `godot-qa --project . scenario run <scenario>` enfocado.
 - Las pruebas scene-level en GDScript siguen siendo la mejor referencia para contratos de mundo y camara que `godot-qa` todavia no expresa bien.
 - Los escenarios en `qa/scenarios/` siguen siendo la mejor superficie para contratos de HUD y overlays que ya entran en `assert.inside_viewport` y `assert.no_overlap`.
 

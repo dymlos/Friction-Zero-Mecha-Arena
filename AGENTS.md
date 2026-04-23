@@ -294,6 +294,11 @@ Before planning or coding significant features, review `docs/diseno.md` first.
 If deeper historical context is needed, then consult the archived design material under `docs/historial/diseno/`.
 Use the active docs as the working reference and the archived docs as supporting context.
 
+## QA guidance
+- Prefer `godot-qa` for lightweight runtime inspection and committed smoke scenarios when touching HUD, Control layout, overlays, prompts, or other clearly UI-facing contracts.
+- In this repo, the usual lightweight entry checks are `godot-qa --project . doctor`, `godot-qa --project . scenario list`, and a focused `godot-qa --project . scenario run <scenario>`.
+- Keep using scene-level GDScript tests as the primary source of truth for gameplay, world, camera, physics, and other contracts that `godot-qa` still does not express well.
+
 If there is a conflict:
 1. Preserve the core pillars in this `AGENTS.md`.
 2. Prefer the most recent and most concrete design document.
