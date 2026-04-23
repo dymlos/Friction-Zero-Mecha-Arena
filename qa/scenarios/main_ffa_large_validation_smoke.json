@@ -1,0 +1,21 @@
+{
+  "name": "main_ffa_large_validation_smoke",
+  "scene": "res://scenes/main/main_ffa_large_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 10
+    },
+    {
+      "snapshot": "boot"
+    }
+  ],
+  "assert": [
+    {
+      "no_errors": true
+    }
+  ]
+}
