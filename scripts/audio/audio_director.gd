@@ -24,17 +24,23 @@ var _bus_playback_indices := {
 }
 var _music_state := ""
 var _debug_history: Array[Dictionary] = []
+var _is_shutting_down := false
+var _audio_playback_enabled := true
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_audio_playback_enabled = DisplayServer.get_name() != "headless"
 	_ensure_bus("UI")
 	_ensure_bus("SFX")
 	_ensure_bus("Music")
-	_build_players()
+	if _audio_playback_enabled:
+		_build_players()
 
 
 func _process(_delta: float) -> void:
+	if not _audio_playback_enabled:
+		return
 	if _music_state == "" or _music_player == null:
 		return
 	if _music_player.playing:
@@ -44,9 +50,17 @@ func _process(_delta: float) -> void:
 	_music_player.play()
 
 
+func _exit_tree() -> void:
+	_shutdown_audio_graph()
+
+
 func play_cue(cue_id: String) -> void:
 	var cue_stream := _cue_bank.get_cue_stream(cue_id)
 	if cue_stream == null:
+		return
+
+	if not _audio_playback_enabled:
+		_record_debug("cue", cue_id)
 		return
 
 	var bus_name := _cue_bank.get_bus_for_cue(cue_id)
@@ -66,6 +80,10 @@ func set_music_state(state_name: String) -> void:
 		return
 
 	_music_state = next_state
+	if _music_state != "":
+		_record_debug("music", _music_state)
+	if not _audio_playback_enabled:
+		return
 	if _music_player == null:
 		return
 	if _music_state == "":
@@ -75,7 +93,6 @@ func set_music_state(state_name: String) -> void:
 	_music_player.bus = "Music"
 	_music_player.stream = _cue_bank.get_music_stream(_music_state)
 	_music_player.play()
-	_record_debug("music", _music_state)
 
 
 func get_music_state() -> String:
@@ -88,6 +105,24 @@ func reset_debug_history() -> void:
 
 func get_debug_history() -> Array:
 	return _debug_history.duplicate(true)
+
+
+func _shutdown_audio_graph() -> void:
+	if _is_shutting_down:
+		return
+
+	_is_shutting_down = true
+	_music_state = ""
+	_audio_playback_enabled = false
+	for player in _ui_players:
+		_release_player(player)
+	for player in _sfx_players:
+		_release_player(player)
+	_release_player(_music_player)
+	_ui_players.clear()
+	_sfx_players.clear()
+	_music_player = null
+	_cue_bank = ProceduralCueBank.new()
 
 
 func _ensure_bus(bus_name: String) -> void:
@@ -130,6 +165,17 @@ func _next_player_for_bus(bus_name: String) -> AudioStreamPlayer:
 	var player := players[wrapi(current_index, 0, players.size())]
 	_bus_playback_indices[bus_name] = wrapi(current_index + 1, 0, players.size())
 	return player
+
+
+func _release_player(player: AudioStreamPlayer) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+
+	player.stop()
+	player.stream = null
+	if player.get_parent() == self:
+		remove_child(player)
+	player.free()
 
 
 func _record_debug(entry_type: String, value: String) -> void:
