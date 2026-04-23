@@ -3,6 +3,7 @@ extends SceneTree
 const TEAM_SCENES := [
 	"res://scenes/main/main.tscn",
 	"res://scenes/main/main_teams_validation.tscn",
+	"res://scenes/main/main_teams_large_validation.tscn",
 ]
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")

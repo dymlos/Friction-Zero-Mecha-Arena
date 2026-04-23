@@ -15,12 +15,20 @@ const SCENE_SPECS := [
 		"label": "Teams rapido",
 	},
 	{
+		"path": "res://scenes/main/main_teams_large_validation.tscn",
+		"label": "Teams grande",
+	},
+	{
 		"path": "res://scenes/main/main_ffa.tscn",
 		"label": "FFA base",
 	},
 	{
 		"path": "res://scenes/main/main_ffa_validation.tscn",
 		"label": "FFA rapido",
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large_validation.tscn",
+		"label": "FFA grande",
 	},
 ]
 

@@ -18,6 +18,12 @@ const SCENE_SPECS := [
 		"mode": MatchController.MatchMode.TEAMS,
 	},
 	{
+		"path": "res://scenes/main/main_teams_large_validation.tscn",
+		"arena_path": "ArenaRoot/ArenaTeamsLargeValidation",
+		"label": "Teams grande",
+		"mode": MatchController.MatchMode.TEAMS,
+	},
+	{
 		"path": "res://scenes/main/main_ffa.tscn",
 		"arena_path": "ArenaRoot/ArenaBlockout",
 		"label": "FFA base",
@@ -27,6 +33,12 @@ const SCENE_SPECS := [
 		"path": "res://scenes/main/main_ffa_validation.tscn",
 		"arena_path": "ArenaRoot/ArenaFFAValidation",
 		"label": "FFA rapido",
+		"mode": MatchController.MatchMode.FFA,
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large_validation.tscn",
+		"arena_path": "ArenaRoot/ArenaFFALargeValidation",
+		"label": "FFA grande",
 		"mode": MatchController.MatchMode.FFA,
 	},
 ]
