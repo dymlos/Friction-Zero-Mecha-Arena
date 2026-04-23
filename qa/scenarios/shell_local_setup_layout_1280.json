@@ -1,0 +1,51 @@
+{
+  "name": "shell_local_setup_layout_1280",
+  "scene": "res://scenes/qa/shell_local_setup_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "local_setup"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:shell_local_setup_mode"
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_slots"
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_start"
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_back"
+    },
+    {
+      "no_overlap": {
+        "a": "qa:shell_local_setup_slots",
+        "b": "qa:shell_local_setup_back"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_mode",
+        "expected": "FFA"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_slots",
+        "expected": "P2 | Hard"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

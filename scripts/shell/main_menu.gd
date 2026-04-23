@@ -11,6 +11,7 @@ signal exit_requested
 
 
 func _ready() -> void:
+	_install_qa_ids()
 	title_label.text = "Friction Zero"
 	subtitle_label.text = "Shell local minima para entrar al match sin herramientas de laboratorio."
 	play_local_button.text = "Jugar local"
@@ -25,3 +26,10 @@ func _on_play_local_pressed() -> void:
 
 func _on_exit_pressed() -> void:
 	exit_requested.emit()
+
+
+func _install_qa_ids() -> void:
+	title_label.set_meta("qa_id", "shell_main_menu_title")
+	subtitle_label.set_meta("qa_id", "shell_main_menu_subtitle")
+	play_local_button.set_meta("qa_id", "shell_main_menu_play_local")
+	exit_button.set_meta("qa_id", "shell_main_menu_exit")

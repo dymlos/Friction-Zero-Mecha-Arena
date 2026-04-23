@@ -1,0 +1,42 @@
+{
+  "name": "shell_main_menu_layout_1280",
+  "scene": "res://scenes/qa/shell_main_menu_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "main_menu"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:shell_main_menu_title"
+    },
+    {
+      "inside_viewport": "qa:shell_main_menu_play_local"
+    },
+    {
+      "inside_viewport": "qa:shell_main_menu_exit"
+    },
+    {
+      "no_overlap": {
+        "a": "qa:shell_main_menu_title",
+        "b": "qa:shell_main_menu_play_local"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_main_menu_play_local",
+        "expected": "Jugar local"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

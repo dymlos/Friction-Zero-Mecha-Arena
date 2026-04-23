@@ -29,6 +29,7 @@ var _slot_control_modes := {}
 
 
 func _ready() -> void:
+	_install_qa_ids()
 	for slot in DEFAULT_LOCAL_SLOTS:
 		_slot_control_modes[slot] = RobotBase.ControlMode.EASY
 
@@ -123,3 +124,12 @@ func _on_start_pressed() -> void:
 
 func _on_back_pressed() -> void:
 	back_requested.emit()
+
+
+func _install_qa_ids() -> void:
+	mode_value_label.set_meta("qa_id", "shell_local_setup_mode")
+	slot_summary_label.set_meta("qa_id", "shell_local_setup_slots")
+	teams_button.set_meta("qa_id", "shell_local_setup_teams")
+	ffa_button.set_meta("qa_id", "shell_local_setup_ffa")
+	start_button.set_meta("qa_id", "shell_local_setup_start")
+	back_button.set_meta("qa_id", "shell_local_setup_back")

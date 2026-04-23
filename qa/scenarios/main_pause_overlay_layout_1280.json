@@ -29,7 +29,7 @@
     {
       "text_contains": {
         "target": "qa:match_hud_pause_label",
-        "expected": "P2 reanuda"
+        "expected": "Volver al menu"
       }
     },
     {

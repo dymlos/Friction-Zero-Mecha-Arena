@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/qa/shell_main_menu_validation.gd" id="1_validation"]
+[ext_resource type="PackedScene" path="res://scenes/shell/main_menu.tscn" id="2_main_menu"]
+
+[node name="ShellMainMenuValidation" type="Node"]
+script = ExtResource("1_validation")
+
+[node name="UI" type="Node" parent="."]
+
+[node name="MainMenu" parent="UI" instance=ExtResource("2_main_menu")]

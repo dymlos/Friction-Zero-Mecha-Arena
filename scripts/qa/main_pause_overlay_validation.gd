@@ -9,7 +9,7 @@ func _ready() -> void:
 	match_hud.show_status("Friction Zero | Validacion overlay pausa")
 	match_hud.show_round_state([
 		"Ronda 2 en juego",
-		"Pausa | P2 reanuda | F5 reinicia",
+		"Pausa | P2 al mando",
 	])
 	match_hud.show_roster([
 		"Easy | Player 1 / Ariete | Activo | 4/4 partes | WASD",
@@ -19,5 +19,8 @@ func _ready() -> void:
 	])
 	match_hud.show_pause_overlay("Pausa", [
 		"Owner | P2",
-		"Pausa | P2 reanuda | F5 reinicia",
+		"Navegacion | arriba/abajo mueve | ataque confirma | pausa reanuda",
+		"> Reanudar",
+		"  Reiniciar",
+		"  Volver al menu",
 	])
