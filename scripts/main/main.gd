@@ -4,7 +4,9 @@ class_name Main
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchHud = preload("res://scripts/ui/match_hud.gd")
 const LocalSession = preload("res://scripts/systems/local_session.gd")
+const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const PauseController = preload("res://scripts/systems/pause_controller.gd")
+const ShellSession = preload("res://scripts/systems/shell_session.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
@@ -68,9 +70,11 @@ const LAB_SCENE_VARIANTS := [
 	},
 ]
 const DEFAULT_LOCAL_SESSION_CONFIG := preload("res://data/config/local/default_local_session_config.tres")
+const ENTRY_CONTEXT_LAB := "lab"
 
 static var _lab_runtime_session_state: Dictionary = {}
 
+@export var entry_context := ENTRY_CONTEXT_LAB
 @export var hard_mode_player_slots: PackedInt32Array = PackedInt32Array()
 @export var lab_runtime_selector_enabled := true
 @export var lab_runtime_archetypes: Array[RobotArchetypeConfig] = []
@@ -92,6 +96,8 @@ var _pause_controller := PauseController.new()
 var _lab_selected_player_slot := 1
 var _applying_lab_selector_reset := false
 var _pending_lab_runtime_session_state: Dictionary = {}
+var _pending_match_launch_config: MatchLaunchConfig = null
+var _player_shell_local_slots: Array[Dictionary] = []
 var _hud_refresh_queued := false
 
 
@@ -100,7 +106,12 @@ func _ready() -> void:
 	# La logica concreta vive en scripts mas chicos para que el proyecto crezca ordenado.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_arena = _get_active_arena()
-	_pending_lab_runtime_session_state = _consume_lab_runtime_session_state()
+	_pending_match_launch_config = _consume_match_launch_config()
+	_apply_pending_entry_context()
+	if _is_lab_context():
+		_pending_lab_runtime_session_state = _consume_lab_runtime_session_state()
+	else:
+		_pending_lab_runtime_session_state = {}
 	_restore_lab_runtime_session_settings()
 	_configure_playable_prototype()
 	_connect_joypad_session_monitor()
@@ -138,6 +149,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	var key_event := event as InputEventKey
 	if not key_event.pressed or key_event.echo:
+		return
+	if not _is_lab_context():
 		return
 	if key_event.keycode == MATCH_RESTART_KEY and match_controller.request_match_restart():
 		ui.show_status(_build_hud_toggle_status())
@@ -278,7 +291,7 @@ func toggle_lab_control_mode_for_player_slot(player_slot: int) -> void:
 
 
 func get_lab_selector_summary_line() -> String:
-	if not lab_runtime_selector_enabled:
+	if not _is_lab_context() or not lab_runtime_selector_enabled:
 		return ""
 
 	var robot := _get_selected_lab_robot()
@@ -289,7 +302,7 @@ func get_lab_selector_summary_line() -> String:
 
 
 func get_lab_selected_controls_summary_line() -> String:
-	if not lab_runtime_selector_enabled:
+	if not _is_lab_context() or not lab_runtime_selector_enabled:
 		return ""
 
 	var robot := _get_selected_lab_robot()
@@ -305,17 +318,21 @@ func get_lab_selected_controls_summary_line() -> String:
 
 
 func get_lab_scene_variant_summary_line() -> String:
+	if not _is_lab_context():
+		return ""
 	var scene_variant := _get_current_lab_scene_variant()
 	return "Escena | %s | F6 cambia" % String(scene_variant.get("label", "laboratorio"))
 
 
 func get_lab_hud_mode_summary_line() -> String:
+	if not _is_lab_context():
+		return ""
 	var hud_mode_label := match_controller.get_hud_detail_mode_label().replace("HUD ", "")
 	return "HUD | %s | F1 cambia" % hud_mode_label
 
 
 func get_lab_selected_support_summary_line() -> String:
-	if not lab_runtime_selector_enabled:
+	if not _is_lab_context() or not lab_runtime_selector_enabled:
 		return ""
 
 	var robot := _get_selected_lab_robot()
@@ -330,6 +347,8 @@ func get_lab_selected_support_summary_line() -> String:
 
 
 func cycle_lab_scene_variant() -> void:
+	if not _is_lab_context():
+		return
 	var current_index := _get_current_lab_scene_variant_index()
 	var next_index := wrapi(current_index + 1, 0, LAB_SCENE_VARIANTS.size())
 	var next_scene_path := String(LAB_SCENE_VARIANTS[next_index].get("path", ""))
@@ -489,19 +508,36 @@ func _bootstrap_local_session(robot_count: int) -> void:
 	_local_session = _duplicate_default_local_session()
 	var max_local_slots: int = max(robot_count, 1)
 	var active_match_slots: int = min(robot_count, 1)
+	if _is_player_shell_context() and not _player_shell_local_slots.is_empty():
+		active_match_slots = _player_shell_local_slots.size()
 	if match_controller != null:
-		active_match_slots = min(match_controller.get_local_player_count(), robot_count)
+		if not (_is_player_shell_context() and not _player_shell_local_slots.is_empty()):
+			active_match_slots = min(match_controller.get_local_player_count(), robot_count)
 		if match_controller.match_config != null:
 			max_local_slots = max(max_local_slots, int(match_controller.match_config.max_local_slots))
-			active_match_slots = min(
-				active_match_slots,
-				int(match_controller.match_config.active_match_slots)
-			)
+			if not (_is_player_shell_context() and not _player_shell_local_slots.is_empty()):
+				active_match_slots = min(
+					active_match_slots,
+					int(match_controller.match_config.active_match_slots)
+				)
 	elif _local_session != null:
 		max_local_slots = max(max_local_slots, _local_session.get_max_local_slots())
 		active_match_slots = min(active_match_slots, _local_session.get_active_match_slots())
 
 	_local_session.configure(max_local_slots, max(active_match_slots, 1))
+	if _is_player_shell_context() and not _player_shell_local_slots.is_empty():
+		for slot_spec in _player_shell_local_slots:
+			var player_slot := int(slot_spec.get("slot", 0))
+			if player_slot <= 0:
+				continue
+
+			_local_session.assign_keyboard_slot(
+				player_slot,
+				_get_default_keyboard_profile_for_slot(player_slot),
+				_resolve_control_mode_for_slot(player_slot)
+			)
+		return
+
 	for player_slot in range(1, _local_session.get_active_match_slots() + 1):
 		_local_session.assign_keyboard_slot(
 			player_slot,
@@ -542,7 +578,7 @@ func _get_scene_robots() -> Array[RobotBase]:
 
 
 func _store_lab_runtime_session_state() -> void:
-	if not lab_runtime_selector_enabled:
+	if not _is_lab_context() or not lab_runtime_selector_enabled:
 		return
 
 	var state := {
@@ -575,7 +611,7 @@ func _consume_lab_runtime_session_state() -> Dictionary:
 
 
 func _restore_lab_runtime_session_settings() -> void:
-	if not lab_runtime_selector_enabled or _pending_lab_runtime_session_state.is_empty():
+	if not _is_lab_context() or not lab_runtime_selector_enabled or _pending_lab_runtime_session_state.is_empty():
 		return
 
 	var restored_selected_slot := int(_pending_lab_runtime_session_state.get("selected_player_slot", 0))
@@ -595,7 +631,7 @@ func _restore_lab_runtime_session_settings() -> void:
 
 
 func _apply_restored_lab_runtime_loadouts(robots: Array[RobotBase]) -> void:
-	if not lab_runtime_selector_enabled or _pending_lab_runtime_session_state.is_empty():
+	if not _is_lab_context() or not lab_runtime_selector_enabled or _pending_lab_runtime_session_state.is_empty():
 		return
 
 	var archetype_paths_value: Variant = _pending_lab_runtime_session_state.get("archetype_paths", {})
@@ -900,6 +936,9 @@ func _get_current_lab_scene_variant_index() -> int:
 
 
 func _build_hud_toggle_status() -> String:
+	if not _is_lab_context():
+		return _build_startup_status()
+
 	return "%s | %s con F1" % [
 		_build_startup_status(),
 		match_controller.get_hud_detail_mode_label(),
@@ -914,6 +953,21 @@ func _build_round_state_lines() -> Array[String]:
 	var local_session_line := get_local_session_summary_line()
 	if local_session_line != "":
 		lines.append(local_session_line)
+
+	if not _is_lab_context():
+		if _arena == null:
+			return lines
+
+		var edge_summary := _arena.get_active_edge_pickup_layout_summary()
+		if edge_summary != "":
+			if match_controller.is_round_intro_active():
+				lines.append(
+					"Borde | %s | abre en %.1fs"
+					% [edge_summary, snappedf(match_controller.get_round_intro_time_left(), 0.1)]
+				)
+			else:
+				lines.append("Borde | %s" % edge_summary)
+		return lines
 
 	lines.append(get_lab_scene_variant_summary_line())
 	lines.append(get_lab_hud_mode_summary_line())
@@ -1520,6 +1574,53 @@ func _sync_lab_selector_visuals() -> void:
 			should_show_selection_visuals
 			and support_ship == selected_support_ship
 		)
+
+
+func _consume_match_launch_config() -> MatchLaunchConfig:
+	var shell_session := ShellSession.new()
+	return shell_session.consume_match_launch_config()
+
+
+func _apply_pending_entry_context() -> void:
+	entry_context = ENTRY_CONTEXT_LAB
+	_player_shell_local_slots.clear()
+	if _pending_match_launch_config == null:
+		return
+
+	entry_context = String(_pending_match_launch_config.entry_context)
+	if entry_context == "":
+		entry_context = MatchLaunchConfig.ENTRY_CONTEXT_PLAYER_SHELL
+	if not _is_player_shell_context():
+		return
+
+	lab_runtime_selector_enabled = false
+	hard_mode_player_slots = PackedInt32Array()
+	if match_controller != null:
+		match_controller.match_mode = _pending_match_launch_config.match_mode
+		match_controller.apply_runtime_hud_detail_mode(int(_pending_match_launch_config.hud_detail_mode))
+
+	for slot_spec in _pending_match_launch_config.local_slots:
+		if not (slot_spec is Dictionary):
+			continue
+
+		var normalized_slot := {
+			"slot": int(slot_spec.get("slot", 0)),
+			"control_mode": int(slot_spec.get("control_mode", RobotBase.ControlMode.EASY)),
+		}
+		if int(normalized_slot.get("slot", 0)) <= 0:
+			continue
+
+		_player_shell_local_slots.append(normalized_slot)
+		if int(normalized_slot.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD:
+			hard_mode_player_slots.append(int(normalized_slot.get("slot", 0)))
+
+
+func _is_player_shell_context() -> bool:
+	return entry_context == MatchLaunchConfig.ENTRY_CONTEXT_PLAYER_SHELL
+
+
+func _is_lab_context() -> bool:
+	return not _is_player_shell_context()
 
 
 func _build_allowed_edge_pickup_ids() -> PackedStringArray:

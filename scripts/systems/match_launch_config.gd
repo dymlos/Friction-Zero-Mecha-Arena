@@ -1,6 +1,7 @@
 extends Resource
 class_name MatchLaunchConfig
 
+const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 const ENTRY_CONTEXT_PLAYER_SHELL := "player_shell"
@@ -9,6 +10,7 @@ const DEFAULT_MAX_LOCAL_SLOTS := 8
 @export var match_mode := 0
 @export var target_scene_path := ""
 @export var entry_context := ENTRY_CONTEXT_PLAYER_SHELL
+@export var hud_detail_mode: MatchConfig.HudDetailMode = MatchConfig.HudDetailMode.EXPLICIT
 @export var local_slots: Array[Dictionary] = []
 
 
