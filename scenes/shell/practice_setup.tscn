@@ -1,16 +1,16 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/shell/how_to_play_screen.gd" id="1_how_to_play"]
+[ext_resource type="Script" path="res://scripts/shell/practice_setup.gd" id="1_practice_setup"]
 [ext_resource type="Theme" path="res://data/theme/fz_ui_theme.tres" id="2_theme"]
 
-[node name="HowToPlayScreen" type="Control"]
+[node name="PracticeSetup" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_how_to_play")
+script = ExtResource("1_practice_setup")
 theme = ExtResource("2_theme")
 
 [node name="Backdrop" type="ColorRect" parent="."]
@@ -20,7 +20,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.0509804, 0.0666667, 0.0862745, 1)
 
 [node name="Frame" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -46,7 +45,7 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ShellTitle"
-text = "How to Play"
+text = "Practica"
 
 [node name="SubtitleLabel" type="Label" parent="Frame/VBox/Header"]
 unique_name_in_owner = true
@@ -79,15 +78,15 @@ theme_override_constants/separation = 12
 [node name="ListTitle" type="Label" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Temas clave"
+text = "Modulos"
 
 [node name="ListHint" type="Label" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellBodyMuted"
 autowrap_mode = 2
-text = "Lee una idea por bloque: reglas, desgaste, energia, recuperacion y control."
+text = "Elige una practica corta o entra al sandbox sin objetivos de fallo."
 
-[node name="TopicList" type="ItemList" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
+[node name="ModuleList" type="ItemList" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
@@ -115,9 +114,9 @@ theme_override_constants/separation = 14
 [node name="SectionLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Tema seleccionado"
+text = "Modulo seleccionado"
 
-[node name="DetailTitleLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="ModuleTitleLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ShellBodyStrong"
@@ -126,7 +125,7 @@ text = ""
 [node name="SummaryTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Resumen rapido"
+text = "Resumen corto"
 
 [node name="SummaryValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 unique_name_in_owner = true
@@ -134,55 +133,59 @@ layout_mode = 2
 autowrap_mode = 2
 text = ""
 
-[node name="BulletsTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="RecommendedTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Puntos clave"
+text = "Robot recomendado"
 
-[node name="BulletsValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-autowrap_mode = 2
-text = ""
-
-[node name="CalloutPanel" type="PanelContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
-layout_mode = 2
-theme_type_variation = &"ShellCalloutPanel"
-
-[node name="CalloutMargin" type="MarginContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 12
-
-[node name="CalloutVBox" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="CalloutTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin/CalloutVBox"]
-layout_mode = 2
-theme_type_variation = &"ShellSectionTitle"
-text = "Consejo de lectura"
-
-[node name="CalloutValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin/CalloutVBox"]
+[node name="RecommendedValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2
 text = ""
+
+[node name="RelatedTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
+text = "Temas relacionados"
+
+[node name="RelatedTopicsValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="SlotsTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
+text = "Slots locales"
+
+[node name="SlotsSummaryLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="SlotButtons" type="GridContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+columns = 2
+
+[node name="Slot1Button" type="Button" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/SlotButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+text = "P1: Easy"
+
+[node name="Slot2Button" type="Button" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/SlotButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+text = "P2: Easy"
 
 [node name="Footer" type="HBoxContainer" parent="Frame/VBox"]
 layout_mode = 2
 alignment = 2
 theme_override_constants/separation = 12
-
-[node name="PracticeButton" type="Button" parent="Frame/VBox/Footer"]
-unique_name_in_owner = true
-layout_mode = 2
-focus_mode = 2
-theme_type_variation = &"ShellButtonPrimary"
-text = "Probar"
 
 [node name="BackButton" type="Button" parent="Frame/VBox/Footer"]
 unique_name_in_owner = true
@@ -190,3 +193,10 @@ layout_mode = 2
 focus_mode = 2
 theme_type_variation = &"ShellButtonSecondary"
 text = "Volver"
+
+[node name="StartButton" type="Button" parent="Frame/VBox/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+theme_type_variation = &"ShellButtonPrimary"
+text = "Entrar"

@@ -14,6 +14,7 @@ static func get_sections() -> Array:
 				"Shared-screen: leer posicion y espacio libre importa tanto como pegar primero.",
 			],
 			"callout": "Busca el primer choque serio, pero no regales el borde por perseguir una baja.",
+			"practice_module_id": "impacto",
 		},
 		{
 			"id": "parts",
@@ -25,6 +26,7 @@ static func get_sections() -> Array:
 				"Sin las cuatro partes, el robot queda inutilizado y pasa a ser un peligro empujable.",
 			],
 			"callout": "Un robot roto todavia puede generar caos: lee que parte le queda antes de entrar.",
+			"practice_module_id": "partes",
 		},
 		{
 			"id": "energy",
@@ -36,6 +38,7 @@ static func get_sections() -> Array:
 				"Overdrive concentra poder temporal en una parte y despues deja penalidad u overheating.",
 			],
 			"callout": "No hace falta microgestionar cada segundo: cambia energia para un plan claro y visible.",
+			"practice_module_id": "energia",
 		},
 		{
 			"id": "recovery",
@@ -47,6 +50,7 @@ static func get_sections() -> Array:
 				"Al cargar una parte, tu robot deja de usar otras habilidades activas.",
 			],
 			"callout": "Si el centro esta limpio, mirar una parte caida puede abrir la jugada decisiva del equipo.",
+			"practice_module_id": "recuperacion",
 		},
 		{
 			"id": "controls",
@@ -58,6 +62,7 @@ static func get_sections() -> Array:
 				"En shared-screen importa que todos entiendan rapido que esta haciendo cada robot, no solo quien tiene mas inputs.",
 			],
 			"callout": "Si estas aprendiendo, empieza en Easy y cambia a Hard cuando ya leas bien rebotes, bordes y ventanas de choque.",
+			"practice_module_id": "movimiento",
 		},
 	]
 
@@ -68,3 +73,7 @@ static func get_section(section_id: String) -> Dictionary:
 			return section
 
 	return {}
+
+
+static func get_practice_module_id_for_section(section_id: String) -> String:
+	return String(get_section(section_id).get("practice_module_id", ""))

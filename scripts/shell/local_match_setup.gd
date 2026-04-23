@@ -10,6 +10,7 @@ const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_p
 signal back_requested
 signal characters_requested
 signal how_to_play_requested
+signal practice_requested
 signal start_requested(launch_config: MatchLaunchConfig)
 
 const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4]
@@ -28,6 +29,7 @@ const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4]
 @onready var start_button: Button = %StartButton
 @onready var characters_button: Button = %CharactersButton
 @onready var how_to_play_button: Button = %HowToPlayButton
+@onready var practice_button: Button = %PracticeButton
 @onready var back_button: Button = %BackButton
 
 var _match_mode: MatchController.MatchMode = MatchController.MatchMode.TEAMS
@@ -56,9 +58,11 @@ func _ready() -> void:
 	start_button.pressed.connect(_on_start_pressed)
 	back_button.pressed.connect(_on_back_pressed)
 	how_to_play_button.pressed.connect(_on_how_to_play_pressed)
+	practice_button.pressed.connect(_on_practice_pressed)
 	start_button.text = "Iniciar"
 	characters_button.text = "Characters"
 	how_to_play_button.text = "How to Play"
+	practice_button.text = "Practica"
 	back_button.text = "Volver"
 	_refresh_view()
 
@@ -147,6 +151,10 @@ func _on_how_to_play_pressed() -> void:
 	how_to_play_requested.emit()
 
 
+func _on_practice_pressed() -> void:
+	practice_requested.emit()
+
+
 func focus_characters_button() -> void:
 	if characters_button != null:
 		characters_button.grab_focus()
@@ -157,6 +165,11 @@ func focus_how_to_play_button() -> void:
 		how_to_play_button.grab_focus()
 
 
+func focus_practice_button() -> void:
+	if practice_button != null:
+		practice_button.grab_focus()
+
+
 func _install_qa_ids() -> void:
 	mode_value_label.set_meta("qa_id", "shell_local_setup_mode")
 	slot_summary_label.set_meta("qa_id", "shell_local_setup_slots")
@@ -165,4 +178,5 @@ func _install_qa_ids() -> void:
 	start_button.set_meta("qa_id", "shell_local_setup_start")
 	characters_button.set_meta("qa_id", "shell_local_setup_characters")
 	how_to_play_button.set_meta("qa_id", "shell_local_setup_how_to_play")
+	practice_button.set_meta("qa_id", "shell_local_setup_practice")
 	back_button.set_meta("qa_id", "shell_local_setup_back")

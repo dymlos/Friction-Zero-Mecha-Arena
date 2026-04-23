@@ -5,6 +5,7 @@ const CHARACTERS_SCENE := preload("res://scenes/shell/characters_screen.tscn")
 const HOW_TO_PLAY_SCENE := preload("res://scenes/shell/how_to_play_screen.tscn")
 const LOCAL_MATCH_SETUP_SCENE := preload("res://scenes/shell/local_match_setup.tscn")
 const MAIN_MENU_SCENE := preload("res://scenes/shell/main_menu.tscn")
+const PRACTICE_SETUP_SCENE := preload("res://scenes/shell/practice_setup.tscn")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
 
@@ -14,6 +15,7 @@ var _active_screen: Control = null
 var _active_screen_id := ""
 var _characters_return_screen_id := "main_menu"
 var _how_to_play_return_screen_id := "main_menu"
+var _practice_return_screen_id := "main_menu"
 var _shell_session := ShellSession.new()
 
 
@@ -58,6 +60,19 @@ func open_how_to_play(return_screen_id: String = "") -> void:
 
 	_how_to_play_return_screen_id = resolved_return_screen_id
 	_mount_screen(HOW_TO_PLAY_SCENE, "how_to_play")
+
+
+func open_practice_setup(return_screen_id: String = "", module_id: String = "") -> void:
+	var resolved_return_screen_id := return_screen_id
+	if resolved_return_screen_id == "":
+		resolved_return_screen_id = _active_screen_id
+	if resolved_return_screen_id == "" or resolved_return_screen_id == "practice_setup":
+		resolved_return_screen_id = "main_menu"
+
+	_practice_return_screen_id = resolved_return_screen_id
+	_mount_screen(PRACTICE_SETUP_SCENE, "practice_setup")
+	if is_instance_valid(_active_screen) and _active_screen.has_method("set_selected_module"):
+		_active_screen.call_deferred("set_selected_module", module_id)
 
 
 func return_to_main_menu() -> void:
@@ -121,6 +136,11 @@ func _wire_screen(screen: Control) -> void:
 			_play_audio_cue("ui_confirm")
 			open_how_to_play()
 		)
+	if screen.has_signal("practice_requested"):
+		screen.practice_requested.connect(func(module_id: String = "") -> void:
+			_play_audio_cue("ui_confirm")
+			open_practice_setup("", module_id)
+		)
 	if screen.has_signal("exit_requested"):
 		screen.exit_requested.connect(func() -> void:
 			_play_audio_cue("ui_back")
@@ -144,6 +164,9 @@ func _on_back_requested() -> void:
 		return
 	if _active_screen_id == "how_to_play":
 		_return_from_how_to_play()
+		return
+	if _active_screen_id == "practice_setup":
+		_return_from_practice_setup()
 		return
 
 	return_to_main_menu()
@@ -185,6 +208,27 @@ func _restore_focus_after_how_to_play_return(target_screen_id: String) -> void:
 
 	if target_screen_id in ["main_menu", "local_match_setup"] and _active_screen.has_method("focus_how_to_play_button"):
 		_active_screen.call_deferred("focus_how_to_play_button")
+
+
+func _return_from_practice_setup() -> void:
+	var target_screen_id := _practice_return_screen_id
+	if target_screen_id == "local_match_setup":
+		open_local_setup()
+	elif target_screen_id == "how_to_play":
+		open_how_to_play("local_match_setup" if _how_to_play_return_screen_id == "local_match_setup" else "main_menu")
+	else:
+		target_screen_id = "main_menu"
+		open_main_menu()
+
+	call_deferred("_restore_focus_after_practice_return", target_screen_id)
+
+
+func _restore_focus_after_practice_return(target_screen_id: String) -> void:
+	if not is_instance_valid(_active_screen):
+		return
+
+	if target_screen_id in ["main_menu", "local_match_setup"] and _active_screen.has_method("focus_practice_button"):
+		_active_screen.call_deferred("focus_practice_button")
 
 
 func _play_audio_cue(cue_id: String) -> void:

@@ -43,6 +43,7 @@ func _run() -> void:
 	_assert(game_shell.has_method("open_local_setup"), "GameShell deberia poder abrir el setup local.")
 	_assert(game_shell.has_method("open_characters"), "GameShell deberia poder abrir Characters desde la shell.")
 	_assert(game_shell.has_method("open_how_to_play"), "GameShell deberia poder abrir How to Play desde la shell.")
+	_assert(game_shell.has_method("open_practice_setup"), "GameShell deberia poder abrir Practica desde la shell.")
 	_assert(game_shell.has_method("return_to_main_menu"), "GameShell deberia poder volver al menu principal.")
 	_assert(game_shell.has_method("launch_local_match"), "GameShell deberia poder lanzar un match local.")
 	if not (
@@ -50,6 +51,7 @@ func _run() -> void:
 		and game_shell.has_method("open_local_setup")
 		and game_shell.has_method("open_characters")
 		and game_shell.has_method("open_how_to_play")
+		and game_shell.has_method("open_practice_setup")
 		and game_shell.has_method("return_to_main_menu")
 		and game_shell.has_method("launch_local_match")
 	):
@@ -98,6 +100,10 @@ func _run() -> void:
 	_assert(
 		setup.has_signal("how_to_play_requested"),
 		"LocalMatchSetup deberia poder derivar a How to Play desde setup."
+	)
+	_assert(
+		setup.has_signal("practice_requested"),
+		"LocalMatchSetup deberia poder derivar a Practica desde setup."
 	)
 	_assert(
 		setup.has_method("toggle_slot_control_mode"),

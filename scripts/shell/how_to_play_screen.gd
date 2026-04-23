@@ -5,6 +5,7 @@ const OnboardingCatalog = preload("res://scripts/systems/onboarding_catalog.gd")
 const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
 
 signal back_requested
+signal practice_requested(module_id: String)
 
 @onready var backdrop: ColorRect = $Backdrop
 @onready var title_label: Label = %TitleLabel
@@ -14,6 +15,7 @@ signal back_requested
 @onready var summary_value_label: Label = %SummaryValueLabel
 @onready var bullets_value_label: Label = %BulletsValueLabel
 @onready var callout_value_label: Label = %CalloutValueLabel
+@onready var practice_button: Button = %PracticeButton
 @onready var back_button: Button = %BackButton
 
 var _sections: Array = []
@@ -26,6 +28,7 @@ func _ready() -> void:
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_label.text = "How to Play"
 	subtitle_label.text = "Reglas base del match, controles Easy/Hard y lectura general sin repetir identidad de Characters."
+	practice_button.pressed.connect(open_selected_topic_practice)
 	back_button.text = "Volver"
 	back_button.pressed.connect(go_back)
 	topic_list.item_selected.connect(_on_topic_selected)
@@ -46,6 +49,14 @@ func get_selected_topic_id() -> String:
 func focus_back_button() -> void:
 	if back_button != null:
 		back_button.grab_focus()
+
+
+func open_selected_topic_practice() -> void:
+	var module_id := OnboardingCatalog.get_practice_module_id_for_section(get_selected_topic_id())
+	if module_id.is_empty():
+		return
+
+	practice_requested.emit(module_id)
 
 
 func go_back() -> void:
@@ -75,6 +86,9 @@ func _apply_section(section: Dictionary) -> void:
 		bullets.append("- %s" % String(bullet))
 	bullets_value_label.text = "\n".join(bullets)
 	callout_value_label.text = String(section.get("callout", ""))
+	var practice_module_id := String(section.get("practice_module_id", ""))
+	practice_button.disabled = practice_module_id.is_empty()
+	practice_button.text = "Probar %s" % practice_module_id.capitalize()
 
 
 func _on_topic_selected(index: int) -> void:
@@ -94,4 +108,5 @@ func _install_qa_ids() -> void:
 	detail_title_label.set_meta("qa_id", "shell_how_to_play_detail_title")
 	summary_value_label.set_meta("qa_id", "shell_how_to_play_summary")
 	callout_value_label.set_meta("qa_id", "shell_how_to_play_callout")
+	practice_button.set_meta("qa_id", "shell_how_to_play_practice")
 	back_button.set_meta("qa_id", "shell_how_to_play_back")

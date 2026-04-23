@@ -25,6 +25,10 @@ static func get_shell_roster_entry(entry_id: String) -> Dictionary:
 	return {}
 
 
+static func get_shell_roster_entry_label(entry_id: String) -> String:
+	return String(get_shell_roster_entry(entry_id).get("label", ""))
+
+
 static func _build_entry(entry_id: String, config: RobotArchetypeConfig) -> Dictionary:
 	return {
 		"id": entry_id,

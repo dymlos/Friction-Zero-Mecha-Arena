@@ -6,6 +6,7 @@ const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_p
 signal play_local_requested
 signal characters_requested
 signal how_to_play_requested
+signal practice_requested
 signal exit_requested
 
 @onready var backdrop: ColorRect = $Backdrop
@@ -14,6 +15,7 @@ signal exit_requested
 @onready var play_local_button: Button = %PlayLocalButton
 @onready var characters_button: Button = %CharactersButton
 @onready var how_to_play_button: Button = %HowToPlayButton
+@onready var practice_button: Button = %PracticeButton
 @onready var exit_button: Button = %ExitButton
 
 
@@ -26,10 +28,12 @@ func _ready() -> void:
 	play_local_button.text = "Jugar local"
 	characters_button.text = "Characters"
 	how_to_play_button.text = "How to Play"
+	practice_button.text = "Practica"
 	exit_button.text = "Salir"
 	play_local_button.pressed.connect(_on_play_local_pressed)
 	characters_button.pressed.connect(_on_characters_pressed)
 	how_to_play_button.pressed.connect(_on_how_to_play_pressed)
+	practice_button.pressed.connect(_on_practice_pressed)
 	exit_button.pressed.connect(_on_exit_pressed)
 	call_deferred("focus_play_local_button")
 
@@ -44,6 +48,10 @@ func _on_characters_pressed() -> void:
 
 func _on_how_to_play_pressed() -> void:
 	how_to_play_requested.emit()
+
+
+func _on_practice_pressed() -> void:
+	practice_requested.emit()
 
 
 func _on_exit_pressed() -> void:
@@ -65,10 +73,16 @@ func focus_how_to_play_button() -> void:
 		how_to_play_button.grab_focus()
 
 
+func focus_practice_button() -> void:
+	if practice_button != null:
+		practice_button.grab_focus()
+
+
 func _install_qa_ids() -> void:
 	title_label.set_meta("qa_id", "shell_main_menu_title")
 	subtitle_label.set_meta("qa_id", "shell_main_menu_subtitle")
 	play_local_button.set_meta("qa_id", "shell_main_menu_play_local")
 	characters_button.set_meta("qa_id", "shell_main_menu_characters")
 	how_to_play_button.set_meta("qa_id", "shell_main_menu_how_to_play")
+	practice_button.set_meta("qa_id", "shell_main_menu_practice")
 	exit_button.set_meta("qa_id", "shell_main_menu_exit")

@@ -44,6 +44,10 @@ func _run() -> void:
 		"How to Play deberia exponer el tema seleccionado para tests de flujo."
 	)
 	_assert(
+		how_to_play_screen.has_method("open_selected_topic_practice"),
+		"How to Play deberia exponer un CTA para abrir Practica desde el tema activo."
+	)
+	_assert(
 		String(how_to_play_screen.call("get_selected_topic_id")) == "victory",
 		"How to Play deberia arrancar mostrando victoria primero."
 	)
@@ -91,6 +95,7 @@ func _run() -> void:
 		return
 
 	_assert(setup.has_signal("how_to_play_requested"), "El setup local deberia poder abrir How to Play.")
+	_assert(setup.has_signal("practice_requested"), "El setup local deberia tambien poder abrir Practica.")
 	_assert(setup.has_method("focus_how_to_play_button"), "El setup local deberia permitir restaurar foco en How to Play.")
 	setup.call("focus_how_to_play_button")
 	await process_frame
@@ -121,6 +126,30 @@ func _run() -> void:
 		"How to Play deberia exponer una salida explicita."
 	)
 	if how_to_play_screen != null:
+		how_to_play_screen.call("open_selected_topic_practice")
+		await process_frame
+		await process_frame
+
+		_assert(
+			String(game_shell.call("get_active_screen_id")) == "practice_setup",
+			"How to Play deberia poder abrir Practica con un CTA contextual."
+		)
+		var practice_setup: Variant = game_shell.call("get_active_screen")
+		_assert(practice_setup != null, "La shell deberia montar PracticeSetup desde How to Play.")
+		if practice_setup != null:
+			_assert(
+				String(practice_setup.call("get_selected_module_id")) == "impacto",
+				"El tema `victory` deberia enlazar al modulo `impacto`."
+			)
+			practice_setup.call("emit_signal", "back_requested")
+			await process_frame
+			await process_frame
+
+		_assert(
+			String(game_shell.call("get_active_screen_id")) == "how_to_play",
+			"Volver desde PracticeSetup abierto por How to Play deberia regresar a How to Play."
+		)
+		how_to_play_screen = game_shell.call("get_active_screen")
 		how_to_play_screen.call("focus_back_button")
 		await process_frame
 		await process_frame
