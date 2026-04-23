@@ -25,6 +25,14 @@ const SCENE_SPECS := [
 		"requires_distinct_ffa": false,
 	},
 	{
+		"path": "res://scenes/main/main_teams_large_validation.tscn",
+		"arena_name": "ArenaTeamsLargeValidation",
+		"mode": MatchController.MatchMode.TEAMS,
+		"expects_match_config": true,
+		"requires_team_pairs": true,
+		"requires_distinct_ffa": false,
+	},
+	{
 		"path": "res://scenes/main/main_ffa.tscn",
 		"arena_name": "ArenaBlockout",
 		"mode": MatchController.MatchMode.FFA,
@@ -35,6 +43,14 @@ const SCENE_SPECS := [
 	{
 		"path": "res://scenes/main/main_ffa_validation.tscn",
 		"arena_name": "ArenaFFAValidation",
+		"mode": MatchController.MatchMode.FFA,
+		"expects_match_config": true,
+		"requires_team_pairs": false,
+		"requires_distinct_ffa": true,
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large_validation.tscn",
+		"arena_name": "ArenaFFALargeValidation",
 		"mode": MatchController.MatchMode.FFA,
 		"expects_match_config": true,
 		"requires_team_pairs": false,

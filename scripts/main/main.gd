@@ -51,12 +51,20 @@ const LAB_SCENE_VARIANTS := [
 		"label": "Equipos rapido",
 	},
 	{
+		"path": "res://scenes/main/main_teams_large_validation.tscn",
+		"label": "Equipos grande",
+	},
+	{
 		"path": "res://scenes/main/main_ffa.tscn",
 		"label": "FFA base",
 	},
 	{
 		"path": "res://scenes/main/main_ffa_validation.tscn",
 		"label": "FFA rapido",
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large_validation.tscn",
+		"label": "FFA grande",
 	},
 ]
 const DEFAULT_LOCAL_SESSION_CONFIG := preload("res://data/config/local/default_local_session_config.tres")

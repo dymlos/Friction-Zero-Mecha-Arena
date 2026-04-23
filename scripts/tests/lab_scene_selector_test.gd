@@ -13,12 +13,20 @@ const EXPECTED_SCENE_ORDER := [
 		"label": "Equipos rapido",
 	},
 	{
+		"path": "res://scenes/main/main_teams_large_validation.tscn",
+		"label": "Equipos grande",
+	},
+	{
 		"path": "res://scenes/main/main_ffa.tscn",
 		"label": "FFA base",
 	},
 	{
 		"path": "res://scenes/main/main_ffa_validation.tscn",
 		"label": "FFA rapido",
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large_validation.tscn",
+		"label": "FFA grande",
 	},
 ]
 
