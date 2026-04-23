@@ -1,0 +1,93 @@
+extends Control
+class_name HowToPlayScreen
+
+const OnboardingCatalog = preload("res://scripts/systems/onboarding_catalog.gd")
+
+signal back_requested
+
+@onready var title_label: Label = %TitleLabel
+@onready var subtitle_label: Label = %SubtitleLabel
+@onready var topic_list: ItemList = %TopicList
+@onready var detail_title_label: Label = %DetailTitleLabel
+@onready var summary_value_label: Label = %SummaryValueLabel
+@onready var bullets_value_label: Label = %BulletsValueLabel
+@onready var callout_value_label: Label = %CalloutValueLabel
+@onready var back_button: Button = %BackButton
+
+var _sections: Array = []
+var _selected_index := -1
+
+
+func _ready() -> void:
+	_install_qa_ids()
+	title_label.text = "How to Play"
+	subtitle_label.text = "Reglas base del match, controles Easy/Hard y lectura general sin repetir identidad de Characters."
+	back_button.text = "Volver"
+	back_button.pressed.connect(go_back)
+	topic_list.item_selected.connect(_on_topic_selected)
+	_sections = OnboardingCatalog.get_sections()
+	_rebuild_list()
+	if not _sections.is_empty():
+		_select_index(0)
+	call_deferred("_focus_initial_list")
+
+
+func get_selected_topic_id() -> String:
+	if _selected_index < 0 or _selected_index >= _sections.size():
+		return ""
+
+	return String(_sections[_selected_index].get("id", ""))
+
+
+func focus_back_button() -> void:
+	if back_button != null:
+		back_button.grab_focus()
+
+
+func go_back() -> void:
+	back_requested.emit()
+
+
+func _rebuild_list() -> void:
+	topic_list.clear()
+	for section in _sections:
+		topic_list.add_item(String(section.get("label", "")))
+
+
+func _select_index(index: int) -> void:
+	if index < 0 or index >= _sections.size():
+		return
+
+	_selected_index = index
+	topic_list.select(index)
+	_apply_section(_sections[index])
+
+
+func _apply_section(section: Dictionary) -> void:
+	detail_title_label.text = String(section.get("label", ""))
+	summary_value_label.text = String(section.get("summary", ""))
+	var bullets := PackedStringArray()
+	for bullet in section.get("bullets", []):
+		bullets.append("- %s" % String(bullet))
+	bullets_value_label.text = "\n".join(bullets)
+	callout_value_label.text = String(section.get("callout", ""))
+
+
+func _on_topic_selected(index: int) -> void:
+	_select_index(index)
+
+
+func _focus_initial_list() -> void:
+	if topic_list == null:
+		return
+
+	topic_list.grab_focus()
+
+
+func _install_qa_ids() -> void:
+	title_label.set_meta("qa_id", "shell_how_to_play_title")
+	topic_list.set_meta("qa_id", "shell_how_to_play_list")
+	detail_title_label.set_meta("qa_id", "shell_how_to_play_detail_title")
+	summary_value_label.set_meta("qa_id", "shell_how_to_play_summary")
+	callout_value_label.set_meta("qa_id", "shell_how_to_play_callout")
+	back_button.set_meta("qa_id", "shell_how_to_play_back")

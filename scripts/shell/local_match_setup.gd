@@ -8,6 +8,7 @@ const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 signal back_requested
 signal characters_requested
+signal how_to_play_requested
 signal start_requested(launch_config: MatchLaunchConfig)
 
 const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4]
@@ -24,6 +25,7 @@ const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4]
 ]
 @onready var start_button: Button = %StartButton
 @onready var characters_button: Button = %CharactersButton
+@onready var how_to_play_button: Button = %HowToPlayButton
 @onready var back_button: Button = %BackButton
 
 var _match_mode: MatchController.MatchMode = MatchController.MatchMode.TEAMS
@@ -49,8 +51,10 @@ func _ready() -> void:
 	characters_button.pressed.connect(_on_characters_pressed)
 	start_button.pressed.connect(_on_start_pressed)
 	back_button.pressed.connect(_on_back_pressed)
+	how_to_play_button.pressed.connect(_on_how_to_play_pressed)
 	start_button.text = "Iniciar"
 	characters_button.text = "Characters"
+	how_to_play_button.text = "How to Play"
 	back_button.text = "Volver"
 	_refresh_view()
 
@@ -134,9 +138,18 @@ func _on_back_pressed() -> void:
 	back_requested.emit()
 
 
+func _on_how_to_play_pressed() -> void:
+	how_to_play_requested.emit()
+
+
 func focus_characters_button() -> void:
 	if characters_button != null:
 		characters_button.grab_focus()
+
+
+func focus_how_to_play_button() -> void:
+	if how_to_play_button != null:
+		how_to_play_button.grab_focus()
 
 
 func _install_qa_ids() -> void:
@@ -146,4 +159,5 @@ func _install_qa_ids() -> void:
 	ffa_button.set_meta("qa_id", "shell_local_setup_ffa")
 	start_button.set_meta("qa_id", "shell_local_setup_start")
 	characters_button.set_meta("qa_id", "shell_local_setup_characters")
+	how_to_play_button.set_meta("qa_id", "shell_local_setup_how_to_play")
 	back_button.set_meta("qa_id", "shell_local_setup_back")

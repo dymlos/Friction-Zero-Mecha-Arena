@@ -33,7 +33,10 @@ Este documento resume la direccion activa del juego. Es una referencia viva de a
 
 - `Characters` comunica identidad por personaje: rol corto, fantasy, fortaleza, riesgo, skill o pasiva clave, lectura corporal y referencia `Easy/Hard`.
 - `Characters` debe reutilizar una sola fuente de verdad de copy para shell, QA y tests; no reescribir cada ficha en superficies paralelas.
-- `How to Play` queda reservado para reglas generales del juego, victoria, energia, overdrive y recuperacion de partes.
+- `How to Play` vive en la shell y cubre reglas generales del juego: victoria, dano modular, energia, `Overdrive`, recuperacion/negacion de partes y diferencia `Easy/Hard`.
+- `How to Play` debe seguir siendo corto y escaneable: lista de temas + detalle breve, sin competir con `Characters` ni convertirse en tutorial largo.
+- `HUD`, `pausa` y `resultados` solo deben reforzar recordatorios contextuales; no son la superficie principal de onboarding.
+- `Modo Practica` queda como capa posterior para experimentar sistemas sin la presion del match, no como reemplazo de la ayuda base.
 
 ## Regla practica
 

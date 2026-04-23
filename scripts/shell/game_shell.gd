@@ -2,6 +2,7 @@ extends Control
 class_name GameShell
 
 const CHARACTERS_SCENE := preload("res://scenes/shell/characters_screen.tscn")
+const HOW_TO_PLAY_SCENE := preload("res://scenes/shell/how_to_play_screen.tscn")
 const LOCAL_MATCH_SETUP_SCENE := preload("res://scenes/shell/local_match_setup.tscn")
 const MAIN_MENU_SCENE := preload("res://scenes/shell/main_menu.tscn")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
@@ -12,6 +13,7 @@ const ShellSession = preload("res://scripts/systems/shell_session.gd")
 var _active_screen: Control = null
 var _active_screen_id := ""
 var _characters_return_screen_id := "main_menu"
+var _how_to_play_return_screen_id := "main_menu"
 var _shell_session := ShellSession.new()
 
 
@@ -44,6 +46,17 @@ func open_characters(return_screen_id: String = "") -> void:
 
 	_characters_return_screen_id = resolved_return_screen_id
 	_mount_screen(CHARACTERS_SCENE, "characters")
+
+
+func open_how_to_play(return_screen_id: String = "") -> void:
+	var resolved_return_screen_id := return_screen_id
+	if resolved_return_screen_id == "":
+		resolved_return_screen_id = _active_screen_id
+	if resolved_return_screen_id == "" or resolved_return_screen_id == "how_to_play":
+		resolved_return_screen_id = "main_menu"
+
+	_how_to_play_return_screen_id = resolved_return_screen_id
+	_mount_screen(HOW_TO_PLAY_SCENE, "how_to_play")
 
 
 func return_to_main_menu() -> void:
@@ -84,6 +97,8 @@ func _wire_screen(screen: Control) -> void:
 		screen.play_local_requested.connect(open_local_setup)
 	if screen.has_signal("characters_requested"):
 		screen.characters_requested.connect(open_characters)
+	if screen.has_signal("how_to_play_requested"):
+		screen.how_to_play_requested.connect(open_how_to_play)
 	if screen.has_signal("exit_requested"):
 		screen.exit_requested.connect(func() -> void:
 			get_tree().quit()
@@ -97,6 +112,9 @@ func _wire_screen(screen: Control) -> void:
 func _on_back_requested() -> void:
 	if _active_screen_id == "characters":
 		_return_from_characters()
+		return
+	if _active_screen_id == "how_to_play":
+		_return_from_how_to_play()
 		return
 
 	return_to_main_menu()
@@ -118,4 +136,23 @@ func _restore_focus_after_characters_return(target_screen_id: String) -> void:
 		return
 
 	if target_screen_id in ["main_menu", "local_match_setup"] and _active_screen.has_method("focus_characters_button"):
-		_active_screen.call("focus_characters_button")
+		_active_screen.call_deferred("focus_characters_button")
+
+
+func _return_from_how_to_play() -> void:
+	var target_screen_id := _how_to_play_return_screen_id
+	if target_screen_id == "local_match_setup":
+		open_local_setup()
+	else:
+		target_screen_id = "main_menu"
+		open_main_menu()
+
+	call_deferred("_restore_focus_after_how_to_play_return", target_screen_id)
+
+
+func _restore_focus_after_how_to_play_return(target_screen_id: String) -> void:
+	if not is_instance_valid(_active_screen):
+		return
+
+	if target_screen_id in ["main_menu", "local_match_setup"] and _active_screen.has_method("focus_how_to_play_button"):
+		_active_screen.call_deferred("focus_how_to_play_button")

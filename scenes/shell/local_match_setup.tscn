@@ -126,6 +126,12 @@ layout_mode = 2
 focus_mode = 2
 text = "Characters"
 
+[node name="HowToPlayButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+text = "How to Play"
+
 [node name="StartButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
 unique_name_in_owner = true
 layout_mode = 2

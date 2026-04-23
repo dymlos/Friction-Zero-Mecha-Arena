@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/qa/shell_how_to_play_validation.gd" id="1_validation"]
+[ext_resource type="PackedScene" path="res://scenes/shell/how_to_play_screen.tscn" id="2_how_to_play"]
+
+[node name="ShellHowToPlayValidation" type="Node"]
+script = ExtResource("1_validation")
+
+[node name="UI" type="Node" parent="."]
+
+[node name="HowToPlayScreen" parent="UI" instance=ExtResource("2_how_to_play")]

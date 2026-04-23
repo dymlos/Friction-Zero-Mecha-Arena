@@ -24,6 +24,9 @@
       "inside_viewport": "qa:shell_main_menu_characters"
     },
     {
+      "inside_viewport": "qa:shell_main_menu_how_to_play"
+    },
+    {
       "inside_viewport": "qa:shell_main_menu_exit"
     },
     {
@@ -42,6 +45,12 @@
       "text_contains": {
         "target": "qa:shell_main_menu_characters",
         "expected": "Characters"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_main_menu_how_to_play",
+        "expected": "How to Play"
       }
     },
     {

@@ -1,0 +1,171 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/shell/how_to_play_screen.gd" id="1_how_to_play"]
+
+[node name="HowToPlayScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_how_to_play")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0509804, 0.0666667, 0.0862745, 1)
+
+[node name="Frame" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 32.0
+offset_right = -40.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Frame"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Header" type="VBoxContainer" parent="Frame/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="Frame/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "How to Play"
+
+[node name="SubtitleLabel" type="Label" parent="Frame/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="Body" type="HBoxContainer" parent="Frame/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 18
+
+[node name="ListPanel" type="PanelContainer" parent="Frame/VBox/Body"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 0)
+
+[node name="ListMargin" type="MarginContainer" parent="Frame/VBox/Body/ListPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="ListVBox" type="VBoxContainer" parent="Frame/VBox/Body/ListPanel/ListMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ListTitle" type="Label" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
+layout_mode = 2
+text = "Temas clave"
+
+[node name="ListHint" type="Label" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
+layout_mode = 2
+autowrap_mode = 2
+text = "Lee una idea por bloque: reglas, desgaste, energia, recuperacion y control."
+
+[node name="TopicList" type="ItemList" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+same_column_width = true
+select_mode = 0
+
+[node name="DetailPanel" type="PanelContainer" parent="Frame/VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DetailMargin" type="MarginContainer" parent="Frame/VBox/Body/DetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 22
+
+[node name="DetailVBox" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="SectionLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+text = "Tema seleccionado"
+
+[node name="DetailTitleLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = ""
+
+[node name="SummaryTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+text = "Resumen rapido"
+
+[node name="SummaryValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="BulletsTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+text = "Puntos clave"
+
+[node name="BulletsValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+autowrap_mode = 2
+text = ""
+
+[node name="CalloutPanel" type="PanelContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+
+[node name="CalloutMargin" type="MarginContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="CalloutVBox" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CalloutTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin/CalloutVBox"]
+layout_mode = 2
+text = "Consejo de lectura"
+
+[node name="CalloutValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin/CalloutVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="Footer" type="HBoxContainer" parent="Frame/VBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="BackButton" type="Button" parent="Frame/VBox/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+text = "Volver"

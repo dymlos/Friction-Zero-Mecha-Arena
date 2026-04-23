@@ -1,0 +1,63 @@
+{
+  "name": "shell_how_to_play_layout_1280",
+  "scene": "res://scenes/qa/shell_how_to_play_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "how_to_play"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:shell_how_to_play_title"
+    },
+    {
+      "inside_viewport": "qa:shell_how_to_play_list"
+    },
+    {
+      "inside_viewport": "qa:shell_how_to_play_detail_title"
+    },
+    {
+      "inside_viewport": "qa:shell_how_to_play_summary"
+    },
+    {
+      "inside_viewport": "qa:shell_how_to_play_callout"
+    },
+    {
+      "inside_viewport": "qa:shell_how_to_play_back"
+    },
+    {
+      "no_overlap": {
+        "a": "qa:shell_how_to_play_list",
+        "b": "qa:shell_how_to_play_back"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_how_to_play_detail_title",
+        "expected": "Como ganar"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_how_to_play_summary",
+        "expected": "Ganas"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_how_to_play_callout",
+        "expected": "primer choque"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}
