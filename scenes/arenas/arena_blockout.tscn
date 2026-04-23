@@ -17,24 +17,24 @@ size = Vector3(24, 0.6, 16)
 size = Vector3(24, 0.6, 16)
 
 [sub_resource type="StandardMaterial3D" id="Material_platform"]
-albedo_color = Color(0.26, 0.28, 0.3, 1)
-roughness = 0.8
+albedo_color = Color(0.14902, 0.180392, 0.211765, 1)
+roughness = 0.86
 
 [sub_resource type="BoxMesh" id="BoxMesh_void"]
 size = Vector3(40, 0.08, 28)
 
 [sub_resource type="StandardMaterial3D" id="Material_void"]
-albedo_color = Color(0.018, 0.022, 0.028, 1)
+albedo_color = Color(0.0117647, 0.0196078, 0.027451, 1)
 roughness = 1.0
 
 [sub_resource type="BoxMesh" id="BoxMesh_edge_marker"]
 size = Vector3(1, 0.08, 1)
 
 [sub_resource type="StandardMaterial3D" id="Material_edge"]
-albedo_color = Color(0.9, 0.2, 0.16, 1)
+albedo_color = Color(0.952941, 0.760784, 0.403922, 1)
 emission_enabled = true
-emission = Color(0.9, 0.1, 0.06, 1)
-emission_energy_multiplier = 0.35
+emission = Color(1, 0.4, 0.12, 1)
+emission_energy_multiplier = 0.55
 
 [sub_resource type="BoxMesh" id="BoxMesh_cover"]
 size = Vector3(0.9, 0.9, 2.6)
@@ -43,7 +43,7 @@ size = Vector3(0.9, 0.9, 2.6)
 size = Vector3(0.9, 0.9, 2.6)
 
 [sub_resource type="StandardMaterial3D" id="Material_cover"]
-albedo_color = Color(0.17, 0.19, 0.22, 1)
+albedo_color = Color(0.105882, 0.129412, 0.152941, 1)
 roughness = 0.92
 
 [sub_resource type="BoxMesh" id="BoxMesh_pressure_band"]
@@ -51,10 +51,10 @@ size = Vector3(1, 0.03, 1)
 
 [sub_resource type="StandardMaterial3D" id="Material_pressure_band"]
 transparency = 1
-albedo_color = Color(0.96, 0.47, 0.16, 0.18)
+albedo_color = Color(0.952941, 0.760784, 0.403922, 0.18)
 emission_enabled = true
-emission = Color(0.96, 0.38, 0.08, 1)
-emission_energy_multiplier = 0.35
+emission = Color(1, 0.52, 0.16, 1)
+emission_energy_multiplier = 0.42
 roughness = 0.82
 
 [node name="ArenaBlockout" type="Node3D"]

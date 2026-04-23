@@ -2,6 +2,7 @@ extends Node3D
 class_name ArenaBase
 
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
 const EDGE_PICKUP_LAYOUT_PROFILE_TEAMS := "teams"
 const EDGE_PICKUP_LAYOUT_PROFILE_FFA := "ffa"
 const DEFAULT_EDGE_PICKUP_ALLOWED_IDS := ["repair", "mobility", "energy", "pulse", "utility"]
@@ -52,6 +53,7 @@ const EDGE_PICKUP_LAYOUTS_BY_PROFILE := {
 @export_range(0.0, 1.5, 0.05) var opening_lane_row_padding := 0.45
 
 @onready var platform_collision_shape: CollisionShape3D = $Platform/CollisionShape3D
+@onready var void_visual: MeshInstance3D = $VoidVisual
 @onready var platform_visual: MeshInstance3D = $Platform/PlatformVisual
 @onready var edge_markers: Node3D = $EdgeMarkers
 @onready var north_edge: MeshInstance3D = $EdgeMarkers/NorthEdge
@@ -78,6 +80,7 @@ var _edge_pickup_layout_cycle: Array[PackedStringArray] = []
 var _edge_pickup_allowed_ids := PackedStringArray(DEFAULT_EDGE_PICKUP_ALLOWED_IDS)
 var _active_edge_pickup_layout := PackedStringArray()
 var _pressure_band_materials: Array[StandardMaterial3D] = []
+var _edge_materials: Array[StandardMaterial3D] = []
 var _pressure_warning_strength := 0.0
 var _opening_telegraph_root: Node3D = null
 var _opening_lane_meshes: Array[MeshInstance3D] = []
@@ -418,7 +421,29 @@ func _prepare_runtime_resources() -> void:
 		_platform_mesh = (platform_visual.mesh as BoxMesh).duplicate()
 		platform_visual.mesh = _platform_mesh
 
+	_prepare_surface_materials()
 	_prepare_pressure_telegraph_materials()
+
+
+func _prepare_surface_materials() -> void:
+	_edge_materials.clear()
+	if void_visual != null and void_visual.material_override is StandardMaterial3D:
+		void_visual.material_override = (void_visual.material_override as StandardMaterial3D).duplicate()
+		var void_material := void_visual.material_override as StandardMaterial3D
+		void_material.albedo_color = DEFAULT_PRESENTATION_PALETTE.surface_background.darkened(0.55)
+	if platform_visual != null and platform_visual.material_override is StandardMaterial3D:
+		platform_visual.material_override = (platform_visual.material_override as StandardMaterial3D).duplicate()
+		var platform_material := platform_visual.material_override as StandardMaterial3D
+		platform_material.albedo_color = DEFAULT_PRESENTATION_PALETTE.surface_panel.darkened(0.04)
+	for edge_node in [north_edge, south_edge, west_edge, east_edge]:
+		if edge_node == null or not (edge_node.material_override is StandardMaterial3D):
+			continue
+		edge_node.material_override = (edge_node.material_override as StandardMaterial3D).duplicate()
+		var edge_material := edge_node.material_override as StandardMaterial3D
+		edge_material.emission_enabled = true
+		edge_material.albedo_color = DEFAULT_PRESENTATION_PALETTE.accent_warm
+		edge_material.emission = DEFAULT_PRESENTATION_PALETTE.accent_danger.lerp(DEFAULT_PRESENTATION_PALETTE.accent_warm, 0.65)
+		_edge_materials.append(edge_material)
 
 
 func _setup_opening_telegraph() -> void:
@@ -437,9 +462,9 @@ func _setup_opening_telegraph() -> void:
 		lane_mesh.size = Vector3(1.0, 0.03, 1.0)
 		var lane_material := StandardMaterial3D.new()
 		lane_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		lane_material.albedo_color = Color(0.98, 0.7, 0.24, 0.14)
+		lane_material.albedo_color = Color(DEFAULT_PRESENTATION_PALETTE.accent_warm.r, DEFAULT_PRESENTATION_PALETTE.accent_warm.g, DEFAULT_PRESENTATION_PALETTE.accent_warm.b, 0.14)
 		lane_material.emission_enabled = true
-		lane_material.emission = Color(1.0, 0.78, 0.24, 1.0)
+		lane_material.emission = DEFAULT_PRESENTATION_PALETTE.accent_warm
 		lane_material.emission_energy_multiplier = 0.3
 		lane_material.roughness = 0.84
 
@@ -639,6 +664,13 @@ func _update_pressure_telegraph_materials(telegraph_strength: float, shrinking: 
 		next_color.a = alpha
 		material.albedo_color = next_color
 		material.emission_energy_multiplier = emission_energy
+	var edge_emission := lerpf(0.38, 0.95, telegraph_strength)
+	if not shrinking:
+		edge_emission = minf(edge_emission, 0.58)
+	for material in _edge_materials:
+		if material == null:
+			continue
+		material.emission_energy_multiplier = edge_emission
 
 
 func _update_opening_telegraph(current_size: Vector2) -> void:

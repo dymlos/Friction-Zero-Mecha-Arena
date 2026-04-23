@@ -10,11 +10,14 @@ signal pickup_collected(robot: RobotBase, item_name: String)
 @export var bob_height := 0.12
 @export var bob_speed := 2.5
 @export var rotation_speed := 1.35
+@export_range(0.0, 1.5, 0.05) var core_emission_pulse_amount := 0.36
+@export_range(0.0, 1.5, 0.05) var accent_emission_pulse_amount := 0.24
 
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var visuals_root: Node3D = $Visuals
 @onready var base_mesh: MeshInstance3D = $Visuals/Base
 @onready var core_mesh: MeshInstance3D = $Visuals/Core
+@onready var accent_mesh: MeshInstance3D = $Visuals/Accent
 @onready var respawn_timer: Timer = $RespawnTimer
 
 var _available := true
@@ -22,12 +25,17 @@ var _spawn_enabled := true
 var _collection_enabled := true
 var _animation_time := 0.0
 var _base_visual_position := Vector3.ZERO
+var _core_material: StandardMaterial3D = null
+var _accent_material: StandardMaterial3D = null
+var _core_base_emission_energy := 0.0
+var _accent_base_emission_energy := 0.0
 
 
 func _ready() -> void:
 	add_to_group("edge_pickups")
 	add_to_group("edge_pulse_pickups")
 	_base_visual_position = visuals_root.position
+	_prepare_runtime_materials()
 	_set_available_state(true)
 
 
@@ -39,6 +47,7 @@ func _process(delta: float) -> void:
 	var wave := sin(_animation_time * bob_speed)
 	visuals_root.position = _base_visual_position + Vector3(0.0, wave * bob_height, 0.0)
 	visuals_root.rotation.y = fmod(visuals_root.rotation.y + rotation_speed * delta, TAU)
+	_update_emissive_pulse()
 	if not _collection_enabled or not monitoring:
 		return
 
@@ -93,6 +102,31 @@ func set_spawn_enabled(is_enabled: bool) -> void:
 	_set_available_state(is_enabled)
 
 
+func _prepare_runtime_materials() -> void:
+	if core_mesh.material_override is StandardMaterial3D:
+		_core_material = (core_mesh.material_override as StandardMaterial3D).duplicate()
+		core_mesh.material_override = _core_material
+		_core_material.emission_enabled = true
+		_core_base_emission_energy = _core_material.emission_energy_multiplier
+	if accent_mesh.material_override is StandardMaterial3D:
+		_accent_material = (accent_mesh.material_override as StandardMaterial3D).duplicate()
+		accent_mesh.material_override = _accent_material
+		_accent_material.emission_enabled = true
+		_accent_base_emission_energy = _accent_material.emission_energy_multiplier
+
+
+func _update_emissive_pulse() -> void:
+	var glow_wave := (sin(_animation_time * bob_speed * 0.72) + 1.0) * 0.5
+	if _core_material != null:
+		_core_material.emission_energy_multiplier = _core_base_emission_energy * (
+			1.0 + glow_wave * core_emission_pulse_amount
+		)
+	if _accent_material != null:
+		_accent_material.emission_energy_multiplier = _accent_base_emission_energy * (
+			0.92 + glow_wave * accent_emission_pulse_amount
+		)
+
+
 func _set_available_state(is_available: bool) -> void:
 	_available = is_available
 	var should_monitor := _spawn_enabled and is_available
@@ -104,3 +138,4 @@ func _set_available_state(is_available: bool) -> void:
 	_animation_time = 0.0
 	visuals_root.position = _base_visual_position
 	visuals_root.rotation = Vector3.ZERO
+	_update_emissive_pulse()

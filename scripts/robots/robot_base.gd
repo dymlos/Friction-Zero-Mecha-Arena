@@ -4,6 +4,7 @@ class_name RobotBase
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
 const PulseBolt = preload("res://scripts/projectiles/pulse_bolt.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
+const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
 
 signal fell_into_void(robot: RobotBase)
 signal respawned(robot: RobotBase)
@@ -3921,7 +3922,7 @@ func _refresh_archetype_accent_visuals() -> void:
 	var core_skill_color := _get_core_skill_accent_color()
 	var core_skill_ready_blend := _get_archetype_accent_core_skill_ready_blend()
 	var core_skill_active_blend := _get_archetype_accent_core_skill_active_blend()
-	var passive_color := Color(1.0, 0.42, 0.16, 1.0)
+	var passive_color := DEFAULT_PRESENTATION_PALETTE.accent_danger.lerp(DEFAULT_PRESENTATION_PALETTE.accent_warm, 0.4)
 	var passive_blend := _get_passive_accent_blend()
 	var intact_ratio := 1.0
 	if not BODY_PARTS.is_empty():
@@ -4071,11 +4072,11 @@ func _refresh_core_visuals() -> void:
 		var energy_color := _get_energy_focus_color()
 		var energy_blend := _get_energy_visual_blend()
 		var energy_surge_blend := 0.22 if is_energy_surge_active() else 0.0
-		var mobility_color := Color(0.2, 0.92, 0.78, 1.0)
+		var mobility_color := DEFAULT_PRESENTATION_PALETTE.accent_cool.lerp(Color(0.18, 1.0, 0.78, 1.0), 0.38)
 		var mobility_blend := 0.66 if is_mobility_skill_active() else (0.42 if is_mobility_boost_active() else 0.0)
-		var ram_color := Color(1.0, 0.56, 0.18, 1.0)
+		var ram_color := DEFAULT_PRESENTATION_PALETTE.accent_warm
 		var ram_blend := 0.48 if is_ram_skill_active() else 0.0
-		var core_skill_color := Color(0.22, 0.88, 1.0, 1.0)
+		var core_skill_color := DEFAULT_PRESENTATION_PALETTE.accent_cool.lightened(0.18)
 		var core_skill_blend := _get_core_skill_visual_blend(visual_node)
 		material.albedo_color = base_albedo.lerp(Color(0.09, 0.08, 0.08, 1.0), damage_blend + disabled_blend)
 		material.albedo_color = material.albedo_color.lerp(energy_color, energy_blend * 0.18)
@@ -4085,7 +4086,7 @@ func _refresh_core_visuals() -> void:
 		material.albedo_color = material.albedo_color.lerp(core_skill_color, core_skill_blend * 0.1)
 		material.albedo_color = material.albedo_color.lerp(Color(1.0, 0.62, 0.18, 1.0), unstable_blend * 0.18)
 		if material.emission_enabled:
-			var warning_color := Color(1.0, 0.28, 0.12, 1.0)
+			var warning_color := DEFAULT_PRESENTATION_PALETTE.accent_danger
 			material.emission = base_emission.lerp(warning_color, damage_blend + disabled_blend)
 			material.emission = material.emission.lerp(energy_color, energy_blend)
 			material.emission = material.emission.lerp(Color(0.96, 0.97, 1.0, 1.0), energy_surge_blend)
@@ -4143,8 +4144,8 @@ func _apply_material_damage_tint(mesh_instance: MeshInstance3D, health_ratio: fl
 	var base_albedo: Color = base_values["albedo"]
 	var base_emission: Color = base_values["emission"]
 	var base_emission_energy: float = float(base_values["emission_energy"])
-	var damage_color := Color(0.32, 0.1, 0.09, 1.0)
-	var flash_color := Color(1.0, 0.45, 0.18, 1.0)
+	var damage_color := DEFAULT_PRESENTATION_PALETTE.accent_danger.darkened(0.58)
+	var flash_color := DEFAULT_PRESENTATION_PALETTE.accent_warm
 	var damage_blend := (1.0 - health_ratio) * 0.65
 
 	material.albedo_color = base_albedo.lerp(damage_color, damage_blend).lerp(flash_color, flash_strength * 0.65)

@@ -35,14 +35,20 @@ func _verify_edge_pickups_expose_distinct_world_silhouettes() -> void:
 
 	for pickup_name in PICKUP_SCENES.keys():
 		var pickup := pickups[PICKUP_SCENES.keys().find(pickup_name)]
+		var core_visual := pickup.get_node_or_null("Visuals/Core") as MeshInstance3D
 		var accent_visual := pickup.get_node_or_null("Visuals/Accent") as MeshInstance3D
+		_assert(
+			core_visual != null,
+			"Cada edge pickup deberia exponer un nucleo visible y animable para lectura a distancia."
+		)
 		_assert(
 			accent_visual != null,
 			"Cada edge pickup deberia exponer un acento/silueta propia en mundo, no depender solo del color del nucleo."
 		)
-		if accent_visual == null:
+		if core_visual == null or accent_visual == null:
 			continue
 
+		var core_material := core_visual.material_override as StandardMaterial3D
 		var mesh := accent_visual.mesh
 		var material := accent_visual.material_override as StandardMaterial3D
 		var signature := "%s|%s|%s" % [
@@ -58,13 +64,31 @@ func _verify_edge_pickups_expose_distinct_world_silhouettes() -> void:
 		)
 		if material != null:
 			_assert(
-				material.emission_enabled,
-				"El acento del edge pickup deberia seguir siendo legible a distancia con emision sobria."
-			)
+			material.emission_enabled,
+			"El acento del edge pickup deberia seguir siendo legible a distancia con emision sobria."
+		)
+		_assert(
+			core_material != null and core_material.emission_enabled,
+			"El nucleo del edge pickup deberia sostener lectura diegetica con emision propia."
+		)
 		_assert(
 			accent_visual.is_visible_in_tree(),
 			"El acento del edge pickup deberia quedar visible mientras el pedestal este activo."
 		)
+
+		if core_material != null and material != null:
+			var core_energy_before := core_material.emission_energy_multiplier
+			var accent_energy_before := material.emission_energy_multiplier
+			await process_frame
+			await process_frame
+			_assert(
+				not is_equal_approx(core_material.emission_energy_multiplier, core_energy_before),
+				"El nucleo del edge pickup deberia pulsar para seguir leyendose desde el centro del mapa."
+			)
+			_assert(
+				not is_equal_approx(material.emission_energy_multiplier, accent_energy_before),
+				"El acento del edge pickup deberia acompañar esa pulsacion para reforzar silueta y tipo."
+			)
 
 	_assert(
 		silhouette_signatures.size() == PICKUP_SCENES.size(),
