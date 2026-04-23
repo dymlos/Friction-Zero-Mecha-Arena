@@ -16,6 +16,11 @@ const MATCH_SCENES := [
 		"mode": MatchController.MatchMode.TEAMS,
 	},
 	{
+		"path": "res://scenes/main/main_teams_large_validation.tscn",
+		"label": "2v2 grande",
+		"mode": MatchController.MatchMode.TEAMS,
+	},
+	{
 		"path": "res://scenes/main/main_ffa.tscn",
 		"label": "FFA main_ffa",
 		"mode": MatchController.MatchMode.FFA,
@@ -23,6 +28,11 @@ const MATCH_SCENES := [
 	{
 		"path": "res://scenes/main/main_ffa_validation.tscn",
 		"label": "FFA main_ffa_validation",
+		"mode": MatchController.MatchMode.FFA,
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large_validation.tscn",
+		"label": "FFA main_ffa_large_validation",
 		"mode": MatchController.MatchMode.FFA,
 	},
 ]
