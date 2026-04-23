@@ -43,6 +43,7 @@ This folder keeps the long-form project history that no longer needs to live in 
 - `docs/decisions/archive/2026-04-22-decision-log.md`
 - `docs/roadmap-history/2026-04-22-full-roadmap.md`
 - `docs/roadmap-history/2026-04-22-next-steps-detail.md`
+- `docs/roadmap-history/2026-04-23-production-milestones.md`
 
 ## Maintenance rule
 

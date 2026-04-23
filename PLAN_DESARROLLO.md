@@ -1,79 +1,121 @@
 # PLAN_DESARROLLO.md - Friction Zero: Mecha Arena
 
-This file is the concise roadmap. The previous long roadmap lives in `docs/roadmap-history/`.
+This file is the concise active roadmap. The detailed production proposal lives in `docs/roadmap-history/`.
 
 ## Archivo relacionado
 
-- Roadmap completo archivado: `docs/roadmap-history/2026-04-22-full-roadmap.md`
-- Proximos pasos historicos: `docs/roadmap-history/2026-04-22-next-steps-detail.md`
+- Roadmap completo anterior: `docs/roadmap-history/2026-04-22-full-roadmap.md`
+- Nueva propuesta detallada: `docs/roadmap-history/2026-04-23-production-milestones.md`
+- Proximos pasos activos: `PROXIMOS_PASOS.md`
 - Indice documental: `docs/README.md`
 
 ## Checkpoint actual
 
-- El proyecto ya tiene un vertical slice jugable que cubre el nucleo del fantasy:
-  - patinar con peso
-  - chocar con precision
-  - sacar rivales por borde
-  - desgastar y desarmar por partes
-- Ya existen los laboratorios principales de `Teams` y `FFA`.
-- Ya existe una primera capa funcional de:
+- El proyecto sigue teniendo una base jugable fuerte:
+  - movimiento con inercia
+  - choque con peso
+  - dano modular
   - energia y `Overdrive`
-  - pickups de borde
-  - presion progresiva del arena
+  - recuperacion/negacion de partes
+  - `Teams` y `FFA`
   - HUD dual
-  - post-muerte `Teams`
   - recap/cierre de match
+- El riesgo principal ya no es solo "agregar otra mecanica".
+- El nuevo foco es pasar de vertical slice validado a juego local mas completo y consistente.
 
 ## Objetivo del roadmap corto
 
-- Proteger el slice jugable actual.
-- Reducir drift entre escenas hermanas.
-- Tomar las siguientes decisiones de tuning con evidencia y no con intuicion documental.
+- Ordenar el trabajo como roadmap de produccion.
+- Resolver primero las decisiones que bloquean muchas capas futuras.
+- Mantener la disciplina actual de legibilidad, scene parity y evidencia antes de tuning.
 
 ## Milestones vigentes
 
-### 1. Mantener la base jugable estable
+### 1. Produccion base y escalabilidad
 
-- Seguir tratando `base/validation` como pares contractuales.
-- Priorizar arreglos de coverage/fixture antes de tocar produccion cuando el problema es scene-level.
-- Mantener el repo facil de cargar para una sesion nueva:
-  - docs activas cortas
-  - historia en `docs/`
+- Definir targets reales para:
+  - `720p` y `1080p`
+  - hasta `8` jugadores locales
+  - `4v4`
+  - multiples joysticks
+  - shared-screen legible
+- Cerrar contratos de:
+  - ownership de input
+  - pausa
+  - prompts de control
+  - presupuesto de performance
 
-### 2. Validar el opening con playtest corto
+### 2. Escala de match, mapas y pacing espacial
 
-- Comprobar si `OpeningTelegraph + lock del borde + unlock` produce una apertura clara.
-- Medir si `Teams rapido` y `FFA base` necesitan tuning de spawn/layout/pacing.
-- No reabrir el lock del borde mientras el seam tecnico siga sano.
+- Revisar tamano de mapas como problema integral:
+  - escala jugable
+  - tiempo a engagement
+  - flanqueo
+  - esquiva
+  - escondites
+  - rutas
+  - valor del borde
+  - presion final
+- No tratar "mapas mas grandes" como cambio aislado de geometria.
 
-### 3. Validar el valor real del soporte post-muerte `Teams`
+### 3. UX de match, shell y arquitectura de informacion
 
-- Revisar si ya aporta coordinacion y comeback sin ensuciar la lectura del combate principal.
-- Medir si payloads, warnings y cues actuales alcanzan sin sumar otra capa de UI.
+- Definir flujo completo:
+  - menu principal
+  - setup de partida
+  - HUD
+  - pausa
+  - salida segura
+  - superficies informativas
+- Integrar aqui:
+  - `How to Play`
+  - pausa
+  - configuraciones
+  - reglas de visibilidad del HUD
 
-### 4. Reabrir balance solo con evidencia
+### 4. Identidad de roster y comunicacion de personajes
 
-- Score por causa `2/1/4`
-- peso real de las rutas de cierre
-- utilidad relativa de pickups del borde
-- diferencia tactica entre laboratorios `base` y `validation`
+- Hacer que cada personaje se vea distinto sin romper la familia visual comun.
+- Alinear identidad visual, identidad jugable y forma de explicarlo al jugador.
 
-### 5. Agregar contenido solo despues de mantener legibilidad
+### 5. Practica, onboarding y accesibilidad
 
-- Nuevas capas de contenido deben preservar:
-  - claridad visual
-  - lectura de dano/estado
-  - centralidad del choque y posicionamiento
-- Si un agregado amenaza legibilidad, bajar complejidad antes de expandir contenido.
+- Definir el primer alcance de `Modo Practica`.
+- Separar:
+  - informacion base del juego
+  - informacion por personaje
+  - refuerzos contextuales dentro del juego
+- Establecer expectativas minimas de accesibilidad.
 
-## Dependencias que siguen importando
+### 6. Pase audiovisual de produccion
 
-1. Movimiento e impacto siguen siendo la base de todo tuning posterior.
-2. Dano modular y energia sostienen rescate, negacion y arquetipos.
-3. Pickups, mapas y presion del arena solo funcionan bien si el nucleo de duelo sigue legible.
-4. Post-muerte, recap y cierre solo tienen valor si explican bien lo que ya paso en combate.
+- Integrar graficos, sonido y musica como capas coordinadas con gameplay y UX.
+- Mantener legibilidad por encima del espectaculo.
+
+### 7. Integracion, optimizacion y cierre
+
+- Revalidar performance y consistencia con todas las capas nuevas integradas.
+- Dejar explicitamente diferido lo que todavia no convenga cerrar:
+  - post-muerte FFA
+  - replay snippets
+  - expansion extra de roster
+
+## Dependencias centrales
+
+1. Escalabilidad, input y performance condicionan mapas, pausa, menus y practica.
+2. La nueva escala de mapas condiciona HUD, onboarding y lectura de personajes.
+3. La shell y la arquitectura de informacion condicionan `How to Play`, `Characters` y `Practice Mode`.
+4. El pase audiovisual debe reforzar, no redefinir, la lectura ya acordada.
+
+## Prioridad sugerida
+
+1. Milestone 1
+2. Milestone 2
+3. Milestone 3
+4. Milestones 4 y 5
+5. Milestones 6 y 7
 
 ## Regla de mantenimiento
 
-- Mantener este archivo como roadmap vivo y corto.
-- Mover checklist historico, detalles fechados y narrativas largas a `docs/roadmap-history/`.
+- Mantener este archivo corto y activo.
+- Guardar el detalle largo en `docs/roadmap-history/`.
