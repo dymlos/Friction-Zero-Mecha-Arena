@@ -277,6 +277,11 @@ This project is intended for Godot and should be developed with a bias toward:
 - mechanics-first prototyping
 - minimal confusion for a low-programming-skill developer
 
+## Workflow constraints
+- Do not use git worktrees unless explicitly requested.
+- For documentation cleanup tasks, stay strictly within documentation and organization work unless the user explicitly asks for gameplay or code changes.
+- La documentacion activa del proyecto debe escribirse en espanol. `docs/historial/` puede conservar contenido en su idioma original por tratarse de archivo historico.
+
 When proposing code or architecture:
 - preserve the core fantasy: skate and collide with precision
 - preserve readability
@@ -285,8 +290,9 @@ When proposing code or architecture:
 - prefer a prototype path that validates feel quickly
 
 ## How to use the documentation folder
-Before planning or coding significant features, review the Markdown files inside `Documentación/`.
-Use them as the project’s design reference.
+Before planning or coding significant features, review `docs/diseno.md` first.
+If deeper historical context is needed, then consult the archived design material under `docs/historial/diseno/`.
+Use the active docs as the working reference and the archived docs as supporting context.
 
 If there is a conflict:
 1. Preserve the core pillars in this `AGENTS.md`.

@@ -1,10 +1,10 @@
-# ESTADO_ACTUAL.md - Friction Zero: Mecha Arena
+# Estado actual
 
-This file is the short current snapshot. Long dated history now lives in `docs/status/`.
+Snapshot corto del prototipo jugable. El historial detallado vive en `docs/estado/historial/`.
 
 ## Archivo relacionado
 
-- Estado detallado archivado: `docs/status/2026-04-22-status-log.md`
+- Estado detallado archivado: `docs/estado/historial/2026-04-22-status-log.md`
 - Indice documental: `docs/README.md`
 
 ## Estado jugable actual
@@ -73,5 +73,5 @@ This file is the short current snapshot. Long dated history now lives in `docs/s
 
 ## Regla de mantenimiento
 
-- Si un hallazgo es historico o fechado, moverlo a `docs/status/`.
+- Si un hallazgo es historico o fechado, moverlo a `docs/estado/historial/`.
 - Si un dato sigue cambiando el trabajo diario, mantener un resumen aqui y enlazar el detalle mas profundo.

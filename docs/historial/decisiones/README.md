@@ -1,31 +1,31 @@
-# DECISIONES_TECNICAS.md - Friction Zero: Mecha Arena
+# Decisiones
 
-This file is the active decisions index. Full dated logs now live in `docs/decisions/`.
+Indice activo de decisiones tecnicas que todavia condicionan el trabajo del repo.
 
 ## Archivo relacionado
 
-- Archivo historico completo: `docs/decisions/archive/2026-04-22-decision-log.md`
+- Archivo historico completo: `docs/decisiones/historial/2026-04-22-decision-log.md`
 - Indice documental: `docs/README.md`
 
 ## ADRs activas
 
 1. `ADR 2026-04-22-01`
-   `docs/decisions/2026-04-22-01-base-validation-scene-parity-for-edge-pickups.md`
+   `docs/decisiones/adr/2026-04-22-01-base-validation-scene-parity-for-edge-pickups.md`
    Regla: pickups de borde y helper de arena deben respetar paridad `base/validation`.
 2. `ADR 2026-04-22-02`
-   `docs/decisions/2026-04-22-02-base-validation-scene-parity-for-arena-pressure.md`
+   `docs/decisiones/adr/2026-04-22-02-base-validation-scene-parity-for-arena-pressure.md`
    Regla: presion de arena y reset de ronda se validan con fixture dependiente del modo.
 3. `ADR 2026-04-22-03`
-   `docs/decisions/2026-04-22-03-stabilize-teams-post-death-support-fixtures.md`
+   `docs/decisiones/adr/2026-04-22-03-stabilize-teams-post-death-support-fixtures.md`
    Regla: el soporte post-muerte `Teams` necesita fixtures estabilizadas y cleanup por owner.
 4. `ADR 2026-04-22-04`
-   `docs/decisions/2026-04-22-04-freeze-teams-support-lifecycle-in-validation-scene.md`
+   `docs/decisiones/adr/2026-04-22-04-freeze-teams-support-lifecycle-in-validation-scene.md`
    Regla: reset/restart del soporte se congela en ambas escenas `Teams`.
 5. `ADR 2026-04-22-05`
-   `docs/decisions/2026-04-22-05-freeze-teams-stats-in-validation-scene.md`
+   `docs/decisiones/adr/2026-04-22-05-freeze-teams-stats-in-validation-scene.md`
    Regla: stats `Teams` de desgaste modular y negacion viven en ambas escenas `Teams`.
 6. `ADR 2026-04-22-06`
-   `docs/decisions/2026-04-22-06-opening-lock-unlock-is-the-contract-first-collision-is-telemetry.md`
+   `docs/decisiones/adr/2026-04-22-06-opening-lock-unlock-is-the-contract-first-collision-is-telemetry.md`
    Regla: el opening se valida por `lock/unlock`; el primer choque sigue siendo metrica.
 
 ## Decisiones vigentes que siguen bloqueando cambios
@@ -72,12 +72,12 @@ This file is the active decisions index. Full dated logs now live in `docs/decis
   - `explosion inestable = 4`
 - El siguiente cambio de balance debe venir de playtest o medicion nueva, no de intuicion documental.
 
-### 6. Mantener las root docs como entrypoints y no como diarios append-only
+### 6. Mantener `docs/` como hub y no repartir lo activo en la raiz
 
-- `ESTADO_ACTUAL.md`, `DECISIONES_TECNICAS.md`, `PLAN_DESARROLLO.md` y `PROXIMOS_PASOS.md` deben resumir solo lo activo.
-- La historia fechada se preserva en `docs/`.
+- `docs/estado/actual.md`, `docs/estado/proximos-pasos.md`, `docs/roadmap/README.md` y `docs/decisiones/README.md` deben resumir solo lo activo.
+- La historia fechada se preserva en carpetas `historial/`.
 
 ## Cuando ampliar este archivo
 
 - Agregar una nueva ADR si una decision tecnica sigue condicionando trabajo futuro.
-- Si una decision es solo cronologia o debugging historico, archivarla en `docs/decisions/` o en el log historico, no en este indice.
+- Si una decision es solo cronologia o debugging historico, archivarla en `docs/decisiones/historial/`, no en este indice.

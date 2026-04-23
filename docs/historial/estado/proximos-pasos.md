@@ -1,12 +1,13 @@
-# PROXIMOS_PASOS.md - Friction Zero: Mecha Arena
+# Proximos pasos
 
-This file stays intentionally short. The detailed production proposal lives in `docs/roadmap-history/2026-04-23-production-milestones.md`.
+Esta pagina se mantiene corta a proposito. El roadmap vivo ahora vive en `docs/roadmap/`.
 
 ## Archivo relacionado
 
-- Roadmap detallado vigente: `docs/roadmap-history/2026-04-23-production-milestones.md`
-- Estado actual: `ESTADO_ACTUAL.md`
-- Decisiones vigentes: `DECISIONES_TECNICAS.md`
+- Roadmap vigente: `docs/roadmap/README.md`
+- Milestones: `docs/roadmap/milestones/README.md`
+- Estado actual: `docs/estado/actual.md`
+- Decisiones vigentes: `docs/decisiones/README.md`
 
 ## Siguiente iteracion recomendada
 
