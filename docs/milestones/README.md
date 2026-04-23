@@ -17,6 +17,10 @@ Este directorio descompone el roadmap vivo en milestones pequenas, navegables y 
 5. [M5 - Practica, onboarding y accesibilidad](./m5-practica-onboarding-y-accesibilidad.md): hacer el juego mas aprendible sin presion competitiva.
 6. [M6 - Pase audiovisual de produccion](./m6-pase-audiovisual-de-produccion.md): subir presentacion sin perder legibilidad ni peso.
 7. [M7 - Integracion, optimizacion y cierre](./m7-integracion-optimizacion-y-cierre.md): revalidar el loop completo y dejar explicitado lo diferido.
+8. [M8 - Practica, aprendizaje y accesibilidad aplicada](./m8-practica-aprendizaje-y-accesibilidad-aplicada.md): abrir `Modo Practica` y cerrar la capa de aprendizaje jugable que la shell por si sola no cubre.
+9. [M9 - Shell extendida, configuracion y UX operativa](./m9-shell-extendida-configuracion-y-ux-operativa.md): completar settings, UX de dispositivos y reglas de que vive en `setup`, `pausa` y shell.
+10. [M10 - Cierre de match, replay y lectura post-partida](./m10-cierre-de-match-replay-y-lectura-post-partida.md): profundizar recap, resultados y replay snippets para explicar mejor el final del match.
+11. [M11 - Expansion competitiva de modos y roster](./m11-expansion-competitiva-de-modos-y-roster.md): ordenar el crecimiento futuro de `FFA`, soporte post-muerte y expansion de roster sin perder legibilidad.
 
 ## Formato comun
 
