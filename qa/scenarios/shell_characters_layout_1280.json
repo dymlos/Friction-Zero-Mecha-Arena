@@ -1,0 +1,51 @@
+{
+  "name": "shell_characters_layout_1280",
+  "scene": "res://scenes/qa/shell_characters_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "characters"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:shell_characters_title"
+    },
+    {
+      "inside_viewport": "qa:shell_characters_list"
+    },
+    {
+      "inside_viewport": "qa:shell_characters_name"
+    },
+    {
+      "inside_viewport": "qa:shell_characters_back"
+    },
+    {
+      "no_overlap": {
+        "a": "qa:shell_characters_list",
+        "b": "qa:shell_characters_back"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_characters_name",
+        "expected": "Ariete"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_characters_signature",
+        "expected": "Embestida"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

@@ -29,6 +29,12 @@ Este documento resume la direccion activa del juego. Es una referencia viva de a
 - `Teams` debe reforzar rescates, coordinacion y presion tactica.
 - La UI y el cuerpo de los robots deben explicar el estado del match con la menor cantidad posible de ruido.
 
+## Shell y comunicacion
+
+- `Characters` comunica identidad por personaje: rol corto, fantasy, fortaleza, riesgo, skill o pasiva clave, lectura corporal y referencia `Easy/Hard`.
+- `Characters` debe reutilizar una sola fuente de verdad de copy para shell, QA y tests; no reescribir cada ficha en superficies paralelas.
+- `How to Play` queda reservado para reglas generales del juego, victoria, energia, overdrive y recuperacion de partes.
+
 ## Regla practica
 
 - Cuando haya dudas, priorizar lo que preserve el fantasy central, la legibilidad y la posibilidad de validar feel rapido.

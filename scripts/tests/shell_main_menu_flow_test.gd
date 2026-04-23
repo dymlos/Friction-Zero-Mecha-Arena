@@ -41,11 +41,13 @@ func _run() -> void:
 
 	_assert(game_shell.has_method("get_active_screen_id"), "GameShell deberia exponer la pantalla activa.")
 	_assert(game_shell.has_method("open_local_setup"), "GameShell deberia poder abrir el setup local.")
+	_assert(game_shell.has_method("open_characters"), "GameShell deberia poder abrir Characters desde la shell.")
 	_assert(game_shell.has_method("return_to_main_menu"), "GameShell deberia poder volver al menu principal.")
 	_assert(game_shell.has_method("launch_local_match"), "GameShell deberia poder lanzar un match local.")
 	if not (
 		game_shell.has_method("get_active_screen_id")
 		and game_shell.has_method("open_local_setup")
+		and game_shell.has_method("open_characters")
 		and game_shell.has_method("return_to_main_menu")
 		and game_shell.has_method("launch_local_match")
 	):
@@ -57,6 +59,19 @@ func _run() -> void:
 		String(game_shell.call("get_active_screen_id")) == "main_menu",
 		"La shell deberia arrancar mostrando el menu principal."
 	)
+
+	game_shell.call("open_characters")
+	await process_frame
+	await process_frame
+
+	_assert(
+		String(game_shell.call("get_active_screen_id")) == "characters",
+		"El menu principal deberia poder derivar a Characters."
+	)
+
+	game_shell.call("return_to_main_menu")
+	await process_frame
+	await process_frame
 
 	game_shell.call("open_local_setup")
 	await process_frame

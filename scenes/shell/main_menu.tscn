@@ -62,9 +62,17 @@ text = ""
 [node name="PlayLocalButton" type="Button" parent="CenterPanel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 2
 text = "Jugar local"
+
+[node name="CharactersButton" type="Button" parent="CenterPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+text = "Characters"
 
 [node name="ExitButton" type="Button" parent="CenterPanel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 2
 text = "Salir"

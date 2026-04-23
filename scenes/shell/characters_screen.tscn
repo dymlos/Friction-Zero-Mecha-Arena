@@ -1,0 +1,236 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/shell/characters_screen.gd" id="1_characters"]
+
+[node name="CharactersScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_characters")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0470588, 0.0627451, 0.0823529, 1)
+
+[node name="Frame" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 32.0
+offset_right = -40.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="VBox" type="VBoxContainer" parent="Frame"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Header" type="VBoxContainer" parent="Frame/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="Frame/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "Characters"
+
+[node name="SubtitleLabel" type="Label" parent="Frame/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="Body" type="HBoxContainer" parent="Frame/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 18
+
+[node name="ListPanel" type="PanelContainer" parent="Frame/VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 1
+custom_minimum_size = Vector2(250, 0)
+
+[node name="ListMargin" type="MarginContainer" parent="Frame/VBox/Body/ListPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="ListVBox" type="VBoxContainer" parent="Frame/VBox/Body/ListPanel/ListMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ListTitle" type="Label" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
+layout_mode = 2
+text = "Roster base"
+
+[node name="CharacterList" type="ItemList" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+same_column_width = true
+select_mode = 0
+
+[node name="DetailPanel" type="PanelContainer" parent="Frame/VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DetailMargin" type="MarginContainer" parent="Frame/VBox/Body/DetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 22
+
+[node name="DetailVBox" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TopBand" type="HBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="AccentPanel" type="ColorRect" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(10, 52)
+layout_mode = 2
+color = Color(1, 1, 1, 1)
+
+[node name="NameBlock" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="NameLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand/NameBlock"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Ariete"
+
+[node name="RoleRow" type="HBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand/NameBlock"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RoleLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand/NameBlock/RoleRow"]
+layout_mode = 2
+text = "Rol:"
+
+[node name="RoleValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand/NameBlock/RoleRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 2
+text = ""
+
+[node name="FantasyTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+text = "Fantasy"
+
+[node name="FantasyValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="StrengthTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+text = "Fortaleza principal"
+
+[node name="StrengthValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="RiskTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+text = "Riesgo principal"
+
+[node name="RiskValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="SignatureTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+text = "Skill o identidad clave"
+
+[node name="SignatureValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="BodyReadTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+text = "Lectura corporal"
+
+[node name="BodyReadValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="ControlsRow" type="HBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="EasyBlock" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="EasyTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow/EasyBlock"]
+layout_mode = 2
+text = "Easy"
+
+[node name="EasyValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow/EasyBlock"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="HardBlock" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="HardTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow/HardBlock"]
+layout_mode = 2
+text = "Hard"
+
+[node name="HardValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow/HardBlock"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="Footer" type="HBoxContainer" parent="Frame/VBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="BackButton" type="Button" parent="Frame/VBox/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+text = "Volver"

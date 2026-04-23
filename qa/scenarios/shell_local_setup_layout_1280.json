@@ -24,6 +24,9 @@
       "inside_viewport": "qa:shell_local_setup_start"
     },
     {
+      "inside_viewport": "qa:shell_local_setup_characters"
+    },
+    {
       "inside_viewport": "qa:shell_local_setup_back"
     },
     {
@@ -42,6 +45,12 @@
       "text_contains": {
         "target": "qa:shell_local_setup_slots",
         "expected": "P2 | Hard"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_characters",
+        "expected": "Characters"
       }
     },
     {

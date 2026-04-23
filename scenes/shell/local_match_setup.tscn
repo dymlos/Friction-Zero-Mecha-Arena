@@ -117,9 +117,17 @@ theme_override_constants/separation = 12
 [node name="BackButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 2
 text = "Volver"
+
+[node name="CharactersButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+text = "Characters"
 
 [node name="StartButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 2
 text = "Iniciar"

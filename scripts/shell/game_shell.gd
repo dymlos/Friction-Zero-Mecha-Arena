@@ -1,6 +1,7 @@
 extends Control
 class_name GameShell
 
+const CHARACTERS_SCENE := preload("res://scenes/shell/characters_screen.tscn")
 const LOCAL_MATCH_SETUP_SCENE := preload("res://scenes/shell/local_match_setup.tscn")
 const MAIN_MENU_SCENE := preload("res://scenes/shell/main_menu.tscn")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
@@ -10,6 +11,7 @@ const ShellSession = preload("res://scripts/systems/shell_session.gd")
 
 var _active_screen: Control = null
 var _active_screen_id := ""
+var _characters_return_screen_id := "main_menu"
 var _shell_session := ShellSession.new()
 
 
@@ -31,6 +33,17 @@ func open_main_menu() -> void:
 
 func open_local_setup() -> void:
 	_mount_screen(LOCAL_MATCH_SETUP_SCENE, "local_match_setup")
+
+
+func open_characters(return_screen_id: String = "") -> void:
+	var resolved_return_screen_id := return_screen_id
+	if resolved_return_screen_id == "":
+		resolved_return_screen_id = _active_screen_id
+	if resolved_return_screen_id == "" or resolved_return_screen_id == "characters":
+		resolved_return_screen_id = "main_menu"
+
+	_characters_return_screen_id = resolved_return_screen_id
+	_mount_screen(CHARACTERS_SCENE, "characters")
 
 
 func return_to_main_menu() -> void:
@@ -69,11 +82,40 @@ func _wire_screen(screen: Control) -> void:
 
 	if screen.has_signal("play_local_requested"):
 		screen.play_local_requested.connect(open_local_setup)
+	if screen.has_signal("characters_requested"):
+		screen.characters_requested.connect(open_characters)
 	if screen.has_signal("exit_requested"):
 		screen.exit_requested.connect(func() -> void:
 			get_tree().quit()
 		)
 	if screen.has_signal("back_requested"):
-		screen.back_requested.connect(return_to_main_menu)
+		screen.back_requested.connect(_on_back_requested)
 	if screen.has_signal("start_requested"):
 		screen.start_requested.connect(launch_local_match)
+
+
+func _on_back_requested() -> void:
+	if _active_screen_id == "characters":
+		_return_from_characters()
+		return
+
+	return_to_main_menu()
+
+
+func _return_from_characters() -> void:
+	var target_screen_id := _characters_return_screen_id
+	if target_screen_id == "local_match_setup":
+		open_local_setup()
+	else:
+		target_screen_id = "main_menu"
+		open_main_menu()
+
+	call_deferred("_restore_focus_after_characters_return", target_screen_id)
+
+
+func _restore_focus_after_characters_return(target_screen_id: String) -> void:
+	if not is_instance_valid(_active_screen):
+		return
+
+	if target_screen_id in ["main_menu", "local_match_setup"] and _active_screen.has_method("focus_characters_button"):
+		_active_screen.call("focus_characters_button")

@@ -9,6 +9,8 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - Mantener cleanup owner-aware en el soporte post-muerte de `Teams`.
 - No convertir el tuning del opening en una bateria de asserts globales; hoy el contrato tecnico es `lock -> unlock`.
 - No reabrir el score por causa `2/1/4` sin evidencia nueva de playtest o medicion.
+- `Characters` comunica identidad por personaje; `How to Play` comunica reglas generales del juego.
+- La copy activa de roster debe salir de una sola fuente de verdad compartida entre shell, QA y tests.
 
 ## Regla documental
 

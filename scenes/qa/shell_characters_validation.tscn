@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/qa/shell_characters_validation.gd" id="1_validation"]
+[ext_resource type="PackedScene" path="res://scenes/shell/characters_screen.tscn" id="2_characters"]
+
+[node name="ShellCharactersValidation" type="Node"]
+script = ExtResource("1_validation")
+
+[node name="UI" type="Node" parent="."]
+
+[node name="CharactersScreen" parent="UI" instance=ExtResource("2_characters")]

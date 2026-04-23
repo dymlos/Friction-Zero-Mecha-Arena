@@ -10,3 +10,4 @@ func _ready() -> void:
 	local_match_setup.set_match_mode(MatchController.MatchMode.FFA)
 	local_match_setup.toggle_slot_control_mode(2)
 	local_match_setup.toggle_slot_control_mode(4)
+	local_match_setup.focus_characters_button()

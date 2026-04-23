@@ -8,6 +8,16 @@ enum AccentStyle { NONE, BUMPER, LIFT, BLADES, FIN, SPIKE, HALO }
 @export var accent_style: AccentStyle = AccentStyle.NONE
 @export var accent_color := Color(0.92, 0.78, 0.24, 1.0)
 
+@export_group("Player Facing")
+@export var role_label := ""
+@export_multiline var fantasy_line := ""
+@export_multiline var strength_line := ""
+@export_multiline var risk_line := ""
+@export_multiline var signature_line := ""
+@export_multiline var body_read_line := ""
+@export_multiline var easy_line := ""
+@export_multiline var hard_line := ""
+
 @export_group("Movement")
 @export_range(0.6, 1.6, 0.01) var max_move_speed_multiplier := 1.0
 @export_range(0.6, 1.6, 0.01) var move_acceleration_multiplier := 1.0
