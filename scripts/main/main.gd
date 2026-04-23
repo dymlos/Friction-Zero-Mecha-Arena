@@ -192,7 +192,7 @@ func cycle_hud_detail_mode() -> void:
 
 
 func request_pause_for_slot(player_slot: int) -> bool:
-	if not _pause_controller.request_pause(player_slot, _local_session):
+	if not _pause_controller.request_pause(player_slot, _local_session, _is_player_shell_context()):
 		return false
 
 	_sync_pause_state()
@@ -217,6 +217,33 @@ func request_restart_from_pause(player_slot: int) -> bool:
 	ui.show_status(_build_hud_toggle_status())
 	_refresh_hud()
 	return true
+
+
+func move_pause_menu_selection_for_slot(player_slot: int, direction: int) -> bool:
+	if not _pause_controller.move_selection(player_slot, direction):
+		return false
+
+	_sync_pause_state()
+	return true
+
+
+func activate_pause_menu_selection_for_slot(player_slot: int) -> String:
+	var action := _pause_controller.activate_selected_action(player_slot)
+	match action:
+		"resume":
+			request_resume_for_slot(player_slot)
+		"restart":
+			request_restart_from_pause(player_slot)
+		"confirm_return_to_menu":
+			_sync_pause_state()
+		"return_to_menu":
+			_return_to_shell_from_pause()
+
+	return action
+
+
+func get_pause_overlay_lines() -> Array[String]:
+	return _build_pause_overlay_lines()
 
 
 func cycle_lab_selector_slot() -> void:
@@ -915,6 +942,13 @@ func _build_pause_overlay_lines() -> Array[String]:
 	var lines: Array[String] = [
 		"Owner | P%s" % _pause_controller.get_pause_owner_slot(),
 	]
+	if _is_player_shell_context():
+		lines.append("Navegacion | arriba/abajo mueve | ataque confirma | pausa reanuda")
+		lines.append_array(_pause_controller.get_action_labels())
+		if _pause_controller.is_return_to_menu_confirmation_active():
+			lines.append("Confirmar salida | ataque de nuevo para volver al menu")
+		return lines
+
 	var pause_prompt_line := match_controller.get_pause_prompt_line()
 	if pause_prompt_line != "":
 		lines.append(pause_prompt_line)
@@ -947,6 +981,8 @@ func _build_hud_toggle_status() -> String:
 
 func _build_round_state_lines() -> Array[String]:
 	var lines := match_controller.get_round_state_lines()
+	if _is_player_shell_context() and _pause_controller.is_paused():
+		lines = _replace_pause_prompt_line(lines)
 	if match_controller.is_contextual_hud_enabled():
 		return lines
 
@@ -996,6 +1032,18 @@ func _build_round_state_lines() -> Array[String]:
 	return lines
 
 
+func _replace_pause_prompt_line(lines: Array[String]) -> Array[String]:
+	var patched_lines: Array[String] = []
+	for line in lines:
+		if line.begins_with("Pausa |"):
+			patched_lines.append("Pausa | P%s al mando" % _pause_controller.get_pause_owner_slot())
+			continue
+
+		patched_lines.append(line)
+
+	return patched_lines
+
+
 func _try_handle_pause_input(event: InputEvent) -> bool:
 	if _local_session == null:
 		return false
@@ -1005,13 +1053,25 @@ func _try_handle_pause_input(event: InputEvent) -> bool:
 			continue
 
 		if _pause_controller.is_paused():
+			if _pause_controller.cancel_return_to_menu_confirmation(player_slot):
+				_sync_pause_state()
+				return true
 			return request_resume_for_slot(player_slot)
 		return request_pause_for_slot(player_slot)
 
-	if _pause_controller.is_paused() and event is InputEventKey:
-		var key_event := event as InputEventKey
-		if key_event.pressed and not key_event.echo and key_event.keycode == MATCH_RESTART_KEY:
-			return request_restart_from_pause(_pause_controller.get_pause_owner_slot())
+	if not _pause_controller.is_paused():
+		return false
+
+	var owner_slot := _pause_controller.get_pause_owner_slot()
+	if owner_slot <= 0:
+		return false
+
+	if event.is_action_pressed(StringName("p%s_move_forward" % owner_slot)):
+		return move_pause_menu_selection_for_slot(owner_slot, -1)
+	if event.is_action_pressed(StringName("p%s_move_back" % owner_slot)):
+		return move_pause_menu_selection_for_slot(owner_slot, 1)
+	if event.is_action_pressed(StringName("p%s_attack" % owner_slot)):
+		return activate_pause_menu_selection_for_slot(owner_slot) != ""
 
 	return false
 
@@ -1022,6 +1082,16 @@ func _sync_pause_state() -> void:
 	match_controller.set_pause_state(paused_state, _pause_controller.get_pause_owner_slot())
 	ui.show_status(_build_hud_toggle_status())
 	_refresh_hud()
+
+
+func _return_to_shell_from_pause() -> bool:
+	if not _is_player_shell_context():
+		return false
+
+	_pause_controller.reset()
+	_sync_pause_state()
+	get_tree().change_scene_to_file("res://scenes/shell/game_shell.tscn")
+	return true
 
 
 func _connect_joypad_session_monitor() -> void:
