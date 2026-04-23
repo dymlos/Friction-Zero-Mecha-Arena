@@ -886,11 +886,12 @@ func _build_hud_toggle_status() -> String:
 
 func _build_round_state_lines() -> Array[String]:
 	var lines := match_controller.get_round_state_lines()
+	if match_controller.is_contextual_hud_enabled():
+		return lines
+
 	var local_session_line := get_local_session_summary_line()
 	if local_session_line != "":
 		lines.append(local_session_line)
-	if match_controller.is_contextual_hud_enabled():
-		return lines
 
 	lines.append(get_lab_scene_variant_summary_line())
 	lines.append(get_lab_hud_mode_summary_line())
