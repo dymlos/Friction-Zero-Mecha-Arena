@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/shell/how_to_play_screen.gd" id="1_how_to_play"]
+[ext_resource type="Theme" path="res://data/theme/fz_ui_theme.tres" id="2_theme"]
 
 [node name="HowToPlayScreen" type="Control"]
 layout_mode = 3
@@ -10,6 +11,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_how_to_play")
+theme = ExtResource("2_theme")
 
 [node name="Backdrop" type="ColorRect" parent="."]
 layout_mode = 1
@@ -43,12 +45,13 @@ theme_override_constants/separation = 8
 [node name="TitleLabel" type="Label" parent="Frame/VBox/Header"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"ShellTitle"
 text = "How to Play"
 
 [node name="SubtitleLabel" type="Label" parent="Frame/VBox/Header"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"ShellSubtitle"
 autowrap_mode = 2
 text = ""
 
@@ -59,6 +62,7 @@ theme_override_constants/separation = 18
 
 [node name="ListPanel" type="PanelContainer" parent="Frame/VBox/Body"]
 layout_mode = 2
+theme_type_variation = &"ShellPanel"
 custom_minimum_size = Vector2(280, 0)
 
 [node name="ListMargin" type="MarginContainer" parent="Frame/VBox/Body/ListPanel"]
@@ -74,10 +78,12 @@ theme_override_constants/separation = 12
 
 [node name="ListTitle" type="Label" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
 layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
 text = "Temas clave"
 
 [node name="ListHint" type="Label" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
 layout_mode = 2
+theme_type_variation = &"ShellBodyMuted"
 autowrap_mode = 2
 text = "Lee una idea por bloque: reglas, desgaste, energia, recuperacion y control."
 
@@ -91,6 +97,7 @@ select_mode = 0
 
 [node name="DetailPanel" type="PanelContainer" parent="Frame/VBox/Body"]
 layout_mode = 2
+theme_type_variation = &"ShellPanelElevated"
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
@@ -107,16 +114,18 @@ theme_override_constants/separation = 14
 
 [node name="SectionLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
 text = "Tema seleccionado"
 
 [node name="DetailTitleLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_type_variation = &"ShellBodyStrong"
 text = ""
 
 [node name="SummaryTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
 text = "Resumen rapido"
 
 [node name="SummaryValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
@@ -127,6 +136,7 @@ text = ""
 
 [node name="BulletsTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
 text = "Puntos clave"
 
 [node name="BulletsValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
@@ -138,6 +148,7 @@ text = ""
 
 [node name="CalloutPanel" type="PanelContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
+theme_type_variation = &"ShellCalloutPanel"
 
 [node name="CalloutMargin" type="MarginContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel"]
 layout_mode = 2
@@ -152,6 +163,7 @@ theme_override_constants/separation = 6
 
 [node name="CalloutTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin/CalloutVBox"]
 layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
 text = "Consejo de lectura"
 
 [node name="CalloutValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin/CalloutVBox"]
@@ -168,4 +180,5 @@ alignment = 2
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
 text = "Volver"

@@ -1,0 +1,8 @@
+[gd_resource type="Theme" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/presentation/fz_ui_theme.gd" id="1_theme_script"]
+[ext_resource type="Resource" path="res://data/presentation/default_presentation_palette.tres" id="2_palette"]
+
+[resource]
+script = ExtResource("1_theme_script")
+palette = ExtResource("2_palette")

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/shell/main_menu.gd" id="1_main_menu"]
+[ext_resource type="Theme" path="res://data/theme/fz_ui_theme.tres" id="2_theme"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -10,6 +11,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main_menu")
+theme = ExtResource("2_theme")
 
 [node name="Backdrop" type="ColorRect" parent="."]
 layout_mode = 1
@@ -22,6 +24,7 @@ color = Color(0.0666667, 0.0862745, 0.109804, 1)
 
 [node name="CenterPanel" type="PanelContainer" parent="."]
 layout_mode = 1
+theme_type_variation = &"ShellPanelElevated"
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -48,13 +51,14 @@ theme_override_constants/separation = 14
 [node name="TitleLabel" type="Label" parent="CenterPanel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
+theme_type_variation = &"ShellTitle"
 horizontal_alignment = 1
 text = "Friction Zero"
 
 [node name="SubtitleLabel" type="Label" parent="CenterPanel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"ShellSubtitle"
 horizontal_alignment = 1
 autowrap_mode = 2
 text = ""
@@ -63,22 +67,26 @@ text = ""
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
+theme_type_variation = &"ShellButtonPrimary"
 text = "Jugar local"
 
 [node name="CharactersButton" type="Button" parent="CenterPanel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
 text = "Characters"
 
 [node name="HowToPlayButton" type="Button" parent="CenterPanel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
 text = "How to Play"
 
 [node name="ExitButton" type="Button" parent="CenterPanel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
 text = "Salir"

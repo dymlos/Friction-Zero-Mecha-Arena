@@ -2,9 +2,11 @@ extends Control
 class_name CharactersScreen
 
 const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
+const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
 
 signal back_requested
 
+@onready var backdrop: ColorRect = $Backdrop
 @onready var title_label: Label = %TitleLabel
 @onready var subtitle_label: Label = %SubtitleLabel
 @onready var character_list: ItemList = %CharacterList
@@ -26,6 +28,7 @@ var _selected_index := -1
 
 func _ready() -> void:
 	_install_qa_ids()
+	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background
 	title_label.text = "Characters"
 	subtitle_label.text = "Roster base visible hoy en shell. Identidad por robot, sin mezclar reglas generales del match."
 	back_button.text = "Volver"

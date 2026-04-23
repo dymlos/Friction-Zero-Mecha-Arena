@@ -1,11 +1,14 @@
 extends Control
 class_name MainMenu
 
+const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
+
 signal play_local_requested
 signal characters_requested
 signal how_to_play_requested
 signal exit_requested
 
+@onready var backdrop: ColorRect = $Backdrop
 @onready var title_label: Label = %TitleLabel
 @onready var subtitle_label: Label = %SubtitleLabel
 @onready var play_local_button: Button = %PlayLocalButton
@@ -16,6 +19,7 @@ signal exit_requested
 
 func _ready() -> void:
 	_install_qa_ids()
+	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background
 	title_label.text = "Friction Zero"
 	subtitle_label.text = "Shell local minima para entrar al match sin herramientas de laboratorio."
 	play_local_button.text = "Jugar local"

@@ -5,6 +5,7 @@ const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
 
 signal back_requested
 signal characters_requested
@@ -13,6 +14,7 @@ signal start_requested(launch_config: MatchLaunchConfig)
 
 const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4]
 
+@onready var backdrop: ColorRect = $Backdrop
 @onready var mode_value_label: Label = %ModeValueLabel
 @onready var slot_summary_label: Label = %SlotSummaryLabel
 @onready var teams_button: Button = %TeamsButton
@@ -34,6 +36,7 @@ var _slot_control_modes := {}
 
 func _ready() -> void:
 	_install_qa_ids()
+	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background_alt
 	for slot in DEFAULT_LOCAL_SLOTS:
 		_slot_control_modes[slot] = RobotBase.ControlMode.EASY
 

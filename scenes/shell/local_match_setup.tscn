@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/shell/local_match_setup.gd" id="1_local_setup"]
+[ext_resource type="Theme" path="res://data/theme/fz_ui_theme.tres" id="2_theme"]
 
 [node name="LocalMatchSetup" type="Control"]
 layout_mode = 3
@@ -10,6 +11,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_local_setup")
+theme = ExtResource("2_theme")
 
 [node name="Backdrop" type="ColorRect" parent="."]
 layout_mode = 1
@@ -22,6 +24,7 @@ color = Color(0.0509804, 0.0705882, 0.0941176, 1)
 
 [node name="Panel" type="PanelContainer" parent="."]
 layout_mode = 1
+theme_type_variation = &"ShellPanelElevated"
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -47,7 +50,7 @@ theme_override_constants/separation = 14
 
 [node name="TitleLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_type_variation = &"ShellTitle"
 horizontal_alignment = 1
 text = "Setup local"
 
@@ -57,6 +60,7 @@ theme_override_constants/separation = 10
 
 [node name="ModeTitleLabel" type="Label" parent="Panel/Margin/VBox/ModeRow"]
 layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
 text = "Modo:"
 
 [node name="ModeValueLabel" type="Label" parent="Panel/Margin/VBox/ModeRow"]
@@ -68,15 +72,18 @@ text = "Equipos"
 [node name="TeamsButton" type="Button" parent="Panel/Margin/VBox/ModeRow"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
 text = "Teams"
 
 [node name="FFAButton" type="Button" parent="Panel/Margin/VBox/ModeRow"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
 text = "FFA"
 
 [node name="SlotsTitleLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
 text = "Slots locales"
 
 [node name="SlotSummaryLabel" type="Label" parent="Panel/Margin/VBox"]
@@ -118,22 +125,26 @@ theme_override_constants/separation = 12
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
 text = "Volver"
 
 [node name="CharactersButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
 text = "Characters"
 
 [node name="HowToPlayButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
 text = "How to Play"
 
 [node name="StartButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
+theme_type_variation = &"ShellButtonPrimary"
 text = "Iniciar"

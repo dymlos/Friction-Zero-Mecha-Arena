@@ -2,9 +2,11 @@ extends Control
 class_name HowToPlayScreen
 
 const OnboardingCatalog = preload("res://scripts/systems/onboarding_catalog.gd")
+const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
 
 signal back_requested
 
+@onready var backdrop: ColorRect = $Backdrop
 @onready var title_label: Label = %TitleLabel
 @onready var subtitle_label: Label = %SubtitleLabel
 @onready var topic_list: ItemList = %TopicList
@@ -20,6 +22,7 @@ var _selected_index := -1
 
 func _ready() -> void:
 	_install_qa_ids()
+	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background_alt
 	title_label.text = "How to Play"
 	subtitle_label.text = "Reglas base del match, controles Easy/Hard y lectura general sin repetir identidad de Characters."
 	back_button.text = "Volver"
