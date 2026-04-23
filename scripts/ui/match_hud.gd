@@ -10,6 +10,9 @@ class_name MatchHud
 @onready var match_result_panel: Control = %MatchResultPanel
 @onready var match_result_title_label: Label = %MatchResultTitleLabel
 @onready var match_result_label: Label = %MatchResultLabel
+@onready var pause_panel: Control = %PausePanel
+@onready var pause_title_label: Label = %PauseTitleLabel
+@onready var pause_label: Label = %PauseLabel
 
 
 func _ready() -> void:
@@ -17,6 +20,7 @@ func _ready() -> void:
 	show_status("Friction Zero: prototipo base")
 	show_recap("", [])
 	show_match_result("", [])
+	show_pause_overlay("", [])
 
 
 func show_status(message: String) -> void:
@@ -56,9 +60,22 @@ func show_match_result(title: String, lines: Array[String]) -> void:
 	match_result_label.text = "\n".join(lines)
 
 
+func show_pause_overlay(title: String, lines: Array[String]) -> void:
+	var should_show := title != "" and not lines.is_empty()
+	pause_panel.visible = should_show
+	if not should_show:
+		pause_title_label.text = ""
+		pause_label.text = ""
+		return
+
+	pause_title_label.text = title
+	pause_label.text = "\n".join(lines)
+
+
 func _install_qa_ids() -> void:
 	status_label.set_meta("qa_id", "match_hud_status")
 	round_label.set_meta("qa_id", "match_hud_round")
 	roster_label.set_meta("qa_id", "match_hud_roster")
 	recap_panel.set_meta("qa_id", "match_hud_recap_panel")
 	match_result_panel.set_meta("qa_id", "match_hud_result_panel")
+	pause_panel.set_meta("qa_id", "match_hud_pause_panel")

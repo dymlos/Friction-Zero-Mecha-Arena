@@ -4,6 +4,7 @@ class_name Main
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchHud = preload("res://scripts/ui/match_hud.gd")
 const LocalSession = preload("res://scripts/systems/local_session.gd")
+const PauseController = preload("res://scripts/systems/pause_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
@@ -79,6 +80,7 @@ static var _lab_runtime_session_state: Dictionary = {}
 
 var _arena: ArenaBase = null
 var _local_session: LocalSession = null
+var _pause_controller := PauseController.new()
 var _lab_selected_player_slot := 1
 var _applying_lab_selector_reset := false
 var _pending_lab_runtime_session_state: Dictionary = {}
@@ -87,6 +89,7 @@ var _pending_lab_runtime_session_state: Dictionary = {}
 func _ready() -> void:
 	# Esta escena solo conecta piezas grandes: arena, robots, UI y sistemas.
 	# La logica concreta vive en scripts mas chicos para que el proyecto crezca ordenado.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_arena = _get_active_arena()
 	_pending_lab_runtime_session_state = _consume_lab_runtime_session_state()
 	_restore_lab_runtime_session_settings()
@@ -117,6 +120,9 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _try_handle_pause_input(event):
+		get_viewport().set_input_as_handled()
+		return
 	if not (event is InputEventKey):
 		return
 
@@ -160,6 +166,34 @@ func cycle_hud_detail_mode() -> void:
 	_sync_lab_selector_visuals()
 	ui.show_status(_build_hud_toggle_status())
 	_refresh_hud()
+
+
+func request_pause_for_slot(player_slot: int) -> bool:
+	if not _pause_controller.request_pause(player_slot, _local_session):
+		return false
+
+	_sync_pause_state()
+	return true
+
+
+func request_resume_for_slot(player_slot: int) -> bool:
+	if not _pause_controller.request_resume(player_slot):
+		return false
+
+	_sync_pause_state()
+	return true
+
+
+func request_restart_from_pause(player_slot: int) -> bool:
+	if not _pause_controller.request_restart(player_slot):
+		return false
+
+	_pause_controller.reset()
+	_sync_pause_state()
+	match_controller.request_pause_restart()
+	ui.show_status(_build_hud_toggle_status())
+	_refresh_hud()
+	return true
 
 
 func cycle_lab_selector_slot() -> void:
@@ -656,6 +690,10 @@ func _refresh_hud() -> void:
 		match_controller.get_match_result_title(),
 		match_controller.get_match_result_lines()
 	)
+	ui.show_pause_overlay(
+		_build_pause_overlay_title(),
+		_build_pause_overlay_lines()
+	)
 
 
 func _connect_match_flow() -> void:
@@ -763,6 +801,26 @@ func _build_startup_status() -> String:
 	]
 
 
+func _build_pause_overlay_title() -> String:
+	if not _pause_controller.is_paused():
+		return ""
+
+	return "Pausa"
+
+
+func _build_pause_overlay_lines() -> Array[String]:
+	if not _pause_controller.is_paused():
+		return []
+
+	var lines: Array[String] = [
+		"Owner | P%s" % _pause_controller.get_pause_owner_slot(),
+	]
+	var pause_prompt_line := match_controller.get_pause_prompt_line()
+	if pause_prompt_line != "":
+		lines.append(pause_prompt_line)
+	return lines
+
+
 func _get_current_lab_scene_variant() -> Dictionary:
 	return LAB_SCENE_VARIANTS[_get_current_lab_scene_variant_index()]
 
@@ -814,6 +872,34 @@ func _build_round_state_lines() -> Array[String]:
 			lines.append("Borde | %s" % edge_summary)
 
 	return lines
+
+
+func _try_handle_pause_input(event: InputEvent) -> bool:
+	if _local_session == null:
+		return false
+
+	for player_slot in range(1, _local_session.get_active_match_slots() + 1):
+		if not event.is_action_pressed(StringName("p%s_pause" % player_slot)):
+			continue
+
+		if _pause_controller.is_paused():
+			return request_resume_for_slot(player_slot)
+		return request_pause_for_slot(player_slot)
+
+	if _pause_controller.is_paused() and event is InputEventKey:
+		var key_event := event as InputEventKey
+		if key_event.pressed and not key_event.echo and key_event.keycode == MATCH_RESTART_KEY:
+			return request_restart_from_pause(_pause_controller.get_pause_owner_slot())
+
+	return false
+
+
+func _sync_pause_state() -> void:
+	var paused_state := _pause_controller.is_paused()
+	get_tree().paused = paused_state
+	match_controller.set_pause_state(paused_state, _pause_controller.get_pause_owner_slot())
+	ui.show_status(_build_hud_toggle_status())
+	_refresh_hud()
 
 
 func _sync_edge_pickup_intro_lock() -> void:

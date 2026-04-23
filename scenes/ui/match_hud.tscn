@@ -65,6 +65,48 @@ theme_override_constants/shadow_offset_y = 2
 autowrap_mode = 2
 text = ""
 
+[node name="PausePanel" type="PanelContainer" parent="Root"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+offset_left = 380.0
+offset_top = 20.0
+offset_right = 660.0
+offset_bottom = 118.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_recap")
+
+[node name="Margin" type="MarginContainer" parent="Root/PausePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="PauseVBox" type="VBoxContainer" parent="Root/PausePanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PauseTitleLabel" type="Label" parent="Root/PausePanel/Margin/PauseVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.988235, 0.878431, 0.521569, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+horizontal_alignment = 1
+text = ""
+
+[node name="PauseLabel" type="Label" parent="Root/PausePanel/Margin/PauseVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92549, 0.94902, 0.968627, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+horizontal_alignment = 1
+autowrap_mode = 2
+text = ""
+
 [node name="RecapPanel" type="PanelContainer" parent="Root"]
 unique_name_in_owner = true
 visible = false

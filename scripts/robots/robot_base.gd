@@ -79,6 +79,7 @@ const INPUT_ACTION_SUFFIXES := [
 	"energy_next",
 	"overdrive",
 	"throw_part",
+	"pause",
 ]
 
 const KEYBOARD_PROFILE_LABELS := {
@@ -171,6 +172,7 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"energy_next": [KEY_E],
 		"throw_part": [KEY_C],
 		"overdrive": [KEY_R],
+		"pause": [KEY_TAB],
 	},
 	KeyboardProfile.ARROWS_ENTER: {
 		"move_left": [KEY_LEFT],
@@ -186,6 +188,7 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"energy_next": [KEY_PERIOD],
 		"throw_part": [KEY_SLASH],
 		"overdrive": [KEY_M],
+		"pause": [KEY_BACKSPACE],
 	},
 	KeyboardProfile.NUMPAD: {
 		"move_left": [KEY_KP_4],
@@ -201,6 +204,7 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"energy_next": [KEY_KP_3],
 		"throw_part": [KEY_KP_ADD],
 		"overdrive": [KEY_KP_5],
+		"pause": [KEY_KP_SUBTRACT],
 	},
 	KeyboardProfile.IJKL: {
 		"move_left": [KEY_J],
@@ -212,6 +216,7 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"energy_next": [KEY_H],
 		"throw_part": [KEY_N],
 		"overdrive": [KEY_B],
+		"pause": [KEY_O],
 	},
 }
 

@@ -57,6 +57,8 @@ var _round_lifecycle_token := 0
 var _match_restart_deadline_msec := 0
 var _match_decided_rounds := 0
 var _match_decided_rounds_with_support := 0
+var _paused_by_owner := false
+var _pause_owner_slot := 0
 var _transition_timer: Timer = null
 var _pending_transition := ""
 var _last_round_closing_cause := -1
@@ -124,6 +126,8 @@ func start_match() -> void:
 	_competitor_match_stats.clear()
 	_match_decided_rounds = 0
 	_match_decided_rounds_with_support = 0
+	_paused_by_owner = false
+	_pause_owner_slot = 0
 	_competitor_order.clear()
 	_robot_support_state.clear()
 	_last_round_closing_cause = -1
@@ -214,6 +218,9 @@ func get_round_state_lines() -> Array[String]:
 	var lines: Array[String] = []
 	var contextual_hud := is_contextual_hud_enabled()
 	lines.append(get_round_status_line())
+	var pause_prompt_line := get_pause_prompt_line()
+	if pause_prompt_line != "":
+		lines.append(pause_prompt_line)
 	if not contextual_hud:
 		lines.append("Modo | %s" % get_match_mode_label())
 		var target_score_line := _build_target_score_line()
@@ -541,6 +548,32 @@ func request_match_restart() -> bool:
 	_cancel_pending_transition()
 	_restart_match()
 	return true
+
+
+func request_pause_restart() -> void:
+	_round_lifecycle_token += 1
+	_cancel_pending_transition()
+	_restart_match()
+
+
+func set_pause_state(is_paused: bool, owner_slot: int = 0) -> void:
+	_paused_by_owner = is_paused
+	_pause_owner_slot = owner_slot if is_paused else 0
+
+
+func is_paused_by_owner() -> bool:
+	return _paused_by_owner
+
+
+func get_pause_owner_slot() -> int:
+	return _pause_owner_slot
+
+
+func get_pause_prompt_line() -> String:
+	if not _paused_by_owner or _pause_owner_slot <= 0:
+		return ""
+
+	return "Pausa | P%s reanuda | F5 reinicia" % _pause_owner_slot
 
 
 func record_part_restoration(restored_robot: RobotBase, restored_by: RobotBase) -> void:
