@@ -903,7 +903,7 @@ func get_input_hint() -> String:
 	if joypad_device >= 0:
 		return "joy %s" % joypad_device
 
-	return "joy slot %s" % max(player_index - 1, 0)
+	return "sin dispositivo"
 
 
 func get_support_input_hint() -> String:
@@ -4379,10 +4379,6 @@ func _get_joypad_devices_to_read() -> Array[int]:
 	if uses_keyboard_input():
 		return devices
 
-	var fallback_device := player_index - 1
-	if fallback_device >= 0 and connected_devices.has(fallback_device):
-		devices.append(fallback_device)
-
 	return devices
 
 
@@ -4528,7 +4524,7 @@ func _report_joypad_status() -> void:
 
 	var connected_devices := Input.get_connected_joypads()
 	if connected_devices.is_empty():
-		print("%s: no hay joystick conectado; queda teclado como fallback." % display_name)
+		print("%s: no hay joystick conectado para este slot." % display_name)
 		return
 
 	var device_names: Array[String] = []

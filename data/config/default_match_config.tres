@@ -8,6 +8,8 @@
 script = ExtResource("1_config")
 max_players = 4
 local_player_count = 4
+max_local_slots = 8
+active_match_slots = 4
 round_time_seconds = 60
 rounds_to_win = 3
 allow_team_mode = true

@@ -3,6 +3,7 @@ class_name Main
 
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchHud = preload("res://scripts/ui/match_hud.gd")
+const LocalSession = preload("res://scripts/systems/local_session.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
@@ -57,6 +58,7 @@ const LAB_SCENE_VARIANTS := [
 		"label": "FFA rapido",
 	},
 ]
+const DEFAULT_LOCAL_SESSION_CONFIG := preload("res://data/config/local/default_local_session_config.tres")
 
 static var _lab_runtime_session_state: Dictionary = {}
 
@@ -76,6 +78,7 @@ static var _lab_runtime_session_state: Dictionary = {}
 @onready var ui: MatchHud = $UI/MatchHud
 
 var _arena: ArenaBase = null
+var _local_session: LocalSession = null
 var _lab_selected_player_slot := 1
 var _applying_lab_selector_reset := false
 var _pending_lab_runtime_session_state: Dictionary = {}
@@ -307,18 +310,20 @@ func _register_existing_robots() -> void:
 			child.robot_exploded.connect(_on_robot_exploded)
 
 
+func get_local_session() -> LocalSession:
+	return _local_session
+
+
 func _configure_playable_prototype() -> void:
 	var robots := _get_scene_robots()
 	_apply_match_mode_bootstrap(robots)
 	var spawn_transforms := _get_bootstrap_spawn_transforms(robots.size())
-	var local_player_count: int = min(match_controller.get_local_player_count(), robots.size())
+	_bootstrap_local_session(robots.size())
 
 	for index in range(robots.size()):
 		var robot: RobotBase = robots[index]
-		robot.player_index = index + 1
-		robot.is_player_controlled = index < local_player_count
-		robot.control_mode = _resolve_control_mode_for_slot(robot.player_index)
-		_assign_default_local_inputs(robot, index)
+		var player_slot := index + 1
+		_local_session.apply_to_robot(robot, player_slot)
 		if index < spawn_transforms.size():
 			var spawn_transform := spawn_transforms[index]
 			robot.global_position = spawn_transform.origin
@@ -395,31 +400,51 @@ func _apply_match_mode_bootstrap(robots: Array[RobotBase]) -> void:
 		robot.team_id = 0
 
 
-func _assign_default_local_inputs(robot: RobotBase, index: int) -> void:
-	if not robot.is_player_controlled:
-		return
+func _bootstrap_local_session(robot_count: int) -> void:
+	_local_session = _duplicate_default_local_session()
+	var max_local_slots: int = max(robot_count, 1)
+	var active_match_slots: int = min(robot_count, 1)
+	if match_controller != null:
+		active_match_slots = min(match_controller.get_local_player_count(), robot_count)
+		if match_controller.match_config != null:
+			max_local_slots = max(max_local_slots, int(match_controller.match_config.max_local_slots))
+			active_match_slots = min(
+				active_match_slots,
+				int(match_controller.match_config.active_match_slots)
+			)
+	elif _local_session != null:
+		max_local_slots = max(max_local_slots, _local_session.get_max_local_slots())
+		active_match_slots = min(active_match_slots, _local_session.get_active_match_slots())
 
-	if index == 0:
-		robot.keyboard_profile = RobotBase.KeyboardProfile.WASD_SPACE
-		robot.joypad_device = -1
-		return
+	_local_session.configure(max_local_slots, max(active_match_slots, 1))
+	for player_slot in range(1, _local_session.get_active_match_slots() + 1):
+		_local_session.assign_keyboard_slot(
+			player_slot,
+			_get_default_keyboard_profile_for_slot(player_slot),
+			_resolve_control_mode_for_slot(player_slot)
+		)
 
-	if index == 1:
-		robot.keyboard_profile = RobotBase.KeyboardProfile.ARROWS_ENTER
-		robot.joypad_device = -1
-		return
 
-	if index == 2:
-		robot.keyboard_profile = RobotBase.KeyboardProfile.NUMPAD
-		robot.joypad_device = -1
-		return
+func _duplicate_default_local_session() -> LocalSession:
+	var session := DEFAULT_LOCAL_SESSION_CONFIG.duplicate(true) as LocalSession
+	if session == null:
+		session = LocalSession.new()
 
-	if index == 3:
-		robot.keyboard_profile = RobotBase.KeyboardProfile.IJKL
-		robot.joypad_device = -1
-		return
+	return session
 
-	robot.keyboard_profile = RobotBase.KeyboardProfile.NONE
+
+func _get_default_keyboard_profile_for_slot(player_slot: int) -> int:
+	match player_slot:
+		1:
+			return RobotBase.KeyboardProfile.WASD_SPACE
+		2:
+			return RobotBase.KeyboardProfile.ARROWS_ENTER
+		3:
+			return RobotBase.KeyboardProfile.NUMPAD
+		4:
+			return RobotBase.KeyboardProfile.IJKL
+		_:
+			return RobotBase.KeyboardProfile.NONE
 
 
 func _get_scene_robots() -> Array[RobotBase]:
