@@ -64,8 +64,6 @@ match_mode = 0
 match_config = ExtResource("11_config")
 round_reset_delay = 0.85
 match_restart_delay = 1.45
-space_reduction_start_ratio = 0.4
-space_reduction_min_scale = 0.5
 
 [node name="UI" type="Node" parent="."]
 

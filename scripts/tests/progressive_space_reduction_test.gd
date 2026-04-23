@@ -101,9 +101,16 @@ func _assert_space_reduction_scene_contract(scene_spec: Dictionary) -> void:
 	match_controller.match_config.progressive_space_reduction = true
 	match_controller.match_config.round_intro_duration_teams = 0.0
 	match_controller.match_config.round_intro_duration_ffa = 0.0
+	_assert(
+		_resource_has_property(match_controller.match_config, "space_reduction_start_ratio")
+		and _resource_has_property(match_controller.match_config, "space_reduction_min_scale"),
+		"La escena %s deberia definir el tuning de contraccion desde MatchConfig, no solo desde la escena principal." % label
+	)
+	match_controller.match_config.set("space_reduction_start_ratio", 0.25)
+	match_controller.match_config.set("space_reduction_min_scale", 0.5)
 	match_controller.space_reduction_warning_seconds = 0.2
-	match_controller.space_reduction_start_ratio = 0.25
-	match_controller.space_reduction_min_scale = 0.5
+	match_controller.space_reduction_start_ratio = 0.8
+	match_controller.space_reduction_min_scale = 0.9
 	match_controller.start_match()
 
 	for robot in robots:
@@ -165,6 +172,17 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 			robots.append(child as RobotBase)
 
 	return robots
+
+
+func _resource_has_property(resource: Resource, property_name: String) -> bool:
+	if resource == null:
+		return false
+
+	for property_info in resource.get_property_list():
+		if String(property_info.get("name", "")) == property_name:
+			return true
+
+	return false
 
 
 func _assert(condition: bool, message: String) -> void:

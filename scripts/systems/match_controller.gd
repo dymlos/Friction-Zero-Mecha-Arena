@@ -285,12 +285,13 @@ func get_current_play_area_scale() -> float:
 
 	var round_duration := maxf(float(match_config.round_time_seconds), 0.01)
 	var round_progress := clampf(_round_elapsed_seconds / round_duration, 0.0, 1.0)
-	if round_progress <= space_reduction_start_ratio:
+	var start_ratio := _get_space_reduction_start_ratio()
+	if round_progress <= start_ratio:
 		return 1.0
 
-	var shrink_window := maxf(1.0 - space_reduction_start_ratio, 0.01)
-	var shrink_progress := clampf((round_progress - space_reduction_start_ratio) / shrink_window, 0.0, 1.0)
-	return lerpf(1.0, space_reduction_min_scale, shrink_progress)
+	var shrink_window := maxf(1.0 - start_ratio, 0.01)
+	var shrink_progress := clampf((round_progress - start_ratio) / shrink_window, 0.0, 1.0)
+	return lerpf(1.0, _get_space_reduction_min_scale(), shrink_progress)
 
 
 func is_space_reduction_active() -> bool:
@@ -327,13 +328,27 @@ func get_time_until_space_reduction() -> float:
 		return 0.0
 
 	var round_duration := maxf(float(match_config.round_time_seconds), 0.01)
-	var reduction_start_time := round_duration * space_reduction_start_ratio
+	var reduction_start_time := round_duration * _get_space_reduction_start_ratio()
 	return maxf(reduction_start_time - _round_elapsed_seconds, 0.0)
 
 
 func _get_space_reduction_warning_window() -> float:
-	var time_until_reduction := maxf(float(match_config.round_time_seconds) * space_reduction_start_ratio, 0.0)
+	var time_until_reduction := maxf(float(match_config.round_time_seconds) * _get_space_reduction_start_ratio(), 0.0)
 	return minf(space_reduction_warning_seconds, time_until_reduction)
+
+
+func _get_space_reduction_start_ratio() -> float:
+	if match_config != null:
+		return clampf(match_config.space_reduction_start_ratio, 0.0, 0.95)
+
+	return clampf(space_reduction_start_ratio, 0.0, 0.95)
+
+
+func _get_space_reduction_min_scale() -> float:
+	if match_config != null:
+		return clampf(match_config.space_reduction_min_scale, 0.35, 1.0)
+
+	return clampf(space_reduction_min_scale, 0.35, 1.0)
 
 
 func get_alive_robots() -> Array[RobotBase]:

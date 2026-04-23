@@ -11,6 +11,8 @@ enum HudDetailMode { EXPLICIT, CONTEXTUAL }
 @export_range(1, 9) var rounds_to_win := 3
 @export var allow_team_mode := true
 @export var progressive_space_reduction := true
+@export_range(0.0, 0.95, 0.05) var space_reduction_start_ratio := 0.55
+@export_range(0.35, 1.0, 0.05) var space_reduction_min_scale := 0.55
 @export var hud_detail_mode: HudDetailMode = HudDetailMode.EXPLICIT
 @export var hud_detail_mode_ffa: HudDetailMode = HudDetailMode.EXPLICIT
 @export var hud_detail_mode_teams: HudDetailMode = HudDetailMode.EXPLICIT
