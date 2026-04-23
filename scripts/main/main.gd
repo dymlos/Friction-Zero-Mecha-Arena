@@ -1748,6 +1748,7 @@ func _apply_pending_entry_context() -> void:
 	if match_controller != null:
 		match_controller.match_mode = _pending_match_launch_config.match_mode
 		match_controller.apply_runtime_hud_detail_mode(int(_pending_match_launch_config.hud_detail_mode))
+		match_controller.set_runtime_match_restart_enabled(bool(_pending_match_launch_config.auto_restart_on_match_end))
 
 	for slot_spec in _pending_match_launch_config.local_slots:
 		if not (slot_spec is Dictionary):

@@ -81,6 +81,7 @@ func toggle_slot_control_mode(player_slot: int) -> void:
 func build_launch_config() -> MatchLaunchConfig:
 	var launch_config := MatchLaunchConfig.new()
 	launch_config.hud_detail_mode = MatchConfig.HudDetailMode.EXPLICIT
+	launch_config.auto_restart_on_match_end = false
 	launch_config.configure_for_local_match(
 		_match_mode,
 		_resolve_target_scene_path(),

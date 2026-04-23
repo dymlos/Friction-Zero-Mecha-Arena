@@ -63,6 +63,7 @@ var _transition_timer: Timer = null
 var _pending_transition := ""
 var _last_round_closing_cause := -1
 var _last_round_was_draw := false
+var _runtime_match_restart_enabled := true
 
 
 func _ready() -> void:
@@ -204,6 +205,14 @@ func apply_runtime_hud_detail_mode(next_mode: int) -> void:
 
 func get_runtime_hud_detail_mode() -> int:
 	return int(get_hud_detail_mode())
+
+
+func set_runtime_match_restart_enabled(is_enabled: bool) -> void:
+	_runtime_match_restart_enabled = is_enabled
+
+
+func is_match_restart_enabled() -> bool:
+	return _runtime_match_restart_enabled
 
 
 func is_contextual_hud_enabled() -> bool:
@@ -516,7 +525,7 @@ func get_match_result_lines() -> Array[String]:
 
 
 func get_match_restart_time_left() -> float:
-	if not _match_over:
+	if not _match_over or not is_match_restart_enabled():
 		return 0.0
 	if _match_restart_deadline_msec <= 0:
 		return 0.0
@@ -526,7 +535,7 @@ func get_match_restart_time_left() -> float:
 
 
 func get_match_restart_prompt_line() -> String:
-	if not _match_over:
+	if not _match_over or not is_match_restart_enabled():
 		return ""
 
 	return "Reinicio | F5 ahora o %.1fs" % snappedf(get_match_restart_time_left(), 0.1)
@@ -1664,9 +1673,12 @@ func _get_round_victory_points_for_cause(cause: EliminationCause) -> int:
 
 func _finish_match_with_winner(winner_key: String, winner_score: int) -> void:
 	_match_over = true
-	_match_restart_deadline_msec = Time.get_ticks_msec() + int(round(match_restart_delay * 1000.0))
 	_round_status_line = _build_match_victory_status_line(winner_key, winner_score)
-	_schedule_match_restart()
+	if is_match_restart_enabled():
+		_match_restart_deadline_msec = Time.get_ticks_msec() + int(round(match_restart_delay * 1000.0))
+		_schedule_match_restart()
+	else:
+		_match_restart_deadline_msec = 0
 
 
 func _build_match_victory_status_line(winner_key: String, winner_score: int) -> String:

@@ -11,6 +11,7 @@ const DEFAULT_MAX_LOCAL_SLOTS := 8
 @export var target_scene_path := ""
 @export var entry_context := ENTRY_CONTEXT_PLAYER_SHELL
 @export var hud_detail_mode: MatchConfig.HudDetailMode = MatchConfig.HudDetailMode.EXPLICIT
+@export var auto_restart_on_match_end := false
 @export var local_slots: Array[Dictionary] = []
 
 
@@ -22,6 +23,7 @@ func configure_for_local_match(
 	match_mode = next_match_mode
 	target_scene_path = next_target_scene_path
 	entry_context = ENTRY_CONTEXT_PLAYER_SHELL
+	auto_restart_on_match_end = false
 	local_slots = _sanitize_local_slots(slot_specs)
 
 
