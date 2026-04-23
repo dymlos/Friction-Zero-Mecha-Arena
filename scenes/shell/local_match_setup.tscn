@@ -1,0 +1,125 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/shell/local_match_setup.gd" id="1_local_setup"]
+
+[node name="LocalMatchSetup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_local_setup")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0509804, 0.0705882, 0.0941176, 1)
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -210.0
+offset_right = 320.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+text = "Setup local"
+
+[node name="ModeRow" type="HBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ModeTitleLabel" type="Label" parent="Panel/Margin/VBox/ModeRow"]
+layout_mode = 2
+text = "Modo:"
+
+[node name="ModeValueLabel" type="Label" parent="Panel/Margin/VBox/ModeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Equipos"
+
+[node name="TeamsButton" type="Button" parent="Panel/Margin/VBox/ModeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Teams"
+
+[node name="FFAButton" type="Button" parent="Panel/Margin/VBox/ModeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "FFA"
+
+[node name="SlotsTitleLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "Slots locales"
+
+[node name="SlotSummaryLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="SlotButtons" type="GridContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="Slot1Button" type="Button" parent="Panel/Margin/VBox/SlotButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "P1: Easy"
+
+[node name="Slot2Button" type="Button" parent="Panel/Margin/VBox/SlotButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "P2: Easy"
+
+[node name="Slot3Button" type="Button" parent="Panel/Margin/VBox/SlotButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "P3: Easy"
+
+[node name="Slot4Button" type="Button" parent="Panel/Margin/VBox/SlotButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "P4: Easy"
+
+[node name="ActionsRow" type="HBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="BackButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Volver"
+
+[node name="StartButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Iniciar"
