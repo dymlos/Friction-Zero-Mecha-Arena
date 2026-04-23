@@ -79,3 +79,5 @@ func _install_qa_ids() -> void:
 	recap_panel.set_meta("qa_id", "match_hud_recap_panel")
 	match_result_panel.set_meta("qa_id", "match_hud_result_panel")
 	pause_panel.set_meta("qa_id", "match_hud_pause_panel")
+	pause_title_label.set_meta("qa_id", "match_hud_pause_title")
+	pause_label.set_meta("qa_id", "match_hud_pause_label")

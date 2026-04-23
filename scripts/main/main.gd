@@ -94,6 +94,7 @@ func _ready() -> void:
 	_pending_lab_runtime_session_state = _consume_lab_runtime_session_state()
 	_restore_lab_runtime_session_settings()
 	_configure_playable_prototype()
+	_connect_joypad_session_monitor()
 	_configure_edge_pickup_layout_profile()
 	_connect_arena_pickups()
 	_connect_match_flow()
@@ -348,6 +349,45 @@ func get_local_session() -> LocalSession:
 	return _local_session
 
 
+func get_local_session_summary_line() -> String:
+	if _local_session == null:
+		return ""
+
+	var disconnected_segments: Array[String] = []
+	for slot in _local_session.get_disconnected_slots():
+		disconnected_segments.append(
+			"P%s desconectado (joy %s)"
+			% [slot, _local_session.get_slot_device_id(slot)]
+		)
+
+	if disconnected_segments.is_empty():
+		return ""
+
+	return "Sesion | %s" % ", ".join(disconnected_segments)
+
+
+func sync_local_joypad_connection(device_id: int, connected: bool, preferred_slot: int = -1) -> int:
+	if _local_session == null:
+		return -1
+
+	var slot := -1
+	if connected:
+		slot = _local_session.register_joypad_connection(
+			device_id,
+			preferred_slot,
+			_resolve_control_mode_for_slot(max(preferred_slot, 1))
+		)
+	else:
+		slot = _local_session.register_joypad_disconnection(device_id)
+
+	if slot > 0:
+		_apply_local_session_to_scene_robot(slot)
+		ui.show_status(_build_hud_toggle_status())
+		_refresh_hud()
+
+	return slot
+
+
 func _configure_playable_prototype() -> void:
 	var robots := _get_scene_robots()
 	_apply_match_mode_bootstrap(robots)
@@ -358,6 +398,8 @@ func _configure_playable_prototype() -> void:
 		var robot: RobotBase = robots[index]
 		var player_slot := index + 1
 		_local_session.apply_to_robot(robot, player_slot)
+		if robot.is_player_controlled:
+			robot.refresh_input_setup()
 		if index < spawn_transforms.size():
 			var spawn_transform := spawn_transforms[index]
 			robot.global_position = spawn_transform.origin
@@ -844,6 +886,9 @@ func _build_hud_toggle_status() -> String:
 
 func _build_round_state_lines() -> Array[String]:
 	var lines := match_controller.get_round_state_lines()
+	var local_session_line := get_local_session_summary_line()
+	if local_session_line != "":
+		lines.append(local_session_line)
 	if match_controller.is_contextual_hud_enabled():
 		return lines
 
@@ -900,6 +945,27 @@ func _sync_pause_state() -> void:
 	match_controller.set_pause_state(paused_state, _pause_controller.get_pause_owner_slot())
 	ui.show_status(_build_hud_toggle_status())
 	_refresh_hud()
+
+
+func _connect_joypad_session_monitor() -> void:
+	if Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
+		return
+
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+
+
+func _on_joy_connection_changed(device_id: int, connected: bool) -> void:
+	sync_local_joypad_connection(device_id, connected)
+
+
+func _apply_local_session_to_scene_robot(player_slot: int) -> void:
+	var robot := _get_scene_robot_by_player_slot(player_slot)
+	if robot == null or _local_session == null:
+		return
+
+	_local_session.apply_to_robot(robot, player_slot)
+	if robot.is_player_controlled:
+		robot.refresh_input_setup()
 
 
 func _sync_edge_pickup_intro_lock() -> void:

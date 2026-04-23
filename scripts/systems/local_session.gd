@@ -58,6 +58,15 @@ func get_slot_control_mode(slot: int) -> int:
 	return int(_get_slot_info(slot).control_mode)
 
 
+func get_disconnected_slots() -> Array[int]:
+	var slots: Array[int] = []
+	for slot in range(1, max_local_slots + 1):
+		if int(_get_slot_info(slot).state) == SlotState.DISCONNECTED:
+			slots.append(slot)
+
+	return slots
+
+
 func is_slot_occupied(slot: int) -> bool:
 	var slot_state := int(_get_slot_info(slot).state)
 	return slot_state != SlotState.EMPTY
@@ -141,6 +150,43 @@ func restore_joypad_slot(device_id: int) -> int:
 		return slot
 
 	return -1
+
+
+func find_slot_by_device_id(device_id: int) -> int:
+	for slot in range(1, max_local_slots + 1):
+		if int(_get_slot_info(slot).device_id) == device_id:
+			return slot
+
+	return -1
+
+
+func register_joypad_connection(
+	device_id: int,
+	preferred_slot: int = -1,
+	control_mode: int = RobotBase.ControlMode.EASY
+) -> int:
+	var existing_slot := find_slot_by_device_id(device_id)
+	if existing_slot > 0:
+		var existing_state := int(_get_slot_info(existing_slot).state)
+		if existing_state == SlotState.DISCONNECTED:
+			return restore_joypad_slot(device_id)
+		if existing_state == SlotState.JOYPAD:
+			return existing_slot
+
+	if preferred_slot <= 0 or not _slots.has(preferred_slot):
+		return -1
+
+	assign_joypad_slot(preferred_slot, device_id, control_mode)
+	return preferred_slot
+
+
+func register_joypad_disconnection(device_id: int) -> int:
+	var slot := find_slot_by_device_id(device_id)
+	if slot <= 0:
+		return -1
+
+	mark_slot_disconnected(slot)
+	return slot
 
 
 func apply_to_robot(robot: RobotBase, slot: int) -> void:

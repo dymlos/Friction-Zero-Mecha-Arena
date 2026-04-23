@@ -1,0 +1,39 @@
+{
+  "name": "main_pause_overlay_layout_1280",
+  "scene": "res://scenes/qa/main_pause_overlay_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "pause_overlay"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:match_hud_pause_panel"
+    },
+    {
+      "inside_viewport": "qa:match_hud_roster"
+    },
+    {
+      "no_overlap": {
+        "a": "qa:match_hud_pause_panel",
+        "b": "qa:match_hud_roster"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_pause_label",
+        "expected": "P2 reanuda"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}
