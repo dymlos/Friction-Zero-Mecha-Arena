@@ -88,10 +88,10 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 1
 theme_type_variation = &"HudPanel"
-offset_left = 688.0
+offset_left = 868.0
 offset_top = 20.0
-offset_right = 1004.0
-offset_bottom = 278.0
+offset_right = 1240.0
+offset_bottom = 700.0
 
 [node name="Margin" type="MarginContainer" parent="Root/RecapPanel"]
 layout_mode = 2
@@ -102,6 +102,7 @@ theme_override_constants/margin_bottom = 14
 
 [node name="RecapVBox" type="VBoxContainer" parent="Root/RecapPanel/Margin"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 8
 
 [node name="RecapTitleLabel" type="Label" parent="Root/RecapPanel/Margin/RecapVBox"]
@@ -110,10 +111,16 @@ layout_mode = 2
 theme_type_variation = &"HudTitle"
 text = ""
 
-[node name="RecapLabel" type="Label" parent="Root/RecapPanel/Margin/RecapVBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 196)
+[node name="RecapScroll" type="ScrollContainer" parent="Root/RecapPanel/Margin/RecapVBox"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="RecapLabel" type="Label" parent="Root/RecapPanel/Margin/RecapVBox/RecapScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"HudBody"
 autowrap_mode = 2
 text = ""
@@ -123,10 +130,10 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 1
 theme_type_variation = &"HudPanel"
-offset_left = 214.0
-offset_top = 54.0
-offset_right = 822.0
-offset_bottom = 298.0
+offset_left = 24.0
+offset_top = 52.0
+offset_right = 676.0
+offset_bottom = 694.0
 
 [node name="Margin" type="MarginContainer" parent="Root/MatchResultPanel"]
 layout_mode = 2
@@ -137,6 +144,7 @@ theme_override_constants/margin_bottom = 18
 
 [node name="MatchResultVBox" type="VBoxContainer" parent="Root/MatchResultPanel/Margin"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 10
 
 [node name="MatchResultTitleLabel" type="Label" parent="Root/MatchResultPanel/Margin/MatchResultVBox"]
@@ -146,10 +154,16 @@ theme_type_variation = &"HudTitle"
 horizontal_alignment = 1
 text = ""
 
-[node name="MatchResultLabel" type="Label" parent="Root/MatchResultPanel/Margin/MatchResultVBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 164)
+[node name="MatchResultScroll" type="ScrollContainer" parent="Root/MatchResultPanel/Margin/MatchResultVBox"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="MatchResultLabel" type="Label" parent="Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"HudBody"
 horizontal_alignment = 1
 autowrap_mode = 2

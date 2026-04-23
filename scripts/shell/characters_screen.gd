@@ -29,6 +29,7 @@ var _selected_index := -1
 func _ready() -> void:
 	_install_qa_ids()
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_label.text = "Characters"
 	subtitle_label.text = "Roster base visible hoy en shell. Identidad por robot, sin mezclar reglas generales del match."
 	back_button.text = "Volver"

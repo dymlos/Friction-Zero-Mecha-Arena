@@ -1,6 +1,7 @@
 extends CanvasLayer
 class_name MatchHud
 
+@onready var top_left_stack: VBoxContainer = $Root/TopLeftStack
 @onready var status_label: Label = %StatusLabel
 @onready var round_label: Label = %RoundLabel
 @onready var roster_label: Label = %RosterLabel
@@ -21,6 +22,7 @@ func _ready() -> void:
 	show_recap("", [])
 	show_match_result("", [])
 	show_pause_overlay("", [])
+	_sync_primary_stack_visibility()
 
 
 func show_status(message: String) -> void:
@@ -42,10 +44,12 @@ func show_recap(title: String, lines: Array[String]) -> void:
 	if not should_show:
 		recap_title_label.text = ""
 		recap_label.text = ""
+		_sync_primary_stack_visibility()
 		return
 
 	recap_title_label.text = title
 	recap_label.text = "\n".join(lines)
+	_sync_primary_stack_visibility()
 
 
 func show_match_result(title: String, lines: Array[String]) -> void:
@@ -54,10 +58,12 @@ func show_match_result(title: String, lines: Array[String]) -> void:
 	if not should_show:
 		match_result_title_label.text = ""
 		match_result_label.text = ""
+		_sync_primary_stack_visibility()
 		return
 
 	match_result_title_label.text = title
 	match_result_label.text = "\n".join(lines)
+	_sync_primary_stack_visibility()
 
 
 func show_pause_overlay(title: String, lines: Array[String]) -> void:
@@ -66,10 +72,19 @@ func show_pause_overlay(title: String, lines: Array[String]) -> void:
 	if not should_show:
 		pause_title_label.text = ""
 		pause_label.text = ""
+		_sync_primary_stack_visibility()
 		return
 
 	pause_title_label.text = title
 	pause_label.text = "\n".join(lines)
+	_sync_primary_stack_visibility()
+
+
+func _sync_primary_stack_visibility() -> void:
+	if top_left_stack == null:
+		return
+
+	top_left_stack.visible = not (recap_panel.visible or match_result_panel.visible)
 
 
 func _install_qa_ids() -> void:
@@ -77,7 +92,11 @@ func _install_qa_ids() -> void:
 	round_label.set_meta("qa_id", "match_hud_round")
 	roster_label.set_meta("qa_id", "match_hud_roster")
 	recap_panel.set_meta("qa_id", "match_hud_recap_panel")
+	recap_title_label.set_meta("qa_id", "match_hud_recap_title")
+	recap_label.set_meta("qa_id", "match_hud_recap_label")
 	match_result_panel.set_meta("qa_id", "match_hud_result_panel")
+	match_result_title_label.set_meta("qa_id", "match_hud_result_title")
+	match_result_label.set_meta("qa_id", "match_hud_result_label")
 	pause_panel.set_meta("qa_id", "match_hud_pause_panel")
 	pause_title_label.set_meta("qa_id", "match_hud_pause_title")
 	pause_label.set_meta("qa_id", "match_hud_pause_label")

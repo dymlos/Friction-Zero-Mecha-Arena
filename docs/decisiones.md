@@ -14,6 +14,8 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - La copy activa de onboarding general debe salir de una sola fuente de verdad compartida entre shell, QA y tests.
 - `Modo Practica` queda como slice posterior de experimentacion segura; no debe mezclarse con la ayuda base ya resuelta en shell.
 - `HUD`, `pausa` y `resultados` solo deben reforzar recordatorios contextuales, no absorber onboarding completo.
+- El cierre de partida lanzado desde `player_shell` debe quedar estable: sin prompts de laboratorio y sin autorestart.
+- `GameShell` y `MatchLaunchConfig` son la costura comun para armar loops integrados y QA del producto real; evitar ramas paralelas que instancien `main*.tscn` directo por fuera de ese contrato.
 
 ## Regla documental
 

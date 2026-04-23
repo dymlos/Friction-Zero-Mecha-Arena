@@ -37,6 +37,7 @@ var _slot_control_modes := {}
 func _ready() -> void:
 	_install_qa_ids()
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background_alt
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for slot in DEFAULT_LOCAL_SLOTS:
 		_slot_control_modes[slot] = RobotBase.ControlMode.EASY
 

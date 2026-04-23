@@ -24,8 +24,8 @@ func _run() -> void:
 		await process_frame
 
 		var match_controller := main.get_node("Systems/MatchController") as MatchController
-		var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapLabel") as Label
-		var match_result_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultLabel") as Label
+		var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapScroll/RecapLabel") as Label
+		var match_result_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultScroll/MatchResultLabel") as Label
 		var robots := _get_scene_robots(main)
 		_assert(match_controller != null, "%s deberia exponer MatchController." % scene_path)
 		_assert(recap_label != null, "%s deberia exponer el recap para validar atribucion entre rondas." % scene_path)

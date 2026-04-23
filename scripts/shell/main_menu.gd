@@ -20,6 +20,7 @@ signal exit_requested
 func _ready() -> void:
 	_install_qa_ids()
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_label.text = "Friction Zero"
 	subtitle_label.text = "Shell local minima para entrar al match sin herramientas de laboratorio."
 	play_local_button.text = "Jugar local"

@@ -36,7 +36,7 @@ func _assert_round_recap_contract(scene_path: String) -> void:
 	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
 	var recap_panel := main.get_node_or_null("UI/MatchHud/Root/RecapPanel") as Control
 	var recap_title_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapTitleLabel") as Label
-	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapLabel") as Label
+	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapScroll/RecapLabel") as Label
 	var robots := _get_scene_robots(main)
 	_assert(match_controller != null, "La escena %s deberia exponer MatchController." % scene_path)
 	_assert(recap_panel != null, "La escena %s deberia exponer un panel de recap de ronda." % scene_path)

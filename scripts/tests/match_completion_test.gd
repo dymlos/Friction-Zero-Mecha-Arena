@@ -31,10 +31,10 @@ func _assert_match_completion_contract(scene_path: String) -> void:
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
 	var recap_panel := main.get_node_or_null("UI/MatchHud/Root/RecapPanel") as Control
 	var recap_title_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapTitleLabel") as Label
-	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapLabel") as Label
+	var recap_label := main.get_node_or_null("UI/MatchHud/Root/RecapPanel/Margin/RecapVBox/RecapScroll/RecapLabel") as Label
 	var match_result_panel := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel") as Control
 	var match_result_title_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultTitleLabel") as Label
-	var match_result_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultLabel") as Label
+	var match_result_label := main.get_node_or_null("UI/MatchHud/Root/MatchResultPanel/Margin/MatchResultVBox/MatchResultScroll/MatchResultLabel") as Label
 	var repair_pickup := _get_first_edge_repair_pickup() as EdgeRepairPickup
 	var robots := _get_scene_robots(main)
 	_assert(match_controller != null, "%s deberia instanciar MatchController." % scene_label)

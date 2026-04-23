@@ -72,6 +72,18 @@ func launch_local_match(launch_config: MatchLaunchConfig) -> void:
 	get_tree().change_scene_to_file(launch_config.target_scene_path)
 
 
+func build_local_match_scene(launch_config: MatchLaunchConfig) -> Node:
+	if launch_config == null:
+		return null
+
+	var packed_scene := load(launch_config.target_scene_path)
+	if not (packed_scene is PackedScene):
+		return null
+
+	_shell_session.store_match_launch_config(launch_config)
+	return (packed_scene as PackedScene).instantiate()
+
+
 func _mount_screen(screen_scene: PackedScene, screen_id: String) -> void:
 	if screen_root == null or screen_scene == null:
 		return

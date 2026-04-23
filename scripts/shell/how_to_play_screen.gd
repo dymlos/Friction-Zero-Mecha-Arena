@@ -23,6 +23,7 @@ var _selected_index := -1
 func _ready() -> void:
 	_install_qa_ids()
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background_alt
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_label.text = "How to Play"
 	subtitle_label.text = "Reglas base del match, controles Easy/Hard y lectura general sin repetir identidad de Characters."
 	back_button.text = "Volver"
