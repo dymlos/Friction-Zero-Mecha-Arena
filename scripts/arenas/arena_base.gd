@@ -111,6 +111,44 @@ func get_safe_play_area_size() -> Vector2:
 	return _current_play_area_size if _current_play_area_size != Vector2.ZERO else safe_play_area_size
 
 
+func get_play_area_half_extents() -> Vector2:
+	return get_safe_play_area_size() * 0.5
+
+
+func get_spawn_local_planar_positions() -> Array[Vector2]:
+	var positions: Array[Vector2] = []
+	for spawn_point in get_spawn_points():
+		positions.append(_to_local_planar_position(spawn_point.global_position))
+
+	return positions
+
+
+func get_cover_local_planar_positions() -> Array[Vector2]:
+	if _cover_block_nodes.is_empty():
+		_cache_cover_block_positions()
+
+	var positions: Array[Vector2] = []
+	for cover_node in _cover_block_nodes:
+		if not is_instance_valid(cover_node):
+			continue
+		positions.append(_to_local_planar_position(cover_node.global_position))
+
+	return positions
+
+
+func get_edge_pickup_local_planar_positions() -> Array[Vector2]:
+	if _edge_pickup_nodes.is_empty():
+		_cache_edge_pickup_positions()
+
+	var positions: Array[Vector2] = []
+	for pickup_node in _edge_pickup_nodes:
+		if not is_instance_valid(pickup_node):
+			continue
+		positions.append(_to_local_planar_position(pickup_node.global_position))
+
+	return positions
+
+
 func set_play_area_scale(scale_ratio: float) -> void:
 	var clamped_ratio := clampf(scale_ratio, 0.35, 1.0)
 	set_current_play_area_size(safe_play_area_size * clamped_ratio)
@@ -712,3 +750,8 @@ func _get_support_lane_signed_distance(from_progress: float, to_progress: float)
 	if forward_distance > perimeter * 0.5:
 		return forward_distance - perimeter
 	return forward_distance
+
+
+func _to_local_planar_position(world_position: Vector3) -> Vector2:
+	var local_position := to_local(world_position)
+	return Vector2(local_position.x, local_position.z)

@@ -1,9 +1,21 @@
 extends SceneTree
 
-const MAIN_SCENE := preload("res://scenes/main/main.tscn")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
+
+const SCENE_SPECS := [
+	{
+		"path": "res://scenes/main/main.tscn",
+		"set_ffa_mode_before_ready": true,
+		"min_spawn_radius": 3.5,
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large_validation.tscn",
+		"set_ffa_mode_before_ready": false,
+		"min_spawn_radius": 4.8,
+	},
+]
 
 var _failed := false
 
@@ -13,37 +25,51 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main = MAIN_SCENE.instantiate()
-	var match_controller := main.get_node("Systems/MatchController") as MatchController
-	_assert(match_controller != null, "La escena principal deberia exponer MatchController para alternar FFA.")
-	if match_controller == null:
-		await _cleanup_main(main)
-		_finish()
+	for scene_spec in SCENE_SPECS:
+		await _assert_ffa_scene(scene_spec)
+
+	_finish()
+
+
+func _assert_ffa_scene(scene_spec: Dictionary) -> void:
+	var packed_scene := load(String(scene_spec.path))
+	_assert(packed_scene is PackedScene, "La escena %s deberia existir para validar el bootstrap FFA." % String(scene_spec.path))
+	if not (packed_scene is PackedScene):
 		return
 
-	match_controller.match_mode = MatchController.MatchMode.FFA
+	var main := (packed_scene as PackedScene).instantiate()
+	var match_controller := main.get_node("Systems/MatchController") as MatchController
+	_assert(match_controller != null, "La escena %s deberia exponer MatchController para validar FFA." % String(scene_spec.path))
+	if match_controller == null:
+		await _cleanup_main(main)
+		return
+
+	if bool(scene_spec.set_ffa_mode_before_ready):
+		match_controller.match_mode = MatchController.MatchMode.FFA
 	root.add_child(main)
 
 	await process_frame
 	await process_frame
 
 	var robots := _get_scene_robots(main)
-	_assert(robots.size() >= 4, "La escena principal deberia ofrecer cuatro robots para validar FFA.")
+	_assert(robots.size() >= 4, "La escena %s deberia ofrecer cuatro robots para validar FFA." % String(scene_spec.path))
 	if robots.size() < 4:
 		await _cleanup_main(main)
-		_finish()
 		return
 
-	_assert(match_controller.match_mode == MatchController.MatchMode.FFA, "La prueba deberia arrancar en modo FFA.")
+	_assert(match_controller.match_mode == MatchController.MatchMode.FFA, "La escena %s deberia arrancar en modo FFA." % String(scene_spec.path))
 	_assert(
 		not robots[0].is_ally_of(robots[1]),
-		"En FFA Player 1 y Player 2 no deberian quedar aliados por los team_id del laboratorio 2v2."
+		"En FFA Player 1 y Player 2 no deberian quedar aliados por team_id heredado en %s." % String(scene_spec.path)
 	)
 	_assert(
 		not robots[2].is_ally_of(robots[3]),
-		"En FFA Player 3 y Player 4 tambien deberian competir por separado."
+		"En FFA Player 3 y Player 4 tambien deberian competir por separado en %s." % String(scene_spec.path)
 	)
-	_assert(_uses_distinct_ffa_spawn_layout(robots), "El bootstrap FFA sobre `main.tscn` tambien deberia reemplazar el layout cardinal 2v2 por spawns diagonales.")
+	_assert(
+		_uses_distinct_ffa_spawn_layout(robots, float(scene_spec.min_spawn_radius)),
+		"La escena %s deberia sostener spawns diagonales propios en la nueva escala." % String(scene_spec.path)
+	)
 
 	for robot in robots:
 		robot.set_physics_process(false)
@@ -60,7 +86,6 @@ func _run() -> void:
 	_assert(detached_part != null, "La destruccion modular deberia seguir generando una parte desprendida en FFA.")
 	if detached_part == null:
 		await _cleanup_main(main)
-		_finish()
 		return
 
 	await create_timer(detached_part.pickup_delay + 0.05).timeout
@@ -79,11 +104,10 @@ func _run() -> void:
 	var score_line := _find_line_with_prefix(round_lines, "Marcador |")
 	_assert(
 		score_line == "",
-		"El bootstrap FFA deberia heredar el opening neutral limpio y no mostrar `Marcador | ...` mientras el score siga totalmente empatado."
+		"La escena %s deberia conservar el opening neutral limpio mientras el score siga empatado." % String(scene_spec.path)
 	)
 
 	await _cleanup_main(main)
-	_finish()
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:
@@ -113,14 +137,14 @@ func _find_line_with_prefix(lines: Array[String], prefix: String) -> String:
 	return ""
 
 
-func _uses_distinct_ffa_spawn_layout(robots: Array[RobotBase]) -> bool:
+func _uses_distinct_ffa_spawn_layout(robots: Array[RobotBase], min_spawn_radius: float) -> bool:
 	if robots.size() < 4:
 		return false
 
 	var seen_quadrants := {}
 	for robot in robots:
 		var planar_position := Vector2(robot.global_position.x, robot.global_position.z)
-		if planar_position.length() < 3.5:
+		if planar_position.length() < min_spawn_radius:
 			return false
 		if absf(planar_position.x) < 1.0 or absf(planar_position.y) < 1.0:
 			return false
