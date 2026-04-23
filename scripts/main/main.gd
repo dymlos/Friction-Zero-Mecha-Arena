@@ -84,6 +84,7 @@ var _pause_controller := PauseController.new()
 var _lab_selected_player_slot := 1
 var _applying_lab_selector_reset := false
 var _pending_lab_runtime_session_state: Dictionary = {}
+var _hud_refresh_queued := false
 
 
 func _ready() -> void:
@@ -117,7 +118,7 @@ func _process(_delta: float) -> void:
 	_sync_round_intro_locks()
 	_sync_opening_telegraph()
 	_sync_post_death_support_state()
-	_refresh_hud()
+	_queue_hud_refresh()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -736,6 +737,19 @@ func _refresh_hud() -> void:
 		_build_pause_overlay_title(),
 		_build_pause_overlay_lines()
 	)
+
+
+func _queue_hud_refresh() -> void:
+	if _hud_refresh_queued:
+		return
+
+	_hud_refresh_queued = true
+	call_deferred("_flush_hud_refresh")
+
+
+func _flush_hud_refresh() -> void:
+	_hud_refresh_queued = false
+	_refresh_hud()
 
 
 func _connect_match_flow() -> void:
