@@ -5,6 +5,7 @@ const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const PostMatchEvent = preload("res://scripts/systems/post_match_event.gd")
 const PostMatchReview = preload("res://scripts/systems/post_match_review.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_variant_catalog.gd")
 
 signal round_started(round_number: int)
 
@@ -22,6 +23,7 @@ const MAX_POST_MATCH_LOSER_LINES := 1
 const MAX_POST_MATCH_SNIPPET_LINES := 3
 
 @export var match_mode: MatchMode = MatchMode.FFA
+@export var mode_variant_id := MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE
 @export var match_config: MatchConfig
 @export_range(0.2, 6.0, 0.1) var round_reset_delay := 1.8
 @export_range(0.5, 8.0, 0.1) var match_restart_delay := 2.6
@@ -114,6 +116,7 @@ func _process(delta: float) -> void:
 
 
 func start_match() -> void:
+	mode_variant_id = MatchModeVariantCatalog.sanitize_variant_id(match_mode, mode_variant_id)
 	_round_lifecycle_token += 1
 	_cancel_pending_transition()
 	_round_number = 1
@@ -300,7 +303,25 @@ func get_rounds_to_win() -> int:
 
 
 func get_match_mode_label() -> String:
+	if match_mode == MatchMode.FFA and is_last_alive_variant():
+		return "FFA | Ultimo vivo"
 	return "FFA" if match_mode == MatchMode.FFA else "Equipos"
+
+
+func set_mode_variant_id(next_variant_id: String) -> void:
+	mode_variant_id = MatchModeVariantCatalog.sanitize_variant_id(match_mode, next_variant_id)
+
+
+func get_mode_variant_id() -> String:
+	return MatchModeVariantCatalog.sanitize_variant_id(match_mode, mode_variant_id)
+
+
+func is_last_alive_variant() -> bool:
+	return match_mode == MatchMode.FFA and MatchModeVariantCatalog.is_last_alive(get_mode_variant_id())
+
+
+func get_mode_variant_label() -> String:
+	return MatchModeVariantCatalog.get_variant_label(match_mode, get_mode_variant_id())
 
 
 func get_current_play_area_scale() -> float:
@@ -1074,7 +1095,7 @@ func _record_post_match_elimination_event(
 	var priority := 45
 	var is_round_closing_candidate := winner_key != ""
 	if is_round_closing_candidate:
-		var winner_score_after_round := int(_competitor_scores.get(winner_key, 0)) + _get_round_victory_points_for_cause(cause)
+		var winner_score_after_round := int(_competitor_scores.get(winner_key, 0)) + _get_round_score_value(cause)
 		priority = 90 if winner_score_after_round >= get_rounds_to_win() else 75
 	elif _round_elimination_order_by_robot_id.size() == 1:
 		priority = 55
@@ -1312,6 +1333,8 @@ func _build_closing_points_profile_line() -> String:
 		return ""
 	if match_config == null:
 		return ""
+	if is_last_alive_variant():
+		return ""
 
 	return "Puntos cierre | ring-out %s | destruccion total %s | explosion inestable %s" % [
 		match_config.void_elimination_round_points,
@@ -1325,10 +1348,12 @@ func _build_decisive_closing_line() -> String:
 		return ""
 	if _last_round_closing_cause < 0:
 		return ""
+	if is_last_alive_variant():
+		return "Cierre decisivo | ultimo vivo (+1 ronda)"
 
 	return "Cierre decisivo | %s (+%s)" % [
 		_get_match_closing_cause_label(_last_round_closing_cause),
-		_get_round_victory_points_for_cause(_last_round_closing_cause),
+		_get_round_score_value(_last_round_closing_cause),
 	]
 
 
@@ -1341,10 +1366,12 @@ func _build_round_closing_line() -> String:
 		return "Cierre ronda | sin ganador (+0)"
 	if _last_round_closing_cause < 0:
 		return ""
+	if is_last_alive_variant():
+		return "Cierre ronda | ultimo vivo (+1 ronda)"
 
 	return "Cierre ronda | %s (+%s)" % [
 		_get_match_closing_cause_label(_last_round_closing_cause),
-		_get_round_victory_points_for_cause(_last_round_closing_cause),
+		_get_round_score_value(_last_round_closing_cause),
 	]
 
 
@@ -1662,7 +1689,7 @@ func _build_ffa_standings_line() -> String:
 		segments.append("%s. %s (%s)" % [
 			index + 1,
 			_get_competitor_label_from_key(competitor_key),
-			int(_competitor_scores.get(competitor_key, 0)),
+			_format_ffa_standing_score(int(_competitor_scores.get(competitor_key, 0))),
 		])
 
 	return "Posiciones | %s" % " | ".join(segments)
@@ -1688,7 +1715,7 @@ func _build_compact_ffa_standings_line(ordered_competitors: Array) -> String:
 		segments.append("%s. %s (%s)" % [
 			index + 1,
 			_get_competitor_label_from_key(competitor_key),
-			int(_competitor_scores.get(competitor_key, 0)),
+			_format_ffa_standing_score(int(_competitor_scores.get(competitor_key, 0))),
 		])
 	if hidden_count > 0:
 		segments.append("+%s" % hidden_count)
@@ -1767,7 +1794,14 @@ func _build_ffa_tiebreak_segment(score: int, competitor_keys: Array[String]) -> 
 	for competitor_key in competitor_keys:
 		labels.append(_get_competitor_label_from_key(competitor_key))
 
-	return "%s pts: %s" % [score, " > ".join(labels)]
+	var score_label := "%sR" % score if is_last_alive_variant() else "%s pts" % score
+	return "%s: %s" % [score_label, " > ".join(labels)]
+
+
+func _format_ffa_standing_score(score: int) -> String:
+	if is_last_alive_variant():
+		return "%sR" % score
+	return str(score)
 
 
 func _ffa_scores_have_difference() -> bool:
@@ -1978,8 +2012,8 @@ func _finish_round_with_winner(winner_key: String, finishing_cause: EliminationC
 		_match_decided_rounds_with_support += 1
 		_increment_competitor_match_stat(winner_key, "support_rounds_decided")
 		_record_decisive_support_post_match_event(winner_key)
-	var round_points := _get_round_victory_points_for_cause(finishing_cause)
-	var winner_score := int(_competitor_scores.get(winner_key, 0)) + round_points
+	var round_value := _get_round_score_value(finishing_cause)
+	var winner_score := int(_competitor_scores.get(winner_key, 0)) + round_value
 	_competitor_scores[winner_key] = winner_score
 	_record_match_close_post_match_event(winner_key, finishing_cause, winner_score)
 	if winner_score >= get_rounds_to_win():
@@ -2049,6 +2083,12 @@ func _get_round_victory_points_for_cause(cause: EliminationCause) -> int:
 	return max(0, match_config.get_round_victory_points_for_cause(int(cause)))
 
 
+func _get_round_score_value(cause: EliminationCause) -> int:
+	if is_last_alive_variant():
+		return 1
+	return _get_round_victory_points_for_cause(cause)
+
+
 func _finish_match_with_winner(winner_key: String, winner_score: int) -> void:
 	_match_over = true
 	_round_status_line = _build_match_victory_status_line(winner_key, winner_score)
@@ -2061,6 +2101,11 @@ func _finish_match_with_winner(winner_key: String, winner_score: int) -> void:
 
 func _build_match_victory_status_line(winner_key: String, winner_score: int) -> String:
 	if match_mode == MatchMode.FFA:
+		if is_last_alive_variant():
+			return "%s gana la partida con %s" % [
+				_get_competitor_label_from_key(winner_key),
+				_build_plural_segment(winner_score, "ronda", "rondas"),
+			]
 		return "%s gana la partida con %s" % [
 			_get_competitor_label_from_key(winner_key),
 			_build_plural_segment(winner_score, "punto", "puntos"),
@@ -2177,10 +2222,13 @@ func _build_score_summary_line() -> String:
 
 		score_parts.append("%s %s" % [competitor_label, competitor_score])
 
-	return "Marcador | %s" % " | ".join(score_parts)
+	var label := "Rondas" if is_last_alive_variant() else "Marcador"
+	return "%s | %s" % [label, " | ".join(score_parts)]
 
 
 func _build_target_score_line() -> String:
+	if is_last_alive_variant():
+		return "Objetivo | Primero a %s rondas" % get_rounds_to_win()
 	return "Objetivo | Primero a %s pts" % get_rounds_to_win()
 
 

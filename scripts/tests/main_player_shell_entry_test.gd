@@ -5,6 +5,7 @@ const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
+const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_variant_catalog.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
 
 var _failed := false
@@ -31,7 +32,9 @@ func _run() -> void:
 		[
 			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY},
 			{"slot": 2, "control_mode": RobotBase.ControlMode.HARD},
-		]
+		],
+		"",
+		MatchModeVariantCatalog.VARIANT_LAST_ALIVE
 	)
 	launch_config.set("hud_detail_mode", MatchConfig.HudDetailMode.CONTEXTUAL)
 	shell_session.store_match_launch_config(launch_config)
@@ -67,6 +70,10 @@ func _run() -> void:
 	_assert(
 		match_controller.match_mode == MatchController.MatchMode.FFA,
 		"El launch config pendiente deberia poder fijar el modo FFA antes de arrancar el match."
+	)
+	_assert(
+		match_controller.get_mode_variant_id() == MatchModeVariantCatalog.VARIANT_LAST_ALIVE,
+		"Main debe aplicar mode_variant_id del launch config."
 	)
 	_assert(
 		match_controller.get_runtime_hud_detail_mode() == MatchConfig.HudDetailMode.CONTEXTUAL,

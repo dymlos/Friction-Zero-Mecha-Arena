@@ -210,7 +210,12 @@ func _context_array(match_context: Dictionary, key: String) -> Array:
 
 
 func _normalized_mode(value) -> String:
-	return str(value).strip_edges().to_lower()
+	var normalized := str(value).strip_edges().to_lower()
+	if normalized.begins_with("ffa"):
+		return "ffa"
+	if normalized.begins_with("equipos"):
+		return "equipos"
+	return normalized
 
 
 func _strip_prefix(line: String) -> String:
