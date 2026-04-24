@@ -26,9 +26,12 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
 3. Ejecutar smoke manual especifico de `Practica`:
    - Ejecutar smoke manual M8 delta: `1P Easy`, `1P Hard`, `2P mixto Easy/Hard`, ruta recomendada `movimiento -> impacto -> partes -> sandbox`, uso de `Corte` en `partes`, entrada desde `How to Play` y vuelta al menu desde pausa.
 4. Ejecutar playtest M11 enfocado:
+   - Usar `qa/manual/m11/competitive-modes-roster-playtest.md` como checklist especifico del delta competitivo.
    - `FFA 4P` con aftermath visible tras bajas tempranas.
    - `FFA 6P/8P` si hay suficientes controles, revisando roster compacto y standings `+N`.
    - `Teams 4v4`, revisando asignacion por slots y soporte post-muerte.
+   - `FFA -> Ultimo vivo` como variante subordinada: confirmar que no desplaza `Score por causa`.
+   - Confirmar que ningun jugador interpreta aftermath FFA como nave, cursor, target o control del eliminado.
    - seleccion de `Aguja` y `Ancla` desde setup local antes de lanzar match.
    - lectura de `Characters` con filtros `Impacto` y `Rango / zona`.
    - lectura de `Characters` usando `Foco inicial`: comprobar que jugadores entienden Ariete/Patin/Cizalla antes de pasar a Grua/Aguja/Ancla.

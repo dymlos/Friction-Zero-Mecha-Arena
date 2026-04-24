@@ -32,6 +32,7 @@ Este documento resume la direccion activa del juego. Es una referencia viva de a
 - `FFA` debe premiar supervivencia, oportunismo y third-party sin depender de reglas pensadas para equipos.
 - `FFA` no usa nave post-muerte controlable. Su capa propia de post-baja es aftermath neutral: una recompensa temporal cerca de la baja que solo pueden tomar robots vivos y que refuerza oportunismo sin devolver control ofensivo al eliminado.
 - `Teams` debe reforzar rescates, coordinacion y presion tactica.
+- `Teams` conserva soporte post-muerte controlable como identidad propia; esa lectura no se traslada a `FFA`.
 - La UI y el cuerpo de los robots deben explicar el estado del match con la menor cantidad posible de ruido.
 - Los mapas se organizan por rangos `2-4` y `5-8`; la experiencia mas pulida se valida primero en `2-4`.
 - Los mapas mas grandes deben priorizar rutas y zonas utiles antes que distancia vacia.

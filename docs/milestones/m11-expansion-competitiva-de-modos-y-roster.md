@@ -53,6 +53,7 @@ Ademas, los milestones anteriores solo cerraron un primer slice de shell, comuni
 ## Criterio de salida
 
 - Cumplido: `FFA` crece con aftermath neutral de baja, sin nave post-muerte controlable ni control ofensivo del eliminado.
+- Cumplido: `Ultimo vivo` queda cubierto como variante subordinada de `FFA`, sin score por causa ni post-muerte controlable.
 - Cumplido: el roster competitivo visible queda en seis arquetipos (`Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja`, `Ancla`) con `RosterCatalog` como fuente unica.
 - Cumplido: `setup local` selecciona robot por slot y transporta `roster_entry_id`/`archetype_path` hasta match y practica.
 - Cumplido: existen rutas grandes de producto para `FFA` y `Teams` 8P, separadas de escenas `_validation`.

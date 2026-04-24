@@ -8,7 +8,7 @@ Este documento consolida las decisiones tomadas en entrevista de diseno. Sirve c
 - El perfil vigente de score por causa sigue siendo `ring-out = 2`, `destruccion total = 1` y `explosion inestable = 4` hasta que un playtest justifique cambiarlo.
 - `Ring-out` debe ser la ruta dominante en la practica: el borde sigue siendo el corazon emocional del juego.
 - La destruccion modular total es una segunda via fuerte, importante y legible, pero menos frecuente que expulsar por borde.
-- `Ultimo vivo` existe como modo alternativo dentro de `FFA`, no como modo principal.
+- `Ultimo vivo` existe como variante alternativa dentro de `FFA`, no como modo principal separado.
 - La primera version de `Ultimo vivo` debe usar estructura `best-of / first-to`, sin score por causa.
 - `FFA` no usa post-muerte controlable. Si existe aftermath, debe ser neutral, temporal y solo para robots vivos; no devuelve control ofensivo al eliminado.
 - `Teams` conserva soporte post-muerte controlable como identidad propia de coordinacion, rescate y comeback.
@@ -103,4 +103,3 @@ Este documento consolida las decisiones tomadas en entrevista de diseno. Sirve c
   - expansion extra de roster
   - capas amplias de reglas custom
   - remapeo libre completo si todavia complica la UX
-

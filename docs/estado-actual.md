@@ -28,6 +28,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - Las fichas de roster muestran `rol`, `skill principal` y `botones` desde fuente central.
 - `Cizalla` usa `Corte` como skill principal activa para abrir ventanas de desarme legibles.
 - `FFA` tiene aftermath neutral propio: una recompensa temporal de baja para vivos, sin nave post-muerte ni control del eliminado.
+- El delta tecnico M11 congela por tests que `Score por causa` es la variante principal de `FFA`, `Ultimo vivo` es alternativa subordinada, ambas variantes FFA usan aftermath neutral, y `PilotSupportShip`/eventos de apoyo quedan exclusivos de `Teams`.
 - Rutas grandes de producto para `FFA` y `Teams` soportan hasta ocho slots; `Teams` usa asignacion inicial `P1/P3/P5/P7` vs `P2/P4/P6/P8`.
 - Fuente unica de copy de onboarding general compartida entre shell, QA y tests.
 - Movimiento con inercia y choques con peso.
@@ -55,6 +56,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - Contrato M7 de primer corte completo cubierto en automatizacion: entrada por shell, setup local, practica alcanzable, match competitivo, pausa completa y cierre estable siguen usando rutas de jugador sin metadata de laboratorio.
 - Cierre `player_shell` con story/snippets post-match auditados: `player_shell_post_match_review_teams_1280` y `player_shell_post_match_review_ffa_1280`.
 - HUD M11 compacta roster 8P y standings FFA grandes con `+N`; post-partida puede mostrar `Oportunidad | ...` cuando aftermath afecto el cierre.
+- Contratos M11 delta cubiertos por tests focales: identidad de variantes, ausencia de post-muerte controlable en FFA, aftermath neutral en `score_by_cause`/`last_alive`, separacion post-partida `Oportunidad |` vs apoyo Teams y QA visual de setup/HUD/post-match.
 - Matriz M1 de produccion base: `1080p` como referencia principal, `2-4` como tier pulido, `5-8` como escala soportada en validacion, y pausa owner-aware con salida confirmada.
 - Delta M6 audiovisual revalidado: snapshots diegeticos de robot/arena, cues funcionales con perfiles, ducking simple de musica ante SFX clave y evidencia `1080p` especifica del pase.
 - Fuente unica de identidad por personaje compartida entre shell, QA y tests.
@@ -108,6 +110,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - La shell extendida y practica todavia necesitan evidencia humana con mas jugadores reales; este slice cerro la baseline automatizada, no el playtest humano.
 - M1 queda automatizado, pero la paridad percibida de `5-8` sigue dependiendo de playtest humano; no tratarla como experiencia igual de pulida que `2-4`.
 - M11 necesita playtest humano especifico de legibilidad en `FFA 4P`, `FFA 6P/8P` y `Teams 4v4`, especialmente alrededor de aftermath, roster compacto y seleccion de `Aguja`/`Ancla`.
+- El checklist manual M11 delta vive en `qa/manual/m11/competitive-modes-roster-playtest.md` y debe confirmar que nadie interpreta aftermath FFA como control del eliminado.
 - El pacing fino del opening sigue siendo pregunta de tuning.
 - La paridad `base/validation` sigue siendo el riesgo tecnico mas sensible cuando se tocan escenas o HUD.
 - El soporte post-muerte `Teams` necesita mas validacion manual de legibilidad e impacto real.
