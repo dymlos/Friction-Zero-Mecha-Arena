@@ -58,6 +58,13 @@ func get_module_spec() -> Dictionary:
 	return _module_spec.duplicate(true)
 
 
+func get_teaching_tags() -> Array[String]:
+	var tags: Array[String] = []
+	for tag in _module_spec.get("teaching_tags", []):
+		tags.append(String(tag))
+	return tags
+
+
 func get_player_robots() -> Array[RobotBase]:
 	return _player_robots.duplicate()
 

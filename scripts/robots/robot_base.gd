@@ -762,6 +762,14 @@ func is_ram_skill_active() -> bool:
 	return _ram_skill_remaining > 0.0
 
 
+func is_core_skill_active() -> bool:
+	return (
+		_ram_skill_remaining > 0.0
+		or _mobility_skill_remaining > 0.0
+		or _dismantle_focus_remaining > 0.0
+	)
+
+
 func get_ram_skill_time_left() -> float:
 	return maxf(_ram_skill_remaining, 0.0)
 

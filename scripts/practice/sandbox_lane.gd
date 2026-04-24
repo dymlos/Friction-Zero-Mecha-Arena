@@ -4,19 +4,28 @@ class_name SandboxLane
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 
+const GUIDED_FOCUS_LINES := ["movimiento", "choque", "skill propia", "dano modular", "recuperacion"]
+
 var _fixture_robot: RobotBase = null
 
 
 func configure_lane(module_spec: Dictionary, player_robots: Array) -> void:
 	super.configure_lane(module_spec, player_robots)
 	set_objective_lines([
-		"Combina movimiento, impacto, energia, partes y recuperacion.",
-		"No hay fallo: prueba sin presion competitiva.",
+		"Combina movimiento, choque, skill propia, partes y recuperacion.",
+		"No hay fallo: prueba sistemas reales sin score competitivo.",
 	])
 	set_callout_lines([
 		"Experimenta sin perder lectura de cuerpo y borde.",
 	])
 	call_deferred("_sync_lane_state")
+
+
+func get_guided_sandbox_focus_lines() -> Array[String]:
+	var focus_lines: Array[String] = []
+	for focus_line in GUIDED_FOCUS_LINES:
+		focus_lines.append(String(focus_line))
+	return focus_lines
 
 
 func _ready() -> void:
@@ -58,5 +67,6 @@ func _sync_lane_state() -> void:
 
 	set_progress_lines([
 		"Jugadores activos | %s" % player_count,
+		"Focos | %s" % " / ".join(get_guided_sandbox_focus_lines()),
 		"Fixture | %s" % ("listo" if is_instance_valid(_fixture_robot) else "pendiente"),
 	])

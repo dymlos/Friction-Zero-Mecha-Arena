@@ -4,6 +4,7 @@ const LANE_SCENE := preload("res://scenes/practice/stations/parts_lane.tscn")
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 const PracticeCatalog = preload("res://scripts/systems/practice_catalog.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 
 var _failed := false
 
@@ -21,6 +22,7 @@ func _run() -> void:
 
 	await process_frame
 	await process_frame
+	_apply_cizalla_loadout(player_robot)
 
 	lane.call("configure_lane", PracticeCatalog.get_module("partes"), [player_robot])
 	await process_frame
@@ -38,12 +40,19 @@ func _run() -> void:
 
 	target_robot.apply_damage_to_part("left_arm", target_robot.max_part_health, Vector3.RIGHT, player_robot)
 	lane.call("_physics_process", 0.016)
+	_assert(not bool(lane.call("is_lane_completed")), "PartsLane no debe completar sin activar Corte primero.")
+
+	_assert(player_robot.use_core_skill(), "Cizalla debe poder activar Corte en la estacion de partes.")
+	lane.call("_physics_process", 0.016)
 
 	var progress_text := "\n".join(Array(lane.call("get_progress_lines")))
+	_assert(progress_text.contains("Skill"), "PartsLane deberia mostrar progreso de skill.")
 	_assert(progress_text.contains("Partes vivas"), "PartsLane deberia mostrar partes activas.")
 	_assert(progress_text.contains("Daño visible"), "PartsLane deberia mostrar dano visible.")
+	if lane.has_method("has_seen_required_skill"):
+		_assert(bool(lane.call("has_seen_required_skill")), "PartsLane deberia registrar que Corte fue visto.")
 	_assert(int(target_robot.get_active_part_count()) < 4, "PartsLane deberia reflejar dano modular real.")
-	_assert(bool(lane.call("is_lane_completed")), "PartsLane deberia completar cuando el blanco pierde una parte.")
+	_assert(bool(lane.call("is_lane_completed")), "PartsLane deberia completar cuando Corte fue visto y el blanco pierde una parte.")
 
 	await _cleanup_node(player_robot)
 	await _cleanup_node(lane)
@@ -58,6 +67,13 @@ func _spawn_player_robot(player_index: int) -> RobotBase:
 	robot.display_name = "Player %s" % player_index
 	robot.position = Vector3.ZERO
 	return robot
+
+
+func _apply_cizalla_loadout(robot: RobotBase) -> void:
+	var roster_entry := RosterCatalog.get_shell_roster_entry("cizalla")
+	var archetype_config = roster_entry.get("config", null)
+	if archetype_config != null:
+		robot.apply_runtime_loadout(archetype_config, RobotBase.ControlMode.EASY)
 
 
 func _find_fixture_robot(lane: Node) -> RobotBase:
@@ -87,6 +103,19 @@ func _assert_lane_contract(lane: Node) -> void:
 	_assert(Array(lane.call("get_context_card_lines")).size() <= 3, "Tarjeta contextual debe ser breve.")
 	_assert(not Array(lane.call("get_objective_lines")).is_empty(), "PartsLane deberia exponer instrucciones objetivas.")
 	_assert(not Array(lane.call("get_callout_lines")).is_empty(), "PartsLane deberia exponer callout de lectura.")
+	_assert(
+		lane.has_method("get_required_skill_label"),
+		"PartsLane debe declarar la skill aplicada que ensena."
+	)
+	if lane.has_method("get_required_skill_label"):
+		_assert(
+			String(lane.call("get_required_skill_label")) == "Corte",
+			"PartsLane debe usar Corte como ventana activa de skill + dano modular."
+		)
+	_assert(
+		lane.has_method("has_seen_required_skill"),
+		"PartsLane debe trackear que la skill fue activada antes del cierre."
+	)
 
 
 func _assert(condition: bool, message: String) -> void:
