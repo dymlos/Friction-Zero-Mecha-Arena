@@ -6,6 +6,7 @@ const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const LocalSessionDraft = preload("res://scripts/systems/local_session_draft.gd")
 const LocalScaleContract = preload("res://scripts/systems/local_scale_contract.gd")
+const MapCatalog = preload("res://scripts/systems/map_catalog.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
@@ -21,6 +22,9 @@ const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4, 5, 6, 7, 8]
 @onready var backdrop: ColorRect = $Backdrop
 @onready var mode_value_label: Label = %ModeValueLabel
 @onready var scale_status_label: Label = %ScaleStatusLabel
+@onready var map_summary_label: Label = %MapSummaryLabel
+@onready var map_focus_label: Label = %MapFocusLabel
+@onready var map_cycle_button: Button = %MapCycleButton
 @onready var slot_summary_label: Label = %SlotSummaryLabel
 @onready var teams_button: Button = %TeamsButton
 @onready var ffa_button: Button = %FFAButton
@@ -64,6 +68,9 @@ func _ready() -> void:
 	)
 	ffa_button.pressed.connect(func() -> void:
 		set_match_mode(MatchController.MatchMode.FFA)
+	)
+	map_cycle_button.pressed.connect(func() -> void:
+		cycle_selected_map()
 	)
 	for index in range(slot_buttons.size()):
 		var slot := index + 1
@@ -132,6 +139,11 @@ func cycle_slot_roster_entry(player_slot: int) -> void:
 	_refresh_view()
 
 
+func cycle_selected_map(direction: int = 1) -> void:
+	_session_draft.cycle_selected_map(_get_active_slot_count(), direction)
+	_refresh_view()
+
+
 func toggle_slot_control_mode(player_slot: int) -> void:
 	_session_draft.toggle_slot_control_mode(player_slot)
 	_refresh_view()
@@ -143,12 +155,16 @@ func is_start_enabled() -> bool:
 
 func build_launch_config() -> MatchLaunchConfig:
 	var launch_config := MatchLaunchConfig.new()
+	var active_slot_specs := _session_draft.build_active_slot_specs(DEFAULT_LOCAL_SLOTS.size())
+	var active_slot_count := active_slot_specs.size()
+	var map_id := _session_draft.get_selected_map_id(active_slot_count)
 	launch_config.hud_detail_mode = MatchConfig.HudDetailMode.EXPLICIT
 	launch_config.auto_restart_on_match_end = false
 	launch_config.configure_for_local_match(
 		_session_draft.match_mode,
-		_resolve_target_scene_path(),
-		_session_draft.build_active_slot_specs(DEFAULT_LOCAL_SLOTS.size())
+		MapCatalog.resolve_scene_path(map_id, _session_draft.match_mode, active_slot_count),
+		active_slot_specs,
+		map_id
 	)
 	return launch_config
 
@@ -164,12 +180,24 @@ func get_scale_status_line() -> String:
 	)
 
 
+func get_map_summary_line() -> String:
+	return MapCatalog.get_setup_summary_line(_get_selected_map_id(), _session_draft.match_mode, _get_active_slot_count())
+
+
+func get_map_focus_line() -> String:
+	return MapCatalog.get_setup_focus_line(_get_selected_map_id(), _session_draft.match_mode, _get_active_slot_count())
+
+
 func _refresh_view() -> void:
 	mode_value_label.text = "FFA" if _session_draft.match_mode == MatchController.MatchMode.FFA else "Equipos"
 	teams_button.disabled = _session_draft.match_mode == MatchController.MatchMode.TEAMS
 	ffa_button.disabled = _session_draft.match_mode == MatchController.MatchMode.FFA
 	var slot_lines := get_slot_summary_lines()
 	scale_status_label.text = get_scale_status_line()
+	map_summary_label.text = get_map_summary_line()
+	map_focus_label.text = get_map_focus_line()
+	map_cycle_button.text = "Mapa"
+	map_cycle_button.disabled = MapCatalog.get_maps_for(_session_draft.match_mode, _get_active_slot_count()).size() <= 1
 	slot_summary_label.text = "\n".join(slot_lines)
 	for index in range(slot_buttons.size()):
 		var player_slot := index + 1
@@ -178,16 +206,12 @@ func _refresh_view() -> void:
 	start_button.disabled = not is_start_enabled()
 
 
-func _resolve_target_scene_path() -> String:
-	var active_slots := _session_draft.build_active_slot_specs(DEFAULT_LOCAL_SLOTS.size()).size()
-	if _session_draft.match_mode == MatchController.MatchMode.FFA:
-		if active_slots > 4:
-			return "res://scenes/main/main_ffa_large.tscn"
-		return "res://scenes/main/main_ffa.tscn"
+func _get_active_slot_count() -> int:
+	return _session_draft.build_active_slot_specs(DEFAULT_LOCAL_SLOTS.size()).size()
 
-	if active_slots > 4:
-		return "res://scenes/main/main_teams_large.tscn"
-	return "res://scenes/main/main.tscn"
+
+func _get_selected_map_id() -> String:
+	return _session_draft.get_selected_map_id(_get_active_slot_count())
 
 
 func _build_slot_state_button_text(player_slot: int) -> String:
@@ -251,6 +275,9 @@ func focus_start_button() -> void:
 func _install_qa_ids() -> void:
 	mode_value_label.set_meta("qa_id", "shell_local_setup_mode")
 	scale_status_label.set_meta("qa_id", "shell_local_setup_scale")
+	map_summary_label.set_meta("qa_id", "shell_local_setup_map")
+	map_focus_label.set_meta("qa_id", "shell_local_setup_map_focus")
+	map_cycle_button.set_meta("qa_id", "shell_local_setup_map_cycle")
 	slot_summary_label.set_meta("qa_id", "shell_local_setup_slots")
 	teams_button.set_meta("qa_id", "shell_local_setup_teams")
 	ffa_button.set_meta("qa_id", "shell_local_setup_ffa")

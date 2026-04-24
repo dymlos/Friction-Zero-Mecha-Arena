@@ -31,9 +31,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -320.0
-offset_top = -300.0
+offset_top = -320.0
 offset_right = 320.0
-offset_bottom = 300.0
+offset_bottom = 320.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -87,6 +87,31 @@ layout_mode = 2
 theme_type_variation = &"ShellMeta"
 autowrap_mode = 2
 text = "Escala | Teams 4P | 2-4 pulido | objetivo de UX actual"
+
+[node name="MapRow" type="HBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MapSummaryLabel" type="Label" parent="Panel/Margin/VBox/MapRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ShellMeta"
+autowrap_mode = 2
+text = "Mapa | Fundicion compacta | 2-4 pulido"
+
+[node name="MapCycleButton" type="Button" parent="Panel/Margin/VBox/MapRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
+text = "Mapa"
+
+[node name="MapFocusLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ShellMeta"
+autowrap_mode = 2
+text = "Foco | borde valioso y centro de transicion"
 
 [node name="SlotsTitleLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2

@@ -31,6 +31,10 @@ func _assert_large_launch(match_mode: int, expected_scene_path: String) -> void:
 
 	var launch_config = setup.call("build_launch_config")
 	_assert(String(launch_config.target_scene_path) == expected_scene_path, "Mas de cuatro slots deberian lanzar %s." % expected_scene_path)
+	if match_mode == MatchController.MatchMode.FFA:
+		_assert(String(launch_config.map_id) == "borde_fundicion_ffa_5_8", "FFA 8P debe transportar map_id de mapa fuerte 5-8.")
+	else:
+		_assert(String(launch_config.map_id) == "borde_fundicion_teams_5_8", "Teams 8P debe transportar map_id de mapa fuerte 5-8.")
 	_assert(launch_config.local_slots.size() == 8, "La ruta grande deberia transportar ocho slots activos.")
 	setup.queue_free()
 	await process_frame
