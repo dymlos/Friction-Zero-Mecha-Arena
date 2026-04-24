@@ -1484,6 +1484,7 @@ func _spawn_ffa_aftermath_if_needed(eliminated_robot: RobotBase, source_robot: R
 	var zone := FfaAftermathRules.describe_zone(spawn_position)
 	pickup.configure(payload_id, eliminated_robot.display_name, zone)
 	pickup.collected.connect(_on_ffa_aftermath_collected)
+	pickup.tree_exited.connect(_on_ffa_aftermath_pickup_tree_exited.bind(pickup))
 	_aftermath_root.add_child(pickup)
 	pickup.global_position = spawn_position + Vector3(0.0, 0.25, 0.0)
 	_ffa_aftermath_pickups.append(pickup)
@@ -1513,6 +1514,15 @@ func _on_ffa_aftermath_collected(robot: RobotBase, payload_id: String, source_el
 	_play_audio_cue("pickup_taken")
 	ui.show_status("%s tomo botin de %s" % [robot.display_name, source_eliminated_label])
 	_queue_hud_refresh()
+
+
+func _on_ffa_aftermath_pickup_tree_exited(exited_pickup: FfaAftermathPickup) -> void:
+	_ffa_aftermath_pickups = _ffa_aftermath_pickups.filter(func(pickup: FfaAftermathPickup) -> bool:
+		return is_instance_valid(pickup) and pickup != exited_pickup and pickup.is_inside_tree()
+	)
+	if _ffa_aftermath_pickups.is_empty() and match_controller != null:
+		match_controller.set_ffa_aftermath_context_line("")
+		_queue_hud_refresh()
 
 
 func _clear_ffa_aftermath_pickups() -> void:

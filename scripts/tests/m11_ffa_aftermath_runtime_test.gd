@@ -14,6 +14,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await _assert_ffa_aftermath()
+	await _assert_ffa_aftermath_expiration_clears_context()
 	await _assert_teams_has_no_aftermath()
 	_finish()
 
@@ -47,6 +48,38 @@ func _assert_ffa_aftermath() -> void:
 	await process_frame
 	var count_after_close := get_nodes_in_group("ffa_aftermath_pickups").size()
 	_assert(count_after_close <= 1, "La baja que cierra ronda no deberia crear un nuevo pickup.")
+	await _cleanup_node(main)
+
+
+func _assert_ffa_aftermath_expiration_clears_context() -> void:
+	var main := FFA_SCENE.instantiate()
+	root.add_child(main)
+	await process_frame
+	await process_frame
+	var robots := _get_scene_robots(main)
+	_assert(robots.size() >= 4, "FFA runtime deberia exponer robots para validar expiracion de aftermath.")
+	if robots.size() < 4:
+		await _cleanup_node(main)
+		return
+	robots[0].fall_into_void()
+	await process_frame
+	await process_frame
+
+	var pickups := get_nodes_in_group("ffa_aftermath_pickups")
+	_assert(pickups.size() == 1, "La expiracion necesita un pickup de aftermath activo.")
+	if pickups.size() == 1:
+		var pickup := pickups[0] as FfaAftermathPickup
+		pickup.lifetime_timer.start(0.01)
+		await create_timer(0.05).timeout
+		await process_frame
+	_assert(get_nodes_in_group("ffa_aftermath_pickups").is_empty(), "El pickup expirado deberia salir del grupo runtime.")
+	var match_controller := main.get_node_or_null("Systems/MatchController")
+	if match_controller != null and match_controller.has_method("get_round_state_lines"):
+		var state_text := "\n".join(match_controller.call("get_round_state_lines"))
+		_assert(
+			not state_text.contains("Botin |"),
+			"El HUD contextual no deberia conservar Botin cuando el aftermath expiro."
+		)
 	await _cleanup_node(main)
 
 
