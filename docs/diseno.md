@@ -15,7 +15,7 @@ Este documento resume la direccion activa del juego. Es una referencia viva de a
 - Midgame de desgaste, redistribucion de energia, danos por partes y decisiones de riesgo.
 - Cierre con menos espacio, mas presion y colisiones mas decisivas.
 - El modo principal usa score por causa; `ring-out` debe ser la ruta dominante y la destruccion modular total funciona como segunda via fuerte.
-- `Ultimo vivo` existe como variante alternativa de `FFA`, con estructura `best-of / first-to` y sin score por causa.
+- `Ultimo vivo` existe como direccion de variante alternativa de `FFA`, con estructura `best-of / first-to` y sin score por causa; no debe exponerse en la shell hasta tener gameplay completo.
 
 ## Sistemas clave
 
@@ -60,7 +60,7 @@ Este documento resume la direccion activa del juego. Es una referencia viva de a
 ## Shell, presentacion y corte completo
 
 - El menu principal prioriza entrar a jugar.
-- `setup local` cubre modo, mapa, jugadores y variante de modo; `Ultimo vivo` se presenta como variante dentro de `FFA`.
+- `setup local` cubre modo, mapa, jugadores y variante de modo. Hoy expone `Score por causa`; `Ultimo vivo` solo se presentara como variante dentro de `FFA` cuando tenga reglas completas.
 - `Settings` cubre video, audio y controles como minimo.
 - La pausa completa debe incluir `Settings`, `How to Play` y `Characters`, controlada por quien la abrio, sin reasignar slots ni cambiar modo.
 - La salida desde pausa usa confirmacion simple y salida inmediata.
