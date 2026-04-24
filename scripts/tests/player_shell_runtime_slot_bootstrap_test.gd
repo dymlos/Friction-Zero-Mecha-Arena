@@ -22,8 +22,8 @@ func _run() -> void:
 		MatchController.MatchMode.FFA,
 		"res://scenes/main/main_ffa.tscn",
 		[
-			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY, "input_source": "keyboard", "keyboard_profile": RobotBase.KeyboardProfile.WASD_SPACE},
-			{"slot": 2, "control_mode": RobotBase.ControlMode.HARD, "input_source": "joypad", "device_id": 45, "device_connected": true},
+			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY, "input_source": "keyboard", "keyboard_profile": RobotBase.KeyboardProfile.WASD_SPACE, "roster_entry_id": "ancla"},
+			{"slot": 2, "control_mode": RobotBase.ControlMode.HARD, "input_source": "joypad", "device_id": 45, "device_connected": true, "roster_entry_id": "aguja"},
 			{"slot": 4, "control_mode": RobotBase.ControlMode.EASY, "input_source": "keyboard", "keyboard_profile": RobotBase.KeyboardProfile.IJKL},
 		]
 	)
@@ -42,12 +42,16 @@ func _run() -> void:
 	if session != null:
 		_assert(int(session.get_active_match_slots()) == 3, "Runtime deberia respetar la cantidad de slots activos de shell.")
 		_assert(String(session.get_slot_state(1)) == "keyboard", "P1 deberia quedar como teclado.")
+		_assert(String(session.get_slot_roster_entry_id(1)) == "ancla", "P1 deberia conservar Ancla desde shell.")
 		_assert(String(session.get_slot_state(2)) == "joypad", "P2 deberia quedar como joypad.")
+		_assert(String(session.get_slot_roster_entry_id(2)) == "aguja", "P2 deberia conservar Aguja desde shell.")
 		_assert(int(session.get_slot_device_id(2)) == 45, "P2 deberia conservar el device_id de shell.")
 		_assert(String(session.get_slot_state(4)) == "keyboard", "P4 deberia conservar su slot real aunque P3 no participe.")
 	if robots.size() >= 4:
 		_assert(robots[0].keyboard_profile == RobotBase.KeyboardProfile.WASD_SPACE, "Robot P1 deberia usar el teclado de P1.")
+		_assert(robots[0].get_archetype_label() == "Ancla", "Robot P1 deberia recibir el arquetipo elegido en shell.")
 		_assert(robots[1].joypad_device == 45, "Robot P2 deberia consumir el joypad de shell.")
+		_assert(robots[1].get_archetype_label() == "Aguja", "Robot P2 deberia recibir el arquetipo elegido en shell.")
 		_assert(robots[1].keyboard_profile == RobotBase.KeyboardProfile.NONE, "Robot P2 joypad no deberia leer teclado.")
 		_assert(robots[1].control_mode == RobotBase.ControlMode.HARD, "Robot P2 deberia conservar Hard.")
 		_assert(robots[2].is_player_controlled == false, "P3 no deberia quedar activo si shell no lo lanzo.")

@@ -21,8 +21,8 @@ func _run() -> void:
 		"impacto",
 		"res://scenes/practice/practice_mode.tscn",
 		[
-			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY, "input_source": "keyboard", "keyboard_profile": RobotBase.KeyboardProfile.WASD_SPACE},
-			{"slot": 2, "control_mode": RobotBase.ControlMode.HARD, "input_source": "joypad", "device_id": 8, "device_connected": true},
+			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY, "input_source": "keyboard", "keyboard_profile": RobotBase.KeyboardProfile.WASD_SPACE, "roster_entry_id": "aguja"},
+			{"slot": 2, "control_mode": RobotBase.ControlMode.HARD, "input_source": "joypad", "device_id": 8, "device_connected": true, "roster_entry_id": "ancla"},
 		]
 	)
 	shell_session.store_match_launch_config(launch_config)
@@ -41,11 +41,15 @@ func _run() -> void:
 	_assert(robots.size() == 2, "PracticeMode deberia spawnear los slots activos de practica.")
 	if session != null:
 		_assert(String(session.get_slot_state(1)) == "keyboard", "P1 practica deberia quedar en teclado.")
+		_assert(String(session.get_slot_roster_entry_id(1)) == "aguja", "P1 practica deberia conservar Aguja.")
 		_assert(String(session.get_slot_state(2)) == "joypad", "P2 practica deberia quedar en joypad.")
+		_assert(String(session.get_slot_roster_entry_id(2)) == "ancla", "P2 practica deberia conservar Ancla.")
 		_assert(int(session.get_slot_device_id(2)) == 8, "P2 practica deberia conservar device_id.")
 	if robots.size() == 2:
 		_assert(robots[0].keyboard_profile == RobotBase.KeyboardProfile.WASD_SPACE, "Robot P1 practica deberia usar WASD.")
+		_assert(robots[0].get_archetype_label() == "Aguja", "Robot P1 practica deberia recibir Aguja.")
 		_assert(robots[1].joypad_device == 8, "Robot P2 practica deberia usar joypad.")
+		_assert(robots[1].get_archetype_label() == "Ancla", "Robot P2 practica deberia recibir Ancla.")
 		_assert(robots[1].keyboard_profile == RobotBase.KeyboardProfile.NONE, "Robot P2 practica no deberia leer teclado.")
 		_assert(robots[1].control_mode == RobotBase.ControlMode.HARD, "Robot P2 practica deberia conservar Hard.")
 

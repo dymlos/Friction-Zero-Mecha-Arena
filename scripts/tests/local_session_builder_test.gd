@@ -32,6 +32,8 @@ func _run() -> void:
 	var slot_specs := draft.build_active_slot_specs(4)
 	_assert(slot_specs.size() == 3, "El draft deberia omitir slots inactivos.")
 	_assert(int(slot_specs[0].get("slot", -1)) == 1, "Los specs deberian conservar orden por slot.")
+	_assert(String(slot_specs[0].get("roster_entry_id", "")) == "ariete", "Los specs deberian conservar roster_entry_id.")
+	_assert(String(slot_specs[0].get("archetype_path", "")).ends_with("ariete_archetype.tres"), "Los specs deberian conservar archetype_path.")
 	_assert(String(slot_specs[1].get("input_source", "")) == "joypad", "El slot 2 deberia salir como joypad.")
 	_assert(int(slot_specs[1].get("device_id", -1)) == 42, "El slot 2 deberia conservar device_id.")
 	_assert(bool(slot_specs[1].get("device_connected", false)), "El slot 2 deberia salir conectado.")
@@ -46,6 +48,7 @@ func _run() -> void:
 	if session != null:
 		_assert(int(session.get_active_match_slots()) == 3, "La sesion deberia usar solo slots activos.")
 		_assert(String(session.get_slot_state(1)) == "keyboard", "P1 deberia quedar en teclado.")
+		_assert(String(session.get_slot_roster_entry_id(1)) == "ariete", "P1 deberia conservar su ficha de roster.")
 		_assert(int(session.get_slot_keyboard_profile(1)) == RobotBase.KeyboardProfile.WASD_SPACE, "P1 deberia usar WASD por default.")
 		_assert(String(session.get_slot_state(2)) == "joypad", "P2 deberia quedar en joypad conectado.")
 		_assert(int(session.get_slot_device_id(2)) == 42, "P2 deberia conservar el joypad reclamado.")

@@ -2,6 +2,8 @@ extends Resource
 class_name LocalSession
 
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
+const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 
 enum SlotState { EMPTY, KEYBOARD, JOYPAD, DISCONNECTED }
 
@@ -58,6 +60,14 @@ func get_slot_control_mode(slot: int) -> int:
 	return int(_get_slot_info(slot).control_mode)
 
 
+func get_slot_roster_entry_id(slot: int) -> String:
+	return String(_get_slot_info(slot).get("roster_entry_id", ""))
+
+
+func get_slot_archetype_path(slot: int) -> String:
+	return String(_get_slot_info(slot).get("archetype_path", ""))
+
+
 func get_disconnected_slots() -> Array[int]:
 	var slots: Array[int] = []
 	for slot in range(1, max_local_slots + 1):
@@ -91,11 +101,14 @@ func has_unique_slot_ownership() -> bool:
 func assign_keyboard_slot(
 	slot: int,
 	keyboard_profile: int,
-	control_mode: int = RobotBase.ControlMode.EASY
+	control_mode: int = RobotBase.ControlMode.EASY,
+	roster_entry_id: String = "",
+	archetype_path: String = ""
 ) -> void:
 	if not _slots.has(slot):
 		return
 
+	var loadout := _resolve_loadout(slot, roster_entry_id, archetype_path)
 	_slots[slot] = {
 		"slot": slot,
 		"state": SlotState.KEYBOARD,
@@ -103,17 +116,22 @@ func assign_keyboard_slot(
 		"keyboard_profile": keyboard_profile,
 		"device_id": -1,
 		"control_mode": control_mode,
+		"roster_entry_id": String(loadout.get("roster_entry_id", "")),
+		"archetype_path": String(loadout.get("archetype_path", "")),
 	}
 
 
 func assign_joypad_slot(
 	slot: int,
 	device_id: int,
-	control_mode: int = RobotBase.ControlMode.EASY
+	control_mode: int = RobotBase.ControlMode.EASY,
+	roster_entry_id: String = "",
+	archetype_path: String = ""
 ) -> void:
 	if not _slots.has(slot):
 		return
 
+	var loadout := _resolve_loadout(slot, roster_entry_id, archetype_path)
 	_slots[slot] = {
 		"slot": slot,
 		"state": SlotState.JOYPAD,
@@ -121,6 +139,8 @@ func assign_joypad_slot(
 		"keyboard_profile": RobotBase.KeyboardProfile.NONE,
 		"device_id": device_id,
 		"control_mode": control_mode,
+		"roster_entry_id": String(loadout.get("roster_entry_id", "")),
+		"archetype_path": String(loadout.get("archetype_path", "")),
 	}
 
 
@@ -199,6 +219,12 @@ func apply_to_robot(robot: RobotBase, slot: int) -> void:
 	robot.control_mode = int(slot_info.get("control_mode", RobotBase.ControlMode.EASY))
 	robot.keyboard_profile = int(slot_info.get("keyboard_profile", RobotBase.KeyboardProfile.NONE))
 	robot.joypad_device = int(slot_info.get("device_id", -1))
+	var archetype_path := String(slot_info.get("archetype_path", ""))
+	if archetype_path == "":
+		return
+	var archetype_config := load(archetype_path)
+	if archetype_config is RobotArchetypeConfig:
+		robot.apply_runtime_loadout(archetype_config as RobotArchetypeConfig, robot.control_mode)
 
 
 func _build_empty_slot(slot: int) -> Dictionary:
@@ -209,6 +235,8 @@ func _build_empty_slot(slot: int) -> Dictionary:
 		"keyboard_profile": RobotBase.KeyboardProfile.NONE,
 		"device_id": -1,
 		"control_mode": RobotBase.ControlMode.EASY,
+		"roster_entry_id": "",
+		"archetype_path": "",
 	}
 
 
@@ -217,3 +245,16 @@ func _get_slot_info(slot: int) -> Dictionary:
 		reset_slots()
 
 	return _slots.get(slot, _build_empty_slot(slot))
+
+
+func _resolve_loadout(slot: int, roster_entry_id: String, archetype_path: String) -> Dictionary:
+	var entry := RosterCatalog.get_competitive_entry(roster_entry_id)
+	if entry.is_empty() and archetype_path != "":
+		entry = RosterCatalog.get_competitive_entry(RosterCatalog.get_entry_id_for_archetype_path(archetype_path))
+	if entry.is_empty():
+		entry = RosterCatalog.get_competitive_entry(RosterCatalog.get_default_entry_id_for_slot(slot))
+
+	return {
+		"roster_entry_id": String(entry.get("id", "")),
+		"archetype_path": String(entry.get("config_path", "")),
+	}

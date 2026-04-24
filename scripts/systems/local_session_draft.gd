@@ -4,6 +4,7 @@ class_name LocalSessionDraft
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder.gd")
+const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 
 const INPUT_SOURCE_KEYBOARD := "keyboard"
 const INPUT_SOURCE_JOYPAD := "joypad"
@@ -73,6 +74,31 @@ func set_slot_input_source(player_slot: int, input_source: String) -> void:
 	_slots[player_slot] = slot_info
 
 
+func set_slot_roster_entry(player_slot: int, roster_entry_id: String) -> void:
+	if not _slots.has(player_slot):
+		return
+	var entry := RosterCatalog.get_competitive_entry(roster_entry_id)
+	if entry.is_empty():
+		entry = RosterCatalog.get_competitive_entry(RosterCatalog.get_default_entry_id_for_slot(player_slot))
+	var slot_info: Dictionary = _slots[player_slot]
+	slot_info["roster_entry_id"] = String(entry.get("id", ""))
+	slot_info["archetype_path"] = String(entry.get("config_path", ""))
+	_slots[player_slot] = slot_info
+
+
+func cycle_slot_roster_entry(player_slot: int, direction: int = 1) -> void:
+	if not _slots.has(player_slot):
+		return
+	var entry_ids := RosterCatalog.get_competitive_entry_ids()
+	if entry_ids.is_empty():
+		return
+	var current_id := String(_slots[player_slot].get("roster_entry_id", RosterCatalog.get_default_entry_id_for_slot(player_slot)))
+	var current_index := entry_ids.find(current_id)
+	if current_index < 0:
+		current_index = entry_ids.find(RosterCatalog.get_default_entry_id_for_slot(player_slot))
+	set_slot_roster_entry(player_slot, String(entry_ids[wrapi(current_index + direction, 0, entry_ids.size())]))
+
+
 func reserve_joypad_for_slot(player_slot: int, device_id: int, connected: bool = true) -> void:
 	if not _slots.has(player_slot):
 		return
@@ -112,7 +138,7 @@ func is_slot_launchable(player_slot: int) -> bool:
 		return false
 	if String(slot_info.get("input_source", INPUT_SOURCE_KEYBOARD)) == INPUT_SOURCE_JOYPAD:
 		return bool(slot_info.get("device_connected", false)) and int(slot_info.get("device_id", -1)) >= 0
-	return true
+	return int(slot_info.get("keyboard_profile", RobotBase.KeyboardProfile.NONE)) != RobotBase.KeyboardProfile.NONE
 
 
 func can_launch(max_active_slots: int = -1) -> bool:
@@ -160,29 +186,35 @@ func copy_from(other: LocalSessionDraft) -> void:
 
 
 func _build_default_slot(player_slot: int) -> Dictionary:
+	var roster_entry_id := RosterCatalog.get_default_entry_id_for_slot(player_slot)
+	var entry := RosterCatalog.get_competitive_entry(roster_entry_id)
 	return {
 		"slot": player_slot,
-		"active": true,
+		"active": player_slot <= 4,
 		"control_mode": RobotBase.ControlMode.EASY,
 		"input_source": INPUT_SOURCE_KEYBOARD,
 		"keyboard_profile": LocalSessionBuilder.get_default_keyboard_profile_for_slot(player_slot),
 		"device_id": -1,
 		"device_connected": true,
+		"roster_entry_id": roster_entry_id,
+		"archetype_path": String(entry.get("config_path", "")),
 	}
 
 
 func _build_slot_summary_line(player_slot: int) -> String:
 	var slot_info: Dictionary = _slots.get(player_slot, _build_default_slot(player_slot))
+	var roster_entry := RosterCatalog.get_competitive_entry(String(slot_info.get("roster_entry_id", "")))
+	var roster_label := String(roster_entry.get("label", slot_info.get("roster_entry_id", "")))
 	if not bool(slot_info.get("active", false)):
-		return "P%s | inactivo" % player_slot
+		return "P%s | inactivo | %s" % [player_slot, roster_label]
 	var mode_label := "Hard" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Easy"
 	var input_source := String(slot_info.get("input_source", INPUT_SOURCE_KEYBOARD))
 	if input_source == INPUT_SOURCE_JOYPAD:
 		var device_id := int(slot_info.get("device_id", -1))
 		var connection_label := "conectado" if bool(slot_info.get("device_connected", false)) else "desconectado"
-		return "P%s | %s | joypad %s %s" % [player_slot, mode_label, device_id, connection_label]
+		return "P%s | %s | joypad %s %s | %s" % [player_slot, mode_label, device_id, connection_label, roster_label]
 	var profile := int(slot_info.get("keyboard_profile", LocalSessionBuilder.get_default_keyboard_profile_for_slot(player_slot)))
-	return "P%s | %s | teclado %s" % [player_slot, mode_label, LocalSessionBuilder.get_keyboard_profile_label(profile)]
+	return "P%s | %s | teclado %s | %s" % [player_slot, mode_label, LocalSessionBuilder.get_keyboard_profile_label(profile), roster_label]
 
 
 func _sanitize_slot_spec(slot_info: Dictionary, fallback_slot: int) -> Dictionary:
@@ -200,6 +232,8 @@ func _sanitize_slot_spec(slot_info: Dictionary, fallback_slot: int) -> Dictionar
 		"keyboard_profile": keyboard_profile,
 		"device_id": int(slot_info.get("device_id", -1)),
 		"device_connected": bool(slot_info.get("device_connected", true)),
+		"roster_entry_id": String(slot_info.get("roster_entry_id", RosterCatalog.get_default_entry_id_for_slot(slot))),
+		"archetype_path": String(slot_info.get("archetype_path", "")),
 	}
 
 

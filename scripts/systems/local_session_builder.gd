@@ -3,6 +3,7 @@ class_name LocalSessionBuilder
 
 const LocalSession = preload("res://scripts/systems/local_session.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 
 const INPUT_SOURCE_KEYBOARD := "keyboard"
 const INPUT_SOURCE_JOYPAD := "joypad"
@@ -28,7 +29,13 @@ static func build_from_slot_specs(slot_specs: Array, default_config: LocalSessio
 		if input_source == INPUT_SOURCE_JOYPAD:
 			var device_id := int(slot_spec.get("device_id", -1))
 			if device_id >= 0:
-				session.assign_joypad_slot(slot, device_id, control_mode)
+				session.assign_joypad_slot(
+					slot,
+					device_id,
+					control_mode,
+					String(slot_spec.get("roster_entry_id", "")),
+					String(slot_spec.get("archetype_path", ""))
+				)
 				if not bool(slot_spec.get("device_connected", true)):
 					session.mark_slot_disconnected(slot)
 			continue
@@ -39,7 +46,9 @@ static func build_from_slot_specs(slot_specs: Array, default_config: LocalSessio
 				int(slot_spec.get("keyboard_profile", get_default_keyboard_profile_for_slot(slot))),
 				slot
 			),
-			control_mode
+			control_mode,
+			String(slot_spec.get("roster_entry_id", "")),
+			String(slot_spec.get("archetype_path", ""))
 		)
 
 	return session
@@ -65,6 +74,7 @@ static func sanitize_slot_specs(slot_specs: Array) -> Array[Dictionary]:
 		)
 		if input_source == INPUT_SOURCE_JOYPAD:
 			keyboard_profile = RobotBase.KeyboardProfile.NONE
+		var loadout := _sanitize_loadout(slot_spec, slot)
 		seen_slots[slot] = true
 		result.append({
 			"slot": slot,
@@ -73,6 +83,8 @@ static func sanitize_slot_specs(slot_specs: Array) -> Array[Dictionary]:
 			"keyboard_profile": keyboard_profile,
 			"device_id": int(slot_spec.get("device_id", -1)),
 			"device_connected": bool(slot_spec.get("device_connected", true)),
+			"roster_entry_id": String(loadout.get("roster_entry_id", "")),
+			"archetype_path": String(loadout.get("archetype_path", "")),
 		})
 
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
@@ -108,3 +120,19 @@ static func _sanitize_keyboard_profile(keyboard_profile: int, player_slot: int) 
 	]:
 		return keyboard_profile
 	return get_default_keyboard_profile_for_slot(player_slot)
+
+
+static func _sanitize_loadout(slot_spec: Dictionary, slot: int) -> Dictionary:
+	var roster_entry_id := String(slot_spec.get("roster_entry_id", ""))
+	var archetype_path := String(slot_spec.get("archetype_path", ""))
+	var entry := RosterCatalog.get_competitive_entry(roster_entry_id)
+	if entry.is_empty() and archetype_path != "":
+		var entry_id_from_path := RosterCatalog.get_entry_id_for_archetype_path(archetype_path)
+		entry = RosterCatalog.get_competitive_entry(entry_id_from_path)
+	if entry.is_empty():
+		entry = RosterCatalog.get_competitive_entry(RosterCatalog.get_default_entry_id_for_slot(slot))
+
+	return {
+		"roster_entry_id": String(entry.get("id", "")),
+		"archetype_path": String(entry.get("config_path", "")),
+	}

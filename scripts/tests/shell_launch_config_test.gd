@@ -58,8 +58,8 @@ func _run() -> void:
 		MatchController.MatchMode.FFA,
 		"res://scenes/main/main_ffa.tscn",
 		[
-			{"slot": 1, "control_mode": 0, "input_source": "keyboard", "keyboard_profile": 1},
-			{"slot": 2, "control_mode": 1, "input_source": "joypad", "device_id": 24, "device_connected": true},
+			{"slot": 1, "control_mode": 0, "input_source": "keyboard", "keyboard_profile": 1, "roster_entry_id": "ancla"},
+			{"slot": 2, "control_mode": 1, "input_source": "joypad", "device_id": 24, "device_connected": true, "archetype_path": "res://data/config/robots/aguja_archetype.tres"},
 			{"slot": 2, "control_mode": 0},
 			{"slot": 9, "control_mode": 1},
 		]
@@ -98,6 +98,16 @@ func _run() -> void:
 	_assert(
 		int(launch_slots[1].get("keyboard_profile", -2)) == 0,
 		"Un slot joypad no deberia arrastrar perfil de teclado."
+	)
+	_assert(
+		String(launch_slots[0].get("roster_entry_id", "")) == "ancla"
+		and String(launch_slots[0].get("archetype_path", "")).ends_with("ancla_archetype.tres"),
+		"El launch config deberia resolver y transportar el loadout elegido por roster_entry_id."
+	)
+	_assert(
+		String(launch_slots[1].get("roster_entry_id", "")) == "aguja"
+		and String(launch_slots[1].get("archetype_path", "")).ends_with("aguja_archetype.tres"),
+		"El launch config deberia resolver roster_entry_id desde archetype_path cuando haga falta."
 	)
 
 	shell_session.call("store_match_launch_config", launch_config)

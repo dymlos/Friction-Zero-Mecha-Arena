@@ -10,7 +10,6 @@ const PracticeCatalog = preload("res://scripts/systems/practice_catalog.gd")
 const PracticeDirector = preload("res://scripts/practice/practice_director.gd")
 const PracticeHud = preload("res://scripts/ui/practice_hud.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
-const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
 
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
@@ -96,9 +95,6 @@ func _build_local_session() -> LocalSession:
 
 func _spawn_player_robots() -> void:
 	_player_robots.clear()
-	var module_spec := PracticeCatalog.get_module(_get_requested_module_id())
-	var roster_entry := RosterCatalog.get_shell_roster_entry(String(module_spec.get("recommended_roster_entry_id", "")))
-	var archetype_config = roster_entry.get("config", null)
 	var slot_specs := _get_active_slot_specs()
 	for index in range(slot_specs.size()):
 		var slot_spec: Dictionary = slot_specs[index]
@@ -108,11 +104,6 @@ func _spawn_player_robots() -> void:
 
 		robot_root.add_child(robot)
 		robot.display_name = "Player %s" % int(slot_spec.get("slot", index + 1))
-		if archetype_config != null:
-			robot.apply_runtime_loadout(
-				archetype_config,
-				int(slot_spec.get("control_mode", RobotBase.ControlMode.EASY))
-			)
 		_local_session.apply_to_robot(robot, int(slot_spec.get("slot", index + 1)))
 		robot.refresh_input_setup()
 		robot.global_position = Vector3((index * 2.4) - ((slot_specs.size() - 1) * 1.2), 1.2, 0.0)
@@ -382,7 +373,12 @@ func _action_label_to_id(label: String) -> String:
 func _get_active_slot_specs() -> Array[Dictionary]:
 	var slot_specs: Array[Dictionary] = []
 	if _pending_match_launch_config == null or _pending_match_launch_config.local_slots.is_empty():
-		return LocalSessionBuilder.sanitize_slot_specs([{"slot": 1, "control_mode": RobotBase.ControlMode.EASY}])
+		var module_spec := PracticeCatalog.get_module(_get_requested_module_id())
+		return LocalSessionBuilder.sanitize_slot_specs([{
+			"slot": 1,
+			"control_mode": RobotBase.ControlMode.EASY,
+			"roster_entry_id": String(module_spec.get("recommended_roster_entry_id", "")),
+		}])
 
 	for slot_spec in _pending_match_launch_config.local_slots:
 		if slot_spec is Dictionary:
