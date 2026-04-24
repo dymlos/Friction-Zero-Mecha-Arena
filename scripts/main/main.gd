@@ -809,6 +809,16 @@ func _refresh_hud() -> void:
 		match_controller.get_match_result_title(),
 		match_controller.get_match_result_lines()
 	)
+	var post_match_story_lines: Array[String] = []
+	var post_match_snippet_lines: Array[String] = []
+	if match_controller.is_match_over():
+		post_match_story_lines = match_controller.get_post_match_review_lines()
+		post_match_snippet_lines = match_controller.get_post_match_snippet_lines()
+	ui.show_post_match_review(
+		post_match_story_lines,
+		post_match_snippet_lines,
+		_build_post_match_hint_line()
+	)
 	ui.show_pause_overlay(
 		_build_pause_overlay_title(),
 		_build_pause_overlay_lines()
@@ -938,6 +948,18 @@ func _build_pause_overlay_title() -> String:
 		return ""
 
 	return "Pausa"
+
+
+func _build_post_match_hint_line() -> String:
+	if not match_controller.is_match_over():
+		return ""
+	if match_controller.is_match_restart_enabled():
+		var restart_prompt_line := match_controller.get_match_restart_prompt_line()
+		if restart_prompt_line != "":
+			return restart_prompt_line
+	if _is_player_shell_context():
+		return "Pausa | volver al menu"
+	return ""
 
 
 func _build_pause_overlay_lines() -> Array[String]:
