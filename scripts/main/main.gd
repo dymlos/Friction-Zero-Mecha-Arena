@@ -2,6 +2,7 @@ extends Node3D
 class_name Main
 
 const MatchController = preload("res://scripts/systems/match_controller.gd")
+const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_variant_catalog.gd")
 const MatchHud = preload("res://scripts/ui/match_hud.gd")
 const LocalSession = preload("res://scripts/systems/local_session.gd")
 const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder.gd")
@@ -1718,9 +1719,11 @@ func _cleanup_detached_parts() -> void:
 func _spawn_post_death_support_if_needed(robot: RobotBase) -> void:
 	if robot == null:
 		return
+	if match_controller == null:
+		return
 	if support_root == null:
 		return
-	if match_controller.match_mode != MatchController.MatchMode.TEAMS:
+	if MatchModeVariantCatalog.get_post_death_model(match_controller.match_mode, match_controller.get_mode_variant_id()) != MatchModeVariantCatalog.POST_DEATH_MODEL_TEAMS_SUPPORT:
 		return
 	if _find_post_death_support_ship(robot) != null:
 		return

@@ -61,6 +61,7 @@ var _is_lab_selected := false
 
 
 func _ready() -> void:
+	add_to_group("pilot_support_ships")
 	_duplicate_runtime_material(hull_visual)
 	_duplicate_runtime_material(glow_visual)
 	_duplicate_runtime_material(status_ring_visual)

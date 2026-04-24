@@ -10,6 +10,7 @@ const FFA_SCENES := [
 ]
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
+const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_variant_catalog.gd")
 
 var _failed := false
 
@@ -491,7 +492,15 @@ func _verify_support_ship_spawns_in_teams(scene_path: String) -> void:
 
 
 func _verify_support_ship_stays_disabled_in_ffa(scene_path: String) -> void:
+	await _verify_support_ship_stays_disabled_in_ffa_variant(scene_path, MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE)
+	await _verify_support_ship_stays_disabled_in_ffa_variant(scene_path, MatchModeVariantCatalog.VARIANT_LAST_ALIVE)
+
+
+func _verify_support_ship_stays_disabled_in_ffa_variant(scene_path: String, variant_id: String) -> void:
 	var ffa_main := await _instantiate_scene(scene_path)
+	var match_controller := ffa_main.get_node_or_null("Systems/MatchController") as MatchController
+	if match_controller != null:
+		match_controller.set_mode_variant_id(variant_id)
 	var ffa_support_root := ffa_main.get_node_or_null("SupportRoot")
 	var ffa_robots := _get_scene_robots(ffa_main)
 	_assert(ffa_support_root != null, "La escena %s deberia compartir la estructura base del laboratorio." % scene_path)
@@ -505,11 +514,16 @@ func _verify_support_ship_stays_disabled_in_ffa(scene_path: String) -> void:
 
 	_assert(
 		ffa_support_root.get_child_count() == 0,
-		"La escena %s no deberia activar naves de apoyo post-muerte." % scene_path
+		"La escena %s no deberia activar naves de apoyo post-muerte en %s." % [scene_path, variant_id]
 	)
 	_assert(
-		_get_owned_group_count(ffa_main, "ffa_aftermath_pickups") == 1,
-		"FFA puede crear aftermath neutral, pero no debe confundirlo con soporte de Teams."
+		_get_owned_group_count(ffa_main, "pilot_support_ships") == 0,
+		"FFA no debe registrar naves de apoyo controlables en %s." % variant_id
+	)
+	var expected_aftermath := 1
+	_assert(
+		_get_owned_group_count(ffa_main, "ffa_aftermath_pickups") == expected_aftermath,
+		"FFA puede crear aftermath neutral en %s, pero no debe confundirlo con soporte de Teams." % variant_id
 	)
 
 	await _cleanup_main(ffa_main)
