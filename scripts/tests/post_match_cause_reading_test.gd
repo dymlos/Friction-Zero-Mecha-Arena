@@ -90,7 +90,7 @@ func _assert_cause_reading(test_case: Dictionary) -> void:
 	else:
 		await _close_teams(robots, cause)
 
-	await create_timer(0.16).timeout
+	await _wait_until_match_over(match_controller, 0.8)
 
 	var story_lines := match_controller.get_post_match_review_lines()
 	var snippet_lines := match_controller.get_post_match_snippet_lines()
@@ -161,6 +161,12 @@ func _has_line_containing(lines: Array[String], expected_fragment: String) -> bo
 		if line.contains(expected_fragment):
 			return true
 	return false
+
+
+func _wait_until_match_over(match_controller: MatchController, timeout_seconds: float) -> void:
+	var deadline_msec := Time.get_ticks_msec() + int(round(timeout_seconds * 1000.0))
+	while is_instance_valid(match_controller) and not match_controller.is_match_over() and Time.get_ticks_msec() < deadline_msec:
+		await process_frame
 
 
 func _assert(condition: bool, message: String) -> void:
