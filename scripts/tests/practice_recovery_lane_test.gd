@@ -28,8 +28,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 
-	_assert(not Array(lane.call("get_objective_lines")).is_empty(), "RecoveryLane deberia exponer instrucciones objetivas.")
-	_assert(not Array(lane.call("get_callout_lines")).is_empty(), "RecoveryLane deberia exponer callout de lectura.")
+	_assert_lane_contract(lane)
 
 	var ally_robot := _find_fixture_robot_by_name(lane, "Aliado")
 	var rival_robot := _find_fixture_robot_by_name(lane, "Rival")
@@ -65,6 +64,9 @@ func _run() -> void:
 	await process_frame
 	lane.call("_physics_process", 0.016)
 
+	var progress_text := "\n".join(Array(lane.call("get_progress_lines")))
+	_assert(progress_text.contains("Aliado"), "RecoveryLane deberia mostrar recuperacion aliada.")
+	_assert(progress_text.contains("Rival"), "RecoveryLane deberia mostrar negacion rival.")
 	_assert(bool(lane.call("is_lane_completed")), "RecoveryLane deberia completar al cerrar recuperacion y negacion.")
 
 	await _cleanup_node(player_robot)
@@ -116,6 +118,17 @@ func _cleanup_node(node: Node) -> void:
 		parent.remove_child(node)
 	node.free()
 	await process_frame
+
+
+func _assert_lane_contract(lane: Node) -> void:
+	_assert(lane.has_method("get_objective_lines"), "La estacion debe exponer objetivos.")
+	_assert(lane.has_method("get_progress_lines"), "La estacion debe exponer progreso.")
+	_assert(lane.has_method("get_callout_lines"), "La estacion debe exponer callouts.")
+	_assert(lane.has_method("get_context_card_lines"), "La estacion debe exponer tarjeta contextual.")
+	_assert(Array(lane.call("get_objective_lines")).size() <= 2, "Objetivos deben ser cortos.")
+	_assert(Array(lane.call("get_context_card_lines")).size() <= 3, "Tarjeta contextual debe ser breve.")
+	_assert(not Array(lane.call("get_objective_lines")).is_empty(), "RecoveryLane deberia exponer instrucciones objetivas.")
+	_assert(not Array(lane.call("get_callout_lines")).is_empty(), "RecoveryLane deberia exponer callout de lectura.")
 
 
 func _assert(condition: bool, message: String) -> void:

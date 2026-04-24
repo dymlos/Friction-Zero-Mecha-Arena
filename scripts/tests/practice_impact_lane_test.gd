@@ -26,8 +26,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 
-	_assert(not Array(lane.call("get_objective_lines")).is_empty(), "ImpactLane deberia exponer instrucciones objetivas.")
-	_assert(not Array(lane.call("get_callout_lines")).is_empty(), "ImpactLane deberia exponer callout de lectura.")
+	_assert_lane_contract(lane)
 
 	var target_robot := _find_fixture_robot(lane)
 	_assert(target_robot != null, "ImpactLane deberia crear un objetivo pushable.")
@@ -40,6 +39,9 @@ func _run() -> void:
 	target_robot.global_position = Vector3(0.0, 1.2, -11.0)
 	lane.call("_physics_process", 0.016)
 
+	var progress_text := "\n".join(Array(lane.call("get_progress_lines")))
+	_assert(progress_text.contains("borde"), "ImpactLane deberia mostrar distancia al borde.")
+	_assert(progress_text.contains("Impacto"), "ImpactLane deberia mostrar estado de impacto.")
 	_assert(bool(lane.call("is_lane_completed")), "ImpactLane deberia completar cuando el objetivo cae al borde.")
 
 	await _cleanup_node(player_robot)
@@ -73,6 +75,17 @@ func _cleanup_node(node: Node) -> void:
 		parent.remove_child(node)
 	node.free()
 	await process_frame
+
+
+func _assert_lane_contract(lane: Node) -> void:
+	_assert(lane.has_method("get_objective_lines"), "La estacion debe exponer objetivos.")
+	_assert(lane.has_method("get_progress_lines"), "La estacion debe exponer progreso.")
+	_assert(lane.has_method("get_callout_lines"), "La estacion debe exponer callouts.")
+	_assert(lane.has_method("get_context_card_lines"), "La estacion debe exponer tarjeta contextual.")
+	_assert(Array(lane.call("get_objective_lines")).size() <= 2, "Objetivos deben ser cortos.")
+	_assert(Array(lane.call("get_context_card_lines")).size() <= 3, "Tarjeta contextual debe ser breve.")
+	_assert(not Array(lane.call("get_objective_lines")).is_empty(), "ImpactLane deberia exponer instrucciones objetivas.")
+	_assert(not Array(lane.call("get_callout_lines")).is_empty(), "ImpactLane deberia exponer callout de lectura.")
 
 
 func _assert(condition: bool, message: String) -> void:

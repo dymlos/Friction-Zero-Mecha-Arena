@@ -11,10 +11,10 @@ func configure_lane(module_spec: Dictionary, player_robots: Array) -> void:
 	super.configure_lane(module_spec, player_robots)
 	set_objective_lines([
 		"Mueve energia a piernas, luego a brazos y cierra con Overdrive.",
-		"Mira como cambia el cuerpo, no solo el texto del HUD.",
+		"Mira como cambia el cuerpo, no solo el texto.",
 	])
 	set_callout_lines([
-		"Las piernas cambian el control; los brazos cambian el empuje.",
+		"Piernas cambian control; brazos cambian empuje.",
 	])
 	_robot_states.clear()
 	_saw_leg_focus = false

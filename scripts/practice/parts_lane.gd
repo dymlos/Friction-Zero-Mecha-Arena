@@ -13,10 +13,10 @@ func configure_lane(module_spec: Dictionary, player_robots: Array) -> void:
 	super.configure_lane(module_spec, player_robots)
 	set_objective_lines([
 		"Golpea brazos o piernas y mira como cambia el cuerpo.",
-		"Busca el lado correcto: frente para brazos, parte trasera para piernas.",
+		"Busca frente para brazos y retaguardia para piernas.",
 	])
 	set_callout_lines([
-		"Perder una parte debe doler, pero no cerrar el comeback.",
+		"Perder una parte debe doler sin matar el comeback.",
 	])
 	call_deferred("_sync_lane_state")
 

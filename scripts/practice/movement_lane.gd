@@ -11,7 +11,7 @@ func configure_lane(module_spec: Dictionary, player_robots: Array) -> void:
 		"Compara Easy y Hard sobre la misma pista.",
 	])
 	set_callout_lines([
-		"Arranque pesado, deslizamiento mas libre y frenado legible.",
+		"Arranque pesado, deslizamiento libre y frenado legible.",
 	])
 	call_deferred("_sync_lane_state")
 

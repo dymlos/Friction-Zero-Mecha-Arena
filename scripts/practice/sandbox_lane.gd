@@ -11,10 +11,10 @@ func configure_lane(module_spec: Dictionary, player_robots: Array) -> void:
 	super.configure_lane(module_spec, player_robots)
 	set_objective_lines([
 		"Combina movimiento, impacto, energia, partes y recuperacion.",
-		"No hay fallo: el objetivo es probar sin presion competitiva.",
+		"No hay fallo: prueba sin presion competitiva.",
 	])
 	set_callout_lines([
-		"Usa este espacio para experimentar sin perder la lectura de cuerpo y borde.",
+		"Experimenta sin perder lectura de cuerpo y borde.",
 	])
 	call_deferred("_sync_lane_state")
 
