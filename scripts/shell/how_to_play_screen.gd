@@ -74,6 +74,17 @@ func open_selected_topic_practice() -> void:
 	practice_requested.emit(module_id)
 
 
+func request_start_from_shortcut() -> bool:
+	if _surface_scope == SURFACE_SCOPE_PAUSE:
+		return false
+	var module_id := OnboardingCatalog.get_practice_module_id_for_section(get_selected_topic_id())
+	if module_id.is_empty():
+		return false
+
+	practice_requested.emit(module_id)
+	return true
+
+
 func go_back() -> void:
 	back_requested.emit()
 

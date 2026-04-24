@@ -30,6 +30,28 @@ func _run() -> void:
 
 	var generic_hint := InputPromptCatalog.get_joypad_reference_hint_for_name("", RobotBase.ControlMode.EASY)
 	_assert(generic_hint.contains("ataca Sur"), "Joypad desconocido debe usar labels direccionales genericos.")
+
+	InputPromptCatalog.ensure_menu_input_actions()
+	var menu_help := InputPromptCatalog.get_menu_navigation_help_line(true, true)
+	_assert(menu_help.contains("A aceptar"), "La ayuda de menu debe indicar A para aceptar.")
+	_assert(menu_help.contains("B volver"), "La ayuda de menu debe indicar B para volver.")
+	_assert(menu_help.contains("Start iniciar"), "La ayuda de menu debe indicar Start para iniciar.")
+	_assert(menu_help.contains("Select pausa"), "La ayuda de menu debe indicar Select para pausa.")
+	_assert(_action_has_joy_button("ui_accept", JOY_BUTTON_A, -1), "ui_accept debe aceptar A de cualquier joystick en la shell.")
+	_assert(_action_has_joy_button("ui_cancel", JOY_BUTTON_B, -1), "ui_cancel debe aceptar B de cualquier joystick en la shell.")
+	_assert(_action_has_joy_button(InputPromptCatalog.MENU_START_ACTION, JOY_BUTTON_START, -1), "Start debe quedar mapeado como accion de inicio de menu.")
+	_assert(_action_has_joy_button(InputPromptCatalog.MENU_PAUSE_ACTION, JOY_BUTTON_BACK, -1), "Select debe quedar mapeado como accion de pausa de menu.")
+
+	var robot := RobotBase.new()
+	robot.is_player_controlled = true
+	robot.player_index = 3
+	robot.keyboard_profile = RobotBase.KeyboardProfile.NONE
+	robot.joypad_device = 5
+	robot.refresh_input_setup()
+	_assert(_action_has_joy_button("p3_attack", JOY_BUTTON_A, 5), "El slot con joystick debe mapear A para aceptar/atacar por dispositivo.")
+	_assert(_action_has_joy_button("p3_menu_back", JOY_BUTTON_B, 5), "El slot con joystick debe mapear B para volver por dispositivo.")
+	_assert(_action_has_joy_button("p3_pause", JOY_BUTTON_BACK, 5), "El slot con joystick debe mapear Select para pausa por dispositivo.")
+	robot.free()
 	_finish()
 
 
@@ -38,6 +60,18 @@ func _assert(condition: bool, message: String) -> void:
 		return
 	_failed = true
 	push_error(message)
+
+
+func _action_has_joy_button(action_name: String, button_index: int, device_id: int) -> bool:
+	if not InputMap.has_action(StringName(action_name)):
+		return false
+
+	for event in InputMap.action_get_events(StringName(action_name)):
+		if not (event is InputEventJoypadButton):
+			continue
+		if int(event.button_index) == button_index and int(event.device) == device_id:
+			return true
+	return false
 
 
 func _finish() -> void:

@@ -66,6 +66,11 @@ func _on_exit_pressed() -> void:
 	exit_requested.emit()
 
 
+func request_start_from_shortcut() -> bool:
+	play_local_requested.emit()
+	return true
+
+
 func focus_play_local_button() -> void:
 	if play_local_button != null:
 		play_local_button.grab_focus()

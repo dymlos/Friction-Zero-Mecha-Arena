@@ -74,4 +74,7 @@ static func get_connected_joypad_lines() -> Array[String]:
 
 
 static func get_controls_note() -> String:
-	return "Sin remapeo libre en M9: solo perfiles de teclado fijos y referencia visible."
+	return (
+		"Menu | %s. Sin remapeo libre en M9: perfiles de teclado fijos y referencia visible."
+		% InputPromptCatalog.get_menu_navigation_help_line(true, true)
+	)

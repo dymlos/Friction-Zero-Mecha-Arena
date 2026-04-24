@@ -8,6 +8,7 @@ const LocalSession = preload("res://scripts/systems/local_session.gd")
 const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const PauseController = preload("res://scripts/systems/pause_controller.gd")
+const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
@@ -121,6 +122,7 @@ func _ready() -> void:
 	# Esta escena solo conecta piezas grandes: arena, robots, UI y sistemas.
 	# La logica concreta vive en scripts mas chicos para que el proyecto crezca ordenado.
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	InputPromptCatalog.ensure_menu_input_actions()
 	_arena = _get_active_arena()
 	_ensure_aftermath_root()
 	_pending_match_launch_config = _consume_match_launch_config()
@@ -1000,7 +1002,7 @@ func _build_pause_overlay_lines() -> Array[String]:
 		"Owner | P%s" % _pause_controller.get_pause_owner_slot(),
 	]
 	if _is_player_shell_context():
-		lines.append("Navegacion | arriba/abajo mueve | ataque confirma | pausa reanuda")
+		lines.append("Navegacion | %s" % InputPromptCatalog.get_pause_navigation_help_line())
 		lines.append("Acciones")
 		lines.append_array(_build_pause_action_lines(["resume", "restart", "return_to_menu"]))
 		lines.append("Informacion")
@@ -1010,12 +1012,13 @@ func _build_pause_overlay_lines() -> Array[String]:
 		lines.append("Dispositivos")
 		lines.append_array(_build_pause_device_lines())
 		if _pause_controller.is_return_to_menu_confirmation_active():
-			lines.append("Confirmar salida | ataque de nuevo para volver al menu")
+			lines.append("Confirmar salida | A confirma | B cancela")
 		return lines
 
 	var pause_prompt_line := match_controller.get_pause_prompt_line()
 	if pause_prompt_line != "":
 		lines.append(pause_prompt_line)
+	lines.append("Navegacion | %s" % InputPromptCatalog.get_pause_navigation_help_line())
 	lines.append("Acciones")
 	lines.append_array(_build_pause_action_lines(["resume", "restart"]))
 	lines.append("Quick settings")
@@ -1184,7 +1187,7 @@ func _try_handle_pause_input(event: InputEvent) -> bool:
 	if owner_slot <= 0:
 		return false
 	if _active_pause_surface != null:
-		if event.is_action_pressed(StringName("p%s_attack" % owner_slot)):
+		if event.is_action_pressed(StringName("p%s_menu_back" % owner_slot)):
 			return _close_active_pause_surface()
 		return false
 
@@ -1194,6 +1197,11 @@ func _try_handle_pause_input(event: InputEvent) -> bool:
 		return move_pause_menu_selection_for_slot(owner_slot, 1)
 	if event.is_action_pressed(StringName("p%s_attack" % owner_slot)):
 		return activate_pause_menu_selection_for_slot(owner_slot) != ""
+	if event.is_action_pressed(StringName("p%s_menu_back" % owner_slot)):
+		if _pause_controller.cancel_return_to_menu_confirmation(owner_slot):
+			_sync_pause_state()
+			return true
+		return request_resume_for_slot(owner_slot)
 
 	return false
 

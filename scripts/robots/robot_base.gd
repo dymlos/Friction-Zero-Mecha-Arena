@@ -83,6 +83,7 @@ const INPUT_ACTION_SUFFIXES := [
 	"overdrive",
 	"throw_part",
 	"pause",
+	"menu_back",
 ]
 
 const KEYBOARD_PROFILE_LABELS := {
@@ -221,6 +222,31 @@ const KEYBOARD_PROFILE_BINDINGS := {
 		"overdrive": [KEY_B],
 		"pause": [KEY_O],
 	},
+}
+
+const JOYPAD_BUTTON_BINDINGS := {
+	"move_left": [JOY_BUTTON_DPAD_LEFT],
+	"move_right": [JOY_BUTTON_DPAD_RIGHT],
+	"move_forward": [JOY_BUTTON_DPAD_UP],
+	"move_back": [JOY_BUTTON_DPAD_DOWN],
+	"attack": [JOY_BUTTON_A],
+	"energy_prev": [JOY_BUTTON_LEFT_SHOULDER],
+	"energy_next": [JOY_BUTTON_RIGHT_SHOULDER],
+	"overdrive": [JOY_BUTTON_Y],
+	"throw_part": [JOY_BUTTON_X],
+	"pause": [JOY_BUTTON_BACK],
+	"menu_back": [JOY_BUTTON_B],
+}
+
+const JOYPAD_MOTION_BINDINGS := {
+	"move_left": [{"axis": JOY_AXIS_LEFT_X, "value": -1.0}],
+	"move_right": [{"axis": JOY_AXIS_LEFT_X, "value": 1.0}],
+	"move_forward": [{"axis": JOY_AXIS_LEFT_Y, "value": -1.0}],
+	"move_back": [{"axis": JOY_AXIS_LEFT_Y, "value": 1.0}],
+	"aim_left": [{"axis": JOY_AXIS_RIGHT_X, "value": -1.0}],
+	"aim_right": [{"axis": JOY_AXIS_RIGHT_X, "value": 1.0}],
+	"aim_forward": [{"axis": JOY_AXIS_RIGHT_Y, "value": -1.0}],
+	"aim_back": [{"axis": JOY_AXIS_RIGHT_Y, "value": 1.0}],
 }
 
 @export var robot_id := 0
@@ -4396,6 +4422,7 @@ func _ensure_default_input_actions() -> void:
 			InputMap.action_set_deadzone(action_name, joystick_deadzone)
 
 		_replace_action_key_events(action_name, bindings.get(action_suffix, []))
+		_replace_action_joypad_events(action_name, action_suffix)
 
 
 func _replace_action_key_events(action_name: StringName, keycodes: Array) -> void:
@@ -4407,6 +4434,28 @@ func _replace_action_key_events(action_name: StringName, keycodes: Array) -> voi
 		var input_event := InputEventKey.new()
 		input_event.physical_keycode = int(keycode)
 		_add_input_event_if_missing(action_name, input_event)
+
+
+func _replace_action_joypad_events(action_name: StringName, action_suffix: String) -> void:
+	for event in InputMap.action_get_events(action_name):
+		if event is InputEventJoypadButton or event is InputEventJoypadMotion:
+			InputMap.action_erase_event(action_name, event)
+
+	if joypad_device < 0:
+		return
+
+	for button_index in JOYPAD_BUTTON_BINDINGS.get(action_suffix, []):
+		var button_event := InputEventJoypadButton.new()
+		button_event.device = joypad_device
+		button_event.button_index = int(button_index)
+		_add_input_event_if_missing(action_name, button_event)
+
+	for motion_spec in JOYPAD_MOTION_BINDINGS.get(action_suffix, []):
+		var motion_event := InputEventJoypadMotion.new()
+		motion_event.device = joypad_device
+		motion_event.axis = int(motion_spec.get("axis", JOY_AXIS_LEFT_X))
+		motion_event.axis_value = float(motion_spec.get("value", 0.0))
+		_add_input_event_if_missing(action_name, motion_event)
 
 
 func _add_input_event_if_missing(action_name: StringName, event: InputEvent) -> void:

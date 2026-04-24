@@ -7,6 +7,7 @@ const LOCAL_MATCH_SETUP_SCENE := preload("res://scenes/shell/local_match_setup.t
 const MAIN_MENU_SCENE := preload("res://scenes/shell/main_menu.tscn")
 const PRACTICE_SETUP_SCENE := preload("res://scenes/shell/practice_setup.tscn")
 const SETTINGS_SCENE := preload("res://scenes/shell/settings_screen.tscn")
+const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.gd")
 const LocalSessionDraft = preload("res://scripts/systems/local_session_draft.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
@@ -15,6 +16,7 @@ const ShellSession = preload("res://scripts/systems/shell_session.gd")
 
 var _active_screen: Control = null
 var _active_screen_id := ""
+var _help_label: Label = null
 var _characters_return_screen_id := "main_menu"
 var _how_to_play_return_screen_id := "main_menu"
 var _practice_return_screen_id := "main_menu"
@@ -24,8 +26,21 @@ var _local_session_draft := LocalSessionDraft.new()
 
 
 func _ready() -> void:
+	InputPromptCatalog.ensure_menu_input_actions()
+	_create_help_label()
 	_set_shell_music_state()
 	open_main_menu()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _is_pressed_action(event, InputPromptCatalog.MENU_START_ACTION):
+		if _try_handle_start_shortcut():
+			get_viewport().set_input_as_handled()
+		return
+
+	if _is_pressed_action(event, "ui_cancel"):
+		if _try_handle_back_shortcut():
+			get_viewport().set_input_as_handled()
 
 
 func get_active_screen_id() -> String:
@@ -132,6 +147,7 @@ func _mount_screen(screen_scene: PackedScene, screen_id: String) -> void:
 	_active_screen_id = screen_id
 	screen_root.add_child(_active_screen)
 	_wire_screen(_active_screen)
+	_refresh_help_label()
 
 
 func _wire_screen(screen: Control) -> void:
@@ -287,3 +303,59 @@ func _set_shell_music_state() -> void:
 		return
 
 	audio_director.call("set_music_state", "shell")
+
+
+func _try_handle_start_shortcut() -> bool:
+	if is_instance_valid(_active_screen) and _active_screen.has_method("request_start_from_shortcut"):
+		return bool(_active_screen.call("request_start_from_shortcut"))
+
+	return false
+
+
+func _try_handle_back_shortcut() -> bool:
+	if _active_screen_id == "" or _active_screen_id == "main_menu":
+		return false
+
+	_play_audio_cue("ui_back")
+	_on_back_requested()
+	return true
+
+
+func _is_pressed_action(event: InputEvent, action_name: String) -> bool:
+	if event is InputEventKey:
+		var key_event := event as InputEventKey
+		if key_event.echo:
+			return false
+
+	return event.is_action_pressed(StringName(action_name))
+
+
+func _create_help_label() -> void:
+	if _help_label != null:
+		return
+
+	_help_label = Label.new()
+	_help_label.name = "GamepadHelpLabel"
+	_help_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_help_label.theme_type_variation = &"ShellSubtitle"
+	_help_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_help_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_help_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_help_label.anchor_left = 0.0
+	_help_label.anchor_right = 1.0
+	_help_label.anchor_top = 1.0
+	_help_label.anchor_bottom = 1.0
+	_help_label.offset_left = 24.0
+	_help_label.offset_right = -24.0
+	_help_label.offset_top = -48.0
+	_help_label.offset_bottom = -12.0
+	_help_label.set_meta("qa_id", "shell_gamepad_help")
+	add_child(_help_label)
+
+
+func _refresh_help_label() -> void:
+	if _help_label == null:
+		return
+
+	var start_enabled := is_instance_valid(_active_screen) and _active_screen.has_method("request_start_from_shortcut")
+	_help_label.text = InputPromptCatalog.get_menu_navigation_help_line(start_enabled, true)

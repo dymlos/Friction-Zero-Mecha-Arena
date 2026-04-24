@@ -123,6 +123,11 @@ func get_first_pass_module_labels() -> Array[String]:
 	return labels
 
 
+func request_start_from_shortcut() -> bool:
+	_on_start_pressed()
+	return true
+
+
 func get_player_scope_line() -> String:
 	var module_spec := _get_selected_module()
 	var player_scope := String(module_spec.get("player_scope", "1-2 jugadores locales"))

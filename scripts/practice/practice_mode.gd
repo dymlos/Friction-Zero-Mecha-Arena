@@ -6,6 +6,7 @@ const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder
 const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const PauseController = preload("res://scripts/systems/pause_controller.gd")
+const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.gd")
 const PracticeCatalog = preload("res://scripts/systems/practice_catalog.gd")
 const PracticeDirector = preload("res://scripts/practice/practice_director.gd")
 const PracticeHud = preload("res://scripts/ui/practice_hud.gd")
@@ -31,6 +32,7 @@ var _hud_detail_mode: MatchConfig.HudDetailMode = MatchConfig.HudDetailMode.EXPL
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	InputPromptCatalog.ensure_menu_input_actions()
 	_pending_match_launch_config = _consume_match_launch_config()
 	_apply_pending_entry_context()
 	_local_session = _build_local_session()
@@ -169,12 +171,10 @@ func _get_requested_module_id() -> String:
 
 
 func _try_handle_pause_input(event: InputEvent) -> bool:
-	if not (event is InputEventKey):
-		return false
-
-	var key_event := event as InputEventKey
-	if not key_event.pressed or key_event.echo:
-		return false
+	if event is InputEventKey:
+		var key_event := event as InputEventKey
+		if key_event.echo:
+			return false
 
 	for slot_spec in _get_active_slot_specs():
 		var slot := int(slot_spec.get("slot", 0))
@@ -194,21 +194,22 @@ func _try_handle_pause_input(event: InputEvent) -> bool:
 		return false
 
 	var owner_slot := _pause_controller.get_pause_owner_slot()
-	if event.is_action_pressed("ui_up"):
+	if event.is_action_pressed("p%s_move_forward" % owner_slot) or event.is_action_pressed("ui_up"):
 		_pause_controller.move_selection(owner_slot, -1)
 		_refresh_hud()
 		return true
-	if event.is_action_pressed("ui_down"):
+	if event.is_action_pressed("p%s_move_back" % owner_slot) or event.is_action_pressed("ui_down"):
 		_pause_controller.move_selection(owner_slot, 1)
 		_refresh_hud()
 		return true
-	if event.is_action_pressed("ui_accept"):
+	if event.is_action_pressed("p%s_attack" % owner_slot) or event.is_action_pressed("ui_accept"):
 		var action := activate_pause_menu_selection_for_slot(owner_slot)
 		return action != ""
-	if event.is_action_pressed("ui_cancel"):
+	if event.is_action_pressed("p%s_menu_back" % owner_slot):
 		if _pause_controller.cancel_return_to_menu_confirmation(owner_slot):
 			_refresh_hud()
 			return true
+		return request_resume_for_slot(owner_slot)
 
 	return false
 
@@ -262,10 +263,11 @@ func request_resume_for_slot(player_slot: int) -> bool:
 
 func _build_pause_lines() -> Array[String]:
 	if not _pause_controller.is_paused():
-		return ["Sin pausa | usa la tecla de pausa del slot activo."]
+		return ["Sin pausa | Select pausa | teclado usa pausa del slot activo."]
 
 	var lines: Array[String] = [
 		"P%s pausa" % _pause_controller.get_pause_owner_slot(),
+		"Navegacion | %s" % InputPromptCatalog.get_pause_navigation_help_line(),
 	]
 	lines.append("Acciones")
 	lines.append_array(_build_pause_action_lines(["resume", "restart", "return_to_menu"]))
@@ -274,7 +276,7 @@ func _build_pause_lines() -> Array[String]:
 	lines.append("Dispositivos")
 	lines.append_array(_build_pause_device_lines())
 	if _pause_controller.is_return_to_menu_confirmation_active():
-		lines.append("Confirmar volver al menu")
+		lines.append("Confirmar volver al menu | A confirma | B cancela")
 
 	return lines
 

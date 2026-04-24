@@ -164,6 +164,14 @@ func is_start_enabled() -> bool:
 	return _session_draft.can_launch(DEFAULT_LOCAL_SLOTS.size())
 
 
+func request_start_from_shortcut() -> bool:
+	if not is_start_enabled():
+		return false
+
+	_on_start_pressed()
+	return true
+
+
 func build_launch_config() -> MatchLaunchConfig:
 	var launch_config := MatchLaunchConfig.new()
 	var active_slot_specs := _session_draft.build_active_slot_specs(DEFAULT_LOCAL_SLOTS.size())
