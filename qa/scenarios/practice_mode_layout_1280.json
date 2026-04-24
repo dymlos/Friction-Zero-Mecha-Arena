@@ -7,7 +7,7 @@
   },
   "steps": [
     {
-      "wait_frames": 10
+      "wait_frames": 60
     },
     {
       "snapshot": "practice_mode"
@@ -65,13 +65,13 @@
     {
       "text_contains": {
         "target": "qa:practice_hud_module",
-        "expected": "Movimiento"
+        "expected": "Partes"
       }
     },
     {
       "text_contains": {
         "target": "qa:practice_hud_context_card",
-        "expected": "Arranca"
+        "expected": "Corte"
       }
     },
     {

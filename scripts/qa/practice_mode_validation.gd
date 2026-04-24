@@ -7,6 +7,7 @@ const PRACTICE_MODE_SCENE := preload("res://scenes/practice/practice_mode.tscn")
 const MODULE_SEQUENCE := [
 	"movimiento",
 	"impacto",
+	"partes",
 	"sandbox",
 ]
 
@@ -25,10 +26,7 @@ func _process(_delta: float) -> void:
 	if _next_switch_index >= MODULE_SEQUENCE.size():
 		return
 
-	if _frame_count == 30:
-		_show_module(MODULE_SEQUENCE[_next_switch_index])
-		_next_switch_index += 1
-	elif _frame_count == 60:
+	if _frame_count % 30 == 0:
 		_show_module(MODULE_SEQUENCE[_next_switch_index])
 		_next_switch_index += 1
 
