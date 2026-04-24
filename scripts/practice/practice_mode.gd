@@ -53,6 +53,11 @@ func get_hud_detail_mode() -> int:
 	return _hud_detail_mode
 
 
+func get_active_module_hud_default() -> String:
+	var module_spec := practice_director.get_active_module_spec()
+	return String(module_spec.get("hud_default", "explicito"))
+
+
 func request_module_restart() -> void:
 	_pause_controller.reset()
 	get_tree().paused = false
@@ -116,6 +121,7 @@ func _spawn_player_robots() -> void:
 
 func _setup_module() -> void:
 	practice_director.setup(_get_requested_module_id(), fixture_root, _player_robots)
+	_apply_module_hud_default()
 
 
 func _refresh_hud() -> void:
@@ -318,6 +324,8 @@ func _build_pause_device_lines() -> Array[String]:
 
 func _toggle_pause_hud_setting() -> void:
 	_hud_detail_mode = MatchConfig.HudDetailMode.EXPLICIT if _hud_detail_mode == MatchConfig.HudDetailMode.CONTEXTUAL else MatchConfig.HudDetailMode.CONTEXTUAL
+	if practice_hud != null and practice_hud.has_method("set_explicit_mode"):
+		practice_hud.call("set_explicit_mode", _hud_detail_mode == MatchConfig.HudDetailMode.EXPLICIT)
 	_refresh_hud()
 
 
@@ -355,6 +363,15 @@ func _set_audio_volume(volume_id: String, value: float) -> void:
 			audio_director.call("set_music_volume", value)
 		"sfx":
 			audio_director.call("set_sfx_volume", value)
+
+
+func _apply_module_hud_default() -> void:
+	_hud_detail_mode = MatchConfig.HudDetailMode.EXPLICIT
+	var hud_default := get_active_module_hud_default()
+	if hud_default == "contextual":
+		_hud_detail_mode = MatchConfig.HudDetailMode.CONTEXTUAL
+	if practice_hud != null and practice_hud.has_method("set_explicit_mode"):
+		practice_hud.call("set_explicit_mode", _hud_detail_mode == MatchConfig.HudDetailMode.EXPLICIT)
 
 
 func _action_label_to_id(label: String) -> String:

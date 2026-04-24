@@ -41,6 +41,13 @@ func _run() -> void:
 	_assert(practice_hud.has_method("set_context_card_title"), "PracticeHud deberia mostrar titulo de tarjeta.")
 	_assert(practice_hud.has_method("set_context_card_lines"), "PracticeHud deberia mostrar lineas de tarjeta.")
 	_assert(practice_hud.has_method("is_explicit_layout"), "PracticeHud deberia declarar layout explicito.")
+	_assert(
+		practice_hud.has_method("set_explicit_mode"),
+		"PracticeHud debe poder representar modo explicito/contextual sin perder el default."
+	)
+	if practice_hud.has_method("set_explicit_mode"):
+		practice_hud.call("set_explicit_mode", true)
+		_assert(bool(practice_hud.call("is_explicit_layout")), "PracticeHud debe reportar layout explicito activo.")
 
 	practice_hud.call("set_module_title", "Movimiento")
 	practice_hud.call("set_objective_lines", ["Cruza el arco con control."])

@@ -11,6 +11,8 @@ class_name PracticeHud
 @onready var callout_value_label: Label = %CalloutValueLabel
 @onready var pause_value_label: Label = %PauseValueLabel
 
+var _explicit_mode := true
+
 
 func _ready() -> void:
 	_install_qa_ids()
@@ -52,8 +54,16 @@ func set_pause_lines(lines: Array) -> void:
 	pause_value_label.text = "\n".join(lines)
 
 
+func set_explicit_mode(enabled: bool) -> void:
+	_explicit_mode = enabled
+	if context_card_title_label != null:
+		context_card_title_label.visible = enabled
+	if context_card_value_label != null:
+		context_card_value_label.visible = enabled
+
+
 func is_explicit_layout() -> bool:
-	return true
+	return _explicit_mode
 
 
 func _install_qa_ids() -> void:

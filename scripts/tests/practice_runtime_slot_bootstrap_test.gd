@@ -34,6 +34,19 @@ func _run() -> void:
 	await process_frame
 
 	_assert(String(practice.call("get_active_module_id")) == "impacto", "PracticeMode deberia conservar el modulo pedido.")
+	_assert(
+		int(practice.call("get_hud_detail_mode")) == MatchConfig.HudDetailMode.EXPLICIT,
+		"PracticeMode debe arrancar en HUD explicito desde el contrato M8."
+	)
+	_assert(
+		practice.has_method("get_active_module_hud_default"),
+		"PracticeMode debe exponer el default HUD del modulo activo."
+	)
+	if practice.has_method("get_active_module_hud_default"):
+		_assert(
+			String(practice.call("get_active_module_hud_default")) == "explicito",
+			"El modulo activo debe declarar HUD explicito por defecto."
+		)
 	_assert(practice.has_method("get_local_session"), "PracticeMode deberia exponer LocalSession para contratos runtime.")
 	var session = practice.call("get_local_session") if practice.has_method("get_local_session") else null
 	var robots := _get_scene_robots(practice)
