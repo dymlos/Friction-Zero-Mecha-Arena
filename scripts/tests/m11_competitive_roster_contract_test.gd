@@ -27,6 +27,10 @@ func _run() -> void:
 
 	_assert(actual_ids == expected_ids, "El orden competitivo deberia ser Ariete, Grua, Cizalla, Patin, Aguja, Ancla.")
 	_assert(RosterCatalog.get_competitive_entry_ids() == expected_ids, "Los ids competitivos deberian conservar el mismo orden estable.")
+	_assert(
+		RosterCatalog.get_teaching_focus_entry_ids() == ["ariete", "patin", "cizalla"],
+		"El foco ensenable M4 no debe cambiar el orden competitivo M11."
+	)
 	_assert(RosterCatalog.get_default_entry_id_for_slot(5) == "aguja", "P5 deberia preseleccionar Aguja.")
 	_assert(RosterCatalog.get_default_entry_id_for_slot(6) == "ancla", "P6 deberia preseleccionar Ancla.")
 

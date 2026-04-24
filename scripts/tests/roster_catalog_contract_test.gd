@@ -34,6 +34,9 @@ func _run() -> void:
 			"strength",
 			"risk",
 			"signature",
+			"primary_skill",
+			"button_reference",
+			"visual_differentiation_scope",
 			"body_read",
 			"easy",
 			"hard",
@@ -44,6 +47,14 @@ func _run() -> void:
 				String(entry.get(field_name, "")).strip_edges() != "",
 				"La ficha %s no deberia dejar vacio `%s`." % [label, field_name]
 			)
+		_assert(
+			String(entry.get("visual_differentiation_scope", "")) == "moderada",
+			"La ficha %s deberia declarar diferenciacion visual moderada." % label
+		)
+		_assert(
+			String(entry.get("button_reference", "")).contains("Skill/carga"),
+			"La ficha %s deberia exponer referencia de boton de skill/carga." % label
+		)
 		var mode_notes: Dictionary = entry.get("mode_notes", {})
 		_assert(String(mode_notes.get("ffa", "")).strip_edges() != "", "La ficha %s deberia tener nota FFA." % label)
 		_assert(String(mode_notes.get("teams", "")).strip_edges() != "", "La ficha %s deberia tener nota Teams." % label)

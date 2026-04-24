@@ -7,10 +7,13 @@ const CIZALLA_CONFIG := preload("res://data/config/robots/cizalla_archetype.tres
 const PATIN_CONFIG := preload("res://data/config/robots/patin_archetype.tres")
 const AGUJA_CONFIG := preload("res://data/config/robots/aguja_archetype.tres")
 const ANCLA_CONFIG := preload("res://data/config/robots/ancla_archetype.tres")
+const ControlReferenceCatalog = preload("res://scripts/systems/control_reference_catalog.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
 
 const COMPETITIVE_ENTRY_IDS := ["ariete", "grua", "cizalla", "patin", "aguja", "ancla"]
 const DEFAULT_SLOT_ENTRY_IDS := ["ariete", "grua", "cizalla", "patin", "aguja", "ancla", "ariete", "patin"]
+const TEACHING_FOCUS_ENTRY_IDS := ["ariete", "patin", "cizalla"]
+const VISUAL_DIFFERENTIATION_SCOPE := "moderada"
 const CONFIG_BY_ID := {
 	"ariete": ARIETE_CONFIG,
 	"grua": GRUA_CONFIG,
@@ -79,6 +82,22 @@ static func get_competitive_entry_ids() -> Array:
 	return COMPETITIVE_ENTRY_IDS.duplicate()
 
 
+static func get_teaching_focus_entry_ids() -> Array:
+	return TEACHING_FOCUS_ENTRY_IDS.duplicate()
+
+
+static func get_teaching_focus_roster() -> Array:
+	var focus_roster: Array = []
+	for entry_id in TEACHING_FOCUS_ENTRY_IDS:
+		focus_roster.append(get_competitive_entry(entry_id))
+
+	return focus_roster
+
+
+static func get_universal_action_labels() -> Array:
+	return ControlReferenceCatalog.get_universal_action_labels()
+
+
 static func get_default_entry_id_for_slot(player_slot: int) -> String:
 	var index := wrapi(player_slot - 1, 0, DEFAULT_SLOT_ENTRY_IDS.size())
 	return DEFAULT_SLOT_ENTRY_IDS[index]
@@ -111,6 +130,12 @@ static func _build_entry(entry_id: String, config: RobotArchetypeConfig) -> Dict
 		"strength": config.strength_line,
 		"risk": config.risk_line,
 		"signature": config.signature_line,
+		"primary_skill": config.core_skill_label if config.core_skill_label != "" else config.signature_line,
+		"button_reference": ControlReferenceCatalog.get_default_button_reference(),
+		"visual_differentiation_scope": VISUAL_DIFFERENTIATION_SCOPE,
+		"teaching_focus": TEACHING_FOCUS_ENTRY_IDS.has(entry_id),
+		"extra_skill_labels": "",
+		"universal_actions": ControlReferenceCatalog.get_universal_action_labels(),
 		"body_read": config.body_read_line,
 		"easy": config.easy_line,
 		"hard": config.hard_line,
