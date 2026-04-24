@@ -7,7 +7,7 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
 ## Prioridad inmediata
 
 1. Repetir smoke manual M1 contra la matriz activa: `1P Easy`, `1P Hard`, `2P mixto Easy/Hard`, `FFA 4P`, `FFA 6P/8P` si hay controles suficientes, `Teams 4v4`, pausa owner-aware y salida confirmada.
-2. Ejecutar smoke manual de shell operativa con foco en legibilidad, ritmo y descubrimiento real:
+2. Ejecutar smoke manual de shell operativa con foco en legibilidad, ritmo y descubrimiento real, usando `qa/manual/m7/product-cut-smoke.md` como checklist de primer corte completo:
    - `menu principal -> Settings -> volver`
    - persistencia de `audio/video/HUD`
    - `setup local` con `1P`, `2P` y mezcla teclado/joypad
@@ -16,6 +16,8 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
    - abrir pausa y tocar `HUD/audio`
    - abrir desde pausa `Settings`, `How to Play` y `Characters`, volver al overlay y reanudar
    - confirmar que `Settings` en pausa solo muestra `audio/HUD`
+   - probar `FFA -> Ultimo vivo`: confirmar que setup lo muestra como variante, la partida suma rondas, el resultado no menciona puntos por causa y `Score por causa` sigue siendo default
+   - probar prompts con teclado y al menos un joypad: confirmar que `Settings`, setup, practica y pausa usan labels coherentes
    - `1P Easy`
    - `1P Hard`
    - `2P mixto Easy/Hard`
@@ -41,7 +43,7 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
 6. Revalidar manualmente shell + practica en shared-screen con jugadores reales antes de abrir remapeo libre, video replay real o polish audiovisual.
 7. Mantener ownership estricto: `setup local` = seleccion, `Characters` = identidad, `How to Play` = reglas base, `Practica` = experimentacion segura, `match` = decision tactica bajo presion.
 8. Mantener la disciplina de paridad `base/validation` mientras se toque shell, practica, HUD o cierre post-partida.
-9. Si se trabaja sobre `Ultimo vivo`, tratarlo como variante de `FFA` con estructura `best-of / first-to`, sin post-muerte controlable y sin score por causa.
+9. Playtestear `Ultimo vivo` como variante de `FFA` con estructura `first-to`, sin post-muerte controlable y sin score por causa; vigilar si incentiva evasion excesiva.
 10. Ejecutar playtest audiovisual M6 en `1080p`: confirmar que dano se lee desde robot, estados desde robot/arena/pickup, impactos y partes destruidas se oyen sobre musica, y la escalada final aumenta presion sin tapar SFX.
 
 ## Diferidos explicitos de este cierre parcial
@@ -53,7 +55,7 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
 - nuevos arquetipos fuera del roster competitivo actual de seis
 - mas skills por personaje antes de cerrar bien la skill principal + acciones universales
 - reglas custom amplias antes de validar la sesion local clara
-- exponer `Ultimo vivo` en setup antes de tener su gameplay completo
+- convertir `Ultimo vivo` en modo principal separado o darle post-muerte controlable en `FFA`
 - soundtrack final, mezcla/mastering final o pipeline externo completo de audio
 - postprocess visual global caro antes de nueva evidencia `1080p`
 

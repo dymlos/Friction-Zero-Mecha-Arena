@@ -62,4 +62,4 @@ Sin ese trabajo, la ruta de jugador sigue siendo funcional pero no suficientemen
 
 ## Estado de implementacion
 
-`M9` queda cubierto en automatizacion. Queda pendiente smoke manual con jugadores reales para confirmar legibilidad de settings, slots/dispositivos, hot-plug y pausa operacional.
+`M9` queda cubierto en automatizacion: menu principal conserva `Jugar primero`, `Settings` mantiene scope global/pausa, prompts salen de catalogo por dispositivo y `Ultimo vivo` queda expuesto como variante jugable de `FFA` con rondas planas. Queda pendiente smoke manual con jugadores reales para confirmar legibilidad de settings, slots/dispositivos, hot-plug, pausa operacional y ritmo de `Ultimo vivo`.

@@ -4,8 +4,8 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 
 ## Reglas vigentes
 
-- El modo principal del producto es score por causa; `Ultimo vivo` es variante alternativa de `FFA` pero no se expone en `setup local` hasta tener gameplay completo.
-- `Ultimo vivo` debe presentarse dentro de `FFA` y usar estructura `best-of / first-to`.
+- El modo principal del producto sigue siendo score por causa; `Ultimo vivo` queda expuesto como variante alternativa dentro de `FFA`, con estructura `first-to` por rondas y sin score por causa.
+- `Ultimo vivo` no crea modo principal separado, no usa post-muerte controlable en `FFA` y conserva aftermath neutral solo como recompensa temporal para vivos.
 - Tratar escenas hermanas `base/validation` como contratos compartidos cuando representan el mismo slice jugable.
 - Endurecer fixtures y contexto de laboratorio antes de diagnosticar drift real de gameplay.
 - Mantener cleanup owner-aware en el soporte post-muerte de `Teams`.
@@ -45,10 +45,11 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - `RosterCatalog` es la fuente unica del roster competitivo visible de seis arquetipos y de su copy player-facing.
 - `LocalSession` transporta por slot el `roster_entry_id` visible y el `archetype_path` runtime hasta match y practica.
 - `GameShell` y `MatchLaunchConfig` son la costura comun para armar loops integrados y QA del producto real; evitar ramas paralelas que instancien `main*.tscn` directo por fuera de ese contrato.
+- `M7` cierra baseline integrada y vara de primer corte completo; `M8-M11` absorben practica profunda, settings amplios, cierre post-partida avanzado y expansion competitiva sin reabrir el contrato base.
 - `Settings` global vive en `menu principal` y cubre configuracion persistente: audio, video, HUD y referencia corta de controles.
 - `Settings` en pausa solo muestra y aplica opciones seguras de runtime: volumenes y HUD. Video, ventana/vsync, controles, slots, modo, mapa y variante quedan fuera de pausa.
 - `setup local` vive antes del match y es la unica superficie para editar modo, mapa, variante visible, slots activos, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.
-- La variante visible de `setup local` queda transportada por `MatchLaunchConfig`; por ahora solo existe `Score por causa`.
+- La variante visible de `setup local` queda transportada por `MatchLaunchConfig`; `FFA` ofrece `Score por causa` y `Ultimo vivo`, mientras `Teams` conserva `Score por causa`.
 - La pausa solo toca acciones seguras de runtime: reanudar, reiniciar, volver al menu cuando aplica, HUD y volumenes. No reasigna slots, no cambia `Teams/FFA`, no cambia mapa/variante y no toca video.
 - La direccion de producto para pausa completa suma acceso a `Settings`, `How to Play` y `Characters` sin convertir pausa en resumen detallado de match.
 - La pausa la controla quien la abrio; salir usa confirmacion simple y salida inmediata.
@@ -59,7 +60,7 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - En el pase audiovisual, dano/deterioro y estados de combate se leen primero en robot, arena o pickup; el HUD solo refuerza.
 - Los SFX funcionales de impacto, dano modular, recuperacion, negacion, pickups y presion tienen prioridad sobre la musica.
 - La musica usa base de match + escalada final y debe acompanar sin tapar SFX clave.
-- `M9` no abre remapeo libre completo; solo referencia visible de controles, perfiles de teclado fijos y joypads con `device_id` legible.
+- `M9` no abre remapeo libre completo; solo referencia visible de controles, perfiles de teclado fijos y joypads con `device_id` y prompts por dispositivo detectado cuando Godot expone nombre util.
 - `LocalSessionDraft` pertenece a shell; `LocalSessionBuilder` es la unica costura para convertir specs de slots en `LocalSession` tanto en match como en practica.
 
 ## Regla documental
