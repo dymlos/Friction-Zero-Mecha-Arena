@@ -985,6 +985,8 @@ func _build_pause_overlay_lines() -> Array[String]:
 		lines.append("Navegacion | arriba/abajo mueve | ataque confirma | pausa reanuda")
 		lines.append("Acciones")
 		lines.append_array(_build_pause_action_lines(["resume", "restart", "return_to_menu"]))
+		lines.append("Informacion")
+		lines.append_array(_build_pause_action_lines(["settings", "how_to_play", "characters"]))
 		lines.append("Quick settings")
 		lines.append_array(_build_pause_quick_setting_lines())
 		lines.append("Dispositivos")
@@ -1228,6 +1230,12 @@ func _action_label_to_id(label: String) -> String:
 			return "restart"
 		"Volver al menu":
 			return "return_to_menu"
+		"Settings":
+			return "settings"
+		"How to Play":
+			return "how_to_play"
+		"Characters":
+			return "characters"
 		"HUD":
 			return "toggle_hud"
 		"Master":

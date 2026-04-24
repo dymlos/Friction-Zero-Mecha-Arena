@@ -58,9 +58,8 @@ func _run() -> void:
 		"El overlay de pausa de shell deberia listar la salida al menu."
 	)
 
-	var moved_once := bool(main.call("move_pause_menu_selection_for_slot", 2, 1))
-	var moved_twice := bool(main.call("move_pause_menu_selection_for_slot", 2, 1))
-	_assert(moved_once and moved_twice, "El owner deberia poder mover la seleccion de pausa hasta `Volver al menu`.")
+	var selected_return := bool(main.call("select_pause_action_for_slot", 2, "return_to_menu"))
+	_assert(selected_return, "El owner deberia poder seleccionar `Volver al menu` aunque haya mas acciones de pausa.")
 
 	var first_activation := String(main.call("activate_pause_menu_selection_for_slot", 2))
 	_assert(

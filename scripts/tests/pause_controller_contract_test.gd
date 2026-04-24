@@ -1,6 +1,7 @@
 extends SceneTree
 
 const MAIN_SCENE := preload("res://scenes/main/main.tscn")
+const LocalSession = preload("res://scripts/systems/local_session.gd")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
@@ -16,6 +17,8 @@ func _init() -> void:
 func _run() -> void:
 	var pause_controller_script := load(PAUSE_CONTROLLER_SCRIPT)
 	_assert(pause_controller_script != null, "El contrato de pausa deberia vivir en scripts/systems/pause_controller.gd.")
+	if pause_controller_script != null:
+		_validate_pause_controller_actions(pause_controller_script)
 
 	var main = MAIN_SCENE.instantiate()
 	root.add_child(main)
@@ -98,6 +101,79 @@ func _run() -> void:
 
 	await _cleanup_main(main)
 	_finish()
+
+
+func _validate_pause_controller_actions(pause_controller_script: Script) -> void:
+	var local_session := LocalSession.new()
+	local_session.configure(4, 2)
+	local_session.assign_keyboard_slot(1, RobotBase.KeyboardProfile.WASD_SPACE)
+	local_session.assign_keyboard_slot(2, RobotBase.KeyboardProfile.ARROWS_ENTER)
+
+	var shell_controller = pause_controller_script.new()
+	_assert(shell_controller.request_pause(1, local_session, true), "El controller deberia pausar con owner ocupado.")
+	_assert(
+		_extract_action_labels(shell_controller) == [
+			"Reanudar",
+			"Reiniciar",
+			"Settings",
+			"How to Play",
+			"Characters",
+			"Volver al menu",
+			"HUD",
+			"Master",
+			"Musica",
+			"SFX",
+		],
+		"La pausa player-shell deberia ordenar acciones completas antes de quick settings."
+	)
+	_assert(shell_controller.select_action(1, "settings"), "El owner deberia poder seleccionar Settings.")
+	_assert(
+		String(shell_controller.activate_selected_action(1)) == "settings",
+		"Activar Settings deberia devolver su action id."
+	)
+	_assert(shell_controller.is_paused(), "Abrir Settings desde pausa no deberia despausar.")
+	_assert(shell_controller.select_action(1, "how_to_play"), "El owner deberia poder seleccionar How to Play.")
+	_assert(
+		String(shell_controller.activate_selected_action(1)) == "how_to_play",
+		"Activar How to Play deberia devolver su action id."
+	)
+	_assert(shell_controller.select_action(1, "characters"), "El owner deberia poder seleccionar Characters.")
+	_assert(
+		String(shell_controller.activate_selected_action(1)) == "characters",
+		"Activar Characters deberia devolver su action id."
+	)
+	_assert(not shell_controller.select_action(2, "settings"), "Un no-owner no deberia seleccionar Settings.")
+	_assert(String(shell_controller.activate_selected_action(2)) == "", "Un no-owner no deberia activar acciones de pausa.")
+	_assert(shell_controller.select_action(1, "return_to_menu"), "El owner deberia poder seleccionar Volver al menu.")
+	_assert(
+		String(shell_controller.activate_selected_action(1)) == "confirm_return_to_menu",
+		"Volver al menu deberia conservar confirmacion doble."
+	)
+	_assert(
+		String(shell_controller.activate_selected_action(1)) == "return_to_menu",
+		"La segunda activacion deberia confirmar salida."
+	)
+
+	var lab_controller = pause_controller_script.new()
+	_assert(lab_controller.request_pause(1, local_session, false), "El controller deberia pausar sin salida a menu.")
+	_assert(
+		_extract_action_labels(lab_controller) == [
+			"Reanudar",
+			"Reiniciar",
+			"HUD",
+			"Master",
+			"Musica",
+			"SFX",
+		],
+		"La pausa de laboratorio no deberia exponer superficies completas."
+	)
+
+
+func _extract_action_labels(pause_controller: Object) -> Array[String]:
+	var labels: Array[String] = []
+	for line in pause_controller.call("get_action_labels"):
+		labels.append(String(line).strip_edges().trim_prefix(">").strip_edges())
+	return labels
 
 
 func _get_scene_robots(main: Node) -> Array[RobotBase]:

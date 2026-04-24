@@ -42,6 +42,10 @@ func _run() -> void:
 	_assert(bool(main.call("request_pause_for_slot", 1)), "P1 deberia poder abrir pausa operacional.")
 	var overlay_text := "\n".join(PackedStringArray(main.call("get_pause_overlay_lines")))
 	_assert(overlay_text.contains("Acciones"), "La pausa deberia separar acciones de match.")
+	_assert(overlay_text.contains("Informacion"), "La pausa completa deberia separar superficies informativas.")
+	_assert(overlay_text.contains("Settings"), "La pausa completa deberia listar Settings.")
+	_assert(overlay_text.contains("How to Play"), "La pausa completa deberia listar How to Play.")
+	_assert(overlay_text.contains("Characters"), "La pausa completa deberia listar Characters.")
 	_assert(overlay_text.contains("Quick settings"), "La pausa deberia mostrar quick settings.")
 	_assert(overlay_text.contains("Dispositivos"), "La pausa deberia mostrar resumen corto de dispositivos.")
 

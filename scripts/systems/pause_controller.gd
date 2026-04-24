@@ -3,11 +3,25 @@ class_name PauseController
 
 const LocalSession = preload("res://scripts/systems/local_session.gd")
 
-enum PauseAction { RESUME, RESTART, TOGGLE_HUD, AUDIO_MASTER, AUDIO_MUSIC, AUDIO_SFX, RETURN_TO_MENU }
+enum PauseAction {
+	RESUME,
+	RESTART,
+	SETTINGS,
+	HOW_TO_PLAY,
+	CHARACTERS,
+	TOGGLE_HUD,
+	AUDIO_MASTER,
+	AUDIO_MUSIC,
+	AUDIO_SFX,
+	RETURN_TO_MENU,
+}
 
 const ACTION_IDS := {
 	PauseAction.RESUME: "resume",
 	PauseAction.RESTART: "restart",
+	PauseAction.SETTINGS: "settings",
+	PauseAction.HOW_TO_PLAY: "how_to_play",
+	PauseAction.CHARACTERS: "characters",
 	PauseAction.TOGGLE_HUD: "toggle_hud",
 	PauseAction.AUDIO_MASTER: "audio_master",
 	PauseAction.AUDIO_MUSIC: "audio_music",
@@ -103,6 +117,12 @@ func activate_selected_action(slot: int) -> String:
 			return "resume"
 		PauseAction.RESTART:
 			return "restart"
+		PauseAction.SETTINGS:
+			return "settings"
+		PauseAction.HOW_TO_PLAY:
+			return "how_to_play"
+		PauseAction.CHARACTERS:
+			return "characters"
 		PauseAction.TOGGLE_HUD:
 			return "toggle_hud"
 		PauseAction.AUDIO_MASTER:
@@ -155,6 +175,9 @@ func _get_available_actions() -> Array[int]:
 		PauseAction.RESTART,
 	]
 	if _allow_return_to_menu:
+		actions.append(PauseAction.SETTINGS)
+		actions.append(PauseAction.HOW_TO_PLAY)
+		actions.append(PauseAction.CHARACTERS)
 		actions.append(PauseAction.RETURN_TO_MENU)
 	actions.append(PauseAction.TOGGLE_HUD)
 	actions.append(PauseAction.AUDIO_MASTER)
@@ -170,6 +193,12 @@ func _get_action_label(action: int) -> String:
 			return "Reanudar"
 		PauseAction.RESTART:
 			return "Reiniciar"
+		PauseAction.SETTINGS:
+			return "Settings"
+		PauseAction.HOW_TO_PLAY:
+			return "How to Play"
+		PauseAction.CHARACTERS:
+			return "Characters"
 		PauseAction.TOGGLE_HUD:
 			return "HUD"
 		PauseAction.AUDIO_MASTER:
