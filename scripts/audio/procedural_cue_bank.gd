@@ -3,20 +3,24 @@ class_name ProceduralCueBank
 
 const SAMPLE_RATE := 22050
 
-const CUE_BUSES := {
-	"ui_confirm": "UI",
-	"ui_back": "UI",
-	"pause": "UI",
-	"resume": "UI",
-	"impact_medium": "SFX",
-	"impact_heavy": "SFX",
-	"part_destroyed": "SFX",
-	"pickup_taken": "SFX",
-	"round_start": "SFX",
-	"round_unlock": "SFX",
-	"pressure_warning": "SFX",
-	"round_close": "SFX",
-	"match_close": "SFX",
+const CUE_PROFILES := {
+	"ui_confirm": {"bus": "UI", "functional_priority": 0.35, "industrial_weight": false, "ducks_music": false},
+	"ui_back": {"bus": "UI", "functional_priority": 0.35, "industrial_weight": false, "ducks_music": false},
+	"pause": {"bus": "UI", "functional_priority": 0.45, "industrial_weight": false, "ducks_music": false},
+	"resume": {"bus": "UI", "functional_priority": 0.45, "industrial_weight": false, "ducks_music": false},
+	"impact_medium": {"bus": "SFX", "functional_priority": 0.72, "industrial_weight": true, "ducks_music": true},
+	"impact_heavy": {"bus": "SFX", "functional_priority": 0.92, "industrial_weight": true, "ducks_music": true},
+	"part_destroyed": {"bus": "SFX", "functional_priority": 0.9, "industrial_weight": true, "ducks_music": true},
+	"part_recovered": {"bus": "SFX", "functional_priority": 0.78, "industrial_weight": true, "ducks_music": true},
+	"part_denied": {"bus": "SFX", "functional_priority": 0.86, "industrial_weight": true, "ducks_music": true},
+	"robot_disabled": {"bus": "SFX", "functional_priority": 0.9, "industrial_weight": true, "ducks_music": true},
+	"robot_exploded": {"bus": "SFX", "functional_priority": 0.95, "industrial_weight": true, "ducks_music": true},
+	"pickup_taken": {"bus": "SFX", "functional_priority": 0.74, "industrial_weight": true, "ducks_music": true},
+	"round_start": {"bus": "SFX", "functional_priority": 0.7, "industrial_weight": true, "ducks_music": true},
+	"round_unlock": {"bus": "SFX", "functional_priority": 0.7, "industrial_weight": true, "ducks_music": true},
+	"pressure_warning": {"bus": "SFX", "functional_priority": 0.88, "industrial_weight": true, "ducks_music": true},
+	"round_close": {"bus": "SFX", "functional_priority": 0.82, "industrial_weight": true, "ducks_music": true},
+	"match_close": {"bus": "SFX", "functional_priority": 0.88, "industrial_weight": true, "ducks_music": true},
 }
 
 var _cue_streams: Dictionary = {}
@@ -24,7 +28,21 @@ var _music_streams: Dictionary = {}
 
 
 func get_bus_for_cue(cue_id: String) -> String:
-	return str(CUE_BUSES.get(cue_id, "SFX"))
+	var profile: Dictionary = CUE_PROFILES.get(cue_id, {})
+	return str(profile.get("bus", "SFX"))
+
+
+func get_available_cue_ids() -> PackedStringArray:
+	var ids := PackedStringArray()
+	for cue_id in CUE_PROFILES.keys():
+		ids.append(String(cue_id))
+	ids.sort()
+	return ids
+
+
+func get_cue_profile(cue_id: String) -> Dictionary:
+	var profile: Dictionary = CUE_PROFILES.get(cue_id, {})
+	return profile.duplicate(true)
 
 
 func get_cue_stream(cue_id: String) -> AudioStreamWAV:
@@ -55,6 +73,14 @@ func _build_cue_stream(cue_id: String) -> AudioStreamWAV:
 			return _make_stream(_build_tone(0.18, [74.0, 110.0], 0.3, "square", 0.004, 0.11, 0.22))
 		"part_destroyed":
 			return _make_stream(_build_tone(0.16, [180.0, 120.0, 92.0], 0.24, "saw", 0.003, 0.1, 0.2))
+		"part_recovered":
+			return _make_stream(_build_tone(0.16, [320.0, 420.0, 540.0], 0.18, "triangle", 0.006, 0.09, 0.08))
+		"part_denied":
+			return _make_stream(_build_tone(0.18, [160.0, 118.0, 86.0], 0.23, "saw", 0.004, 0.11, 0.16))
+		"robot_disabled":
+			return _make_stream(_build_tone(0.22, [110.0, 82.0, 68.0], 0.26, "square", 0.004, 0.14, 0.2))
+		"robot_exploded":
+			return _make_stream(_build_tone(0.36, [78.0, 104.0, 156.0, 62.0], 0.32, "saw", 0.002, 0.22, 0.28))
 		"pickup_taken":
 			return _make_stream(_build_tone(0.15, [480.0, 620.0, 820.0], 0.18, "sine", 0.01, 0.08))
 		"round_start":

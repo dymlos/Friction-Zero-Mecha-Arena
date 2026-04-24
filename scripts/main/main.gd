@@ -1406,6 +1406,7 @@ func _on_robot_part_destroyed(robot: RobotBase, part_name: String, _detached_par
 
 func _on_robot_part_restored(robot: RobotBase, part_name: String, restored_by: RobotBase) -> void:
 	match_controller.record_part_restoration(robot, restored_by)
+	_play_audio_cue("part_recovered")
 	if restored_by == robot:
 		ui.show_status("%s recupero %s" % [robot.display_name, RobotBase.get_part_display_name(part_name)])
 		return
@@ -1429,6 +1430,7 @@ func _on_detached_part_recovery_lost(detached_part: DetachedPart, reason: String
 		return
 
 	match_controller.record_part_denial(original_robot, denied_by)
+	_play_audio_cue("part_denied")
 	ui.show_status("%s nego %s de %s" % [
 		denied_by.display_name,
 		RobotBase.get_part_display_name(detached_part.part_name),
@@ -1437,6 +1439,7 @@ func _on_detached_part_recovery_lost(detached_part: DetachedPart, reason: String
 
 
 func _on_robot_disabled(robot: RobotBase) -> void:
+	_play_audio_cue("robot_disabled")
 	if robot.is_disabled_explosion_unstable():
 		ui.show_status("%s quedo inutilizado y sobrecargado" % robot.display_name)
 		_spawn_ffa_aftermath_if_needed(robot, robot.get_recent_elimination_source())
@@ -1455,6 +1458,7 @@ func _on_robot_meaningful_collision(_robot: RobotBase, _other_robot: RobotBase, 
 
 
 func _on_robot_exploded(robot: RobotBase) -> void:
+	_play_audio_cue("robot_exploded")
 	var cause := MatchController.EliminationCause.UNSTABLE_EXPLOSION if robot.was_last_disabled_explosion_unstable() else MatchController.EliminationCause.EXPLOSION
 	var source_robot := robot.get_recent_elimination_source()
 	var elimination_position := robot.global_position

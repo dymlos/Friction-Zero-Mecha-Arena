@@ -89,6 +89,9 @@ func _run() -> void:
 	if robot != null:
 		main.call("_on_robot_part_destroyed", robot, "left_arm", null)
 		main.call("_on_edge_repair_pickup_collected", robot, "left_arm")
+		main.call("_on_robot_part_restored", robot, "left_arm", robot)
+		main.call("_on_robot_disabled", robot)
+		main.call("_on_robot_exploded", robot)
 		await process_frame
 		await process_frame
 
@@ -100,6 +103,18 @@ func _run() -> void:
 	_assert(
 		_history_contains(match_history, "cue", "pickup_taken"),
 		"Main deberia rutear pickups de borde hacia AudioDirector."
+	)
+	_assert(
+		_history_contains(match_history, "cue", "part_recovered"),
+		"Main deberia rutear recuperacion de partes hacia AudioDirector."
+	)
+	_assert(
+		_history_contains(match_history, "cue", "robot_disabled"),
+		"Main deberia rutear inutilizacion hacia AudioDirector."
+	)
+	_assert(
+		_history_contains(match_history, "cue", "robot_exploded"),
+		"Main deberia rutear explosion hacia AudioDirector."
 	)
 
 	await _cleanup_current_scene()

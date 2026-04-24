@@ -29,6 +29,8 @@ var _music_state := ""
 var _debug_history: Array[Dictionary] = []
 var _is_shutting_down := false
 var _audio_playback_enabled := true
+var _music_duck_remaining := 0.0
+var _music_duck_gain := 1.0
 
 
 static func get_singleton() -> Node:
@@ -46,7 +48,8 @@ func _ready() -> void:
 		_build_players()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_update_music_duck(delta)
 	if not _audio_playback_enabled:
 		return
 	if _music_state == "" or _music_player == null:
@@ -68,6 +71,10 @@ func play_cue(cue_id: String) -> void:
 	var cue_stream := _cue_bank.get_cue_stream(cue_id)
 	if cue_stream == null:
 		return
+
+	var cue_profile := _cue_bank.get_cue_profile(cue_id) if _cue_bank.has_method("get_cue_profile") else {}
+	if bool(cue_profile.get("ducks_music", false)):
+		_trigger_music_duck(cue_id, cue_profile)
 
 	if not _audio_playback_enabled:
 		_record_debug("cue", cue_id)
@@ -107,6 +114,17 @@ func set_music_state(state_name: String) -> void:
 
 func get_music_state() -> String:
 	return _music_state
+
+
+func get_current_music_duck_gain() -> float:
+	return _music_duck_gain
+
+
+func get_cue_profile(cue_id: String) -> Dictionary:
+	if not _cue_bank.has_method("get_cue_profile"):
+		return {}
+
+	return _cue_bank.get_cue_profile(cue_id)
 
 
 func set_master_volume(next_volume: float) -> void:
@@ -199,6 +217,22 @@ func _next_player_for_bus(bus_name: String) -> AudioStreamPlayer:
 	var player := players[wrapi(current_index, 0, players.size())]
 	_bus_playback_indices[bus_name] = wrapi(current_index + 1, 0, players.size())
 	return player
+
+
+func _trigger_music_duck(cue_id: String, cue_profile: Dictionary) -> void:
+	var priority := clampf(float(cue_profile.get("functional_priority", 0.0)), 0.0, 1.0)
+	_music_duck_remaining = maxf(_music_duck_remaining, 0.18 + priority * 0.18)
+	_music_duck_gain = minf(_music_duck_gain, 1.0 - priority * 0.38)
+	_record_debug("duck", cue_id)
+
+
+func _update_music_duck(delta: float) -> void:
+	if _music_duck_remaining <= 0.0:
+		_music_duck_gain = minf(_music_duck_gain + delta * 4.0, 1.0)
+	else:
+		_music_duck_remaining = maxf(_music_duck_remaining - delta, 0.0)
+	if _audio_playback_enabled and _music_player != null:
+		_music_player.volume_db = linear_to_db(maxf(_music_duck_gain, 0.001))
 
 
 func _release_player(player: AudioStreamPlayer) -> void:
