@@ -86,6 +86,7 @@ func _ready() -> void:
 	practice_button.text = "Practica"
 	back_button.text = "Volver"
 	_refresh_view()
+	call_deferred("focus_start_button")
 
 
 func set_session_draft(session_draft: LocalSessionDraft) -> void:
@@ -240,6 +241,11 @@ func focus_how_to_play_button() -> void:
 func focus_practice_button() -> void:
 	if practice_button != null:
 		practice_button.grab_focus()
+
+
+func focus_start_button() -> void:
+	if start_button != null:
+		start_button.grab_focus()
 
 
 func _install_qa_ids() -> void:

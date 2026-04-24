@@ -1,0 +1,21 @@
+{
+  "name": "player_shell_loop_ffa_8p_1920",
+  "scene": "res://scenes/main/main_ffa_large.tscn",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "steps": [
+    {
+      "wait_frames": 10
+    },
+    {
+      "snapshot": "boot"
+    }
+  ],
+  "assert": [
+    {
+      "no_errors": true
+    }
+  ]
+}
