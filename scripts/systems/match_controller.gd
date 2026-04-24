@@ -588,21 +588,6 @@ func _append_post_match_snippet_lines(lines: Array[String]) -> void:
 	_append_unique_lines(lines, get_post_match_snippet_lines(), MAX_POST_MATCH_SNIPPET_LINES)
 
 
-func _trim_match_result_noise(lines: Array[String]) -> void:
-	while lines.size() > 22:
-		var removable_index := _find_line_index_with_prefix(lines, "Puntos cierre |")
-		if removable_index < 0:
-			return
-		lines.remove_at(removable_index)
-
-
-func _find_line_index_with_prefix(lines: Array[String], prefix: String) -> int:
-	for index in range(lines.size()):
-		if lines[index].begins_with(prefix):
-			return index
-	return -1
-
-
 func get_match_restart_time_left() -> float:
 	if not _match_over or not is_match_restart_enabled():
 		return 0.0
