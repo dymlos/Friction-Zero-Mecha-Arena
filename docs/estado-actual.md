@@ -45,6 +45,8 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
   - `scenes/qa/player_shell_loop_ffa_validation.tscn`
   - `scenes/main/main.tscn`
   - `scenes/main/main_ffa.tscn`
+  - `scenes/qa/shell_practice_setup_validation.tscn`
+  - `scenes/qa/practice_mode_validation.tscn`
 - Checklist manual pendiente de repetir sobre practica construida:
   - `1P Easy`
   - `1P Hard`
