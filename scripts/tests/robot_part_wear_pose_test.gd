@@ -68,6 +68,12 @@ func _run() -> void:
 	robot.apply_damage_to_part("left_leg", 55.0)
 	await process_frame
 
+	var leg_snapshot: Dictionary = robot.call("get_diegetic_readability_snapshot")
+	var left_leg_state: Dictionary = (leg_snapshot.get("parts", {}) as Dictionary).get("left_leg", {})
+	_assert(
+		float(left_leg_state.get("pose_damage_severity", 0.0)) > 0.2,
+		"El deterioro de pierna debe superar un umbral visible antes de depender del HUD."
+	)
 	_assert(
 		left_leg.transform.origin.y < left_leg_base.origin.y - 0.01,
 		"Una pierna dañada deberia sentirse mas torpe y baja visualmente."

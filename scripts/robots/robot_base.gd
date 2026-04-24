@@ -507,6 +507,28 @@ func is_disabled_state() -> bool:
 	return _is_disabled
 
 
+func get_diegetic_readability_snapshot() -> Dictionary:
+	var parts := {}
+	for part_name in BODY_PARTS:
+		parts[part_name] = _build_part_diegetic_snapshot(part_name)
+
+	return {
+		"parts": parts,
+		"state_channels": {
+			"energy_anchor": _get_energy_readability_part_name(),
+			"energy_diegetic_visible": _has_visible_energy_diegetic_channel(),
+			"status_diegetic_visible": _status_effect_indicator != null and _status_effect_indicator.visible,
+			"core_state_visible": _has_core_state_visual_channel(),
+		},
+		"disabled": {
+			"body_warning_visible": _disabled_warning_indicator != null and _disabled_warning_indicator.visible,
+			"explosion_radius": _get_disabled_explosion_radius_for_current_state() if _is_disabled else 0.0,
+			"unstable": is_disabled_explosion_unstable(),
+		},
+		"hud_is_secondary": true,
+	}
+
+
 func get_disabled_explosion_time_left() -> float:
 	if not _is_disabled:
 		return 0.0
@@ -3854,6 +3876,65 @@ func _refresh_part_damage_feedback(part_name: String) -> void:
 		dismantle_cue_material.albedo_color = Color(cue_color.r, cue_color.g, cue_color.b, 0.42 + dismantle_cue_blend * 0.36)
 		dismantle_cue_material.emission = cue_color
 		dismantle_cue_material.emission_energy_multiplier = 1.2 + dismantle_cue_blend * 1.8
+
+
+func _build_part_diegetic_snapshot(part_name: String) -> Dictionary:
+	var visuals: Array[MeshInstance3D] = []
+	for visual_node in _part_visual_nodes.get(part_name, []):
+		if visual_node is MeshInstance3D:
+			visuals.append(visual_node as MeshInstance3D)
+
+	var primary_visual := visuals[0] if not visuals.is_empty() else null
+	var feedback_nodes: Dictionary = _damage_feedback_nodes.get(part_name, {})
+	var root := feedback_nodes.get("root") as Node3D
+	var smoke := feedback_nodes.get("smoke") as MeshInstance3D
+	var spark := feedback_nodes.get("spark") as MeshInstance3D
+	var dismantle_cue := feedback_nodes.get("dismantle_cue") as MeshInstance3D
+	var anchor_node: Node = root.get_parent() if root != null else null
+
+	return {
+		"health_ratio": get_part_health_ratio(part_name),
+		"visual_visible": primary_visual != null and primary_visual.visible,
+		"visual_path": _relative_node_path(primary_visual),
+		"damage_feedback_visible": (
+			root != null
+			and root.visible
+			and (
+				(smoke != null and smoke.visible)
+				or (spark != null and spark.visible)
+				or (dismantle_cue != null and dismantle_cue.visible)
+			)
+		),
+		"damage_feedback_anchor": _relative_node_path(anchor_node),
+		"smoke_visible": smoke != null and smoke.visible,
+		"spark_visible": spark != null and spark.visible,
+		"dismantle_cue_visible": dismantle_cue != null and dismantle_cue.visible,
+		"pose_damage_severity": _get_damaged_part_pose_severity(get_part_health_ratio(part_name)),
+	}
+
+
+func _has_visible_energy_diegetic_channel() -> bool:
+	for indicator in _energy_focus_indicator_nodes.values():
+		if indicator is MeshInstance3D and (indicator as MeshInstance3D).visible:
+			return true
+	return false
+
+
+func _has_core_state_visual_channel() -> bool:
+	for visual_node in _core_visual_nodes:
+		if visual_node == null:
+			continue
+		var material := visual_node.material_override as StandardMaterial3D
+		if material != null and material.emission_enabled and material.emission_energy_multiplier > 0.0:
+			return true
+	return false
+
+
+func _relative_node_path(node: Node) -> String:
+	if node == null:
+		return ""
+
+	return String(get_path_to(node))
 
 
 func _apply_damaged_part_pose(mesh_instance: MeshInstance3D, part_name: String, health_ratio: float) -> void:

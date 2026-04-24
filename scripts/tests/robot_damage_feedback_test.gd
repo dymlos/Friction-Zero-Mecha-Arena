@@ -37,6 +37,17 @@ func _run() -> void:
 	_assert(smoke_mesh.visible, "Una parte dañada deberia mostrar un marcador diegético legible.")
 	_assert(not spark_mesh.visible, "El marcador crítico no deberia activarse con daño moderado.")
 
+	var snapshot: Dictionary = robot.call("get_diegetic_readability_snapshot")
+	var left_arm: Dictionary = (snapshot.get("parts", {}) as Dictionary).get("left_arm", {})
+	_assert(
+		String(left_arm.get("damage_feedback_anchor", "")) == "UpperBodyPivot/LeftArm",
+		"El feedback M6 de dano debe estar montado sobre el brazo danado."
+	)
+	_assert(
+		bool(snapshot.get("hud_is_secondary", false)),
+		"El contrato M6 debe dejar explicito que HUD refuerza, no reemplaza, la lectura del robot."
+	)
+
 	robot.apply_damage_to_part("left_arm", 40.0)
 	await process_frame
 
