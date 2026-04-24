@@ -72,9 +72,11 @@ func _build_teams_story_line(match_context: Dictionary) -> String:
 	var cause_label := _context_text(match_context, "closing_cause_label", "cierre")
 	var support_summary := _context_text(match_context, "support_summary_line")
 	var part_loss_lines := _context_array(match_context, "part_loss_lines")
-	if not support_summary.is_empty():
+	if cause_label == "explosion inestable":
+		return "Lectura | %s gano por %s tras forzar sobrecarga." % [winner_label, cause_label]
+	if _has_real_support_summary(support_summary):
 		return "Lectura | %s gano por %s con apoyo decisivo." % [winner_label, cause_label]
-	if not part_loss_lines.is_empty():
+	if cause_label == "destruccion total" or not part_loss_lines.is_empty():
 		return "Lectura | %s gano por %s tras desgaste modular." % [winner_label, cause_label]
 	var closing_summary := _context_text(match_context, "closing_summary_line")
 	if not closing_summary.is_empty():
@@ -185,6 +187,13 @@ func _strip_prefix(line: String) -> String:
 	if separator_index == -1:
 		return clean_line
 	return clean_line.substr(separator_index + 1).strip_edges()
+
+
+func _has_real_support_summary(support_summary: String) -> bool:
+	var clean_summary := support_summary.strip_edges()
+	if clean_summary.is_empty():
+		return false
+	return not clean_summary.contains("0/")
 
 
 static func _compare_events_by_sequence(a: Dictionary, b: Dictionary) -> bool:
