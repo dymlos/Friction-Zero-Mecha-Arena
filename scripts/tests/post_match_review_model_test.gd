@@ -153,7 +153,7 @@ func _assert_review_copy_stays_out_of_onboarding() -> void:
 		lines.append_array(review.get_loser_reading_lines())
 		lines.append_array(review.get_snippet_lines())
 		var joined_lines := "\n".join(PackedStringArray(lines))
-		for forbidden in ["How to Play", "Controles", "Easy", "Hard", "Tutorial", "Practica", "tabla"]:
+		for forbidden in ["How to Play", "Controles", "Simple", "Avanzado", "Tutorial", "Practica", "tabla"]:
 			_assert(
 				not joined_lines.contains(forbidden),
 				"PostMatchReview no debe emitir onboarding: %s" % forbidden

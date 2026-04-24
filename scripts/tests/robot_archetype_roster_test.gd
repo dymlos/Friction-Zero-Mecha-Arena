@@ -63,7 +63,7 @@ func _validate_archetype_configs_exist_and_drive_stats() -> void:
 
 	_assert(labels_by_slot.get(1, "") == "Ariete", "P1 deberia arrancar como Ariete para cubrir el rol de empuje/tanque.")
 	_assert(labels_by_slot.get(2, "") == "Grua", "P2 deberia arrancar como Grua para validar rescate/recuperacion.")
-	_assert(labels_by_slot.get(3, "") == "Cizalla", "P3 deberia arrancar como Cizalla para cubrir dano modular/dismantle.")
+	_assert(labels_by_slot.get(3, "") == "Cizalla", "P3 deberia arrancar como Cizalla para cubrir partes danadas/dismantle.")
 	_assert(labels_by_slot.get(4, "") == "Patin", "P4 deberia arrancar como Patin para validar movilidad/reposicion.")
 
 	var p1 := robots[0]
@@ -74,7 +74,7 @@ func _validate_archetype_configs_exist_and_drive_stats() -> void:
 	_assert(p1.passive_push_strength > p4.passive_push_strength, "Ariete deberia empujar mas que Patin.")
 	_assert(p4.max_move_speed > p1.max_move_speed, "Patin deberia ser el arquetipo mas movil del laboratorio.")
 	_assert(p3.attack_damage > p1.attack_damage, "Cizalla deberia castigar partes con mas dano base que Ariete.")
-	_assert(p3.collision_damage_scale > p4.collision_damage_scale, "Cizalla deberia tensar la ruta de dano modular.")
+	_assert(p3.collision_damage_scale > p4.collision_damage_scale, "Cizalla deberia tensar la ruta de partes danadas.")
 	_assert(
 		p2.restored_part_health_ratio > p1.restored_part_health_ratio,
 		"Grua deberia devolver partes con mas vida que Ariete."

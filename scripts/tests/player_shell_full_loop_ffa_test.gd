@@ -41,7 +41,7 @@ func _run() -> void:
 		return
 	_assert(
 		launch_config.mode_variant_id == MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE,
-		"El loop FFA principal debe seguir default en Score por causa."
+		"El loop FFA principal debe seguir default en Puntos por eliminacion."
 	)
 
 	game_shell.call("launch_local_match", launch_config)

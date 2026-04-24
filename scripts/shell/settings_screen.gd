@@ -45,8 +45,8 @@ func _ready() -> void:
 	_install_qa_ids()
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background_alt
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	title_label.text = "Settings"
-	subtitle_label.text = "Configuracion global persistente. Slots y reglas del match siguen fuera de esta pantalla."
+	title_label.text = "Opciones"
+	subtitle_label.text = "Ajusta audio, video, ayudas en pantalla y revisa los controles."
 	back_button.text = "Volver"
 	back_button.pressed.connect(go_back)
 	_store = get_node_or_null("/root/UserSettingsStore")
@@ -160,9 +160,9 @@ func _apply_surface_scope() -> void:
 	video_button.disabled = pause_scope or _active_section_id == "video"
 	controls_button.disabled = pause_scope or _active_section_id == "controls"
 	subtitle_label.text = (
-		"Ajustes seguros de pausa: audio y HUD. Video, controles, slots y modo quedan fuera del match congelado."
+		"Ajustes rapidos de pausa: audio y ayudas en pantalla."
 		if pause_scope
-		else "Configuracion global persistente. Slots y reglas del match siguen fuera de esta pantalla."
+		else "Ajusta audio, video, ayudas en pantalla y revisa los controles."
 	)
 	if pause_scope and not PAUSE_SECTION_IDS.has(_active_section_id):
 		_select_section("audio")

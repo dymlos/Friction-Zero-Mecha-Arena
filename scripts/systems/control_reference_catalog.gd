@@ -1,7 +1,7 @@
 extends RefCounted
 class_name ControlReferenceCatalog
 
-const DEFAULT_BUTTON_REFERENCE := "Skill/carga: C / Oeste | Choque: Space / Sur | Energia: Q/E o LB/RB | Overdrive: R / Norte"
+const DEFAULT_BUTTON_REFERENCE := "Habilidad o soltar: C / X | Choque: Space / A | Energia: Q/E o LB/RB | Overdrive: R / Y"
 const UNIVERSAL_ACTION_LABELS := [
 	"Choque / ataque",
 	"Energia",

@@ -14,24 +14,24 @@ const POST_DEATH_MODEL_NONE := "none"
 const _VARIANTS := [
 	{
 		"id": VARIANT_SCORE_BY_CAUSE,
-		"label": "Score por causa",
-		"summary": "Puntos por causa: ring-out domina, destruccion total es via secundaria.",
+		"label": "Puntos por eliminacion",
+		"summary": "Suma puntos por empujar rivales fuera o destruir sus partes.",
 		"score_label": "puntos",
 		"presentation_role": PRESENTATION_ROLE_PRIMARY,
 		"post_death_model": POST_DEATH_MODEL_FFA_AFTERMATH,
-		"mode_identity": "ring-out dominante, destruccion modular secundaria",
+		"mode_identity": "empujar fuera como ruta principal; destruir partes como alternativa",
 		"supports_teams": true,
 		"supports_ffa": true,
 		"enabled": true,
 	},
 	{
 		"id": VARIANT_LAST_ALIVE,
-		"label": "Ultimo vivo",
-		"summary": "FFA por rondas: gana quien queda en pie, sin puntos por causa.",
+		"label": "Ultimo en pie",
+		"summary": "Todos contra todos por rondas: gana quien queda vivo.",
 		"score_label": "rondas",
 		"presentation_role": PRESENTATION_ROLE_FFA_ALTERNATIVE,
 		"post_death_model": POST_DEATH_MODEL_FFA_AFTERMATH,
-		"mode_identity": "supervivencia por rondas, sin score por causa",
+		"mode_identity": "supervivencia por rondas",
 		"supports_teams": false,
 		"supports_ffa": true,
 		"enabled": true,
@@ -78,12 +78,12 @@ static func sanitize_variant_id(match_mode: int, variant_id: String) -> String:
 static func get_setup_summary_line(match_mode: int, variant_id: String) -> String:
 	var sanitized_id := sanitize_variant_id(match_mode, variant_id)
 	var variant := get_variant(sanitized_id)
-	var label := String(variant.get("label", "Score por causa"))
+	var label := String(variant.get("label", "Puntos por eliminacion"))
 	if match_mode == MatchController.MatchMode.FFA and is_subordinate_variant(match_mode, sanitized_id):
-		return "Variante | %s (alternativa)" % label
+		return "Reglas | %s (alternativa)" % label
 	if match_mode == MatchController.MatchMode.FFA:
-		return "Variante | %s (principal)" % label
-	return "Variante | %s" % label
+		return "Reglas | %s (principal)" % label
+	return "Reglas | %s" % label
 
 
 static func is_last_alive(variant_id: String) -> bool:
@@ -112,7 +112,7 @@ static func get_post_death_model(match_mode: int, variant_id: String = "") -> St
 
 static func get_variant_label(match_mode: int, variant_id: String) -> String:
 	var variant := get_variant(sanitize_variant_id(match_mode, variant_id))
-	return String(variant.get("label", "Score por causa"))
+	return String(variant.get("label", "Puntos por eliminacion"))
 
 
 static func _variant_supports_match_mode(variant: Dictionary, match_mode: int) -> bool:

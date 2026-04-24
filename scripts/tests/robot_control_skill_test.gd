@@ -31,12 +31,12 @@ func _validate_control_archetype_exposes_zone_skill() -> void:
 		return
 
 	var robot := await _spawn_robot(config as RobotArchetypeConfig)
-	_assert(robot.has_method("has_core_skill"), "RobotBase deberia seguir exponiendo si un arquetipo tiene skill propia.")
-	_assert(robot.has_method("get_core_skill_label"), "RobotBase deberia exponer la etiqueta corta de la skill propia.")
+	_assert(robot.has_method("has_core_skill"), "RobotBase deberia seguir exponiendo si un arquetipo tiene habilidad.")
+	_assert(robot.has_method("get_core_skill_label"), "RobotBase deberia exponer la etiqueta corta de la habilidad.")
 	if robot.has_method("has_core_skill"):
-		_assert(bool(robot.call("has_core_skill")), "El arquetipo Control/Zona deberia arrancar con una skill propia activa.")
+		_assert(bool(robot.call("has_core_skill")), "El arquetipo Control/Zona deberia arrancar con una habilidad activa.")
 	if robot.has_method("get_core_skill_label"):
-		_assert(String(robot.call("get_core_skill_label")) == "Baliza", "La skill propia del arquetipo Control/Zona deberia leerse como Baliza.")
+		_assert(String(robot.call("get_core_skill_label")) == "Baliza", "La habilidad del arquetipo Control/Zona deberia leerse como Baliza.")
 
 	await _cleanup_node(robot)
 
@@ -57,7 +57,7 @@ func _validate_zone_skill_spawns_single_beacon_and_suppresses_enemy() -> void:
 	source.global_position = Vector3.ZERO
 	target.global_position = Vector3(0.0, 0.8, -1.1)
 
-	_assert(source.has_method("use_core_skill"), "RobotBase deberia poder activar la skill propia de Control/Zona.")
+	_assert(source.has_method("use_core_skill"), "RobotBase deberia poder activar la habilidad de Control/Zona.")
 	_assert(target.has_method("is_control_zone_suppressed"), "RobotBase deberia exponer si una zona de control esta afectando al robot.")
 	_assert(
 		target.has_method("get_control_zone_suppression_time_left"),
@@ -136,7 +136,7 @@ func _validate_ffa_lab_exposes_control_archetype_identity() -> void:
 			roster_text.contains("skill Baliza")
 			or roster_text.contains("skill baliza")
 			or roster_text.contains("baliza lista"),
-			"El roster FFA grande deberia dejar visible la skill propia Baliza."
+			"El roster FFA grande deberia dejar visible la habilidad Baliza."
 		)
 
 	await _cleanup_node(main)

@@ -29,12 +29,12 @@ func _run() -> void:
 	_assert(practice_setup.has_method("get_recommended_robot_label"), "PracticeSetup deberia exponer el robot recomendado.")
 	_assert(practice_setup.has_method("get_related_topic_labels"), "PracticeSetup deberia exponer los temas relacionados.")
 	_assert(
-		practice_setup.get_node_or_null("Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ContextCardValueLabel") != null,
+		practice_setup.get_node_or_null("Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ContextCardValueLabel") != null,
 		"PracticeSetup deberia tener label de tarjeta contextual."
 	)
 	_assert(
-		practice_setup.get_node_or_null("Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/PlayerScopeValueLabel") != null,
-		"PracticeSetup deberia tener label visible para 1-2P/HUD explicito."
+		practice_setup.get_node_or_null("Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PlayerScopeValueLabel") != null,
+		"PracticeSetup deberia tener label visible para 1-2P/ayuda visible."
 	)
 	_assert(how_to_play.has_method("focus_practice_button"), "How to Play deberia poder devolver el foco al CTA de Practica.")
 	_assert(practice_hud.has_method("set_callout_lines"), "PracticeHud deberia poder mostrar callouts cortos.")
@@ -60,7 +60,7 @@ func _run() -> void:
 	practice_hud.call("set_callout_lines", ["Arranque pesado y frenado legible."])
 	practice_hud.call("set_pause_lines", ["Sin pausa"])
 
-	_assert(String(practice_setup.get_node_or_null("Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/SummaryValueLabel").text) != "", "PracticeSetup deberia conservar un resumen visible.")
+	_assert(String(practice_setup.get_node_or_null("Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/SummaryValueLabel").text) != "", "PracticeSetup deberia conservar un resumen visible.")
 	var context_label := practice_hud.get_node_or_null("Root/Panel/Margin/VBox/ContextCardValueLabel")
 	_assert(context_label != null, "PracticeHud deberia tener ContextCardValueLabel.")
 	if context_label != null:

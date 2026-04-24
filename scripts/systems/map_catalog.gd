@@ -12,11 +12,11 @@ const MAPS := [
 	{
 		"id": MAP_TEAMS_2_4,
 		"label": "Fundicion compacta",
-		"setup_label": "Fundicion compacta | Teams",
+		"setup_label": "Fundicion compacta | Equipos",
 		"mode": MatchController.MatchMode.TEAMS,
 		"min_players": 1,
 		"max_players": 4,
-		"range_label": "2-4 pulido",
+		"range_label": "ideal para 2-4",
 		"scene_path": "res://scenes/main/main.tscn",
 		"mode_focus": "duelos claros, rescate cercano y choques legibles",
 		"route_goal": "rutas cortas para volver al choque sin convertir el centro en objetivo permanente",
@@ -26,11 +26,11 @@ const MAPS := [
 	{
 		"id": MAP_FFA_2_4,
 		"label": "Fundicion compacta",
-		"setup_label": "Fundicion compacta | FFA",
+		"setup_label": "Fundicion compacta | Todos contra todos",
 		"mode": MatchController.MatchMode.FFA,
 		"min_players": 1,
 		"max_players": 4,
-		"range_label": "2-4 pulido",
+		"range_label": "ideal para 2-4",
 		"scene_path": "res://scenes/main/main_ffa.tscn",
 		"mode_focus": "supervivencia, oportunismo y cruces rapidos",
 		"route_goal": "rotacion corta entre duelos sin depender de reglas de equipo",
@@ -40,11 +40,11 @@ const MAPS := [
 	{
 		"id": MAP_TEAMS_5_8,
 		"label": "Fundicion lateral",
-		"setup_label": "Fundicion lateral | Teams 4v4",
+		"setup_label": "Fundicion lateral | Equipos 4v4",
 		"mode": MatchController.MatchMode.TEAMS,
 		"min_players": 5,
 		"max_players": 8,
-		"range_label": "5-8 validacion",
+		"range_label": "para 5-8 jugadores",
 		"scene_path": "res://scenes/main/main_teams_large.tscn",
 		"mode_focus": "rescate, pushes coordinados y coordinacion lateral",
 		"route_goal": "dos carriles laterales utiles conectan aliados, soporte post-muerte y retornos al borde",
@@ -54,11 +54,11 @@ const MAPS := [
 	{
 		"id": MAP_FFA_5_8,
 		"label": "Fundicion rotativa",
-		"setup_label": "Fundicion rotativa | FFA",
+		"setup_label": "Fundicion rotativa | Todos contra todos",
 		"mode": MatchController.MatchMode.FFA,
 		"min_players": 5,
 		"max_players": 8,
-		"range_label": "5-8 validacion",
+		"range_label": "para 5-8 jugadores",
 		"scene_path": "res://scenes/main/main_ffa_large.tscn",
 		"mode_focus": "rotacion, third-party y supervivencia oportunista",
 		"route_goal": "rutas diagonales y laterales permiten entrar/salir de duelos sin llenar el mapa de distancia vacia",
@@ -130,7 +130,7 @@ static func get_setup_summary_line(map_id: String, match_mode: int, active_slots
 static func get_setup_focus_line(map_id: String, match_mode: int, active_slots: int) -> String:
 	var sanitized_id := sanitize_map_id(map_id, match_mode, active_slots)
 	var map_entry := get_map(sanitized_id)
-	return "Foco | %s | %s" % [
+	return "Idea del mapa | %s | %s" % [
 		String(map_entry.get("mode_focus", "")),
 		String(map_entry.get("edge_goal", "")),
 	]

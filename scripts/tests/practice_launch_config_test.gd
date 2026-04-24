@@ -49,7 +49,7 @@ func _run() -> void:
 	)
 	_assert(
 		int(launch_config.hud_detail_mode) == MatchConfig.HudDetailMode.EXPLICIT,
-		"Practica deberia arrancar con HUD explicito aunque el default competitivo sea contextual."
+		"Practica deberia arrancar con ayuda visible aunque el default competitivo sea contextual."
 	)
 	_assert(
 		launch_config.local_slots.size() == 2,

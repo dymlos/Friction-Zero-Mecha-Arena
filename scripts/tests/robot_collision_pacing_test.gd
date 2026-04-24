@@ -93,7 +93,7 @@ func _validate_collision_damage_requires_committed_closing_speed() -> void:
 	attacker._try_apply_collision_damage(victim, Vector3.RIGHT)
 	_assert(
 		is_equal_approx(_get_total_part_health(victim), baseline_total_health),
-		"Los contactos por debajo del umbral no deberian convertirse en dano modular."
+		"Los contactos por debajo del umbral no deberian convertirse en partes danadas."
 	)
 
 	attacker._collision_damage_ready_at.clear()

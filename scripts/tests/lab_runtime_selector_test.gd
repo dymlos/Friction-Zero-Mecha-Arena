@@ -33,7 +33,7 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 
 	_assert(main.has_method("cycle_lab_selector_slot"), "Main deberia exponer un selector runtime por slot.")
 	_assert(main.has_method("cycle_selected_lab_archetype"), "Main deberia poder ciclar el arquetipo del slot seleccionado.")
-	_assert(main.has_method("toggle_selected_lab_control_mode"), "Main deberia poder alternar Easy/Hard para el slot seleccionado.")
+	_assert(main.has_method("toggle_selected_lab_control_mode"), "Main deberia poder alternar Simple/Avanzado para el slot seleccionado.")
 	_assert(main.has_method("get_lab_selector_summary_line"), "Main deberia exponer un resumen legible del selector runtime.")
 	if not (
 		main.has_method("cycle_lab_selector_slot")
@@ -61,7 +61,7 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 	var initial_summary := String(main.call("get_lab_selector_summary_line"))
 	_assert(initial_summary.contains("P1"), "El selector runtime deberia arrancar apuntando al primer slot.")
 	_assert(initial_summary.contains("Ariete"), "El resumen inicial deberia reflejar el arquetipo base del slot 1.")
-	_assert(initial_summary.contains("Easy"), "El selector runtime deberia reflejar el modo de control inicial.")
+	_assert(initial_summary.contains("Simple"), "El selector runtime deberia reflejar el modo de control inicial.")
 	_assert((round_label as Label).text.contains("Lab |"), "El HUD deberia dejar visible el selector runtime en el laboratorio.")
 	_assert(
 		(round_label as Label).text.contains("Control P1 | mueve WASD | ataca Space | energia Q/E | overdrive R | suelta C"),
@@ -96,10 +96,10 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 
 	_assert(
 		robots[0].control_mode == RobotBase.ControlMode.HARD,
-		"El selector runtime deberia poder alternar Easy/Hard sobre el slot activo."
+		"El selector runtime deberia poder alternar Simple/Avanzado sobre el slot activo."
 	)
 	_assert(
-		String(main.call("get_lab_selector_summary_line")).contains("Hard"),
+		String(main.call("get_lab_selector_summary_line")).contains("Avanzado"),
 		"El resumen del selector runtime deberia reflejar el nuevo modo de control."
 	)
 	_assert(
@@ -107,7 +107,7 @@ func _validate_lab_selector_cycles_roster_and_control_mode() -> void:
 		"Al pasar el slot seleccionado a Hard, la referencia compacta deberia sumar el aim dedicado real."
 	)
 	_assert(
-		(roster_label as Label).text.contains("Hard"),
+		(roster_label as Label).text.contains("Avanzado"),
 		"El roster deberia reflejar el modo Hard tras alternarlo runtime."
 	)
 
@@ -171,9 +171,9 @@ func _validate_contextual_hud_hides_lab_selection_readability() -> void:
 		return
 
 	var robot_selection_indicator := robots[0].get_node_or_null("LabSelectionIndicator") as MeshInstance3D
-	_assert(robot_selection_indicator != null, "El robot seleccionado deberia arrancar con la pista diegetica disponible en HUD explicito.")
+	_assert(robot_selection_indicator != null, "El robot seleccionado deberia arrancar con la pista diegetica disponible en ayuda visible.")
 	if robot_selection_indicator != null:
-		_assert(robot_selection_indicator.visible, "En HUD explicito la pista diegetica del selector deberia estar visible.")
+		_assert(robot_selection_indicator.visible, "En ayuda visible la pista diegetica del selector deberia estar visible.")
 
 	main.call("cycle_hud_detail_mode")
 	await process_frame
@@ -181,7 +181,7 @@ func _validate_contextual_hud_hides_lab_selection_readability() -> void:
 
 	_assert(not round_label.text.contains("Lab |"), "En HUD contextual deberia desaparecer el resumen del selector runtime.")
 	_assert(not round_label.text.contains("Control P1 |"), "En HUD contextual deberia desaparecer la referencia compacta del slot seleccionado.")
-	_assert(String(main.call("get_lab_selector_summary_line")).contains("P1 Ariete Easy"), "Cambiar el HUD no deberia perder el slot runtime seleccionado.")
+	_assert(String(main.call("get_lab_selector_summary_line")).contains("P1 Ariete Simple"), "Cambiar el HUD no deberia perder el slot runtime seleccionado.")
 	_assert(roster_label.text == "", "En HUD contextual el roster del laboratorio deberia ocultarse por completo.")
 	if robot_selection_indicator != null:
 		_assert(not robot_selection_indicator.visible, "En HUD contextual la pista diegetica del robot seleccionado no deberia mostrarse.")
@@ -292,7 +292,7 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 		"Antes de una baja, la referencia compacta deberia seguir mostrando los controles normales del slot seleccionado."
 	)
 	_assert(
-		String(main.call("get_lab_selector_summary_line")).contains("P1 Ariete Easy"),
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Ariete Simple"),
 		"Antes de una baja, el resumen del selector runtime deberia seguir describiendo el robot seleccionado."
 	)
 	_assert(
@@ -323,7 +323,7 @@ func _validate_lab_selected_controls_follow_support_ship() -> void:
 		"Si el slot seleccionado ya paso a la nave post-muerte, el resumen `Lab | ...` deberia dejar visible ese estado y no solo el loadout previo."
 	)
 	_assert(
-		not String(main.call("get_lab_selector_summary_line")).contains("Ariete Easy"),
+		not String(main.call("get_lab_selector_summary_line")).contains("Ariete Simple"),
 		"Si el slot seleccionado ya esta en `Apoyo activo`, el resumen del laboratorio no deberia seguir anunciandolo como si controlara el robot original."
 	)
 	_assert(
@@ -405,7 +405,7 @@ func _validate_lab_selector_cycles_between_robot_and_active_support_slots() -> v
 
 	_assert(
 		String(main.call("get_lab_selector_summary_line")).contains(
-			"P2 %s Easy" % robots[1].get_archetype_label()
+			"P2 %s Simple" % robots[1].get_archetype_label()
 		),
 		"Al ciclar `F2` desde `Apoyo activo`, el selector runtime deberia volver a describir el robot vivo del siguiente slot."
 	)
@@ -501,7 +501,7 @@ func _validate_lab_runtime_loadout_reset_clears_support_immediately() -> void:
 	main.call("cycle_selected_lab_archetype")
 
 	_assert(
-		String(main.call("get_lab_selector_summary_line")).contains("P1 Cizalla Hard"),
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Cizalla Avanzado"),
 		"Al usar F3 desde `Apoyo activo`, el selector runtime deberia volver inmediatamente al robot con el nuevo loadout."
 	)
 	_assert(
@@ -534,7 +534,7 @@ func _validate_lab_runtime_loadout_reset_clears_support_immediately() -> void:
 	main.call("toggle_selected_lab_control_mode")
 
 	_assert(
-		String(main.call("get_lab_selector_summary_line")).contains("P1 Cizalla Easy"),
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Cizalla Simple"),
 		"Al usar F4 desde `Apoyo activo`, el selector runtime deberia volver inmediatamente al robot con el nuevo modo."
 	)
 	_assert(
@@ -588,7 +588,7 @@ func _validate_lab_selector_recovers_from_support_after_manual_restart() -> void
 	await process_frame
 
 	_assert(
-		String(main.call("get_lab_selector_summary_line")).contains("P1 Grua Hard"),
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Grua Avanzado"),
 		"Antes de la baja, el selector runtime deberia reflejar el loadout runtime elegido para P1."
 	)
 	_assert(
@@ -637,7 +637,7 @@ func _validate_lab_selector_recovers_from_support_after_manual_restart() -> void
 		"Tras F5, el laboratorio deberia volver a una partida limpia desde la ronda 1."
 	)
 	_assert(
-		String(main.call("get_lab_selector_summary_line")).contains("P1 Grua Hard"),
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Grua Avanzado"),
 		"Tras F5, el selector runtime deberia volver a describir el robot seleccionado y conservar su loadout runtime."
 	)
 	_assert(
@@ -726,7 +726,7 @@ func _validate_lab_selector_recovers_from_support_after_round_reset() -> void:
 		"Tras el reset automatico, la partida deberia avanzar a la siguiente ronda."
 	)
 	_assert(
-		String(main.call("get_lab_selector_summary_line")).contains("P1 Grua Hard"),
+		String(main.call("get_lab_selector_summary_line")).contains("P1 Grua Avanzado"),
 		"Tras el reset automatico, el selector runtime deberia volver a mostrar el robot/loadout runtime del slot seleccionado."
 	)
 	_assert(

@@ -33,12 +33,12 @@ func _run() -> void:
 	)
 	if lane.has_method("get_guided_sandbox_focus_lines"):
 		var focus_lines: Array = lane.call("get_guided_sandbox_focus_lines")
-		_assert(focus_lines.has("skill propia"), "Sandbox debe recordar probar skill propia.")
-		_assert(focus_lines.has("dano modular"), "Sandbox debe recordar probar dano modular.")
+		_assert(focus_lines.has("habilidad"), "Sandbox debe recordar probar habilidad.")
+		_assert(focus_lines.has("partes danadas"), "Sandbox debe recordar probar partes danadas.")
 	var progress_text := "\n".join(Array(lane.call("get_progress_lines")))
 	_assert(progress_text.contains("Jugadores activos"), "SandboxLane deberia mostrar jugadores activos.")
-	_assert(progress_text.contains("Focos"), "SandboxLane deberia mostrar focos guiados.")
-	_assert(progress_text.contains("Fixture"), "SandboxLane deberia mostrar fixture activo.")
+	_assert(progress_text.contains("Practicar"), "SandboxLane deberia mostrar focos guiados.")
+	_assert(progress_text.contains("Robot de prueba"), "SandboxLane deberia mostrar fixture activo.")
 	_assert(not bool(lane.call("is_lane_completed")), "SandboxLane no deberia cerrar por defecto.")
 
 	await _cleanup_node(player_robot)

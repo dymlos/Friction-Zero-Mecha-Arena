@@ -9,6 +9,7 @@ const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const PauseController = preload("res://scripts/systems/pause_controller.gd")
 const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.gd")
+const JoypadScrollHelper = preload("res://scripts/systems/joypad_scroll_helper.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
@@ -159,6 +160,10 @@ func _process(_delta: float) -> void:
 	_sync_post_death_support_state()
 	_sync_final_pressure_audio()
 	_sync_audio_music_state()
+	if is_instance_valid(_active_pause_surface):
+		JoypadScrollHelper.apply_right_stick_scroll(_active_pause_surface, _delta)
+	elif _pause_controller.is_paused() or match_controller.is_match_over():
+		JoypadScrollHelper.apply_right_stick_scroll(ui, _delta)
 	_queue_hud_refresh()
 
 
@@ -407,7 +412,7 @@ func get_lab_hud_mode_summary_line() -> String:
 	if not _is_lab_context():
 		return ""
 	var hud_mode_label := match_controller.get_hud_detail_mode_label().replace("HUD ", "")
-	return "HUD | %s | F1 cambia" % hud_mode_label
+	return "Ayudas | %s | F1 cambia" % hud_mode_label
 
 
 func get_lab_selected_support_summary_line() -> String:
@@ -999,15 +1004,15 @@ func _build_pause_overlay_lines() -> Array[String]:
 		return []
 
 	var lines: Array[String] = [
-		"Owner | P%s" % _pause_controller.get_pause_owner_slot(),
+		"Pausa | jugador P%s al mando" % _pause_controller.get_pause_owner_slot(),
 	]
 	if _is_player_shell_context():
 		lines.append("Navegacion | %s" % InputPromptCatalog.get_pause_navigation_help_line())
 		lines.append("Acciones")
 		lines.append_array(_build_pause_action_lines(["resume", "restart", "return_to_menu"]))
-		lines.append("Informacion")
+		lines.append("Ayuda")
 		lines.append_array(_build_pause_action_lines(["settings", "how_to_play", "characters"]))
-		lines.append("Quick settings")
+		lines.append("Ajustes rapidos")
 		lines.append_array(_build_pause_quick_setting_lines())
 		lines.append("Dispositivos")
 		lines.append_array(_build_pause_device_lines())
@@ -1021,7 +1026,7 @@ func _build_pause_overlay_lines() -> Array[String]:
 	lines.append("Navegacion | %s" % InputPromptCatalog.get_pause_navigation_help_line())
 	lines.append("Acciones")
 	lines.append_array(_build_pause_action_lines(["resume", "restart"]))
-	lines.append("Quick settings")
+	lines.append("Ajustes rapidos")
 	lines.append_array(_build_pause_quick_setting_lines())
 	return lines
 
@@ -1042,10 +1047,10 @@ func _build_pause_action_lines(action_ids: Array[String]) -> Array[String]:
 func _build_pause_quick_setting_lines() -> Array[String]:
 	var selected_action_id := _pause_controller.get_selected_action_id()
 	var specs := [
-		{"id": "toggle_hud", "label": "HUD", "value": match_controller.get_hud_detail_mode_label().replace("HUD ", "")},
-		{"id": "audio_master", "label": "Master", "value": "%d%%" % roundi(_get_audio_volume("master") * 100.0)},
+		{"id": "toggle_hud", "label": "Ayuda", "value": match_controller.get_hud_detail_mode_label().replace("HUD ", "")},
+		{"id": "audio_master", "label": "General", "value": "%d%%" % roundi(_get_audio_volume("master") * 100.0)},
 		{"id": "audio_music", "label": "Musica", "value": "%d%%" % roundi(_get_audio_volume("music") * 100.0)},
-		{"id": "audio_sfx", "label": "SFX", "value": "%d%%" % roundi(_get_audio_volume("sfx") * 100.0)},
+		{"id": "audio_sfx", "label": "Efectos", "value": "%d%%" % roundi(_get_audio_volume("sfx") * 100.0)},
 	]
 	var lines: Array[String] = []
 	for spec in specs:
@@ -1265,19 +1270,19 @@ func _action_label_to_id(label: String) -> String:
 			return "restart"
 		"Volver al menu":
 			return "return_to_menu"
-		"Settings":
+		"Settings", "Opciones":
 			return "settings"
-		"How to Play":
+		"How to Play", "Como jugar":
 			return "how_to_play"
-		"Characters":
+		"Characters", "Robots":
 			return "characters"
-		"HUD":
+		"HUD", "Ayuda en pantalla":
 			return "toggle_hud"
-		"Master":
+		"Master", "Volumen general":
 			return "audio_master"
 		"Musica":
 			return "audio_music"
-		"SFX":
+		"SFX", "Efectos":
 			return "audio_sfx"
 	return ""
 
@@ -1526,7 +1531,7 @@ func _on_edge_charge_pickup_collected(robot: RobotBase, restored_charges: int) -
 	_play_audio_cue("pickup_taken")
 	var skill_label := robot.get_core_skill_label()
 	if skill_label == "":
-		skill_label = "skill"
+		skill_label = "habilidad"
 
 	ui.show_status("%s recargo municion de %s (+%s)" % [
 		robot.display_name,
@@ -2033,7 +2038,7 @@ func _get_lab_robot_brief(robot: RobotBase) -> String:
 	var archetype_label := robot.get_archetype_label()
 	if archetype_label == "":
 		archetype_label = "Base"
-	var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
+	var mode_label := "Avanzado" if robot.control_mode == RobotBase.ControlMode.HARD else "Simple"
 	return "P%s %s %s" % [robot.player_index, archetype_label, mode_label]
 
 

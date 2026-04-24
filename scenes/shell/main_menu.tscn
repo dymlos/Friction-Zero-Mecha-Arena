@@ -75,21 +75,21 @@ unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
 theme_type_variation = &"ShellButtonSecondary"
-text = "Characters"
+text = "Robots"
 
 [node name="HowToPlayButton" type="Button" parent="CenterPanel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
 theme_type_variation = &"ShellButtonSecondary"
-text = "How to Play"
+text = "Como jugar"
 
 [node name="SettingsButton" type="Button" parent="CenterPanel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 2
 theme_type_variation = &"ShellButtonSecondary"
-text = "Settings"
+text = "Opciones"
 
 [node name="PracticeButton" type="Button" parent="CenterPanel/Margin/VBox"]
 unique_name_in_owner = true

@@ -8,7 +8,7 @@ func configure_lane(module_spec: Dictionary, player_robots: Array) -> void:
 	super.configure_lane(module_spec, player_robots)
 	set_objective_lines([
 		"Cruza el arco sin perder lectura del deslizamiento.",
-		"Compara Easy y Hard sobre la misma pista.",
+		"Compara control simple y avanzado sobre la misma pista.",
 	])
 	set_callout_lines([
 		"Arranque pesado, deslizamiento libre y frenado legible.",
@@ -36,7 +36,7 @@ func _sync_lane_state() -> void:
 			continue
 
 		var remaining := maxf(0.0, robot.global_position.z + FINISH_DISTANCE)
-		var control_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
+		var control_label := "Avanzado" if robot.control_mode == RobotBase.ControlMode.HARD else "Simple"
 		var state_label := "cruzado" if robot.global_position.z <= -FINISH_DISTANCE else "en ruta"
 		if robot.global_position.z <= -FINISH_DISTANCE:
 			completed_count += 1

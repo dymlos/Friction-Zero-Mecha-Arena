@@ -265,7 +265,7 @@ func _build_slot_summary_line(player_slot: int) -> String:
 	var roster_label := String(roster_entry.get("label", slot_info.get("roster_entry_id", "")))
 	if not bool(slot_info.get("active", false)):
 		return "P%s | inactivo | %s" % [player_slot, roster_label]
-	var mode_label := "Hard" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Easy"
+	var mode_label := "Avanzado" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Simple"
 	var input_source := String(slot_info.get("input_source", INPUT_SOURCE_KEYBOARD))
 	if input_source == INPUT_SOURCE_JOYPAD:
 		var device_id := int(slot_info.get("device_id", -1))

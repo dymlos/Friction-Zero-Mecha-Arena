@@ -29,8 +29,8 @@ func _validate_default_teams_scene_enables_charge_pickups_when_both_teams_have_s
 		await _validate_charge_pickups_for_scene(
 			scene_path,
 			7,
-			"El laboratorio Teams deberia conservar al menos un robot con skill propia para probar la municion/carga.",
-			"El laboratorio Teams %s deberia activar municion/carga cuando ambos equipos ya traen al menos una skill propia."
+			"El laboratorio Teams deberia conservar al menos un robot con habilidad para probar la municion/carga.",
+			"El laboratorio Teams %s deberia activar municion/carga cuando ambos equipos ya traen al menos una habilidad."
 		)
 
 
@@ -39,7 +39,7 @@ func _validate_ffa_scene_enables_charge_pickups_for_skill_robots() -> void:
 		await _validate_charge_pickups_for_scene(
 			scene_path,
 			9,
-			"La escena FFA deberia conservar al menos un robot con skill propia para justificar la municion/carga.",
+			"La escena FFA deberia conservar al menos un robot con habilidad para justificar la municion/carga.",
 			"FFA %s deberia habilitar municion/carga cuando el roster libre si tiene skills propias que aprovechar."
 		)
 
@@ -129,7 +129,7 @@ func _validate_charge_pickups_for_scene(
 
 	_assert(
 		int(skill_robot.call("get_core_skill_charge_count")) == initial_charges,
-		"El pickup de municion/carga deberia restaurar la carga gastada del robot con skill propia tambien en %s." % scene_path
+		"El pickup de municion/carga deberia restaurar la carga gastada del robot con habilidad tambien en %s." % scene_path
 	)
 	var status_message := String(main.ui.status_label.text)
 	_assert(

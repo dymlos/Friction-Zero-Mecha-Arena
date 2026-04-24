@@ -82,18 +82,18 @@ func _sync_lane_state() -> void:
 			break
 
 	set_progress_lines([
-		"Skill | %s" % ("Corte visto" if _saw_required_skill else "activa Corte"),
+		"Habilidad | %s" % ("Corte visto" if _saw_required_skill else "activa Corte"),
 		"Partes vivas | %s/4" % active_parts,
-		"Daño visible | %s" % (damaged_part if damaged_part != "" else "ninguno"),
+		"Dano visible | %s" % (damaged_part if damaged_part != "" else "ninguno"),
 	])
 
 	if _saw_required_skill and active_parts < 4 and not _lane_completed:
 		set_callout_lines([
 			"Aprendiste: un golpe bueno cambia el cuerpo y la lectura del rival.",
-			"Siguiente sugerido: Sandbox.",
+			"Siguiente sugerido: modo libre.",
 		])
 		set_context_card_lines([
 			"Aprendiste a mirar el cuerpo despues del golpe.",
-			"Siguiente sugerido: Sandbox.",
+			"Siguiente sugerido: modo libre.",
 		])
 		complete_lane()

@@ -72,7 +72,7 @@ func _run() -> void:
 	)
 	_assert(
 		practice_setup.has_method("get_player_scope_line"),
-		"PracticeSetup deberia exponer el alcance 1-2P/HUD explicito."
+		"PracticeSetup deberia exponer el alcance 1-2P/ayuda visible."
 	)
 	_assert(
 		practice_setup.has_method("get_first_pass_module_labels"),
@@ -80,7 +80,7 @@ func _run() -> void:
 	)
 	if practice_setup.has_method("get_first_pass_module_labels"):
 		_assert(
-			practice_setup.call("get_first_pass_module_labels") == ["Movimiento", "Impacto", "Partes", "Sandbox"],
+			practice_setup.call("get_first_pass_module_labels") == ["Movimiento", "Impacto", "Partes", "Libre"],
 			"PracticeSetup debe comunicar la ruta recomendada sin ocultar los otros modulos."
 		)
 	_assert(
@@ -88,8 +88,8 @@ func _run() -> void:
 		"PracticeSetup debe comunicar explicitamente el alcance 1-2P."
 	)
 	_assert(
-		String(practice_setup.call("get_player_scope_line")).contains("HUD explicito"),
-		"PracticeSetup debe comunicar que Practica arranca con HUD explicito."
+		String(practice_setup.call("get_player_scope_line")).contains("ayuda visible"),
+		"PracticeSetup debe comunicar que Practica arranca con ayuda visible."
 	)
 	if not (
 		practice_setup.has_method("set_selected_module")
@@ -125,8 +125,8 @@ func _run() -> void:
 			"PracticeSetup deberia comunicar el alcance 1-2 jugadores."
 		)
 		_assert(
-			String(practice_setup.call("get_player_scope_line")).contains("HUD explicito"),
-			"PracticeSetup deberia comunicar HUD explicito por defecto."
+			String(practice_setup.call("get_player_scope_line")).contains("ayuda visible"),
+			"PracticeSetup deberia comunicar ayuda visible por defecto."
 		)
 	var initial_practice_launch_config = practice_setup.call("build_launch_config")
 	_assert(

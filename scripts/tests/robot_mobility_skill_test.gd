@@ -30,14 +30,14 @@ func _validate_patin_exposes_a_core_mobility_skill() -> void:
 		return
 
 	var robot := await _spawn_robot(config as RobotArchetypeConfig)
-	_assert(robot.has_method("has_core_skill"), "RobotBase deberia seguir exponiendo si un arquetipo tiene skill propia.")
-	_assert(robot.has_method("get_core_skill_label"), "RobotBase deberia exponer la etiqueta corta de la skill propia.")
+	_assert(robot.has_method("has_core_skill"), "RobotBase deberia seguir exponiendo si un arquetipo tiene habilidad.")
+	_assert(robot.has_method("get_core_skill_label"), "RobotBase deberia exponer la etiqueta corta de la habilidad.")
 	if robot.has_method("has_core_skill"):
-		_assert(bool(robot.call("has_core_skill")), "Patin deberia dejar de depender solo de tuning pasivo y exponer una skill propia.")
+		_assert(bool(robot.call("has_core_skill")), "Patin deberia dejar de depender solo de tuning pasivo y exponer una habilidad.")
 	if robot.has_method("get_core_skill_label"):
 		_assert(
 			String(robot.call("get_core_skill_label")) == "Derrape",
-			"La skill propia de Patin deberia leerse como Derrape."
+			"La habilidad de Patin deberia leerse como Derrape."
 		)
 
 	await _cleanup_node(robot)
@@ -54,7 +54,7 @@ func _validate_mobility_skill_creates_a_short_reposition_window() -> void:
 	var patin := await _spawn_robot(tuned_config)
 	var baseline_drive := patin.get_effective_leg_drive_multiplier()
 
-	_assert(patin.has_method("use_core_skill"), "RobotBase deberia poder activar la skill propia de Patin.")
+	_assert(patin.has_method("use_core_skill"), "RobotBase deberia poder activar la habilidad de Patin.")
 	_assert(patin.has_method("is_mobility_skill_active"), "RobotBase deberia exponer si la ventana de Derrape esta activa.")
 	if not patin.has_method("use_core_skill"):
 		await _cleanup_node(patin)
@@ -121,7 +121,7 @@ func _validate_teams_lab_roster_reads_the_mobility_skill_state() -> void:
 	var roster_text := (roster_label as Label).text
 	_assert(
 		roster_text.contains("skill Derrape") or roster_text.contains("skill derrape"),
-		"El roster de Teams deberia dejar visible la skill propia de Patin."
+		"El roster de Teams deberia dejar visible la habilidad de Patin."
 	)
 
 	var used := patin.use_core_skill()

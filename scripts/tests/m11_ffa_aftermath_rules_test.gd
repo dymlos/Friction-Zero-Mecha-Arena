@@ -17,8 +17,8 @@ func _init() -> void:
 func _run() -> void:
 	_assert(FfaAftermathRules.should_spawn_aftermath(MatchController.MatchMode.FFA, true, 2), "Aftermath deberia aparecer en FFA con ronda activa y dos rivales restantes.")
 	_assert(FfaAftermathRules.should_spawn_aftermath(MatchController.MatchMode.FFA, true, 2, MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE), "Aftermath deberia aparecer en FFA score_by_cause con dos rivales restantes.")
-	_assert(FfaAftermathRules.should_spawn_aftermath(MatchController.MatchMode.FFA, true, 2, MatchModeVariantCatalog.VARIANT_LAST_ALIVE), "Aftermath deberia aparecer en FFA Ultimo vivo con dos rivales restantes.")
-	_assert(not FfaAftermathRules.should_spawn_aftermath(MatchController.MatchMode.FFA, true, 1, MatchModeVariantCatalog.VARIANT_LAST_ALIVE), "Aftermath no deberia aparecer en la baja final de Ultimo vivo.")
+	_assert(FfaAftermathRules.should_spawn_aftermath(MatchController.MatchMode.FFA, true, 2, MatchModeVariantCatalog.VARIANT_LAST_ALIVE), "Aftermath deberia aparecer en FFA Ultimo en pie con dos rivales restantes.")
+	_assert(not FfaAftermathRules.should_spawn_aftermath(MatchController.MatchMode.FFA, true, 1, MatchModeVariantCatalog.VARIANT_LAST_ALIVE), "Aftermath no deberia aparecer en la baja final de Ultimo en pie.")
 	_assert(not FfaAftermathRules.should_spawn_aftermath(MatchController.MatchMode.TEAMS, true, 2, MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE), "Aftermath no deberia aparecer en Teams score_by_cause.")
 	_assert(not FfaAftermathRules.should_spawn_aftermath(MatchController.MatchMode.TEAMS, true, 2), "Aftermath no deberia aparecer en Teams.")
 	_assert(not FfaAftermathRules.should_spawn_aftermath(MatchController.MatchMode.FFA, false, 2), "Aftermath no deberia aparecer con ronda cerrada.")

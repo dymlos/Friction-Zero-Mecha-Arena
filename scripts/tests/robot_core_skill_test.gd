@@ -34,14 +34,14 @@ func _validate_poke_archetype_exposes_a_charge_skill() -> void:
 		return
 
 	var robot := await _spawn_robot(config as RobotArchetypeConfig)
-	_assert(robot.has_method("has_core_skill"), "RobotBase deberia exponer si un arquetipo tiene una skill propia.")
-	_assert(robot.has_method("get_core_skill_label"), "RobotBase deberia exponer el nombre corto de la skill propia para HUD/roster.")
-	_assert(robot.has_method("get_core_skill_charge_count"), "RobotBase deberia exponer las cargas actuales de la skill propia.")
-	_assert(robot.has_method("get_core_skill_max_charges"), "RobotBase deberia exponer el maximo de cargas de la skill propia.")
+	_assert(robot.has_method("has_core_skill"), "RobotBase deberia exponer si un arquetipo tiene una habilidad.")
+	_assert(robot.has_method("get_core_skill_label"), "RobotBase deberia exponer el nombre corto de la habilidad para HUD/roster.")
+	_assert(robot.has_method("get_core_skill_charge_count"), "RobotBase deberia exponer las cargas actuales de la habilidad.")
+	_assert(robot.has_method("get_core_skill_max_charges"), "RobotBase deberia exponer el maximo de cargas de la habilidad.")
 	if robot.has_method("has_core_skill"):
-		_assert(bool(robot.call("has_core_skill")), "Aguja deberia arrancar con una skill propia activa.")
+		_assert(bool(robot.call("has_core_skill")), "Aguja deberia arrancar con una habilidad activa.")
 	if robot.has_method("get_core_skill_label"):
-		_assert(String(robot.call("get_core_skill_label")) == "Pulso", "La primera skill propia de Aguja deberia leerse como Pulso.")
+		_assert(String(robot.call("get_core_skill_label")) == "Pulso", "La primera habilidad de Aguja deberia leerse como Pulso.")
 	if robot.has_method("get_core_skill_charge_count") and robot.has_method("get_core_skill_max_charges"):
 		_assert(
 			int(robot.call("get_core_skill_charge_count")) == int(robot.call("get_core_skill_max_charges")),
@@ -65,7 +65,7 @@ func _validate_charge_skill_spends_and_recovers_ammo() -> void:
 	source.global_position = Vector3.ZERO
 	target.global_position = Vector3(0.0, 0.8, -2.1)
 
-	_assert(source.has_method("use_core_skill"), "RobotBase deberia poder activar la skill propia del arquetipo.")
+	_assert(source.has_method("use_core_skill"), "RobotBase deberia poder activar la habilidad del arquetipo.")
 	if not source.has_method("use_core_skill"):
 		await _cleanup_node(target)
 		await _cleanup_node(source)
@@ -75,13 +75,13 @@ func _validate_charge_skill_spends_and_recovers_ammo() -> void:
 	var baseline_health := target.get_part_health("right_arm")
 	var initial_charges := int(source.call("get_core_skill_charge_count"))
 	var used := bool(source.call("use_core_skill"))
-	_assert(used, "La skill propia de Aguja deberia poder dispararse sin depender de un pickup del mapa.")
+	_assert(used, "La habilidad de Aguja deberia poder dispararse sin depender de un pickup del mapa.")
 
 	await _await_seconds(0.05)
 
 	_assert(
 		int(source.call("get_core_skill_charge_count")) == max(initial_charges - 1, 0),
-		"Disparar la skill propia deberia consumir exactamente una carga."
+		"Disparar la habilidad deberia consumir exactamente una carga."
 	)
 
 	await _await_seconds(0.35)
@@ -99,7 +99,7 @@ func _validate_charge_skill_spends_and_recovers_ammo() -> void:
 
 	_assert(
 		int(source.call("get_core_skill_charge_count")) == initial_charges,
-		"La skill propia deberia recargar una carga tras su timer configurado."
+		"La habilidad deberia recargar una carga tras su timer configurado."
 	)
 
 	await _cleanup_group("temporary_projectiles")
@@ -195,7 +195,7 @@ func _validate_core_skill_readability_stays_on_robot_body() -> void:
 		return
 
 	var core_material := left_core.material_override as StandardMaterial3D
-	_assert(core_material != null, "La luz del core deberia poder reforzar la lectura de la skill propia.")
+	_assert(core_material != null, "La luz del core deberia poder reforzar la lectura de la habilidad.")
 	if core_material == null:
 		await _cleanup_node(target)
 		await _cleanup_node(robot)
@@ -204,12 +204,12 @@ func _validate_core_skill_readability_stays_on_robot_body() -> void:
 	var ready_energy := core_material.emission_energy_multiplier
 	_assert(
 		not carry_indicator.visible,
-		"Aguja no deberia necesitar el indicador de carga cuando solo tiene su skill propia lista."
+		"Aguja no deberia necesitar el indicador de carga cuando solo tiene su habilidad lista."
 	)
 
 	var first_use := robot.use_core_skill()
 	var second_use := robot.use_core_skill()
-	_assert(first_use and second_use, "La skill propia deberia poder gastarse hasta vaciar sus cargas.")
+	_assert(first_use and second_use, "La habilidad deberia poder gastarse hasta vaciar sus cargas.")
 	await _await_seconds(0.05)
 
 	var drained_energy := core_material.emission_energy_multiplier
@@ -223,11 +223,11 @@ func _validate_core_skill_readability_stays_on_robot_body() -> void:
 	)
 
 	var stored := robot.store_carried_item("pulse_charge")
-	_assert(stored, "Tras vaciar la skill propia, Aguja deberia poder recoger un item universal de pulso.")
+	_assert(stored, "Tras vaciar la habilidad, Aguja deberia poder recoger un item universal de pulso.")
 	await process_frame
 	_assert(
 		carry_indicator.visible,
-		"El item `pulse_charge` deberia seguir leyendose con el indicador de carga compartido, separado de la skill propia."
+		"El item `pulse_charge` deberia seguir leyendose con el indicador de carga compartido, separado de la habilidad."
 	)
 
 	await _cleanup_group("temporary_projectiles")
@@ -248,10 +248,10 @@ func _validate_ffa_lab_exposes_the_new_archetype_identity() -> void:
 		var roster_text := (roster_label as Label).text
 		_assert(roster_text.contains("Aguja"), "La escena FFA grande deberia exponer el nuevo arquetipo Poke/Skillshot.")
 		_assert(
-			roster_text.contains("skill Pulso")
-			or roster_text.contains("skill pulso")
+			roster_text.contains("habilidad Pulso")
+			or roster_text.contains("habilidad pulso")
 			or roster_text.contains("pulso lista"),
-			"El roster FFA grande deberia dejar visible la skill propia por cargas de Aguja."
+			"El roster FFA grande deberia dejar visible la habilidad por cargas de Aguja."
 		)
 
 	await _cleanup_node(main)

@@ -217,7 +217,7 @@ func get_hud_detail_mode() -> MatchConfig.HudDetailMode:
 
 
 func get_hud_detail_mode_label() -> String:
-	return "HUD contextual" if is_contextual_hud_enabled() else "HUD explicito"
+	return "Ayuda limpia" if is_contextual_hud_enabled() else "Ayuda completa"
 
 
 func cycle_hud_detail_mode() -> MatchConfig.HudDetailMode:
@@ -924,7 +924,7 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 	if contextual_hud:
 		if can_show_robot_combat_state:
 			if robot.control_mode == RobotBase.ControlMode.HARD:
-				segments.append("Hard")
+				segments.append("Avanzado")
 			if robot.get_active_part_count() < RobotBase.BODY_PARTS.size():
 				segments.append("%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()])
 			if not robot.is_energy_balanced():
@@ -933,7 +933,7 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 			segments.append("%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()])
 	else:
 		if can_show_robot_combat_state:
-			var mode_label := "Hard" if robot.control_mode == RobotBase.ControlMode.HARD else "Easy"
+			var mode_label := "Avanzado" if robot.control_mode == RobotBase.ControlMode.HARD else "Simple"
 			segments = [mode_label, state_segment, "%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()]]
 			if robot.is_player_controlled and not has_active_support:
 				segments.append(robot.get_input_hint())
@@ -1025,7 +1025,9 @@ func _should_show_core_skill_summary(robot: RobotBase, contextual_hud: bool) -> 
 
 func _compact_core_skill_summary(summary: String) -> String:
 	var clean_summary := summary.strip_edges()
-	if clean_summary.begins_with("skill "):
+	if clean_summary.begins_with("habilidad "):
+		clean_summary = clean_summary.substr(10).strip_edges()
+	elif clean_summary.begins_with("skill "):
 		clean_summary = clean_summary.substr(6).strip_edges()
 	var parts := clean_summary.split(" ", false)
 	if parts.size() >= 2:

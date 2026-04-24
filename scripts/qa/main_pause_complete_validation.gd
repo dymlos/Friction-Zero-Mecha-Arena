@@ -17,8 +17,8 @@ func _ready() -> void:
 		"Pausa | P1 al mando",
 	])
 	match_hud.show_pause_overlay("Pausa", [
-		"Owner | P1",
-		"Informacion",
+		"Pausa | jugador P1 al mando",
+		"Ayuda",
 		"> %s" % _get_surface_label(),
 	])
 	var surface_scene := _get_surface_scene()
@@ -48,11 +48,11 @@ func _get_surface_scene() -> PackedScene:
 func _get_surface_label() -> String:
 	match surface_id:
 		"settings":
-			return "Settings"
+			return "Opciones"
 		"how_to_play":
-			return "How to Play"
+			return "Como jugar"
 		"characters":
-			return "Characters"
+			return "Robots"
 	return surface_id
 
 

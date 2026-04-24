@@ -41,7 +41,7 @@ func _ready() -> void:
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background_alt
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_label.text = "Practica"
-	subtitle_label.text = "Modulos cortos para probar sistemas sin duplicar la lectura base de Characters ni How to Play."
+	subtitle_label.text = "Ejercicios cortos para probar movimiento, choques, partes y energia antes de competir."
 	back_button.text = "Volver"
 	start_button.text = "Entrar"
 	module_list.item_selected.connect(_on_module_selected)
@@ -131,8 +131,7 @@ func request_start_from_shortcut() -> bool:
 func get_player_scope_line() -> String:
 	var module_spec := _get_selected_module()
 	var player_scope := String(module_spec.get("player_scope", "1-2 jugadores locales"))
-	var hud_default := String(module_spec.get("hud_default", "explicito"))
-	return "%s | HUD %s | sin score competitivo" % [player_scope, hud_default]
+	return "%s | ayuda visible | sin puntaje competitivo" % player_scope
 
 
 func focus_back_button() -> void:
@@ -216,9 +215,9 @@ func _apply_module(module_spec: Dictionary) -> void:
 	module_title_label.text = String(module_spec.get("label", ""))
 	summary_value_label.text = String(module_spec.get("summary", ""))
 	recommended_value_label.text = get_recommended_robot_label()
-	related_topics_value_label.text = " · ".join(get_related_topic_labels())
+	related_topics_value_label.text = " / ".join(get_related_topic_labels())
 	var context_lines := get_context_card_lines()
-	context_lines.append("Ruta sugerida: %s." % " -> ".join(get_first_pass_module_labels()))
+	context_lines.append("Ruta sugerida: %s." % " / ".join(get_first_pass_module_labels()))
 	context_card_value_label.text = "\n".join(context_lines)
 	player_scope_value_label.text = get_player_scope_line()
 	if not _preserve_existing_roster:
@@ -242,7 +241,7 @@ func _build_slot_state_button_text(player_slot: int) -> String:
 	var slot_info := _session_draft.get_slot_info(player_slot)
 	if not bool(slot_info.get("active", false)):
 		return "P%s | activar" % player_slot
-	var mode_label := "Hard" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Easy"
+	var mode_label := "Avanzado" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Simple"
 	var input_source := String(slot_info.get("input_source", LocalSessionDraft.INPUT_SOURCE_KEYBOARD))
 	if input_source == LocalSessionDraft.INPUT_SOURCE_JOYPAD:
 		var connection_label := "ok" if bool(slot_info.get("device_connected", false)) else "sin joy"

@@ -50,7 +50,7 @@ theme_override_constants/separation = 4
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ShellTitle"
-text = "Characters"
+text = "Robots"
 
 [node name="SubtitleLabel" type="Label" parent="Frame/VBox/Header"]
 unique_name_in_owner = true
@@ -84,7 +84,7 @@ theme_override_constants/separation = 12
 [node name="ListTitle" type="Label" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Roster base"
+text = "Robots"
 
 [node name="FilterRow" type="HBoxContainer" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
 layout_mode = 2
@@ -204,7 +204,7 @@ text = ""
 [node name="FantasyTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Fantasy"
+text = "Como se juega"
 
 [node name="FantasyValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 unique_name_in_owner = true
@@ -237,7 +237,7 @@ text = ""
 [node name="SignatureTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Skill principal"
+text = "Habilidad principal"
 
 [node name="SignatureValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 unique_name_in_owner = true
@@ -279,7 +279,7 @@ theme_override_constants/separation = 6
 [node name="EasyTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ControlsRow/EasyBlock"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Easy"
+text = "Simple"
 
 [node name="EasyValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ControlsRow/EasyBlock"]
 unique_name_in_owner = true
@@ -295,7 +295,7 @@ theme_override_constants/separation = 6
 [node name="HardTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ControlsRow/HardBlock"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Hard"
+text = "Avanzado"
 
 [node name="HardValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ControlsRow/HardBlock"]
 unique_name_in_owner = true

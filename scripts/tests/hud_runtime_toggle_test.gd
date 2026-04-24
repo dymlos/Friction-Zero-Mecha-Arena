@@ -30,8 +30,8 @@ func _run() -> void:
 
 	var explicit_round := (round_label as Label).text
 	_assert(explicit_round.contains("Modo |"), "El HUD deberia arrancar en modo explicito por defecto.")
-	_assert(explicit_round.contains("HUD | explicito | F1 cambia"), "El HUD explicito deberia publicar el modo actual dentro del round-state.")
-	_assert(String((roster_label as Label).text) != "", "El HUD explicito deberia arrancar mostrando el roster.")
+	_assert(explicit_round.contains("HUD | explicito | F1 cambia"), "El ayuda visible deberia publicar el modo actual dentro del round-state.")
+	_assert(String((roster_label as Label).text) != "", "El ayuda visible deberia arrancar mostrando el roster.")
 
 	main.call("cycle_hud_detail_mode")
 	await process_frame
@@ -48,7 +48,7 @@ func _run() -> void:
 	await process_frame
 
 	var explicit_round_again := (round_label as Label).text
-	_assert(explicit_round_again.contains("Modo |"), "El toggle runtime deberia poder volver al HUD explicito.")
+	_assert(explicit_round_again.contains("Modo |"), "El toggle runtime deberia poder volver al ayuda visible.")
 	_assert(explicit_round_again.contains("HUD | explicito | F1 cambia"), "Al volver a explicito deberia reaparecer la metadata runtime del HUD.")
 	_assert(String((roster_label as Label).text) != "", "Al volver a explicito el roster deberia reaparecer.")
 

@@ -39,7 +39,7 @@ func _validate_robot_core_skill_charge_refill_behavior() -> void:
 
 	var initial_charges := int(robot.call("get_core_skill_charge_count"))
 	var used := bool(robot.call("use_core_skill"))
-	_assert(used, "La skill propia deberia poder gastar una carga antes de probar la recarga de municion.")
+	_assert(used, "La habilidad deberia poder gastar una carga antes de probar la recarga de municion.")
 	if not used:
 		await _cleanup_group("temporary_projectiles")
 		await _cleanup_scene_root(scenario_root)
@@ -49,7 +49,7 @@ func _validate_robot_core_skill_charge_refill_behavior() -> void:
 
 	_assert(
 		int(robot.call("get_core_skill_charge_count")) == max(initial_charges - 1, 0),
-		"Gastar la skill propia deberia reducir una carga antes de tocar el pickup."
+		"Gastar la habilidad deberia reducir una carga antes de tocar el pickup."
 	)
 
 	var refilled := bool(robot.call("restore_core_skill_charges", 1))
@@ -102,7 +102,7 @@ func _validate_pickup_cooldown_telegraph() -> void:
 
 	_assert(
 		int(robot.call("get_core_skill_charge_count")) == int(robot.call("get_core_skill_max_charges")),
-		"Tocar el pickup de municion deberia restaurar la carga faltante de la skill propia."
+		"Tocar el pickup de municion deberia restaurar la carga faltante de la habilidad."
 	)
 
 	var base_mesh := pickup.get_node_or_null("Visuals/Base")

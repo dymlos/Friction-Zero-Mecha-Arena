@@ -42,7 +42,7 @@ func _run() -> void:
 	await create_timer(0.05).timeout
 
 	var roster_lines := match_controller.get_robot_status_lines()
-	_assert(roster_lines.size() == 8, "HUD explicito grande deberia mantener una linea por slot.")
+	_assert(roster_lines.size() == 8, "ayuda visible grande deberia mantener una linea por slot.")
 	_assert(
 		roster_lines.any(func(line: String) -> bool: return line.begins_with("P5 Aguja |")),
 		"Roster 8P deberia priorizar formato corto por slot para P5 Aguja."

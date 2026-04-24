@@ -86,7 +86,7 @@ func _run() -> void:
 	)
 	_assert(
 		persisted != null and int(persisted.default_hud_detail_mode) == MatchConfig.HudDetailMode.EXPLICIT,
-		"El default persistente de HUD explicito deberia sobrevivir entre instancias."
+		"El default persistente de ayuda visible deberia sobrevivir entre instancias."
 	)
 	_assert(
 		persisted != null and String(persisted.window_mode) == "borderless",

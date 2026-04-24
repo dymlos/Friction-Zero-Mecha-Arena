@@ -32,7 +32,7 @@ func _run() -> void:
 	_assert(int(budget_4p.get("max_hud_line_chars", 0)) >= 72, "4P puede tener lineas algo mas informativas.")
 
 	var budget_8p := LocalScaleContract.get_shared_screen_budget(8)
-	_assert(int(budget_8p.get("visible_rosters", 0)) == 8, "8P debe mantener una linea compacta por slot en HUD explicito.")
+	_assert(int(budget_8p.get("visible_rosters", 0)) == 8, "8P debe mantener una linea compacta por slot en ayuda visible.")
 	_assert(int(budget_8p.get("max_hud_line_chars", 0)) <= 72, "8P debe mantener lineas compactas.")
 	_assert(bool(budget_8p.get("compact_standings", false)), "8P debe compactar standings con +N.")
 

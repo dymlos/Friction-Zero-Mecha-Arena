@@ -194,19 +194,19 @@ func _get_action_label(action: int) -> String:
 		PauseAction.RESTART:
 			return "Reiniciar"
 		PauseAction.SETTINGS:
-			return "Settings"
+			return "Opciones"
 		PauseAction.HOW_TO_PLAY:
-			return "How to Play"
+			return "Como jugar"
 		PauseAction.CHARACTERS:
-			return "Characters"
+			return "Robots"
 		PauseAction.TOGGLE_HUD:
-			return "HUD"
+			return "Ayuda en pantalla"
 		PauseAction.AUDIO_MASTER:
-			return "Master"
+			return "Volumen general"
 		PauseAction.AUDIO_MUSIC:
 			return "Musica"
 		PauseAction.AUDIO_SFX:
-			return "SFX"
+			return "Efectos"
 		PauseAction.RETURN_TO_MENU:
 			return "Volver al menu"
 

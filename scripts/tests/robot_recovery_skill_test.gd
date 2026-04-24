@@ -29,13 +29,13 @@ func _run() -> void:
 	var grua := robots[1]
 
 	_assert(owner.is_ally_of(grua), "Grua deberia seguir compartiendo equipo con el robot de prueba en el laboratorio 2v2.")
-	_assert(grua.has_method("has_core_skill"), "RobotBase deberia seguir exponiendo si un arquetipo tiene skill propia.")
-	_assert(grua.has_method("get_core_skill_label"), "RobotBase deberia exponer la etiqueta corta de la skill propia.")
-	_assert(grua.has_method("use_core_skill"), "RobotBase deberia permitir activar la skill propia del arquetipo de recuperacion.")
+	_assert(grua.has_method("has_core_skill"), "RobotBase deberia seguir exponiendo si un arquetipo tiene habilidad.")
+	_assert(grua.has_method("get_core_skill_label"), "RobotBase deberia exponer la etiqueta corta de la habilidad.")
+	_assert(grua.has_method("use_core_skill"), "RobotBase deberia permitir activar la habilidad del arquetipo de recuperacion.")
 	if grua.has_method("has_core_skill"):
-		_assert(bool(grua.call("has_core_skill")), "Grua deberia arrancar con una skill propia de recuperacion activa.")
+		_assert(bool(grua.call("has_core_skill")), "Grua deberia arrancar con una habilidad de recuperacion activa.")
 	if grua.has_method("get_core_skill_label"):
-		_assert(String(grua.call("get_core_skill_label")) == "Iman", "La skill propia de Grua deberia leerse como Iman.")
+		_assert(String(grua.call("get_core_skill_label")) == "Iman", "La habilidad de Grua deberia leerse como Iman.")
 
 	var roster_label := main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RosterLabel")
 	_assert(roster_label is Label, "La escena 2v2 deberia seguir exponiendo el roster compacto.")
@@ -44,7 +44,7 @@ func _run() -> void:
 		_assert(roster_text.contains("Grua"), "El roster 2v2 deberia seguir exponiendo el arquetipo de asistencia.")
 		_assert(
 			roster_text.contains("skill Iman") or roster_text.contains("skill iman"),
-			"El roster 2v2 deberia dejar visible la nueva skill propia de Grua."
+			"El roster 2v2 deberia dejar visible la nueva habilidad de Grua."
 		)
 
 	for robot in robots:

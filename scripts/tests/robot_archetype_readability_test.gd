@@ -158,7 +158,7 @@ func _validate_core_skill_states_refresh_archetype_accent() -> void:
 	var aguja_depleted_energy := _get_accent_peak_emission_energy(aguja)
 	_assert(
 		aguja_ready_energy > aguja_depleted_energy + 0.05,
-		"El acento de arquetipo deberia latir mas fuerte cuando la skill propia esta lista que cuando ya no quedan cargas."
+		"El acento de arquetipo deberia latir mas fuerte cuando la habilidad esta lista que cuando ya no quedan cargas."
 	)
 
 	var ariete_ready_energy := _get_accent_peak_emission_energy(ariete)
@@ -172,7 +172,7 @@ func _validate_core_skill_states_refresh_archetype_accent() -> void:
 	var ariete_active_energy := _get_accent_peak_emission_energy(ariete)
 	_assert(
 		ariete_active_energy > ariete_ready_energy + 0.08,
-		"El acento de arquetipo deberia intensificarse durante la ventana activa de la skill propia."
+		"El acento de arquetipo deberia intensificarse durante la ventana activa de la habilidad."
 	)
 
 	await _cleanup_robot(aguja)

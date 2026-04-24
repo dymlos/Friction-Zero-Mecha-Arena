@@ -30,14 +30,14 @@ func _validate_ariete_exposes_a_core_ram_skill() -> void:
 		return
 
 	var robot := await _spawn_robot(config as RobotArchetypeConfig)
-	_assert(robot.has_method("has_core_skill"), "RobotBase deberia exponer si un arquetipo tiene una skill propia.")
-	_assert(robot.has_method("get_core_skill_label"), "RobotBase deberia exponer el nombre corto de la skill propia.")
+	_assert(robot.has_method("has_core_skill"), "RobotBase deberia exponer si un arquetipo tiene una habilidad.")
+	_assert(robot.has_method("get_core_skill_label"), "RobotBase deberia exponer el nombre corto de la habilidad.")
 	if robot.has_method("has_core_skill"):
-		_assert(bool(robot.call("has_core_skill")), "Ariete ya no deberia depender solo de pasivas; deberia tener una skill propia de impacto.")
+		_assert(bool(robot.call("has_core_skill")), "Ariete ya no deberia depender solo de pasivas; deberia tener una habilidad de impacto.")
 	if robot.has_method("get_core_skill_label"):
 		_assert(
 			String(robot.call("get_core_skill_label")) == "Embestida",
-			"La skill propia de Ariete deberia leerse como Embestida."
+			"La habilidad de Ariete deberia leerse como Embestida."
 		)
 
 	await _cleanup_node(robot)
@@ -53,7 +53,7 @@ func _validate_ram_skill_creates_a_short_impact_window() -> void:
 	var baseline_arm_power := source.get_effective_arm_power_multiplier()
 	var baseline_received_impulse := source.get_received_impulse_multiplier()
 
-	_assert(source.has_method("use_core_skill"), "RobotBase deberia poder activar la skill propia de Ariete.")
+	_assert(source.has_method("use_core_skill"), "RobotBase deberia poder activar la habilidad de Ariete.")
 	if not source.has_method("use_core_skill"):
 		await _cleanup_node(source)
 		return
@@ -107,7 +107,7 @@ func _validate_teams_lab_roster_reads_the_ram_state() -> void:
 	var roster_text := (roster_label as Label).text
 	_assert(
 		roster_text.contains("skill Embestida") or roster_text.contains("skill embestida"),
-		"El roster de Teams deberia dejar visible la skill propia de Ariete."
+		"El roster de Teams deberia dejar visible la habilidad de Ariete."
 	)
 
 	var used := ariete.use_core_skill()

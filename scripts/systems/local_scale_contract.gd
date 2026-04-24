@@ -22,25 +22,25 @@ static func is_polished_scale(active_slots: int) -> bool:
 
 static func get_scale_tier_label(active_slots: int) -> String:
 	if is_polished_scale(active_slots):
-		return "2-4 pulido"
-	return "5-8 validacion"
+		return "ideal para 2-4"
+	return "para 5-8 jugadores"
 
 
 static func get_mode_scale_label(active_slots: int, match_mode: int) -> String:
 	var clamped_slots := clampi(active_slots, 1, 8)
 	if match_mode == MatchController.MatchMode.TEAMS and clamped_slots >= 8:
-		return "Teams 4v4"
+		return "Equipos 4v4"
 	if match_mode == MatchController.MatchMode.TEAMS:
-		return "Teams %sP" % clamped_slots
-	return "FFA %sP" % clamped_slots
+		return "Equipos | %s jugadores" % clamped_slots
+	return "Todos contra todos | %s jugadores" % clamped_slots
 
 
 static func get_setup_status_line(active_slots: int, match_mode: int) -> String:
 	var mode_label := get_mode_scale_label(active_slots, match_mode)
 	var tier_label := get_scale_tier_label(active_slots)
 	if is_polished_scale(active_slots):
-		return "Escala | %s | %s | objetivo de UX actual" % [mode_label, tier_label]
-	return "Escala | %s | %s | soportado, requiere playtest humano" % [mode_label, tier_label]
+		return "Jugadores | %s | %s" % [mode_label, tier_label]
+	return "Jugadores | %s | %s" % [mode_label, tier_label]
 
 
 static func get_shared_screen_budget(active_slots: int) -> Dictionary:

@@ -7,6 +7,7 @@ const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const PauseController = preload("res://scripts/systems/pause_controller.gd")
 const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.gd")
+const JoypadScrollHelper = preload("res://scripts/systems/joypad_scroll_helper.gd")
 const PracticeCatalog = preload("res://scripts/systems/practice_catalog.gd")
 const PracticeDirector = preload("res://scripts/practice/practice_director.gd")
 const PracticeHud = preload("res://scripts/ui/practice_hud.gd")
@@ -83,6 +84,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+func _process(delta: float) -> void:
+	if _pause_controller.is_paused():
+		JoypadScrollHelper.apply_right_stick_scroll(practice_hud, delta)
+
+
 func _consume_match_launch_config() -> MatchLaunchConfig:
 	var shell_session := ShellSession.new()
 	return shell_session.consume_match_launch_config()
@@ -114,7 +120,7 @@ func _spawn_player_robots() -> void:
 			continue
 
 		robot_root.add_child(robot)
-		robot.display_name = "Player %s" % int(slot_spec.get("slot", index + 1))
+		robot.display_name = "Jugador %s" % int(slot_spec.get("slot", index + 1))
 		_local_session.apply_to_robot(robot, int(slot_spec.get("slot", index + 1)))
 		robot.refresh_input_setup()
 		robot.global_position = Vector3((index * 2.4) - ((slot_specs.size() - 1) * 1.2), 1.2, 0.0)
@@ -271,7 +277,7 @@ func _build_pause_lines() -> Array[String]:
 	]
 	lines.append("Acciones")
 	lines.append_array(_build_pause_action_lines(["resume", "restart", "return_to_menu"]))
-	lines.append("Quick settings")
+	lines.append("Ajustes rapidos")
 	lines.append_array(_build_pause_quick_setting_lines())
 	lines.append("Dispositivos")
 	lines.append_array(_build_pause_device_lines())
@@ -298,10 +304,10 @@ func _build_pause_quick_setting_lines() -> Array[String]:
 	var selected_action_id := _pause_controller.get_selected_action_id()
 	var hud_label := "contextual" if _hud_detail_mode == MatchConfig.HudDetailMode.CONTEXTUAL else "explicito"
 	var specs := [
-		{"id": "toggle_hud", "label": "HUD", "value": hud_label},
-		{"id": "audio_master", "label": "Master", "value": "%d%%" % roundi(_get_audio_volume("master") * 100.0)},
+		{"id": "toggle_hud", "label": "Ayuda", "value": hud_label},
+		{"id": "audio_master", "label": "General", "value": "%d%%" % roundi(_get_audio_volume("master") * 100.0)},
 		{"id": "audio_music", "label": "Musica", "value": "%d%%" % roundi(_get_audio_volume("music") * 100.0)},
-		{"id": "audio_sfx", "label": "SFX", "value": "%d%%" % roundi(_get_audio_volume("sfx") * 100.0)},
+		{"id": "audio_sfx", "label": "Efectos", "value": "%d%%" % roundi(_get_audio_volume("sfx") * 100.0)},
 	]
 	var lines: Array[String] = []
 	for spec in specs:
@@ -383,13 +389,13 @@ func _action_label_to_id(label: String) -> String:
 			return "restart"
 		"Volver al menu":
 			return "return_to_menu"
-		"HUD":
+		"HUD", "Ayuda en pantalla":
 			return "toggle_hud"
-		"Master":
+		"Master", "Volumen general":
 			return "audio_master"
 		"Musica":
 			return "audio_music"
-		"SFX":
+		"SFX", "Efectos":
 			return "audio_sfx"
 	return ""
 

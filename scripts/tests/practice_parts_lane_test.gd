@@ -51,7 +51,7 @@ func _run() -> void:
 	_assert(progress_text.contains("Daño visible"), "PartsLane deberia mostrar dano visible.")
 	if lane.has_method("has_seen_required_skill"):
 		_assert(bool(lane.call("has_seen_required_skill")), "PartsLane deberia registrar que Corte fue visto.")
-	_assert(int(target_robot.get_active_part_count()) < 4, "PartsLane deberia reflejar dano modular real.")
+	_assert(int(target_robot.get_active_part_count()) < 4, "PartsLane deberia reflejar partes danadas real.")
 	_assert(bool(lane.call("is_lane_completed")), "PartsLane deberia completar cuando Corte fue visto y el blanco pierde una parte.")
 
 	await _cleanup_node(player_robot)
@@ -110,7 +110,7 @@ func _assert_lane_contract(lane: Node) -> void:
 	if lane.has_method("get_required_skill_label"):
 		_assert(
 			String(lane.call("get_required_skill_label")) == "Corte",
-			"PartsLane debe usar Corte como ventana activa de skill + dano modular."
+			"PartsLane debe usar Corte como ventana activa de skill + partes danadas."
 		)
 	_assert(
 		lane.has_method("has_seen_required_skill"),

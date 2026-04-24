@@ -15,8 +15,8 @@ func _ready() -> void:
 		"Advertencia | El borde norte vuelve a abrirse tras la cuenta regresiva.",
 	])
 	match_hud.show_roster([
-		"Hard | Player 1 / Ariete | Apoyo activo | estabilizador > Player 2 / Grua | usa / | objetivo ,/. | vacio",
-		"Hard | Player 2 / Grua | en pie | 3/4 partes | energia 2/1/4",
-		"Hard | Player 3 / Cizalla | interferido por gate | 4/4 partes | energia 2/2/2",
-		"Hard | Player 4 / Patin | fuera de rango | 4/4 partes | energia 1/3/2",
+		"Avanzado | P1 / Ariete | Apoyo activo | estabilizador > P2 / Grua | usa / | objetivo ,/. | vacio",
+		"Avanzado | P2 / Grua | en pie | 3/4 partes | energia 2/1/4",
+		"Avanzado | P3 / Cizalla | interferido por gate | 4/4 partes | energia 2/2/2",
+		"Avanzado | P4 / Patin | fuera de rango | 4/4 partes | energia 1/3/2",
 	])

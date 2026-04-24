@@ -47,7 +47,7 @@ theme_override_constants/separation = 6
 [node name="ModuleTitle" type="Label" parent="Root/Panel/Margin/VBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Modulo"
+text = "Practica"
 
 [node name="ModuleValueLabel" type="Label" parent="Root/Panel/Margin/VBox"]
 unique_name_in_owner = true
@@ -116,8 +116,15 @@ layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Pausa"
 
-[node name="PauseValueLabel" type="Label" parent="Root/Panel/Margin/VBox"]
+[node name="PauseScroll" type="ScrollContainer" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="PauseValueLabel" type="Label" parent="Root/Panel/Margin/VBox/PauseScroll"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 autowrap_mode = 2
 text = ""

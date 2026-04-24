@@ -83,7 +83,7 @@ func _assert_practice_bootstrap(slot_specs: Array, expected_players: int) -> voi
 	if practice_mode.has_method("get_hud_detail_mode"):
 		_assert(
 			int(practice_mode.call("get_hud_detail_mode")) == MatchConfig.HudDetailMode.EXPLICIT,
-			"PracticeMode deberia quedar en HUD explicito por defecto."
+			"PracticeMode deberia quedar en ayuda visible por defecto."
 		)
 	_assert(
 		String(practice_mode.call("get_active_module_id")) == "movimiento",

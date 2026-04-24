@@ -116,7 +116,7 @@ func _run() -> void:
 		)
 		_assert(
 			bool(module_spec.get("explicit_hud_default", false)),
-			"Practica deberia declarar HUD explicito por defecto por modulo."
+			"Practica deberia declarar ayuda visible por defecto por modulo."
 		)
 
 		var resolved_module: Dictionary = PracticeCatalog.get_module(expected_module_id)
@@ -128,7 +128,7 @@ func _run() -> void:
 	var first_pass_ids := PracticeCatalog.get_first_pass_module_ids()
 	_assert(
 		first_pass_ids == ["movimiento", "impacto", "partes", "sandbox"],
-		"El primer pase M8 debe priorizar movimiento, choque, skill/dano modular y sandbox."
+		"El primer pase M8 debe priorizar movimiento, choque, skill/partes danadas y sandbox."
 	)
 	for module_spec in modules:
 		var module_id := String(module_spec.get("id", ""))
@@ -138,7 +138,7 @@ func _run() -> void:
 		)
 		_assert(
 			String(module_spec.get("hud_default", "")) == "explicito",
-			"%s debe declarar HUD explicito por defecto." % module_id
+			"%s debe declarar ayuda visible por defecto." % module_id
 		)
 		_assert(
 			module_spec.get("teaching_tags", []) is Array and not (module_spec.get("teaching_tags", []) as Array).is_empty(),
@@ -150,7 +150,7 @@ func _run() -> void:
 	)
 	_assert(
 		(PracticeCatalog.get_module("partes").get("teaching_tags", []) as Array).has("dano_modular"),
-		"`partes` debe cubrir dano modular como prioridad M8."
+		"`partes` debe cubrir partes danadas como prioridad M8."
 	)
 
 	_assert(

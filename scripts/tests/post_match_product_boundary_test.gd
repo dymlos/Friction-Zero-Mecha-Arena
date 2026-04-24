@@ -7,8 +7,8 @@ const RESULT_LINE_BUDGET := 22
 const FORBIDDEN_RESULT_FRAGMENTS := [
 	"How to Play",
 	"Controles",
-	"Easy",
-	"Hard",
+	"Simple",
+	"Avanzado",
 	"Tutorial",
 	"Practica",
 	"energia Q/E",

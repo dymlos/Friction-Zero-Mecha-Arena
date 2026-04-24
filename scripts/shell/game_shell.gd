@@ -8,6 +8,7 @@ const MAIN_MENU_SCENE := preload("res://scenes/shell/main_menu.tscn")
 const PRACTICE_SETUP_SCENE := preload("res://scenes/shell/practice_setup.tscn")
 const SETTINGS_SCENE := preload("res://scenes/shell/settings_screen.tscn")
 const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.gd")
+const JoypadScrollHelper = preload("res://scripts/systems/joypad_scroll_helper.gd")
 const LocalSessionDraft = preload("res://scripts/systems/local_session_draft.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
@@ -39,6 +40,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_update_stick_navigation(delta)
+	if is_instance_valid(_active_screen):
+		JoypadScrollHelper.apply_right_stick_scroll(_active_screen, delta)
 
 
 func _unhandled_input(event: InputEvent) -> void:

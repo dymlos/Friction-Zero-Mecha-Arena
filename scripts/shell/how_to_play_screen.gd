@@ -31,8 +31,8 @@ func _ready() -> void:
 	_install_qa_ids()
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background_alt
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	title_label.text = "How to Play"
-	subtitle_label.text = "Reglas base del match, controles Easy/Hard y lectura general sin repetir identidad de Characters."
+	title_label.text = "Como jugar"
+	subtitle_label.text = "Reglas basicas para entrar a una partida, sobrevivir y entender por que ganaste o perdiste."
 	practice_button.pressed.connect(open_selected_topic_practice)
 	back_button.text = "Volver"
 	back_button.pressed.connect(go_back)
@@ -142,9 +142,9 @@ func _apply_surface_scope() -> void:
 	if pause_scope:
 		practice_button.disabled = true
 	subtitle_label.text = (
-		"Lectura breve de reglas durante pausa. Practica queda fuera del match congelado."
+		"Consulta las reglas sin salir de la pausa."
 		if pause_scope
-		else "Reglas base del match, controles Easy/Hard y lectura general sin repetir identidad de Characters."
+		else "Reglas basicas para entrar a una partida, sobrevivir y entender por que ganaste o perdiste."
 	)
 
 

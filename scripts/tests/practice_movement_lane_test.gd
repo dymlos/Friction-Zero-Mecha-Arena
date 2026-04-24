@@ -29,7 +29,7 @@ func _run() -> void:
 	_assert_lane_contract(lane)
 	var progress_lines := Array(lane.call("get_progress_lines"))
 	_assert(
-		not progress_lines.is_empty() and String(progress_lines[0]).contains("Easy"),
+		not progress_lines.is_empty() and String(progress_lines[0]).contains("Simple"),
 		"MovementLane deberia mostrar Easy o Hard en progreso."
 	)
 

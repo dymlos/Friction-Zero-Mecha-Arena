@@ -109,11 +109,11 @@ func _sync_lane_state() -> void:
 	if _ally_part_restored and _enemy_part_denied and not _lane_completed:
 		set_callout_lines([
 			"Aprendiste: devolver ayuda al comeback y negar partes cierra espacio.",
-			"Siguiente sugerido: Sandbox.",
+			"Siguiente sugerido: modo libre.",
 		])
 		set_context_card_lines([
 			"Aprendiste a convertir una parte caida en ventaja tactica.",
-			"Siguiente sugerido: Sandbox.",
+			"Siguiente sugerido: modo libre.",
 		])
 		complete_lane()
 

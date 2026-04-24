@@ -19,12 +19,12 @@ func _run() -> void:
 
 	setup.call("set_match_mode", MatchController.MatchMode.FFA)
 	var default_variant_line := String(setup.call("get_variant_summary_line"))
-	_assert(default_variant_line.contains("Score por causa"), "FFA debe arrancar en Score por causa.")
-	_assert(default_variant_line.contains("principal"), "Score por causa debe comunicarse como variante principal.")
+	_assert(default_variant_line.contains("Puntos por eliminacion"), "FFA debe arrancar en Puntos por eliminacion.")
+	_assert(default_variant_line.contains("principal"), "Puntos por eliminacion debe comunicarse como variante principal.")
 	setup.call("cycle_mode_variant")
 	var cycled_variant_line := String(setup.call("get_variant_summary_line"))
-	_assert(cycled_variant_line.contains("Ultimo vivo"), "Setup FFA debe poder ciclar a Ultimo vivo.")
-	_assert(cycled_variant_line.contains("alternativa"), "Ultimo vivo debe comunicarse como variante alternativa.")
+	_assert(cycled_variant_line.contains("Ultimo en pie"), "Setup FFA debe poder ciclar a Ultimo en pie.")
+	_assert(cycled_variant_line.contains("alternativa"), "Ultimo en pie debe comunicarse como variante alternativa.")
 
 	var launch_config = setup.call("build_launch_config")
 	_assert(String(launch_config.mode_variant_id) == MatchModeVariantCatalog.VARIANT_LAST_ALIVE, "Launch config debe transportar last_alive.")

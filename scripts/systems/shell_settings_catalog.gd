@@ -12,38 +12,38 @@ static func get_sections() -> Array[Dictionary]:
 		{
 			"id": "audio",
 			"title": "Audio",
-			"summary": "Master, musica y SFX persisten para shell, match y practica.",
+			"summary": "Volumen general, musica y efectos.",
 		},
 		{
 			"id": "video",
 			"title": "Video",
-			"summary": "Ventana y vsync globales. Solo se tocan desde menu principal.",
+			"summary": "Modo de ventana y sincronizacion vertical.",
 		},
 		{
 			"id": "hud",
-			"title": "HUD",
-			"summary": "Contextual por defecto en match competitivo; explicito disponible para lectura completa. Practica arranca explicita.",
+			"title": "Ayudas",
+			"summary": "Elige cuanta informacion se muestra durante la partida.",
 		},
 		{
 			"id": "controls",
 			"title": "Controles",
-			"summary": "Referencia corta de perfiles fijos y joypads conectados.",
+			"summary": "Consulta botones de teclado y joysticks conectados.",
 		},
 	]
 
 
 static func get_window_mode_options() -> Array[Dictionary]:
 	return [
-		{"value": UserSettings.WINDOW_MODE_WINDOWED, "label": "Windowed"},
-		{"value": UserSettings.WINDOW_MODE_BORDERLESS, "label": "Borderless"},
-		{"value": UserSettings.WINDOW_MODE_FULLSCREEN, "label": "Fullscreen"},
+		{"value": UserSettings.WINDOW_MODE_WINDOWED, "label": "Ventana"},
+		{"value": UserSettings.WINDOW_MODE_BORDERLESS, "label": "Sin bordes"},
+		{"value": UserSettings.WINDOW_MODE_FULLSCREEN, "label": "Pantalla completa"},
 	]
 
 
 static func get_hud_mode_options() -> Array[Dictionary]:
 	return [
-		{"value": MatchConfig.HudDetailMode.CONTEXTUAL, "label": "Contextual"},
-		{"value": MatchConfig.HudDetailMode.EXPLICIT, "label": "Explicito"},
+		{"value": MatchConfig.HudDetailMode.CONTEXTUAL, "label": "Limpia"},
+		{"value": MatchConfig.HudDetailMode.EXPLICIT, "label": "Completa"},
 	]
 
 
@@ -64,8 +64,8 @@ static func get_keyboard_profile_lines() -> Array[String]:
 
 static func get_control_mode_lines() -> Array[String]:
 	return [
-		"Easy | apunta con el movimiento",
-		"Hard | torso independiente y aim dedicado",
+		"Simple | el robot mira hacia donde se mueve",
+		"Avanzado | el torso apunta separado del movimiento",
 	]
 
 
@@ -75,6 +75,6 @@ static func get_connected_joypad_lines() -> Array[String]:
 
 static func get_controls_note() -> String:
 	return (
-		"Menu | %s. Sin remapeo libre en M9: perfiles de teclado fijos y referencia visible."
+		"Menu | %s. Por ahora se usan perfiles fijos; remapeo libre vendra despues."
 		% InputPromptCatalog.get_menu_navigation_help_line(true, true)
 	)

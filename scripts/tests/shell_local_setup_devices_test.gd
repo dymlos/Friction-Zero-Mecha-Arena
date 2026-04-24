@@ -53,7 +53,7 @@ func _run() -> void:
 	_assert(lines.size() == 8, "Setup local deberia mantener P1-P8 visibles.")
 	_assert(String(lines[0]).contains("P1") and String(lines[0]).contains("teclado"), "P1 deberia leerse como teclado.")
 	_assert(String(lines[1]).contains("P2") and String(lines[1]).contains("joy 12"), "P2 deberia mostrar joypad reclamado.")
-	_assert(String(lines[1]).contains("Hard"), "P2 deberia conservar modo Hard visible.")
+	_assert(String(lines[1]).contains("Avanzado"), "P2 deberia conservar modo Hard visible.")
 	_assert(String(lines[1]).contains("ataca") or String(lines[1]).contains("Joypad"), "P2 deberia mostrar prompt corto por dispositivo.")
 	_assert(String(lines[2]).contains("inactivo"), "P3 deberia quedar visible como inactivo.")
 	_assert(String(lines[4]).contains("P5") and String(lines[4]).contains("Aguja"), "P5 deberia quedar visible con Aguja.")

@@ -114,8 +114,8 @@ func _run() -> void:
 
 	var controls_summary := String(settings_screen.call("get_controls_summary_text"))
 	_assert(
-		controls_summary.contains("Easy") and controls_summary.contains("Hard"),
-		"Settings deberia explicar la referencia compacta Easy/Hard."
+		controls_summary.contains("Simple") and controls_summary.contains("Avanzado"),
+		"Settings deberia explicar la referencia compacta Simple/Avanzado."
 	)
 	_assert(
 		controls_summary.to_lower().contains("joypad"),

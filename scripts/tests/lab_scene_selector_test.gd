@@ -135,7 +135,7 @@ func _validate_lab_scene_selector_preserves_runtime_loadout_between_variants() -
 	await process_frame
 
 	_assert(main.has_method("cycle_selected_lab_archetype"), "Main deberia poder cambiar arquetipos runtime antes de saltar de escena.")
-	_assert(main.has_method("toggle_selected_lab_control_mode"), "Main deberia poder alternar Easy/Hard runtime antes de saltar de escena.")
+	_assert(main.has_method("toggle_selected_lab_control_mode"), "Main deberia poder alternar Simple/Avanzado runtime antes de saltar de escena.")
 	_assert(main.has_method("cycle_lab_selector_slot"), "Main deberia poder mover el selector runtime antes de saltar de escena.")
 	if not (
 		main.has_method("cycle_selected_lab_archetype")
@@ -202,7 +202,7 @@ func _validate_lab_scene_selector_preserves_runtime_loadout_between_variants() -
 		"Tras cambiar de escena con F6, el selector runtime deberia seguir apuntando al mismo slot elegido."
 	)
 	_assert(
-		String(active_scene.call("get_lab_selector_summary_line")).contains("P2 Cizalla Easy"),
+		String(active_scene.call("get_lab_selector_summary_line")).contains("P2 Cizalla Simple"),
 		"El resumen runtime de la escena recargada deberia reflejar el slot y loadout persistidos."
 	)
 
@@ -232,7 +232,7 @@ func _validate_lab_scene_selector_preserves_hud_detail_mode_between_variants() -
 
 	_assert(
 		round_label.text.contains("Modo |"),
-		"El laboratorio base deberia arrancar en HUD explicito para validar el override runtime."
+		"El laboratorio base deberia arrancar en ayuda visible para validar el override runtime."
 	)
 
 	main.call("cycle_hud_detail_mode")
@@ -365,7 +365,7 @@ func _validate_lab_scene_selector_clears_selected_support_state_between_variants
 		"Tras `F6`, el laboratorio deberia avanzar al siguiente variante esperada."
 	)
 	_assert(
-		String(active_scene.call("get_lab_selector_summary_line")).contains("P1 Grua Hard"),
+		String(active_scene.call("get_lab_selector_summary_line")).contains("P1 Grua Avanzado"),
 		"Tras `F6`, el selector runtime deberia recuperar el loadout runtime del slot seleccionado y volver a describir el robot activo."
 	)
 	_assert(

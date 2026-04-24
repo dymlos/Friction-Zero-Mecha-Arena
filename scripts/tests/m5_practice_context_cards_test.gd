@@ -22,7 +22,7 @@ func _run() -> void:
 		for line in lines:
 			_assert(String(line).length() <= 96, "%s tiene una linea demasiado larga." % module_id)
 		_assert(bool(module.get("supports_two_players", false)), "%s debe soportar 1-2 jugadores en M5." % module_id)
-		_assert(bool(module.get("explicit_hud_default", false)), "%s debe declarar HUD explicito por defecto." % module_id)
+		_assert(bool(module.get("explicit_hud_default", false)), "%s debe declarar ayuda visible por defecto." % module_id)
 
 	var director := PracticeDirector.new()
 	_assert(director.has_method("get_context_card_lines"), "PracticeDirector debe exponer tarjeta contextual.")

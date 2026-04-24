@@ -70,7 +70,7 @@ func _verify_shell_entry_and_configuration() -> void:
 		return
 
 	_assert(setup.has_method("build_launch_config"), "Local setup debe construir MatchLaunchConfig real.")
-	_assert(setup.has_method("set_slot_control_mode"), "Local setup debe editar Easy/Hard por slot.")
+	_assert(setup.has_method("set_slot_control_mode"), "Local setup debe editar Simple/Avanzado por slot.")
 	_assert(setup.has_method("set_slot_input_source"), "Local setup debe editar teclado/joypad por slot.")
 	_assert(setup.has_method("set_match_mode"), "Local setup debe editar modo Teams/FFA.")
 
@@ -129,7 +129,7 @@ func _verify_practice_is_part_of_product_cut() -> void:
 
 	_assert(practice_setup.has_method("get_selected_module_id"), "PracticeSetup debe exponer modulo seleccionado.")
 	_assert(practice_setup.has_method("build_launch_config"), "PracticeSetup debe construir launch config real.")
-	_assert(practice_setup.has_method("get_player_scope_line"), "PracticeSetup debe comunicar 1-2P/HUD explicito.")
+	_assert(practice_setup.has_method("get_player_scope_line"), "PracticeSetup debe comunicar 1-2P/ayuda visible.")
 	_assert(
 		String(practice_setup.call("get_selected_module_id")) == "impacto",
 		"Practica debe poder abrir modulo contextual desde shell."
@@ -137,7 +137,7 @@ func _verify_practice_is_part_of_product_cut() -> void:
 	if practice_setup.has_method("get_player_scope_line"):
 		var scope_line := String(practice_setup.call("get_player_scope_line"))
 		_assert(scope_line.contains("1-2"), "Practica debe comunicar alcance 1-2 jugadores.")
-		_assert(scope_line.contains("HUD explicito"), "Practica debe comunicar HUD explicito por defecto.")
+		_assert(scope_line.contains("ayuda visible"), "Practica debe comunicar ayuda visible por defecto.")
 
 	var practice_launch_config: Variant = practice_setup.call("build_launch_config")
 	_assert(practice_launch_config is MatchLaunchConfig, "PracticeSetup debe emitir MatchLaunchConfig.")

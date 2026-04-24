@@ -3,7 +3,7 @@ class_name PracticeCatalog
 
 const FIRST_PASS_MODULE_IDS := ["movimiento", "impacto", "partes", "sandbox"]
 const PLAYER_SCOPE_LABEL := "1-2 jugadores locales"
-const HUD_DEFAULT_LABEL := "explicito"
+const HUD_DEFAULT_LABEL := "completa"
 
 
 static func get_modules() -> Array:
@@ -11,7 +11,7 @@ static func get_modules() -> Array:
 		{
 			"id": "movimiento",
 			"label": "Movimiento",
-			"summary": "Patinar, frenar y volver a entrar con control usando la misma pista en Easy o Hard.",
+			"summary": "Patinar, frenar y volver a entrar con control en modo simple o avanzado.",
 			"recommended_roster_entry_id": "patin",
 			"onboarding_topic_ids": ["controls"],
 			"lane_scene_path": "res://scenes/practice/stations/movement_lane.tscn",
@@ -24,14 +24,14 @@ static func get_modules() -> Array:
 				"title": "Que probar",
 				"lines": [
 					"Arranca tarde, desliza libre y frena antes de perder lectura.",
-					"Compara Easy y Hard sin cambiar la pista.",
+					"Compara control simple y avanzado sin cambiar de ejercicio.",
 				],
 			},
 		},
 		{
 			"id": "impacto",
 			"label": "Impacto",
-			"summary": "Leer angulo, timing y borde para desplazar un objetivo con un choque decisivo.",
+			"summary": "Leer angulo, momento y borde para desplazar un objetivo con un choque claro.",
 			"recommended_roster_entry_id": "ariete",
 			"onboarding_topic_ids": ["victory", "controls"],
 			"lane_scene_path": "res://scenes/practice/stations/impact_lane.tscn",
@@ -51,7 +51,7 @@ static func get_modules() -> Array:
 		{
 			"id": "energia",
 			"label": "Energia",
-			"summary": "Sentir la diferencia entre piernas, brazos y Overdrive con cambios visibles en juego.",
+			"summary": "Probar como cambian piernas, brazos y Overdrive en movimiento real.",
 			"recommended_roster_entry_id": "aguja",
 			"onboarding_topic_ids": ["energy"],
 			"lane_scene_path": "res://scenes/practice/stations/energy_lane.tscn",
@@ -71,7 +71,7 @@ static func get_modules() -> Array:
 		{
 			"id": "partes",
 			"label": "Partes",
-			"summary": "Usar Corte para abrir una ventana de desarme y leer dano modular en el cuerpo.",
+			"summary": "Usar Corte para abrir una ventana de desarme y leer dano en el cuerpo.",
 			"recommended_roster_entry_id": "cizalla",
 			"onboarding_topic_ids": ["parts"],
 			"lane_scene_path": "res://scenes/practice/stations/parts_lane.tscn",
@@ -110,8 +110,8 @@ static func get_modules() -> Array:
 		},
 		{
 			"id": "sandbox",
-			"label": "Sandbox",
-			"summary": "Combinar movimiento, impacto, energia y partes sin objetivo de fallo.",
+			"label": "Libre",
+			"summary": "Combinar movimiento, impacto, energia y partes sin objetivo obligatorio.",
 			"recommended_roster_entry_id": "patin",
 			"alternate_roster_entry_ids": ["ancla"],
 			"onboarding_topic_ids": ["controls", "energy", "parts", "recovery"],

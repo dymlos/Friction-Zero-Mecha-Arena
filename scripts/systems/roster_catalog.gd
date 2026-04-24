@@ -31,9 +31,9 @@ const CONFIG_BY_ID := {
 const ARCHETYPE_FAMILIES := {
 	"ariete": "Empuje / tanque",
 	"grua": "Asistencia / rescate",
-	"cizalla": "Dismantler",
+	"cizalla": "Desarme",
 	"patin": "Movilidad / reposicion",
-	"aguja": "Poke / skillshot",
+	"aguja": "Disparo preciso",
 	"ancla": "Control / zona",
 }
 const MODE_NOTES := {

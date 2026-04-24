@@ -45,10 +45,10 @@ func _run() -> void:
 	var explicit_round := round_label.text
 	var explicit_roster := roster_label.text
 	var explicit_score_line := _find_line_with_prefix(explicit_round, "Marcador |")
-	_assert(explicit_round.contains("Modo |"), "El HUD explicito deberia dejar visible el modo de match.")
-	_assert(explicit_round.contains("Objetivo |"), "El HUD explicito deberia dejar visible el objetivo del match.")
-	_assert(explicit_round.contains("Lab |"), "El HUD explicito deberia dejar visible la metadata del laboratorio.")
-	_assert(explicit_round.contains("Control P1 |"), "El HUD explicito deberia dejar visible la referencia compacta del slot seleccionado.")
+	_assert(explicit_round.contains("Modo |"), "El ayuda visible deberia dejar visible el modo de match.")
+	_assert(explicit_round.contains("Objetivo |"), "El ayuda visible deberia dejar visible el objetivo del match.")
+	_assert(explicit_round.contains("Lab |"), "El ayuda visible deberia dejar visible la metadata del laboratorio.")
+	_assert(explicit_round.contains("Control P1 |"), "El ayuda visible deberia dejar visible la referencia compacta del slot seleccionado.")
 	_assert(explicit_roster.contains("4/4 partes"), "El roster explicito deberia mostrar partes activas incluso si no hubo daño.")
 	_assert(explicit_roster.contains("Eq"), "El roster explicito deberia mostrar el estado energetico balanceado.")
 	_assert(explicit_roster.contains("WASD"), "El roster explicito deberia mantener visible la referencia de controles.")

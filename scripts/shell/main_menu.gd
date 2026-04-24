@@ -29,9 +29,9 @@ func _ready() -> void:
 	subtitle_label.text = ""
 	subtitle_label.visible = false
 	play_local_button.text = "Jugar local"
-	characters_button.text = "Characters"
-	how_to_play_button.text = "How to Play"
-	settings_button.text = "Settings"
+	characters_button.text = "Robots"
+	how_to_play_button.text = "Como jugar"
+	settings_button.text = "Opciones"
 	practice_button.text = "Practica"
 	exit_button.text = "Salir"
 	play_local_button.pressed.connect(_on_play_local_pressed)

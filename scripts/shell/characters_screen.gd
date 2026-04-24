@@ -50,8 +50,8 @@ func _ready() -> void:
 	_install_qa_ids()
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	title_label.text = "Characters"
-	subtitle_label.text = "Roster competitivo visible. Identidad por robot, sin mezclar reglas generales del match."
+	title_label.text = "Robots"
+	subtitle_label.text = "Elige un robot y mira rapido como pelea, que riesgo tiene y que botones usa."
 	teaching_focus_filter_button.text = "Foco inicial"
 	all_filter_button.text = "Todos"
 	impact_filter_button.text = "Impacto"
@@ -167,8 +167,8 @@ func _apply_entry(entry: Dictionary) -> void:
 	name_label.modulate = accent_color.lightened(0.12)
 	role_value_label.text = String(entry.get("role", ""))
 	var mode_notes: Dictionary = entry.get("mode_notes", {})
-	ffa_mode_value_label.text = "FFA | %s" % String(mode_notes.get("ffa", ""))
-	teams_mode_value_label.text = "Teams | %s" % String(mode_notes.get("teams", ""))
+	ffa_mode_value_label.text = "Todos contra todos | %s" % String(mode_notes.get("ffa", ""))
+	teams_mode_value_label.text = "Equipos | %s" % String(mode_notes.get("teams", ""))
 	fantasy_value_label.text = String(entry.get("fantasy", ""))
 	strength_value_label.text = String(entry.get("strength", ""))
 	risk_value_label.text = String(entry.get("risk", ""))
@@ -194,9 +194,9 @@ func _apply_surface_scope() -> void:
 	if not is_node_ready():
 		return
 	subtitle_label.text = (
-		"Identidad del roster durante pausa, sin cambiar seleccion de slots."
+		"Consulta los robots sin cambiar la partida."
 		if _surface_scope == SURFACE_SCOPE_PAUSE
-		else "Roster competitivo visible. Identidad por robot, sin mezclar reglas generales del match."
+		else "Elige un robot y mira rapido como pelea, que riesgo tiene y que botones usa."
 	)
 
 

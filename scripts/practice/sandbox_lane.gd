@@ -4,7 +4,7 @@ class_name SandboxLane
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
 const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 
-const GUIDED_FOCUS_LINES := ["movimiento", "choque", "skill propia", "dano modular", "recuperacion"]
+const GUIDED_FOCUS_LINES := ["movimiento", "choque", "habilidad", "partes danadas", "recuperacion"]
 
 var _fixture_robot: RobotBase = null
 
@@ -12,8 +12,8 @@ var _fixture_robot: RobotBase = null
 func configure_lane(module_spec: Dictionary, player_robots: Array) -> void:
 	super.configure_lane(module_spec, player_robots)
 	set_objective_lines([
-		"Combina movimiento, choque, skill propia, partes y recuperacion.",
-		"No hay fallo: prueba sistemas reales sin score competitivo.",
+		"Combina movimiento, choque, habilidad, partes y recuperacion.",
+		"No hay fallo: prueba libremente sin puntaje competitivo.",
 	])
 	set_callout_lines([
 		"Experimenta sin perder lectura de cuerpo y borde.",
@@ -49,7 +49,7 @@ func _ensure_fixture_robot() -> void:
 	add_child(_fixture_robot)
 	var roster_entry := RosterCatalog.get_shell_roster_entry("patin")
 	var archetype_config = roster_entry.get("config", null)
-	_fixture_robot.display_name = "Sandbox"
+	_fixture_robot.display_name = "Robot de prueba"
 	_fixture_robot.is_player_controlled = false
 	_fixture_robot.team_id = -1
 	if archetype_config != null:
@@ -67,6 +67,6 @@ func _sync_lane_state() -> void:
 
 	set_progress_lines([
 		"Jugadores activos | %s" % player_count,
-		"Focos | %s" % " / ".join(get_guided_sandbox_focus_lines()),
-		"Fixture | %s" % ("listo" if is_instance_valid(_fixture_robot) else "pendiente"),
+		"Practicar | %s" % " / ".join(get_guided_sandbox_focus_lines()),
+		"Robot de prueba | %s" % ("listo" if is_instance_valid(_fixture_robot) else "pendiente"),
 	])

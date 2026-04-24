@@ -27,10 +27,10 @@ func _run() -> void:
 			ffa_variants.size() == 2
 			and String(ffa_variants[0].get("id", "")) == "score_by_cause"
 			and String(ffa_variants[1].get("id", "")) == "last_alive",
-			"FFA deberia exponer Score por causa y Ultimo vivo."
+			"FFA deberia exponer Puntos por eliminacion y Ultimo en pie."
 		)
 		_assert(
-			String(catalog_script.get_variant("score_by_cause").get("label", "")) == "Score por causa",
+			String(catalog_script.get_variant("score_by_cause").get("label", "")) == "Puntos por eliminacion",
 			"La variante score_by_cause deberia mostrar label legible."
 		)
 
@@ -49,12 +49,12 @@ func _run() -> void:
 		draft.call("cycle_mode_variant")
 		_assert(
 			String(draft.call("get_selected_mode_variant_id")) == "last_alive",
-			"Ciclar FFA debe llegar a Ultimo vivo."
+			"Ciclar FFA debe llegar a Ultimo en pie."
 		)
 		draft.call("set_match_mode", MatchController.MatchMode.TEAMS)
 		_assert(
 			String(draft.call("get_selected_mode_variant_id")) == "score_by_cause",
-			"Teams debe sanear Ultimo vivo a Score por causa."
+			"Teams debe sanear Ultimo en pie a Puntos por eliminacion."
 		)
 
 	var setup := LOCAL_MATCH_SETUP_SCENE.instantiate()
@@ -65,8 +65,8 @@ func _run() -> void:
 	_assert(setup.has_method("get_variant_summary_line"), "LocalMatchSetup deberia exponer resumen de variante.")
 	if setup.has_method("get_variant_summary_line"):
 		_assert(
-			String(setup.call("get_variant_summary_line")).contains("Variante | Score por causa"),
-			"LocalMatchSetup deberia mostrar `Variante | Score por causa`."
+			String(setup.call("get_variant_summary_line")).contains("Reglas | Puntos por eliminacion"),
+			"LocalMatchSetup deberia mostrar `Reglas | Puntos por eliminacion`."
 		)
 	if setup.has_method("build_launch_config"):
 		var launch_config: Variant = setup.call("build_launch_config")

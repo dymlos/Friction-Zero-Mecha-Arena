@@ -914,7 +914,7 @@ func get_core_skill_status_summary() -> String:
 	if not has_core_skill():
 		return ""
 
-	return "skill %s %s/%s" % [
+	return "habilidad %s %s/%s" % [
 		get_core_skill_label(),
 		get_core_skill_charge_count(),
 		get_core_skill_max_charges(),

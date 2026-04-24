@@ -94,8 +94,8 @@ func _ready() -> void:
 	how_to_play_button.pressed.connect(_on_how_to_play_pressed)
 	practice_button.pressed.connect(_on_practice_pressed)
 	start_button.text = "Iniciar"
-	characters_button.text = "Characters"
-	how_to_play_button.text = "How to Play"
+	characters_button.text = "Robots"
+	how_to_play_button.text = "Como jugar"
 	practice_button.text = "Practica"
 	back_button.text = "Volver"
 	_refresh_view()
@@ -212,7 +212,7 @@ func get_variant_summary_line() -> String:
 
 
 func _refresh_view() -> void:
-	mode_value_label.text = "FFA" if _session_draft.match_mode == MatchController.MatchMode.FFA else "Equipos"
+	mode_value_label.text = "Todos contra todos" if _session_draft.match_mode == MatchController.MatchMode.FFA else "Equipos"
 	teams_button.disabled = _session_draft.match_mode == MatchController.MatchMode.TEAMS
 	ffa_button.disabled = _session_draft.match_mode == MatchController.MatchMode.FFA
 	var slot_lines := get_slot_summary_lines()
@@ -244,7 +244,7 @@ func _build_slot_state_button_text(player_slot: int) -> String:
 	var slot_info := _session_draft.get_slot_info(player_slot)
 	if not bool(slot_info.get("active", false)):
 		return "P%s | activar" % player_slot
-	var mode_label := "Hard" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Easy"
+	var mode_label := "Avanzado" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Simple"
 	var input_source := String(slot_info.get("input_source", LocalSessionDraft.INPUT_SOURCE_KEYBOARD))
 	if input_source == LocalSessionDraft.INPUT_SOURCE_JOYPAD:
 		var connection_label := "ok" if bool(slot_info.get("device_connected", false)) else "sin joy"

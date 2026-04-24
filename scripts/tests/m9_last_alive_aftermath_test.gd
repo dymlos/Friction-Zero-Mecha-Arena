@@ -39,7 +39,7 @@ func _run() -> void:
 	await process_frame
 
 	var robots := _get_scene_robots(main)
-	_assert(robots.size() >= 4, "Ultimo vivo necesita cuatro robots FFA.")
+	_assert(robots.size() >= 4, "Ultimo en pie necesita cuatro robots FFA.")
 	if robots.size() < 4:
 		await _cleanup_node(main)
 		_finish()
@@ -50,7 +50,7 @@ func _run() -> void:
 
 	robots[0].fall_into_void()
 	await create_timer(0.1).timeout
-	_assert(get_nodes_in_group("ffa_aftermath_pickups").size() == 1, "Ultimo vivo debe conservar aftermath neutral en baja no final.")
+	_assert(get_nodes_in_group("ffa_aftermath_pickups").size() == 1, "Ultimo en pie debe conservar aftermath neutral en baja no final.")
 	var pickup := get_nodes_in_group("ffa_aftermath_pickups")[0] as FfaAftermathPickup
 	if pickup != null:
 		_assert(not pickup.has_method("use_support_payload"), "El botin FFA no debe exponer uso de payload de nave.")
@@ -63,11 +63,11 @@ func _run() -> void:
 	var count_before_final := get_nodes_in_group("ffa_aftermath_pickups").size()
 	robots[2].fall_into_void()
 	await create_timer(0.1).timeout
-	_assert(not match_controller.is_round_active(), "Ultimo vivo debe cerrar al quedar uno.")
+	_assert(not match_controller.is_round_active(), "Ultimo en pie debe cerrar al quedar uno.")
 	_assert(get_nodes_in_group("ffa_aftermath_pickups").size() == count_before_final, "La baja final no debe crear nuevo aftermath.")
 
 	var joined_result := "\n".join(PackedStringArray(match_controller.get_match_result_lines()))
-	_assert(not joined_result.contains("puntos por causa"), "Ultimo vivo no debe explicar score por causa.")
+	_assert(not joined_result.contains("puntos por causa"), "Ultimo en pie no debe explicar score por causa.")
 	_assert(
 		joined_result.contains("supervivencia") or joined_result.contains("ultimo vivo"),
 		"Review debe leer supervivencia o ultimo vivo."

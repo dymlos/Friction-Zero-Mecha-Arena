@@ -46,7 +46,7 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ShellTitle"
-text = "How to Play"
+text = "Como jugar"
 
 [node name="SubtitleLabel" type="Label" parent="Frame/VBox/Header"]
 unique_name_in_owner = true
@@ -108,65 +108,70 @@ theme_override_constants/margin_top = 22
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 22
 
-[node name="DetailVBox" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin"]
+[node name="DetailScroll" type="ScrollContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="DetailVBox" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="SectionLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SectionLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Tema seleccionado"
 
-[node name="DetailTitleLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="DetailTitleLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ShellBodyStrong"
 text = ""
 
-[node name="SummaryTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SummaryTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Resumen rapido"
+text = "Resumen"
 
-[node name="SummaryValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SummaryValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2
 text = ""
 
-[node name="BulletsTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="BulletsTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Puntos clave"
 
-[node name="BulletsValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="BulletsValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 autowrap_mode = 2
 text = ""
 
-[node name="CalloutPanel" type="PanelContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="CalloutPanel" type="PanelContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellCalloutPanel"
 
-[node name="CalloutMargin" type="MarginContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel"]
+[node name="CalloutMargin" type="MarginContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/CalloutPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="CalloutVBox" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin"]
+[node name="CalloutVBox" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/CalloutPanel/CalloutMargin"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="CalloutTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin/CalloutVBox"]
+[node name="CalloutTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/CalloutPanel/CalloutMargin/CalloutVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Consejo de lectura"
 
-[node name="CalloutValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/CalloutPanel/CalloutMargin/CalloutVBox"]
+[node name="CalloutValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/CalloutPanel/CalloutMargin/CalloutVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2

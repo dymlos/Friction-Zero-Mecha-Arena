@@ -178,7 +178,7 @@ static func ensure_menu_input_actions() -> void:
 
 
 static func get_menu_navigation_help_line(include_start: bool = false, include_pause: bool = false) -> String:
-	var segments: Array[String] = ["Stick/D-pad mover", "A aceptar", "B volver"]
+	var segments: Array[String] = ["Stick izq./cruceta mover", "Stick der. desplazar texto", "A aceptar", "B volver"]
 	if include_start:
 		segments.append("Start iniciar")
 	if include_pause:
@@ -187,7 +187,7 @@ static func get_menu_navigation_help_line(include_start: bool = false, include_p
 
 
 static func get_pause_navigation_help_line() -> String:
-	return "Stick/D-pad mover | A aceptar | B volver | Select reanudar"
+	return "Stick izq./cruceta mover | Stick der. desplazar texto | A aceptar | B volver | Select reanudar"
 
 
 static func get_joypad_profile_for_name(device_name: String) -> String:

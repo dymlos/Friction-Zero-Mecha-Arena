@@ -35,7 +35,7 @@ func _run() -> void:
 
 	var match_controller := main.get_node("Systems/MatchController") as MatchController
 	_assert(match_controller.get_mode_variant_id() == MatchModeVariantCatalog.VARIANT_LAST_ALIVE, "Runtime debe recibir last_alive.")
-	_assert(_has_line_with_fragment(match_controller.get_round_state_lines(), "Modo | FFA | Ultimo vivo"), "HUD debe leer variante.")
+	_assert(_has_line_with_fragment(match_controller.get_round_state_lines(), "Modo | FFA | Ultimo en pie"), "HUD debe leer variante.")
 
 	await _cleanup_node(main)
 	await _cleanup_node(shell)

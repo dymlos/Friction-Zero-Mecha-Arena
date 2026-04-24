@@ -145,7 +145,7 @@ func _run() -> void:
 	)
 	_assert(
 		setup.has_method("toggle_slot_control_mode"),
-		"LocalMatchSetup deberia permitir alternar Easy/Hard por slot."
+		"LocalMatchSetup deberia permitir alternar Simple/Avanzado por slot."
 	)
 	_assert(
 		setup.has_method("build_launch_config"),
@@ -214,7 +214,7 @@ func _run() -> void:
 		)
 		_assert(
 			_get_string_property(typed_launch_config, "mode_variant_id") == "score_by_cause",
-			"El setup local deberia transportar la variante Score por causa."
+			"El setup local deberia transportar la variante Puntos por eliminacion."
 		)
 
 	game_shell.call("launch_local_match", launch_config)
