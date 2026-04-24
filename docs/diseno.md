@@ -47,7 +47,7 @@ Este documento resume la direccion activa del juego. Es una referencia viva de a
 - El primer foco de cierre y ensenanza del roster es `Pusher/Tank`, `Mobility/Reposition` y `Dismantler`.
 - La diferenciacion visual debe ser de silueta/acento moderado: suficiente para leer rapido sin romper la familia industrial comun.
 - La seleccion de robot vive en `setup local` por slot; `Characters` mantiene ownership de identidad y lectura, no de seleccion.
-- `How to Play` vive en la shell y cubre reglas generales del juego: victoria, dano modular, energia, `Overdrive`, recuperacion/negacion de partes y diferencia `Easy/Hard`.
+- `How to Play` vive en la shell y cubre reglas generales del juego: movimiento/control, victoria, combate, dano modular, energia, `Overdrive`, recuperacion/negacion de partes y diferencia `Easy/Hard`.
 - `How to Play` debe seguir siendo corto y escaneable: lista de temas + detalle breve, sin competir con `Characters` ni convertirse en tutorial largo.
 - `How to Play` prioriza movimiento, victoria y combate; la practica refuerza esa base con estaciones.
 - `Modo Practica` es la capa de experimentacion segura y validacion de sistemas: conecta `How to Play` con juego real sin duplicar parrafos ni reemplazar al match.

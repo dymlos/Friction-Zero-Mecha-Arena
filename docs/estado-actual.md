@@ -15,7 +15,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - `Modo Practica` accesible desde `menu principal`, `setup local` y CTA contextual de `How to Play`.
 - `PracticeSetup` dedicado con orden fijo de modulos, robot recomendado, temas relacionados y slots `P1/P2` usando el mismo contrato operativo de dispositivos que el setup local.
 - Runtime `practice_mode` separado del laboratorio, con modulos `movimiento`, `impacto`, `energia`, `partes`, `recuperacion` y `sandbox`.
-- `PracticeHud` con modulo, objetivo, progreso, controles, callout corto y pausa, sin recap competitivo ni prompts de laboratorio.
+- `PracticeHud` con modulo, objetivo, progreso, controles, tarjeta contextual/callout corto y pausa, sin recap competitivo ni prompts de laboratorio.
 - Pausa completa en match lanzado desde shell: acciones primarias, quick settings de `HUD/master/music/sfx`, resumen corto de dispositivos y superficies `Settings`, `How to Play` y `Characters` montadas sobre el match pausado, sin reasignar slots ni cambiar modo.
 - `Settings` en pausa usa scope seguro `audio/HUD`; video, controles, slots, modo, mapa y variante quedan fuera del match congelado.
 - Cierre post-partida M10: lectura compacta de decision, snippets event-driven `Replay | ...`, diferencia de enfasis `Teams/FFA` y secciones HUD dedicadas sin reemplazar el resultado principal.
@@ -74,6 +74,8 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
   - `scenes/qa/shell_practice_setup_validation.tscn`
   - `scenes/qa/practice_mode_validation.tscn`
 - Checklist manual pendiente de repetir sobre practica construida:
+  - lanzar `Practica` desde menu principal, setup local y CTA de `How to Play`
+  - probar `movimiento`, `impacto`, `energia`, `partes`, `recuperacion` y `sandbox`
   - `menu principal -> settings -> volver`
   - `setup local` con `1P`, `2P` y mezcla teclado/joypad
   - desconectar/reconectar joypad reservado

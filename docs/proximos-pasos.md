@@ -21,7 +21,12 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
    - `2P mixto Easy/Hard`
    - entrada desde `How to Play`
    - volver al menu desde pausa
-3. Ejecutar playtest M11 enfocado:
+3. Ejecutar smoke manual especifico de `Practica`:
+   - lanzar `Practica` desde menu principal, setup local y CTA de `How to Play`
+   - probar `movimiento`, `impacto`, `energia`, `partes`, `recuperacion` y `sandbox`
+   - repetir `1P Easy`, `1P Hard` y `2P mixto Easy/Hard`
+   - confirmar que HUD explicito, prompts y tarjetas se leen a distancia shared-screen
+4. Ejecutar playtest M11 enfocado:
    - `FFA 4P` con aftermath visible tras bajas tempranas.
    - `FFA 6P/8P` si hay suficientes controles, revisando roster compacto y standings `+N`.
    - `Teams 4v4`, revisando asignacion por slots y soporte post-muerte.
@@ -32,14 +37,14 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
    - cierre post-partida donde el ganador tome aftermath y aparezca `Oportunidad | ...`.
    - validar que `ring-out` siga siendo la ruta dominante y que la destruccion total se lea como segunda via fuerte.
    - validar que `Overdrive` se use como herramienta tactica ocasional y no como estado permanente.
-4. Revalidar manualmente el cierre post-partida:
+5. Revalidar manualmente el cierre post-partida:
    - `Teams`: leer decision, `Replay | ...`, desgaste/apoyo y "como perdi" en menos de 10 segundos.
    - `FFA`: leer posiciones, desempate, supervivencia y replay sin ayuda externa.
    - repetir un cierre por explosion normal y uno con apoyo post-muerte antes del cierre.
-5. Revalidar manualmente shell + practica en shared-screen con jugadores reales antes de abrir remapeo libre, video replay real o polish audiovisual.
-6. Mantener ownership estricto: `setup local` = seleccion, `Characters` = identidad, `How to Play` = reglas base, `Practica` = experimentacion segura, `match` = decision tactica bajo presion.
-7. Mantener la disciplina de paridad `base/validation` mientras se toque shell, practica, HUD o cierre post-partida.
-8. Si se trabaja sobre `Ultimo vivo`, tratarlo como variante de `FFA` con estructura `best-of / first-to`, sin post-muerte controlable y sin score por causa.
+6. Revalidar manualmente shell + practica en shared-screen con jugadores reales antes de abrir remapeo libre, video replay real o polish audiovisual.
+7. Mantener ownership estricto: `setup local` = seleccion, `Characters` = identidad, `How to Play` = reglas base, `Practica` = experimentacion segura, `match` = decision tactica bajo presion.
+8. Mantener la disciplina de paridad `base/validation` mientras se toque shell, practica, HUD o cierre post-partida.
+9. Si se trabaja sobre `Ultimo vivo`, tratarlo como variante de `FFA` con estructura `best-of / first-to`, sin post-muerte controlable y sin score por causa.
 
 ## Diferidos explicitos de este cierre parcial
 

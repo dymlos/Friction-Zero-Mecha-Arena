@@ -23,6 +23,7 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - `Cizalla` comunica `Corte` como skill principal activa; su bonus de desarme no debe funcionar como pasiva siempre disponible.
 - Mas skills por personaje quedan diferidas; la capa actual es una skill principal + acciones universales.
 - La copy activa de onboarding general debe salir de una sola fuente de verdad compartida entre shell, QA y tests.
+- `How to Play` prioriza movimiento/control, victoria y combate antes de capas secundarias de energia, partes y recuperacion.
 - `Modo Practica` ya es una ruta de jugador propia y debe seguir separada del laboratorio.
 - `Practica` valida sistemas reales con modulos guiados cortos + `sandbox`; no duplica copy larga que ya vive en `How to Play` o `Characters`.
 - `Practica` debe usar HUD explicito por defecto y soportar `1-2` jugadores locales como primer alcance.
