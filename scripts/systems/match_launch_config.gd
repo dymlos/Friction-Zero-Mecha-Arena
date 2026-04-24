@@ -5,11 +5,13 @@ const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 const ENTRY_CONTEXT_PLAYER_SHELL := "player_shell"
+const ENTRY_CONTEXT_PRACTICE := "practice"
 const DEFAULT_MAX_LOCAL_SLOTS := 8
 
 @export var match_mode := 0
 @export var target_scene_path := ""
 @export var entry_context := ENTRY_CONTEXT_PLAYER_SHELL
+@export var practice_module_id := ""
 @export var hud_detail_mode: MatchConfig.HudDetailMode = MatchConfig.HudDetailMode.EXPLICIT
 @export var auto_restart_on_match_end := false
 @export var local_slots: Array[Dictionary] = []
@@ -23,6 +25,19 @@ func configure_for_local_match(
 	match_mode = next_match_mode
 	target_scene_path = next_target_scene_path
 	entry_context = ENTRY_CONTEXT_PLAYER_SHELL
+	auto_restart_on_match_end = false
+	local_slots = _sanitize_local_slots(slot_specs)
+
+
+func configure_for_practice(
+	module_id: String,
+	next_target_scene_path: String,
+	slot_specs: Array
+) -> void:
+	match_mode = 0
+	target_scene_path = next_target_scene_path
+	entry_context = ENTRY_CONTEXT_PRACTICE
+	practice_module_id = module_id
 	auto_restart_on_match_end = false
 	local_slots = _sanitize_local_slots(slot_specs)
 

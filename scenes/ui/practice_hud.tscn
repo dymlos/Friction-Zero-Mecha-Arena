@@ -1,0 +1,100 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/practice_hud.gd" id="1_practice_hud"]
+[ext_resource type="Theme" path="res://data/theme/fz_ui_theme.tres" id="2_theme"]
+
+[node name="PracticeHud" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_practice_hud")
+theme = ExtResource("2_theme")
+mouse_filter = 2
+
+[node name="Root" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Panel" type="PanelContainer" parent="Root"]
+layout_mode = 2
+theme_type_variation = &"ShellPanelElevated"
+size_flags_horizontal = 0
+size_flags_vertical = 0
+custom_minimum_size = Vector2(420, 0)
+
+[node name="Margin" type="MarginContainer" parent="Root/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="Root/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ModuleTitle" type="Label" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
+text = "Modulo"
+
+[node name="ModuleValueLabel" type="Label" parent="Root/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ShellBodyStrong"
+text = ""
+
+[node name="ObjectiveTitle" type="Label" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
+text = "Objetivo"
+
+[node name="ObjectiveValueLabel" type="Label" parent="Root/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="ProgressTitle" type="Label" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
+text = "Progreso"
+
+[node name="ProgressValueLabel" type="Label" parent="Root/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="ControlsTitle" type="Label" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
+text = "Controles activos"
+
+[node name="ControlsValueLabel" type="Label" parent="Root/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="PauseTitle" type="Label" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
+text = "Pausa"
+
+[node name="PauseValueLabel" type="Label" parent="Root/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""

@@ -2,13 +2,14 @@ extends Control
 class_name PracticeSetup
 
 const OnboardingCatalog = preload("res://scripts/systems/onboarding_catalog.gd")
+const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const PracticeCatalog = preload("res://scripts/systems/practice_catalog.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
 
 signal back_requested
-signal start_requested
+signal start_requested(launch_config: MatchLaunchConfig)
 
 @onready var backdrop: ColorRect = $Backdrop
 @onready var title_label: Label = %TitleLabel
@@ -42,7 +43,7 @@ func _ready() -> void:
 	back_button.pressed.connect(func() -> void:
 		back_requested.emit()
 	)
-	start_button.disabled = true
+	start_button.pressed.connect(_on_start_pressed)
 	for slot in DEFAULT_LOCAL_SLOTS:
 		_slot_control_modes[slot] = RobotBase.ControlMode.EASY
 	for index in range(slot_buttons.size()):
@@ -109,6 +110,16 @@ func toggle_slot_control_mode(player_slot: int) -> void:
 	_refresh_slot_summary()
 
 
+func build_launch_config() -> MatchLaunchConfig:
+	var launch_config := MatchLaunchConfig.new()
+	launch_config.configure_for_practice(
+		get_selected_module_id(),
+		"res://scenes/practice/practice_mode.tscn",
+		_build_slot_specs()
+	)
+	return launch_config
+
+
 func _rebuild_module_list() -> void:
 	module_list.clear()
 	for module_spec in _modules:
@@ -144,6 +155,17 @@ func _refresh_slot_summary() -> void:
 	slots_summary_label.text = "\n".join(lines)
 
 
+func _build_slot_specs() -> Array:
+	var slot_specs: Array = []
+	for player_slot in DEFAULT_LOCAL_SLOTS:
+		slot_specs.append({
+			"slot": player_slot,
+			"control_mode": int(_slot_control_modes.get(player_slot, RobotBase.ControlMode.EASY)),
+		})
+
+	return slot_specs
+
+
 func _get_selected_module() -> Dictionary:
 	if _selected_index < 0 or _selected_index >= _modules.size():
 		return {}
@@ -153,6 +175,10 @@ func _get_selected_module() -> Dictionary:
 
 func _on_module_selected(index: int) -> void:
 	_select_index(index)
+
+
+func _on_start_pressed() -> void:
+	start_requested.emit(build_launch_config())
 
 
 func _focus_initial_list() -> void:
