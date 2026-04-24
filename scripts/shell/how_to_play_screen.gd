@@ -2,6 +2,7 @@ extends Control
 class_name HowToPlayScreen
 
 const OnboardingCatalog = preload("res://scripts/systems/onboarding_catalog.gd")
+const PracticeCatalog = preload("res://scripts/systems/practice_catalog.gd")
 const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
 
 signal back_requested
@@ -88,7 +89,7 @@ func _apply_section(section: Dictionary) -> void:
 	callout_value_label.text = String(section.get("callout", ""))
 	var practice_module_id := String(section.get("practice_module_id", ""))
 	practice_button.disabled = practice_module_id.is_empty()
-	practice_button.text = "Probar %s" % practice_module_id.capitalize()
+	practice_button.text = _get_practice_button_label(practice_module_id)
 
 
 func _on_topic_selected(index: int) -> void:
@@ -102,11 +103,29 @@ func _focus_initial_list() -> void:
 	topic_list.grab_focus()
 
 
+func focus_practice_button() -> void:
+	if practice_button != null and not practice_button.disabled:
+		practice_button.grab_focus()
+
+
 func _install_qa_ids() -> void:
 	title_label.set_meta("qa_id", "shell_how_to_play_title")
 	topic_list.set_meta("qa_id", "shell_how_to_play_list")
 	detail_title_label.set_meta("qa_id", "shell_how_to_play_detail_title")
 	summary_value_label.set_meta("qa_id", "shell_how_to_play_summary")
+	bullets_value_label.set_meta("qa_id", "shell_how_to_play_bullets")
 	callout_value_label.set_meta("qa_id", "shell_how_to_play_callout")
 	practice_button.set_meta("qa_id", "shell_how_to_play_practice")
 	back_button.set_meta("qa_id", "shell_how_to_play_back")
+
+
+func _get_practice_button_label(module_id: String) -> String:
+	if module_id.is_empty():
+		return "Probar"
+
+	var module_spec := PracticeCatalog.get_module(module_id)
+	var module_label := String(module_spec.get("label", ""))
+	if module_label.is_empty():
+		module_label = module_id.capitalize()
+
+	return "Probar %s" % module_label

@@ -1,0 +1,45 @@
+{
+  "name": "practice_mode_layout_1280",
+  "scene": "res://scenes/qa/practice_mode_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 10
+    },
+    {
+      "snapshot": "practice_mode"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:practice_hud_module"
+    },
+    {
+      "inside_viewport": "qa:practice_hud_objective"
+    },
+    {
+      "inside_viewport": "qa:practice_hud_progress"
+    },
+    {
+      "inside_viewport": "qa:practice_hud_controls"
+    },
+    {
+      "inside_viewport": "qa:practice_hud_callout"
+    },
+    {
+      "inside_viewport": "qa:practice_hud_pause"
+    },
+    {
+      "text_contains": {
+        "target": "qa:practice_hud_module",
+        "expected": "Movimiento"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

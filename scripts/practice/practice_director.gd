@@ -5,9 +5,14 @@ const PracticeCatalog = preload("res://scripts/systems/practice_catalog.gd")
 const PracticeLaneBase = preload("res://scripts/practice/practice_lane_base.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
+signal lane_completed
+signal lane_status_changed
+
 var _active_module_id := ""
 var _active_module_spec: Dictionary = {}
 var _active_lane: PracticeLaneBase = null
+var _active_lane_completed_callable: Callable = Callable()
+var _active_lane_status_callable: Callable = Callable()
 
 
 func setup(module_id: String, fixture_root: Node3D, player_robots: Array[RobotBase]) -> void:
@@ -29,6 +34,10 @@ func get_active_module_spec() -> Dictionary:
 	return _active_module_spec.duplicate(true)
 
 
+func get_active_lane() -> PracticeLaneBase:
+	return _active_lane
+
+
 func get_objective_lines() -> Array[String]:
 	if _active_lane != null:
 		return _active_lane.get_objective_lines()
@@ -40,6 +49,20 @@ func get_objective_lines() -> Array[String]:
 	return [summary]
 
 
+func get_progress_lines() -> Array[String]:
+	if _active_lane != null:
+		return _active_lane.get_progress_lines()
+
+	return []
+
+
+func get_callout_lines() -> Array[String]:
+	if _active_lane != null:
+		return _active_lane.get_callout_lines()
+
+	return []
+
+
 func restart_lane(fixture_root: Node3D, player_robots: Array[RobotBase]) -> void:
 	_mount_lane(fixture_root, player_robots)
 
@@ -49,6 +72,7 @@ func _mount_lane(fixture_root: Node3D, player_robots: Array[RobotBase]) -> void:
 		return
 
 	if is_instance_valid(_active_lane):
+		_disconnect_active_lane_signals()
 		fixture_root.remove_child(_active_lane)
 		_active_lane.queue_free()
 		_active_lane = null
@@ -69,3 +93,39 @@ func _mount_lane(fixture_root: Node3D, player_robots: Array[RobotBase]) -> void:
 	_active_lane = lane_instance as PracticeLaneBase
 	fixture_root.add_child(_active_lane)
 	_active_lane.configure_lane(_active_module_spec, player_robots)
+	_connect_active_lane_signals()
+	lane_status_changed.emit()
+
+
+func _connect_active_lane_signals() -> void:
+	if _active_lane == null:
+		return
+
+	_active_lane_completed_callable = Callable(self, "_on_active_lane_completed")
+	_active_lane_status_callable = Callable(self, "_on_active_lane_status_changed")
+	if _active_lane.has_signal("lane_completed"):
+		_active_lane.lane_completed.connect(_active_lane_completed_callable)
+	if _active_lane.has_signal("lane_status_changed"):
+		_active_lane.lane_status_changed.connect(_active_lane_status_callable)
+
+
+func _disconnect_active_lane_signals() -> void:
+	if _active_lane == null:
+		return
+
+	if _active_lane_completed_callable.is_valid() and _active_lane.has_signal("lane_completed") and _active_lane.lane_completed.is_connected(_active_lane_completed_callable):
+		_active_lane.lane_completed.disconnect(_active_lane_completed_callable)
+	if _active_lane_status_callable.is_valid() and _active_lane.has_signal("lane_status_changed") and _active_lane.lane_status_changed.is_connected(_active_lane_status_callable):
+		_active_lane.lane_status_changed.disconnect(_active_lane_status_callable)
+
+	_active_lane_completed_callable = Callable()
+	_active_lane_status_callable = Callable()
+
+
+func _on_active_lane_completed() -> void:
+	lane_completed.emit()
+	lane_status_changed.emit()
+
+
+func _on_active_lane_status_changed() -> void:
+	lane_status_changed.emit()

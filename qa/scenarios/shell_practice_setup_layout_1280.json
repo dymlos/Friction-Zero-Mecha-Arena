@@ -1,0 +1,63 @@
+{
+  "name": "shell_practice_setup_layout_1280",
+  "scene": "res://scenes/qa/shell_practice_setup_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 8
+    },
+    {
+      "snapshot": "practice_setup"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:shell_practice_setup_list"
+    },
+    {
+      "inside_viewport": "qa:shell_practice_setup_title"
+    },
+    {
+      "inside_viewport": "qa:shell_practice_setup_summary"
+    },
+    {
+      "inside_viewport": "qa:shell_practice_setup_recommended"
+    },
+    {
+      "inside_viewport": "qa:shell_practice_setup_topics"
+    },
+    {
+      "inside_viewport": "qa:shell_practice_setup_slots"
+    },
+    {
+      "inside_viewport": "qa:shell_practice_setup_start"
+    },
+    {
+      "inside_viewport": "qa:shell_practice_setup_back"
+    },
+    {
+      "no_overlap": {
+        "a": "qa:shell_practice_setup_title",
+        "b": "qa:shell_practice_setup_start"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_practice_setup_title",
+        "expected": "Movimiento"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_practice_setup_recommended",
+        "expected": "Patin"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

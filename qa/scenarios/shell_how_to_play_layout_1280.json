@@ -57,6 +57,12 @@
       }
     },
     {
+      "text_contains": {
+        "target": "qa:shell_how_to_play_practice",
+        "expected": "Probar"
+      }
+    },
+    {
       "no_errors": true
     }
   ]

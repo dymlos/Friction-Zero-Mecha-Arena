@@ -88,6 +88,17 @@ layout_mode = 2
 autowrap_mode = 2
 text = ""
 
+[node name="CalloutTitle" type="Label" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"ShellSectionTitle"
+text = "Pista"
+
+[node name="CalloutValueLabel" type="Label" parent="Root/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
 [node name="PauseTitle" type="Label" parent="Root/Panel/Margin/VBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"

@@ -189,6 +189,9 @@ func _focus_initial_list() -> void:
 func _install_qa_ids() -> void:
 	module_list.set_meta("qa_id", "shell_practice_setup_list")
 	module_title_label.set_meta("qa_id", "shell_practice_setup_title")
+	summary_value_label.set_meta("qa_id", "shell_practice_setup_summary")
 	recommended_value_label.set_meta("qa_id", "shell_practice_setup_recommended")
 	related_topics_value_label.set_meta("qa_id", "shell_practice_setup_topics")
+	slots_summary_label.set_meta("qa_id", "shell_practice_setup_slots")
+	start_button.set_meta("qa_id", "shell_practice_setup_start")
 	back_button.set_meta("qa_id", "shell_practice_setup_back")

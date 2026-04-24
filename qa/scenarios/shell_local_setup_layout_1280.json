@@ -30,6 +30,9 @@
       "inside_viewport": "qa:shell_local_setup_how_to_play"
     },
     {
+      "inside_viewport": "qa:shell_local_setup_practice"
+    },
+    {
       "inside_viewport": "qa:shell_local_setup_back"
     },
     {
@@ -60,6 +63,12 @@
       "text_contains": {
         "target": "qa:shell_local_setup_how_to_play",
         "expected": "How to Play"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_practice",
+        "expected": "Practica"
       }
     },
     {

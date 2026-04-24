@@ -1,0 +1,30 @@
+{
+  "name": "practice_mode_module_rotation_1280",
+  "scene": "res://scenes/qa/practice_mode_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 90
+    },
+    {
+      "snapshot": "practice_mode_rotation"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:practice_hud_module"
+    },
+    {
+      "text_contains": {
+        "target": "qa:practice_hud_module",
+        "expected": "Sandbox"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

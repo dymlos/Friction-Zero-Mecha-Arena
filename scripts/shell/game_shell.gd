@@ -227,7 +227,7 @@ func _restore_focus_after_practice_return(target_screen_id: String) -> void:
 	if not is_instance_valid(_active_screen):
 		return
 
-	if target_screen_id in ["main_menu", "local_match_setup"] and _active_screen.has_method("focus_practice_button"):
+	if target_screen_id in ["main_menu", "local_match_setup", "how_to_play"] and _active_screen.has_method("focus_practice_button"):
 		_active_screen.call_deferred("focus_practice_button")
 
 

@@ -34,6 +34,8 @@ func _ready() -> void:
 	_local_session = _build_local_session()
 	_spawn_player_robots()
 	_setup_module()
+	practice_director.lane_status_changed.connect(_refresh_hud)
+	practice_director.lane_completed.connect(_on_lane_completed)
 	_refresh_hud()
 
 
@@ -128,8 +130,12 @@ func _refresh_hud() -> void:
 	var module_spec := practice_director.get_active_module_spec()
 	practice_hud.set_module_title(String(module_spec.get("label", "Practica")))
 	practice_hud.set_objective_lines(practice_director.get_objective_lines())
-	practice_hud.set_progress_text("%s jugador(es) activos" % _player_robots.size())
+	var progress_lines := practice_director.get_progress_lines()
+	if progress_lines.is_empty():
+		progress_lines = ["%s jugador(es) activos" % _player_robots.size()]
+	practice_hud.set_progress_lines(progress_lines)
 	practice_hud.set_controls_lines(_build_control_lines())
+	practice_hud.set_callout_lines(practice_director.get_callout_lines())
 	practice_hud.set_pause_lines(_build_pause_lines())
 
 
@@ -258,6 +264,10 @@ func _get_active_slot_specs() -> Array[Dictionary]:
 			slot_specs.append(slot_spec)
 
 	return slot_specs
+
+
+func _on_lane_completed() -> void:
+	_refresh_hud()
 
 
 func _get_default_keyboard_profile_for_slot(player_slot: int) -> int:

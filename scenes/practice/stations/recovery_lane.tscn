@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/practice/practice_lane_base.gd" id="1_lane"]
+[ext_resource type="Script" path="res://scripts/practice/recovery_lane.gd" id="1_lane"]
 
 [node name="RecoveryLane" type="Node3D"]
 script = ExtResource("1_lane")
