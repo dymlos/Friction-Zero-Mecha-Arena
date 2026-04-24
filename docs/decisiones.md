@@ -17,6 +17,11 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - `Characters` comunica identidad por personaje; `How to Play` comunica reglas generales del juego.
 - `Characters` muestra rol, skill y botones como minimo; no absorbe reglas generales ni onboarding largo.
 - La copy activa de roster debe salir de una sola fuente de verdad compartida entre shell, QA y tests.
+- `Ariete`, `Patin` y `Cizalla` son el foco inicial de ensenanza M4 para `Pusher/Tank`, `Mobility/Reposition` y `Dismantler`; el roster completo de seis sigue visible.
+- La diferenciacion visual inicial del roster se limita a silueta/acento moderado dentro de una familia robotica industrial comun.
+- Cada ficha de `Characters` debe mostrar `rol`, `skill principal` y `botones` desde `RosterCatalog`/catalogos centrales, no copy paralela.
+- `Cizalla` comunica `Corte` como skill principal activa; su bonus de desarme no debe funcionar como pasiva siempre disponible.
+- Mas skills por personaje quedan diferidas; la capa actual es una skill principal + acciones universales.
 - La copy activa de onboarding general debe salir de una sola fuente de verdad compartida entre shell, QA y tests.
 - `Modo Practica` ya es una ruta de jugador propia y debe seguir separada del laboratorio.
 - `Practica` valida sistemas reales con modulos guiados cortos + `sandbox`; no duplica copy larga que ya vive en `How to Play` o `Characters`.

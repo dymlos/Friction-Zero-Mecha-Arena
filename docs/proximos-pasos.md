@@ -27,6 +27,8 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
    - `Teams 4v4`, revisando asignacion por slots y soporte post-muerte.
    - seleccion de `Aguja` y `Ancla` desde setup local antes de lanzar match.
    - lectura de `Characters` con filtros `Impacto` y `Rango / zona`.
+   - lectura de `Characters` usando `Foco inicial`: comprobar que jugadores entienden Ariete/Patin/Cizalla antes de pasar a Grua/Aguja/Ancla.
+   - probar `Cizalla` en Easy y Hard: validar que `Corte` se lee como ventana activa y no como dano arbitrario.
    - cierre post-partida donde el ganador tome aftermath y aparezca `Oportunidad | ...`.
    - validar que `ring-out` siga siendo la ruta dominante y que la destruccion total se lea como segunda via fuerte.
    - validar que `Overdrive` se use como herramienta tactica ocasional y no como estado permanente.

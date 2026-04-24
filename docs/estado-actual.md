@@ -20,6 +20,9 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - `Settings` en pausa usa scope seguro `audio/HUD`; video, controles, slots, modo, mapa y variante quedan fuera del match congelado.
 - Cierre post-partida M10: lectura compacta de decision, snippets event-driven `Replay | ...`, diferencia de enfasis `Teams/FFA` y secciones HUD dedicadas sin reemplazar el resultado principal.
 - Fuente unica de copy del roster competitivo visible hoy en shell: `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla`.
+- `Characters` ya distingue roster completo y foco inicial M4 (`Ariete`, `Patin`, `Cizalla`) sin convertir identidad en seleccion.
+- Las fichas de roster muestran `rol`, `skill principal` y `botones` desde fuente central.
+- `Cizalla` usa `Corte` como skill principal activa para abrir ventanas de desarme legibles.
 - `FFA` tiene aftermath neutral propio: una recompensa temporal de baja para vivos, sin nave post-muerte ni control del eliminado.
 - Rutas grandes de producto para `FFA` y `Teams` soportan hasta ocho slots; `Teams` usa asignacion inicial `P1/P3/P5/P7` vs `P2/P4/P6/P8`.
 - Fuente unica de copy de onboarding general compartida entre shell, QA y tests.
@@ -47,6 +50,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - HUD M11 compacta roster 8P y standings FFA grandes con `+N`; post-partida puede mostrar `Oportunidad | ...` cuando aftermath afecto el cierre.
 - Matriz M1 de produccion base: `1080p` como referencia principal, `2-4` como tier pulido, `5-8` como escala soportada en validacion, y pausa owner-aware con salida confirmada.
 - Fuente unica de identidad por personaje compartida entre shell, QA y tests.
+- Contrato M4 de silueta/acento moderado, foco inicial y botones cubierto por tests scene-level y QA visual de `Characters`.
 - Fuente unica de onboarding general compartida entre shell, QA y tests.
 - Paridad del flujo de shell en tests scene-level y QA visual de `menu`, `setup`, `characters`, `how to play` y overlay de pausa.
 - QA visual dedicada de pausa completa a `1280x720`: `main_pause_complete_settings_1280`, `main_pause_complete_how_to_play_1280` y `main_pause_complete_characters_1280`.
