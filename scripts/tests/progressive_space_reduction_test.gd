@@ -24,6 +24,13 @@ const SCENE_SPECS := [
 		"mode": MatchController.MatchMode.TEAMS,
 	},
 	{
+		"path": "res://scenes/main/main_teams_large.tscn",
+		"arena_path": "ArenaRoot/ArenaTeamsLarge",
+		"label": "Teams grande 5-8",
+		"mode": MatchController.MatchMode.TEAMS,
+		"assert_large_tuning": true,
+	},
+	{
 		"path": "res://scenes/main/main_ffa.tscn",
 		"arena_path": "ArenaRoot/ArenaBlockout",
 		"label": "FFA base",
@@ -40,6 +47,13 @@ const SCENE_SPECS := [
 		"arena_path": "ArenaRoot/ArenaFFALargeValidation",
 		"label": "FFA grande",
 		"mode": MatchController.MatchMode.FFA,
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large.tscn",
+		"arena_path": "ArenaRoot/ArenaFFALarge",
+		"label": "FFA grande 5-8",
+		"mode": MatchController.MatchMode.FFA,
+		"assert_large_tuning": true,
 	},
 ]
 
@@ -106,6 +120,16 @@ func _assert_space_reduction_scene_contract(scene_spec: Dictionary) -> void:
 		and _resource_has_property(match_controller.match_config, "space_reduction_min_scale"),
 		"La escena %s deberia definir el tuning de contraccion desde MatchConfig, no solo desde la escena principal." % label
 	)
+	if bool(scene_spec.get("assert_large_tuning", false)):
+		_assert(match_controller.match_config.progressive_space_reduction, "Los mapas grandes deben conservar presion progresiva.")
+		_assert(
+			float(match_controller.match_config.get("space_reduction_start_ratio")) <= 0.46,
+			"Los mapas grandes deben empezar presion antes de que el viaje domine el cierre."
+		)
+		_assert(
+			float(match_controller.match_config.get("space_reduction_min_scale")) <= 0.52,
+			"Los mapas grandes deben cerrar hacia colisiones decisivas."
+		)
 	match_controller.match_config.set("space_reduction_start_ratio", 0.25)
 	match_controller.match_config.set("space_reduction_min_scale", 0.5)
 	match_controller.space_reduction_warning_seconds = 0.2
@@ -155,12 +179,17 @@ func _force_round_reset_closure(match_controller: MatchController, robots: Array
 	if match_controller == null:
 		return
 
-	var elimination_count := 2
 	if match_controller.match_mode == MatchController.MatchMode.FFA:
-		elimination_count = max(robots.size() - 1, 0)
+		for index in range(max(robots.size() - 1, 0)):
+			robots[robots.size() - 1 - index].fall_into_void()
+			await create_timer(0.05).timeout
+		return
 
-	for index in range(min(elimination_count, robots.size())):
-		robots[robots.size() - 1 - index].fall_into_void()
+	var target_team_id := 2
+	for robot in robots:
+		if robot.team_id != target_team_id:
+			continue
+		robot.fall_into_void()
 		await create_timer(0.05).timeout
 
 

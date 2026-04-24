@@ -19,6 +19,12 @@ const SCENE_SPECS := [
 		"label": "Teams grande",
 	},
 	{
+		"path": "res://scenes/main/main_teams_large.tscn",
+		"label": "teams_large_5_8",
+		"max_intro_drift": 0.15,
+		"max_pickup_release_delay": 0.35,
+	},
+	{
 		"path": "res://scenes/main/main_ffa.tscn",
 		"label": "FFA base",
 	},
@@ -29,6 +35,12 @@ const SCENE_SPECS := [
 	{
 		"path": "res://scenes/main/main_ffa_large_validation.tscn",
 		"label": "FFA grande",
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large.tscn",
+		"label": "ffa_large_5_8",
+		"max_intro_drift": 0.15,
+		"max_pickup_release_delay": 0.35,
 	},
 ]
 
@@ -169,11 +181,11 @@ func _assert_opening_runtime_buffer(scene_spec: Dictionary) -> void:
 			robot.fell_into_void.disconnect(callable)
 
 	_assert(
-		max_intro_drift <= MAX_INTRO_DRIFT,
+		max_intro_drift <= _get_scene_max_intro_drift(scene_spec),
 		"%s | el intro deberia bloquear deriva temprana antes del primer choque." % label
 	)
 	_assert(
-		pickup_release_delay >= 0.0 and pickup_release_delay <= MAX_PICKUP_RELEASE_DELAY,
+		pickup_release_delay >= 0.0 and pickup_release_delay <= _get_scene_max_pickup_release_delay(scene_spec),
 		"%s | el pickup del borde deberia liberarse poco despues del opening sin exigir reingreso." % label
 	)
 	_assert(
@@ -209,6 +221,14 @@ func _configure_short_opening(match_controller: MatchController) -> void:
 		config.round_intro_duration_teams = INTRO_DURATION
 		config.round_intro_duration_ffa = INTRO_DURATION
 		match_controller.match_config = config
+
+
+func _get_scene_max_intro_drift(scene_spec: Dictionary) -> float:
+	return float(scene_spec.get("max_intro_drift", MAX_INTRO_DRIFT))
+
+
+func _get_scene_max_pickup_release_delay(scene_spec: Dictionary) -> float:
+	return float(scene_spec.get("max_pickup_release_delay", MAX_PICKUP_RELEASE_DELAY))
 
 
 func _activate_round_with_repair_pickup(root_node: Node, arena: ArenaBase) -> EdgeRepairPickup:
