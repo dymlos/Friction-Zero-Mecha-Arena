@@ -3,6 +3,11 @@ extends SceneTree
 const SETTINGS_SCREEN := preload("res://scenes/shell/settings_screen.tscn")
 const HOW_TO_PLAY_SCREEN := preload("res://scenes/shell/how_to_play_screen.tscn")
 const CHARACTERS_SCREEN := preload("res://scenes/shell/characters_screen.tscn")
+const MAIN_FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
+const MatchController = preload("res://scripts/systems/match_controller.gd")
+const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
+const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const ShellSession = preload("res://scripts/systems/shell_session.gd")
 
 var _failed := false
 
@@ -15,6 +20,7 @@ func _run() -> void:
 	await _validate_settings_pause_scope()
 	await _validate_how_to_play_pause_scope()
 	await _validate_characters_pause_scope()
+	await _validate_pause_overlay_does_not_reopen_setup()
 	_finish()
 
 
@@ -124,6 +130,39 @@ func _validate_characters_pause_scope() -> void:
 	_assert(bool(back_state.get("emitted", false)), "Characters en pausa deberia conservar Volver.")
 
 	characters.queue_free()
+	await process_frame
+
+
+func _validate_pause_overlay_does_not_reopen_setup() -> void:
+	var shell_session := ShellSession.new()
+	shell_session.store_match_launch_config(null)
+	var launch_config := MatchLaunchConfig.new()
+	launch_config.configure_for_local_match(
+		MatchController.MatchMode.FFA,
+		"res://scenes/main/main_ffa.tscn",
+		[
+			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY, "input_source": "keyboard", "keyboard_profile": RobotBase.KeyboardProfile.WASD_SPACE},
+			{"slot": 2, "control_mode": RobotBase.ControlMode.EASY, "input_source": "keyboard", "keyboard_profile": RobotBase.KeyboardProfile.ARROWS_ENTER},
+		]
+	)
+	shell_session.store_match_launch_config(launch_config)
+
+	var main = MAIN_FFA_SCENE.instantiate()
+	root.add_child(main)
+	await process_frame
+	await process_frame
+
+	_assert(bool(main.call("request_pause_for_slot", 1)), "Pausa completa deberia abrirse desde runtime.")
+	var forbidden_fragments := ["Teams", "FFA", "Mapa", "Variante", "P5", "activar"]
+	for line in main.call("get_pause_overlay_lines"):
+		for fragment in forbidden_fragments:
+			_assert(
+				not String(line).contains(fragment),
+				"Pausa no debe reabrir setup local: %s" % fragment
+			)
+
+	main.queue_free()
+	paused = false
 	await process_frame
 
 

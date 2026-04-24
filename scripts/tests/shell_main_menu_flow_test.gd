@@ -71,11 +71,24 @@ func _run() -> void:
 		_assert(main_menu_initial.has_method("focus_play_local_button"), "MainMenu deberia exponer foco explicito en Jugar local.")
 		main_menu_initial.call("focus_play_local_button")
 		await process_frame
+		var play_button := main_menu_initial.get_node_or_null("CenterPanel/Margin/VBox/PlayLocalButton") as Button
+		var settings_button := main_menu_initial.get_node_or_null("CenterPanel/Margin/VBox/SettingsButton") as Button
+		_assert(play_button != null, "Menu principal debe conservar boton primario Jugar local.")
+		_assert(settings_button != null, "Menu principal debe conservar Settings como accion secundaria.")
 		var initial_focus := root.get_viewport().gui_get_focus_owner()
 		_assert(
-			initial_focus != null and String(initial_focus.name) == "PlayLocalButton",
+			initial_focus != null and initial_focus == play_button,
 			"El arranque nuevo del menu deberia enfocar Jugar local."
 		)
+		if play_button != null and settings_button != null:
+			_assert(
+				play_button.has_focus(),
+				"Menu principal debe arrancar con foco en Jugar local."
+			)
+			_assert(
+				play_button.get_index() < settings_button.get_index(),
+				"Jugar local debe aparecer antes que Settings."
+			)
 		var vbox := main_menu_initial.get_node_or_null("CenterPanel/Margin/VBox") as VBoxContainer
 		_assert(vbox != null, "MainMenu deberia conservar VBox navegable.")
 		if vbox != null:

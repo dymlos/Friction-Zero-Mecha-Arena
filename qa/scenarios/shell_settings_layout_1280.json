@@ -46,6 +46,18 @@
     },
     {
       "text_contains": {
+        "target": "qa:shell_settings_video",
+        "expected": "Video"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_settings_hud",
+        "expected": "HUD"
+      }
+    },
+    {
+      "text_contains": {
         "target": "qa:shell_settings_controls",
         "expected": "Controles"
       }

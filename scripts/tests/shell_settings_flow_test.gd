@@ -91,6 +91,17 @@ func _run() -> void:
 		section_ids == ["audio", "video", "hud", "controls"],
 		"Settings en scope global deberia conservar Audio/Video/HUD/Controles."
 	)
+	settings_screen.call("set_surface_scope", "pause")
+	section_ids = settings_screen.call("get_section_ids")
+	_assert(
+		section_ids == ["audio", "hud"],
+		"Settings en pausa debe limitarse a audio/HUD."
+	)
+	_assert(
+		not bool(settings_screen.call("set_window_mode", "fullscreen")),
+		"Pausa no debe aceptar cambios de video."
+	)
+	settings_screen.call("set_surface_scope", "global")
 	var snapshot := settings_screen.call("get_settings_snapshot") as Dictionary
 	_assert(
 		int(snapshot.get("default_hud_detail_mode", -1)) == MatchConfig.HudDetailMode.CONTEXTUAL,
