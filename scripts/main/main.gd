@@ -21,7 +21,10 @@ const EdgeEnergyPickup = preload("res://scripts/pickups/edge_energy_pickup.gd")
 const EdgePulsePickup = preload("res://scripts/pickups/edge_pulse_pickup.gd")
 const EdgeChargePickup = preload("res://scripts/pickups/edge_charge_pickup.gd")
 const EdgeUtilityPickup = preload("res://scripts/pickups/edge_utility_pickup.gd")
+const FfaAftermathRules = preload("res://scripts/systems/ffa_aftermath_rules.gd")
+const FfaAftermathPickup = preload("res://scripts/pickups/ffa_aftermath_pickup.gd")
 const PILOT_SUPPORT_SHIP_SCENE = preload("res://scenes/support/pilot_support_ship.tscn")
+const FFA_AFTERMATH_PICKUP_SCENE = preload("res://scenes/pickups/ffa_aftermath_pickup.tscn")
 const ARIETE_ARCHETYPE = preload("res://data/config/robots/ariete_archetype.tres")
 const GRUA_ARCHETYPE = preload("res://data/config/robots/grua_archetype.tres")
 const CIZALLA_ARCHETYPE = preload("res://data/config/robots/cizalla_archetype.tres")
@@ -103,6 +106,9 @@ var _hud_refresh_queued := false
 var _last_audio_music_state := ""
 var _round_close_audio_fired := false
 var _final_pressure_warning_audio_fired := false
+var _aftermath_root: Node3D = null
+var _ffa_aftermath_pickups: Array[FfaAftermathPickup] = []
+var _ffa_aftermath_spawned_robot_ids := {}
 
 
 func _ready() -> void:
@@ -110,6 +116,7 @@ func _ready() -> void:
 	# La logica concreta vive en scripts mas chicos para que el proyecto crezca ordenado.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_arena = _get_active_arena()
+	_ensure_aftermath_root()
 	_pending_match_launch_config = _consume_match_launch_config()
 	_apply_pending_entry_context()
 	if _is_lab_context():
@@ -1275,13 +1282,16 @@ func _sync_edge_pickup_intro_lock() -> void:
 
 
 func _on_robot_fell_into_void(robot: RobotBase) -> void:
+	var source_robot := robot.get_recent_elimination_source()
+	var elimination_position := robot.global_position
 	var message := match_controller.record_robot_elimination(
 		robot,
 		MatchController.EliminationCause.VOID,
-		robot.get_recent_elimination_source()
+		source_robot
 	)
 	if message != "":
 		ui.show_status(message)
+	_spawn_ffa_aftermath_if_needed(robot, source_robot, elimination_position)
 	_spawn_post_death_support_if_needed(robot)
 
 
@@ -1336,9 +1346,11 @@ func _on_detached_part_recovery_lost(detached_part: DetachedPart, reason: String
 func _on_robot_disabled(robot: RobotBase) -> void:
 	if robot.is_disabled_explosion_unstable():
 		ui.show_status("%s quedo inutilizado y sobrecargado" % robot.display_name)
+		_spawn_ffa_aftermath_if_needed(robot, robot.get_recent_elimination_source())
 		return
 
 	ui.show_status("%s quedo inutilizado" % robot.display_name)
+	_spawn_ffa_aftermath_if_needed(robot, robot.get_recent_elimination_source())
 
 
 func _on_robot_meaningful_collision(_robot: RobotBase, _other_robot: RobotBase, closing_speed: float) -> void:
@@ -1351,13 +1363,16 @@ func _on_robot_meaningful_collision(_robot: RobotBase, _other_robot: RobotBase, 
 
 func _on_robot_exploded(robot: RobotBase) -> void:
 	var cause := MatchController.EliminationCause.UNSTABLE_EXPLOSION if robot.was_last_disabled_explosion_unstable() else MatchController.EliminationCause.EXPLOSION
+	var source_robot := robot.get_recent_elimination_source()
+	var elimination_position := robot.global_position
 	var message := match_controller.record_robot_elimination(
 		robot,
 		cause,
-		robot.get_recent_elimination_source()
+		source_robot
 	)
 	if message != "":
 		ui.show_status(message)
+	_spawn_ffa_aftermath_if_needed(robot, source_robot, elimination_position)
 	_spawn_post_death_support_if_needed(robot)
 
 
@@ -1429,11 +1444,85 @@ func _on_round_started(round_number: int) -> void:
 	_final_pressure_warning_audio_fired = false
 	_play_audio_cue("round_start")
 	_clear_post_death_support()
+	_clear_ffa_aftermath_pickups()
 	_cleanup_detached_parts()
 	if _arena == null:
 		return
 
 	_arena.activate_edge_pickup_layout_for_round(round_number)
+
+
+func _ensure_aftermath_root() -> void:
+	_aftermath_root = get_node_or_null("AftermathRoot") as Node3D
+	if _aftermath_root != null:
+		return
+	_aftermath_root = Node3D.new()
+	_aftermath_root.name = "AftermathRoot"
+	add_child(_aftermath_root)
+
+
+func _spawn_ffa_aftermath_if_needed(eliminated_robot: RobotBase, source_robot: RobotBase = null, elimination_position := Vector3(INF, INF, INF)) -> void:
+	if eliminated_robot == null or match_controller == null:
+		return
+	var eliminated_id := eliminated_robot.get_instance_id()
+	if _ffa_aftermath_spawned_robot_ids.has(eliminated_id):
+		return
+	var remaining := _get_remaining_competitors_after_aftermath_elimination(eliminated_robot)
+	if not FfaAftermathRules.should_spawn_aftermath(match_controller.match_mode, match_controller.is_round_active(), remaining):
+		return
+	_ensure_aftermath_root()
+	var pickup := FFA_AFTERMATH_PICKUP_SCENE.instantiate() as FfaAftermathPickup
+	if pickup == null:
+		return
+	var elimination_order := _ffa_aftermath_pickups.size() + 1
+	var payload_id := FfaAftermathRules.choose_payload(eliminated_robot, source_robot, match_controller.get_round_number(), elimination_order)
+	var spawn_position := elimination_position
+	if not spawn_position.is_finite():
+		spawn_position = eliminated_robot.global_position if eliminated_robot.is_inside_tree() else Vector3.ZERO
+	if _arena != null:
+		spawn_position = _arena.get_clamped_play_area_position(spawn_position, 1.0)
+	var zone := FfaAftermathRules.describe_zone(spawn_position)
+	pickup.configure(payload_id, eliminated_robot.display_name, zone)
+	pickup.collected.connect(_on_ffa_aftermath_collected)
+	_aftermath_root.add_child(pickup)
+	pickup.global_position = spawn_position + Vector3(0.0, 0.25, 0.0)
+	_ffa_aftermath_pickups.append(pickup)
+	_ffa_aftermath_spawned_robot_ids[eliminated_id] = true
+	match_controller.set_ffa_aftermath_context_line("Botin | baja reciente en %s" % zone)
+	_queue_hud_refresh()
+
+
+func _get_remaining_competitors_after_aftermath_elimination(eliminated_robot: RobotBase) -> int:
+	var remaining := 0
+	for robot in _get_scene_robots():
+		if robot == eliminated_robot:
+			continue
+		if match_controller.is_robot_eliminated(robot) or robot.is_disabled_state():
+			continue
+		remaining += 1
+	return remaining
+
+
+func _on_ffa_aftermath_collected(robot: RobotBase, payload_id: String, source_eliminated_label: String, arena_zone: String) -> void:
+	match_controller.record_ffa_aftermath_collection(robot, payload_id, source_eliminated_label, arena_zone)
+	_ffa_aftermath_pickups = _ffa_aftermath_pickups.filter(func(pickup: FfaAftermathPickup) -> bool:
+		return is_instance_valid(pickup)
+	)
+	if _ffa_aftermath_pickups.is_empty():
+		match_controller.set_ffa_aftermath_context_line("")
+	_play_audio_cue("pickup_taken")
+	ui.show_status("%s tomo botin de %s" % [robot.display_name, source_eliminated_label])
+	_queue_hud_refresh()
+
+
+func _clear_ffa_aftermath_pickups() -> void:
+	for pickup in _ffa_aftermath_pickups:
+		if is_instance_valid(pickup):
+			pickup.queue_free()
+	_ffa_aftermath_pickups.clear()
+	_ffa_aftermath_spawned_robot_ids.clear()
+	if match_controller != null:
+		match_controller.set_ffa_aftermath_context_line("")
 
 
 func _sync_final_pressure_audio() -> void:

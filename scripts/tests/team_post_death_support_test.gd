@@ -507,8 +507,20 @@ func _verify_support_ship_stays_disabled_in_ffa(scene_path: String) -> void:
 		ffa_support_root.get_child_count() == 0,
 		"La escena %s no deberia activar naves de apoyo post-muerte." % scene_path
 	)
+	_assert(
+		_get_owned_group_count(ffa_main, "ffa_aftermath_pickups") == 1,
+		"FFA puede crear aftermath neutral, pero no debe confundirlo con soporte de Teams."
+	)
 
 	await _cleanup_main(ffa_main)
+
+
+func _get_owned_group_count(owner: Node, group_name: String) -> int:
+	var count := 0
+	for node in get_nodes_in_group(group_name):
+		if node is Node and owner.is_ancestor_of(node):
+			count += 1
+	return count
 
 
 func _instantiate_scene(scene_path: String) -> Node:

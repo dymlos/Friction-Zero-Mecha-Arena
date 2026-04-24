@@ -72,6 +72,7 @@ var _runtime_match_restart_enabled := true
 var _post_match_review := PostMatchReview.new()
 var _post_match_event_sequence := 0
 var _last_match_close_event: Dictionary = {}
+var _ffa_aftermath_context_line := ""
 
 
 func _ready() -> void:
@@ -144,6 +145,7 @@ func start_match() -> void:
 	_post_match_review.reset()
 	_post_match_event_sequence = 0
 	_last_match_close_event.clear()
+	_ffa_aftermath_context_line = ""
 
 	for robot in registered_robots:
 		if is_instance_valid(robot):
@@ -170,6 +172,10 @@ func is_round_reset_pending() -> bool:
 
 func is_round_intro_active() -> bool:
 	return _round_active and not _round_reset_pending and _round_intro_remaining > 0.0
+
+
+func get_round_number() -> int:
+	return _round_number
 
 
 func get_round_intro_time_left() -> float:
@@ -255,6 +261,8 @@ func get_round_state_lines() -> Array[String]:
 	var tiebreaker_line := _build_ffa_tiebreaker_line()
 	if tiebreaker_line != "":
 		lines.append(tiebreaker_line)
+	if _ffa_aftermath_context_line != "" and match_mode == MatchMode.FFA and _round_active and not _round_reset_pending:
+		lines.append(_ffa_aftermath_context_line)
 	if contextual_hud:
 		return lines
 
@@ -711,6 +719,26 @@ func record_edge_pickup_collection(robot: RobotBase) -> void:
 		return
 
 	_increment_robot_match_stat(robot, "edge_pickups")
+
+
+func set_ffa_aftermath_context_line(line: String) -> void:
+	_ffa_aftermath_context_line = line
+
+
+func record_ffa_aftermath_collection(robot: RobotBase, payload_id: String, _source_eliminated_label: String, _arena_zone: String) -> void:
+	if robot == null:
+		return
+	if not _round_active or _round_reset_pending:
+		return
+
+	_increment_robot_match_stat(robot, "ffa_aftermath_collected")
+	match payload_id:
+		"chatarra":
+			_increment_robot_match_stat(robot, "ffa_aftermath_scrap")
+		"carga":
+			_increment_robot_match_stat(robot, "ffa_aftermath_charge")
+		"impulso":
+			_increment_robot_match_stat(robot, "ffa_aftermath_surge")
 
 
 func record_support_pickup_collection(robot: RobotBase, payload_name: String = "") -> void:
@@ -1955,6 +1983,7 @@ func _reset_round() -> void:
 	_round_support_usage_by_competitor.clear()
 	_round_support_highlight_by_competitor.clear()
 	_robot_support_state.clear()
+	_ffa_aftermath_context_line = ""
 	_last_round_closing_cause = -1
 	_last_round_was_draw = false
 	_round_number += 1

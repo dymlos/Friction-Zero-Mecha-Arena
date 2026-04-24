@@ -264,6 +264,15 @@ func is_position_inside_play_area(world_position: Vector3) -> bool:
 	return absf(local_position.x) <= half_size.x and absf(local_position.z) <= half_size.y
 
 
+func get_clamped_play_area_position(world_position: Vector3, inset: float = 1.0) -> Vector3:
+	var local_position := to_local(world_position)
+	var half_size := get_safe_play_area_size() * 0.5
+	var safe_inset := maxf(inset, 0.0)
+	local_position.x = clampf(local_position.x, -half_size.x + safe_inset, half_size.x - safe_inset)
+	local_position.z = clampf(local_position.z, -half_size.y + safe_inset, half_size.y - safe_inset)
+	return to_global(local_position)
+
+
 func get_support_lane_spawn_position_near(world_position: Vector3) -> Vector3:
 	return get_support_lane_position_from_progress(get_support_lane_progress_near(world_position))
 
