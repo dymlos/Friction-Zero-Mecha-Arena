@@ -2,6 +2,8 @@
 
 El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de match en `Teams` y `FFA`. La ruta de jugador arranca en `menu principal`, pasa por `setup local`, `Characters` y `How to Play` cuando hace falta, y llega a un cierre estable de partida sin prompts de laboratorio ni reinicio automatico.
 
+Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/decisiones-producto.md`. El estado actual de implementacion se resume aca; si una decision de producto todavia no existe en runtime, debe tratarse como direccion para futuras iteraciones y no como feature ya completada.
+
 ## Lo que ya existe
 
 - Shell local jugable: `menu principal -> setup local -> characters/how to play -> match -> pausa -> volver al menu`.

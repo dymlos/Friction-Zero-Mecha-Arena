@@ -14,12 +14,17 @@ Hacer el juego mas aprendible y experimentable sin depender de la presion compet
   - definir alcance inicial: sandbox, pruebas de sistemas, objetos, recuperacion y negacion
   - decidir si la primera version es solo solitaria o tambien local-multiplayer
   - decidir si incluye solo experimentacion libre o tambien drills
+  - usar sandbox guiado con estaciones + tarjetas contextuales
+  - soportar `1-2` jugadores locales como primer alcance
+  - usar HUD explicito por defecto
 - `How to Play`
   - separar reglas base del juego de conocimiento por personaje
   - minimizar bloques largos de texto cuando un esquema o callout ensena mejor
+  - priorizar movimiento, victoria y combate
 - `Accesibilidad y learnability`
   - fijar minimos de remapeo visible, legibilidad de texto, dependencia de color y tolerancia a ruido visual
   - documentar que ensena la shell, que ensena practica y que ensena el match
+  - priorizar legibilidad visual y prompts
 
 ## Dependencias
 
@@ -28,7 +33,7 @@ Hacer el juego mas aprendible y experimentable sin depender de la presion compet
 
 ## Riesgos y preguntas abiertas
 
-- `Modo Practica` sigue siendo ambiguo si no se congela su primer alcance.
+- El alcance de practica queda orientado a jugadores + testeo interno; el riesgo ahora es no sobrecargar estaciones o callouts.
 - Una ayuda demasiado textual iria contra la meta de legibilidad del juego.
 
 ## Criterio de salida

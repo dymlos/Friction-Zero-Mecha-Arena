@@ -7,6 +7,7 @@ Este directorio descompone el roadmap vivo en milestones pequenas, navegables y 
 - Este roadmap es una guia viva de produccion.
 - Puede cambiar con playtests, tuning, restricciones tecnicas nuevas o cambios de alcance.
 - No leer estos milestones como compromiso rigido salvo cuando un contrato tecnico ya este validado de verdad.
+- Las decisiones de producto consolidadas viven en [decisiones-producto.md](../decisiones-producto.md) y deben usarse para interpretar prioridades cuando un milestone tenga margen.
 
 ## Orden sugerido
 

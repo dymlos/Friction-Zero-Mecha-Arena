@@ -21,6 +21,7 @@ Sin esa capa, el onboarding depende demasiado de leer antes de jugar o de aprend
 ## Alcance aterrizado
 
 - `Practica` entra desde `menu principal`, `setup local` y `How to Play`.
+- La primera version de producto de `Practica` se entiende como sandbox guiado para `1-2` jugadores locales.
 - La shell conserva ownership claro:
   - `Characters` = identidad
   - `How to Play` = reglas base
@@ -41,6 +42,7 @@ Sin esa capa, el onboarding depende demasiado de leer antes de jugar o de aprend
   - controles por jugador
   - callout breve
   - pausa/contexto
+  - modo explicito por defecto
 
 ## Grupos de trabajo
 
@@ -48,6 +50,7 @@ Sin esa capa, el onboarding depende demasiado de leer antes de jugar o de aprend
   - definir el primer alcance real: sandbox libre, drills o combinacion de ambos
   - decidir si arranca solo o tambien con soporte local para mas de un jugador
   - elegir que sistemas se validan primero sin competir con el loop principal
+  - priorizar estaciones de movimiento/choque, skill y dano modular antes de capas mas amplias
 - `Aprendizaje aplicado`
   - conectar `Characters`, `How to Play` y practica sin duplicar copy
   - decidir que recordatorios viven en shell, practica y match real

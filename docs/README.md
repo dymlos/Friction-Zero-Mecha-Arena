@@ -14,7 +14,8 @@ Esta es la capa documental activa del proyecto. Debe mantenerse corta, revisable
 3. [estado-actual.md](./estado-actual.md)
 4. [proximos-pasos.md](./proximos-pasos.md)
 5. [decisiones.md](./decisiones.md)
-6. [milestones/README.md](./milestones/README.md)
+6. [decisiones-producto.md](./decisiones-producto.md)
+7. [milestones/README.md](./milestones/README.md)
 
 ## Capa activa
 
@@ -22,6 +23,7 @@ Esta es la capa documental activa del proyecto. Debe mantenerse corta, revisable
 - [estado-actual.md](./estado-actual.md): snapshot corto del prototipo y sus riesgos activos.
 - [proximos-pasos.md](./proximos-pasos.md): siguiente iteracion recomendada.
 - [decisiones.md](./decisiones.md): reglas y restricciones que hoy siguen condicionando cambios.
+- [decisiones-producto.md](./decisiones-producto.md): decisiones de producto tomadas en entrevista, separadas del estado tecnico actual.
 - [milestones/README.md](./milestones/README.md): roadmap vivo por milestone.
 
 ## Archivo historico

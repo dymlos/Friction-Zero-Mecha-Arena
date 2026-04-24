@@ -2,6 +2,8 @@
 
 La siguiente iteracion recomendada debe tomar la expansion M11 como base cerrada: roster competitivo de seis, seleccion por slot, rutas grandes `FFA/Teams`, aftermath neutral FFA, HUD compacto 8P y cierre post-partida con `Oportunidad | ...` ya quedaron revalidados de forma automatizada. Lo siguiente no es ampliar configuracion ni replay, sino validar la UX con evidencia humana y corregir solo fricciones concretas.
 
+Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decisiones-producto.md`. En futuras sesiones, usar ese documento para resolver dudas de prioridad antes de abrir nuevas capas tecnicas.
+
 ## Prioridad inmediata
 
 1. Ejecutar smoke manual de shell operativa con foco en legibilidad, ritmo y descubrimiento real:
@@ -23,6 +25,8 @@ La siguiente iteracion recomendada debe tomar la expansion M11 como base cerrada
    - seleccion de `Aguja` y `Ancla` desde setup local antes de lanzar match.
    - lectura de `Characters` con filtros `Impacto` y `Rango / zona`.
    - cierre post-partida donde el ganador tome aftermath y aparezca `Oportunidad | ...`.
+   - validar que `ring-out` siga siendo la ruta dominante y que la destruccion total se lea como segunda via fuerte.
+   - validar que `Overdrive` se use como herramienta tactica ocasional y no como estado permanente.
 3. Revalidar manualmente el cierre post-partida:
    - `Teams`: leer decision, `Replay | ...`, desgaste/apoyo y "como perdi" en menos de 10 segundos.
    - `FFA`: leer posiciones, desempate, supervivencia y replay sin ayuda externa.
@@ -30,6 +34,7 @@ La siguiente iteracion recomendada debe tomar la expansion M11 como base cerrada
 4. Revalidar manualmente shell + practica en shared-screen con jugadores reales antes de abrir remapeo libre, video replay real o polish audiovisual.
 5. Mantener ownership estricto: `setup local` = seleccion, `Characters` = identidad, `How to Play` = reglas base, `Practica` = experimentacion segura, `match` = decision tactica bajo presion.
 6. Mantener la disciplina de paridad `base/validation` mientras se toque shell, practica, HUD o cierre post-partida.
+7. Si se trabaja sobre `Ultimo vivo`, tratarlo como variante de `FFA` con estructura `best-of / first-to`, sin post-muerte controlable y sin score por causa.
 
 ## Diferidos explicitos de este cierre parcial
 
@@ -38,6 +43,8 @@ La siguiente iteracion recomendada debe tomar la expansion M11 como base cerrada
 - remapeo libre tecla por tecla o editor completo de controles
 - extensiones amplias de shell fuera del contrato operativo actual
 - nuevos arquetipos fuera del roster competitivo actual de seis
+- mas skills por personaje antes de cerrar bien la skill principal + acciones universales
+- reglas custom amplias antes de validar la sesion local clara
 
 ## Regla de sesion
 

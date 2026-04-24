@@ -24,14 +24,17 @@ Sin ese trabajo, la ruta de jugador sigue siendo funcional pero no suficientemen
   - separar opciones pre-match de opciones accesibles en pausa
   - decidir superficies para audio, video, gameplay y controles
   - fijar que ajustes son globales y cuales son por sesion local
+  - mantener `Settings` minimo en video, audio y controles/HUD
 - `UX de controles y dispositivos`
   - hacer visible el estado de slots, perfiles y dispositivos sin contaminar el HUD
   - definir como se comunica hot-plug, desconexion y reconexion en la ruta de jugador
   - decidir el alcance minimo de remapeo visible o referencia de controles
+  - usar prompts por dispositivo detectado cuando sea posible
 - `Consistencia operativa`
   - unificar wording, foco y ownership entre shell, setup, pausa y salida segura
   - evitar que vuelvan prompts o metadata de laboratorio a superficies de jugador
   - sostener la paridad `base/validation` mientras crece la shell
+  - mantener menu principal orientado a `Jugar primero`
 
 ## Dependencias
 
@@ -55,6 +58,7 @@ Sin ese trabajo, la ruta de jugador sigue siendo funcional pero no suficientemen
   - `pausa`: reanudar, reiniciar, volver al menu cuando aplica, HUD runtime y volumenes.
 - `MatchLaunchConfig.local_slots` transporta specs completos y `LocalSessionBuilder` los consume tanto en match como en practica.
 - La shell crece sin romper claridad, ownership de copy ni la ruta integrada cerrada en `M7`.
+- `Ultimo vivo` se expone como variante dentro de `FFA`, no como modo principal separado.
 
 ## Estado de implementacion
 

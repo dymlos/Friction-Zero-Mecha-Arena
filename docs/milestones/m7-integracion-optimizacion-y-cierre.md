@@ -22,7 +22,8 @@ La coherencia final solo puede validarse cuando shell, mapas, roster, onboarding
 - `Consistency pass`
   - verificar que prompts, menus, settings, HUD, `How to Play` y `Characters` cuenten la misma historia
 - `Cierre de produccion`
-  - dejar explicitamente diferido lo que sigue abierto, como post-muerte FFA, replay snippets y futura expansion de roster
+  - dejar explicitamente diferido lo que M7 no cierra todavia y que luego toman M8-M11
+  - medir el primer corte completo contra la vara de sesion local cerrada y clara
 
 ## Dependencias
 
@@ -34,13 +35,19 @@ La coherencia final solo puede validarse cuando shell, mapas, roster, onboarding
 - `1080p` no abrio un rojo nuevo en este slice; el riesgo siguiente pasa por playtests manuales y por futuras capas nuevas, no por la baseline actual.
 - La validacion automatizada no reemplaza sesiones reales con varios jugadores locales.
 
-## Diferidos explicitos
+## Diferidos explicitos de M7
 
-- `Modo Practica`
-- replay snippets
-- post-muerte `FFA`
-- settings amplios
-- expansion futura de roster
+- `Modo Practica`, luego abordado por M8.
+- replay snippets event-driven, luego abordados por M10; video replay real sigue fuera.
+- crecimiento propio de `FFA`, luego abordado por M11 sin post-muerte controlable.
+- settings amplios, luego abordados por M9.
+- expansion futura de roster, abordada en M11 como roster competitivo visible de seis.
+
+## Vara de producto
+
+- El primer corte completo debe sentirse como core completo y pulido, no como acumulacion de features.
+- La experiencia debe permitir entrar, configurar, jugar, pausar, practicar y cerrar sin huecos grandes.
+- Quedan diferidos video replay real, post-muerte avanzado/controlable en `FFA`, expansion extra de roster, reglas custom amplias y remapeo libre completo.
 
 ## Criterio de salida
 

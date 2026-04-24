@@ -13,10 +13,14 @@ Subir la calidad de presentacion sin romper peso, feedback ni legibilidad.
 - `Visual`
   - mejorar presentacion de arenas, menus y robots
   - reforzar legibilidad de dano, materiales y efectos
+  - leer dano y deterioro primero desde el robot
+  - comunicar estados de forma diegetica primero
 - `Audio`
   - definir feedback para colisiones, dano modular, pickups, recuperacion, negacion y cambios de estado
+  - priorizar feedback funcional fuerte con peso industrial
 - `Musica`
   - definir comportamiento musical para menu, match, presion final, pausa y resultados
+  - usar base de match + escalada final, acompaniando sin tapar SFX clave
 
 ## Dependencias
 
@@ -33,3 +37,4 @@ Subir la calidad de presentacion sin romper peso, feedback ni legibilidad.
 
 - El plan audiovisual esta conectado a superficies concretas de gameplay y UX.
 - La legibilidad sigue siendo la regla principal durante el polish.
+- `1080p` fluido sigue siendo referencia antes de subir ambicion visual.

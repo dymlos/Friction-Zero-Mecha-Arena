@@ -3,15 +3,14 @@
 ## Objetivo
 
 Abrir la siguiente capa de crecimiento competitivo del proyecto sin perder legibilidad:
-- resolver la expansion futura de `FFA`
-- decidir si existe una version propia de post-muerte para `FFA`
+- resolver la expansion futura de `FFA` sin sumar post-muerte controlable
 - ampliar roster y comunicacion de personajes
 - sostener identidad clara por modo y por arquetipo mientras crece el contenido
 
 ## Por que existe
 
 Despues de `M7`, el roadmap ya dejo diferidos dos frentes grandes:
-- post-muerte `FFA`
+- crecimiento propio de `FFA` sin copiar soporte post-muerte de `Teams`
 - expansion futura de roster
 
 Ademas, los milestones anteriores solo cerraron un primer slice de shell, comunicacion e identidad. Antes de sumar mas personajes o reglas por modo, hace falta decidir como crecer sin:
@@ -22,7 +21,8 @@ Ademas, los milestones anteriores solo cerraron un primer slice de shell, comuni
 ## Grupos de trabajo
 
 - `Expansion de modos`
-  - decidir si `FFA` necesita post-muerte propio, una solucion distinta o seguir sin esa capa
+  - mantener `FFA` sin nave ni post-muerte controlable
+  - presentar `Ultimo vivo` como variante alternativa dentro de `FFA`
   - preservar supervivencia, oportunismo y third-party como identidad del modo
   - revisar como impacta cualquier expansion en pacing, cierre y lectura del shared-screen
 - `Expansion de roster`
@@ -45,6 +45,7 @@ Ademas, los milestones anteriores solo cerraron un primer slice de shell, comuni
 ## Riesgos y preguntas abiertas
 
 - Copiar soporte post-muerte de `Teams` a `FFA` puede romper la identidad del modo y su lectura.
+- `Ultimo vivo` debe seguir subordinado al modo principal por puntos, no desplazarlo.
 - Un roster mas grande puede exigir nuevas reglas de presentacion, orden y seleccion antes de ser honesto para la shell.
 - Mas personajes o sistemas por modo pueden degradar shared-screen, onboarding y claridad visual.
 - La comunicacion puede quedarse demasiado textual si el roster y los cierres crecen sin una estrategia comun.

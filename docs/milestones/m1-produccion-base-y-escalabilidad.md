@@ -26,10 +26,12 @@ Si estos contratos siguen abiertos, el resto del roadmap corre sobre intuicion:
 - `Multiplayer local`
   - formalizar hasta `8` jugadores locales y `4v4`
   - definir slot assignment, hot-plug y desconexion
+  - priorizar primero una experiencia pulida en `2-4` antes de exigir la misma calidad a `5-8`
 - `Contratos de input`
   - fijar creacion y persistencia de slots entre menus y match
   - definir ownership de pausa, reanudar y salida
   - definir estrategia de prompts por dispositivo
+  - mantener `Easy` viable y `Hard` como opcion mas precisa por slot
 - `Shared-screen`
   - documentar limites practicos de legibilidad para 4, 6 y 8 jugadores
   - fijar metricas de ocupacion para trabajo posterior de mapas y HUD
@@ -43,10 +45,11 @@ Si estos contratos siguen abiertos, el resto del roadmap corre sobre intuicion:
 
 - `8` jugadores sigue siendo una meta de producto, no una escala ya validada.
 - La legibilidad puede exigir defaults distintos para sesiones de 4 y de 8 jugadores.
-- `Cualquiera puede pausar` necesita politica explicita para resume, confirmacion de salida y inputs simultaneos.
+- La politica de pausa queda definida por producto: controla quien pauso, salida con confirmacion simple e inmediata, sin reasignar slots ni cambiar modo.
 
 ## Criterio de salida
 
 - Existe una matriz documentada de performance y hardware objetivo.
 - Las reglas de ownership de controles y pausa quedaron explicitas.
 - El trabajo de mapas puede arrancar contra objetivos reales de ocupacion y legibilidad.
+- `1080p` queda como referencia principal de fluidez y estabilidad.

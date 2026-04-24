@@ -7,6 +7,7 @@ Expandir el cierre del match mas alla del baseline actual:
 - resultados y recap mas explicativos
 - mejor lectura de "como perdi" o "como ganamos"
 - superficies post-partida que refuercen replayability sin saturar el loop
+- sostener como base de producto un resumen claro + stats simples
 
 ## Por que existe
 
@@ -46,6 +47,7 @@ Para eso hace falta una capa post-partida que explique mejor:
 - Video replay real queda como investigacion futura, no como gap de M10.
 - Falta playtest humano para medir comprension y ritmo de revancha.
 - `Teams` y `FFA` ya tienen enfasis distintos en texto; falta validar si esos enfasis se leen igual de bien en shared-screen.
+- La post-partida no debe reemplazar `How to Play`, ni transformarse en tabla extensa.
 
 ## Criterio de salida
 
