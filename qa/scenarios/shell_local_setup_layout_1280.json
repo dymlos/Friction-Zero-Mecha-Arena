@@ -55,6 +55,18 @@
     },
     {
       "text_contains": {
+        "target": "qa:shell_local_setup_slots",
+        "expected": "Aguja"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_slots",
+        "expected": "Ancla"
+      }
+    },
+    {
+      "text_contains": {
         "target": "qa:shell_local_setup_characters",
         "expected": "Characters"
       }

@@ -62,12 +62,17 @@ func _run() -> void:
 		practice_setup.has_method("get_recommended_robot_label"),
 		"PracticeSetup deberia resolver el robot recomendado desde RosterCatalog."
 	)
+	_assert(
+		practice_setup.has_method("cycle_slot_roster_entry"),
+		"PracticeSetup deberia permitir cambiar el robot de P1/P2."
+	)
 	if not (
 		practice_setup.has_method("set_selected_module")
 		and practice_setup.has_method("get_selected_module_id")
 		and practice_setup.has_method("focus_back_button")
 		and practice_setup.has_method("get_related_topic_labels")
 		and practice_setup.has_method("get_recommended_robot_label")
+		and practice_setup.has_method("cycle_slot_roster_entry")
 	):
 		await _cleanup_current_scene()
 		_finish()
@@ -85,6 +90,11 @@ func _run() -> void:
 	_assert(
 		not String(practice_setup.call("get_recommended_robot_label")).is_empty(),
 		"PracticeSetup deberia mostrar un robot recomendado legible."
+	)
+	var initial_practice_launch_config = practice_setup.call("build_launch_config")
+	_assert(
+		String(initial_practice_launch_config.local_slots[0].get("roster_entry_id", "")) == "patin",
+		"PracticeSetup abierto desde menu deberia iniciar P1 con el robot recomendado del modulo."
 	)
 
 	practice_setup.call("focus_back_button")
@@ -120,6 +130,7 @@ func _run() -> void:
 	practice_setup.call("set_slot_control_mode", 2, 1)
 	practice_setup.call("set_slot_input_source", 2, "joypad")
 	practice_setup.call("reserve_joypad_for_slot", 2, 31, true)
+	practice_setup.call("cycle_slot_roster_entry", 1)
 	var practice_launch_config = practice_setup.call("build_launch_config")
 	_assert(
 		practice_launch_config.local_slots.size() == 2,
@@ -129,6 +140,10 @@ func _run() -> void:
 		String(practice_launch_config.local_slots[1].get("input_source", "")) == "joypad"
 		and int(practice_launch_config.local_slots[1].get("device_id", -1)) == 31,
 		"PracticeSetup deberia conservar el dispositivo reclamado para P2."
+	)
+	_assert(
+		String(practice_launch_config.local_slots[0].get("roster_entry_id", "")) != "",
+		"PracticeSetup deberia escribir el robot elegido en local_slots."
 	)
 
 	practice_setup.call("emit_signal", "back_requested")

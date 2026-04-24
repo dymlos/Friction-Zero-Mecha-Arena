@@ -6,6 +6,7 @@ const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const LocalSessionDraft = preload("res://scripts/systems/local_session_draft.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
 
 signal back_requested
@@ -14,7 +15,7 @@ signal how_to_play_requested
 signal practice_requested
 signal start_requested(launch_config: MatchLaunchConfig)
 
-const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4]
+const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4, 5, 6, 7, 8]
 
 @onready var backdrop: ColorRect = $Backdrop
 @onready var mode_value_label: Label = %ModeValueLabel
@@ -26,6 +27,20 @@ const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4]
 	%Slot2Button,
 	%Slot3Button,
 	%Slot4Button,
+	%Slot5Button,
+	%Slot6Button,
+	%Slot7Button,
+	%Slot8Button,
+]
+@onready var slot_roster_buttons: Array[Button] = [
+	%Slot1RosterButton,
+	%Slot2RosterButton,
+	%Slot3RosterButton,
+	%Slot4RosterButton,
+	%Slot5RosterButton,
+	%Slot6RosterButton,
+	%Slot7RosterButton,
+	%Slot8RosterButton,
 ]
 @onready var start_button: Button = %StartButton
 @onready var characters_button: Button = %CharactersButton
@@ -38,6 +53,7 @@ var _session_draft := LocalSessionDraft.new()
 
 func _ready() -> void:
 	_install_qa_ids()
+	_session_draft.configure(DEFAULT_LOCAL_SLOTS.size())
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background_alt
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
@@ -51,6 +67,11 @@ func _ready() -> void:
 		var slot := index + 1
 		slot_buttons[index].pressed.connect(func() -> void:
 			cycle_slot_state(slot)
+		)
+	for index in range(slot_roster_buttons.size()):
+		var slot := index + 1
+		slot_roster_buttons[index].pressed.connect(func() -> void:
+			cycle_slot_roster_entry(slot)
 		)
 	characters_button.pressed.connect(_on_characters_pressed)
 	start_button.pressed.connect(_on_start_pressed)
@@ -103,6 +124,11 @@ func cycle_slot_state(player_slot: int) -> void:
 	_refresh_view()
 
 
+func cycle_slot_roster_entry(player_slot: int) -> void:
+	_session_draft.cycle_slot_roster_entry(player_slot)
+	_refresh_view()
+
+
 func toggle_slot_control_mode(player_slot: int) -> void:
 	_session_draft.toggle_slot_control_mode(player_slot)
 	_refresh_view()
@@ -132,10 +158,12 @@ func _refresh_view() -> void:
 	mode_value_label.text = "FFA" if _session_draft.match_mode == MatchController.MatchMode.FFA else "Equipos"
 	teams_button.disabled = _session_draft.match_mode == MatchController.MatchMode.TEAMS
 	ffa_button.disabled = _session_draft.match_mode == MatchController.MatchMode.FFA
-	slot_summary_label.text = "\n".join(get_slot_summary_lines())
+	var slot_lines := get_slot_summary_lines()
+	slot_summary_label.text = "\n".join(slot_lines)
 	for index in range(slot_buttons.size()):
 		var player_slot := index + 1
-		slot_buttons[index].text = String(get_slot_summary_lines()[index]).replace(" | ", ": ")
+		slot_buttons[index].text = _build_slot_state_button_text(player_slot)
+		slot_roster_buttons[index].text = _build_slot_roster_button_text(player_slot)
 	start_button.disabled = not is_start_enabled()
 
 
@@ -144,6 +172,24 @@ func _resolve_target_scene_path() -> String:
 		return "res://scenes/main/main_ffa.tscn"
 
 	return "res://scenes/main/main.tscn"
+
+
+func _build_slot_state_button_text(player_slot: int) -> String:
+	var slot_info := _session_draft.get_slot_info(player_slot)
+	if not bool(slot_info.get("active", false)):
+		return "P%s | activar" % player_slot
+	var mode_label := "Hard" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Easy"
+	var input_source := String(slot_info.get("input_source", LocalSessionDraft.INPUT_SOURCE_KEYBOARD))
+	if input_source == LocalSessionDraft.INPUT_SOURCE_JOYPAD:
+		var connection_label := "ok" if bool(slot_info.get("device_connected", false)) else "sin joy"
+		return "P%s | %s | %s" % [player_slot, mode_label, connection_label]
+	return "P%s | %s | teclado" % [player_slot, mode_label]
+
+
+func _build_slot_roster_button_text(player_slot: int) -> String:
+	var slot_info := _session_draft.get_slot_info(player_slot)
+	var roster_entry := RosterCatalog.get_competitive_entry(String(slot_info.get("roster_entry_id", "")))
+	return String(roster_entry.get("label", slot_info.get("roster_entry_id", "")))
 
 
 func _on_start_pressed() -> void:
@@ -191,3 +237,5 @@ func _install_qa_ids() -> void:
 	how_to_play_button.set_meta("qa_id", "shell_local_setup_how_to_play")
 	practice_button.set_meta("qa_id", "shell_local_setup_practice")
 	back_button.set_meta("qa_id", "shell_local_setup_back")
+	for index in range(slot_roster_buttons.size()):
+		slot_roster_buttons[index].set_meta("qa_id", "shell_local_setup_slot_%s_robot" % (index + 1))

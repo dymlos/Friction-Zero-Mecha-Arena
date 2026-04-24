@@ -75,6 +75,8 @@ func open_practice_setup(return_screen_id: String = "", module_id: String = "") 
 
 	_practice_return_screen_id = resolved_return_screen_id
 	_mount_screen(PRACTICE_SETUP_SCENE, "practice_setup")
+	if is_instance_valid(_active_screen) and _active_screen.has_method("set_preserve_existing_roster"):
+		_active_screen.call("set_preserve_existing_roster", resolved_return_screen_id == "local_match_setup")
 	if is_instance_valid(_active_screen) and _active_screen.has_method("set_selected_module"):
 		_active_screen.call_deferred("set_selected_module", module_id)
 
