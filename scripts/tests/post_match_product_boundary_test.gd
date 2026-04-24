@@ -106,7 +106,7 @@ func _assert_post_match_product_boundary(test_case: Dictionary) -> void:
 	_assert(_has_line_containing(result_lines, "Lectura |"), "%s debe conservar lectura compacta." % label)
 	_assert(_has_line_containing(result_lines, "Replay |"), "%s debe conservar replay event-driven." % label)
 	_assert(_has_line_containing(result_lines, "Stats |"), "%s debe conservar stats simples." % label)
-	for required_prefix in ["Lectura |", "Replay |", "Stats |"]:
+	for required_prefix in MatchController.REQUIRED_RESULT_LINE_PREFIXES:
 		_assert(
 			_has_line_containing(result_lines, required_prefix),
 			"%s no debe recortar `%s` al aplicar presupuesto." % [label, required_prefix]
