@@ -12,7 +12,12 @@ const SCRAP_REPAIR_RATIO := 0.10
 const SURGE_DURATION_SECONDS := 0.8
 
 
-static func should_spawn_aftermath(match_mode: int, round_active: bool, remaining_competitors_after_elimination: int) -> bool:
+static func should_spawn_aftermath(
+	match_mode: int,
+	round_active: bool,
+	remaining_competitors_after_elimination: int,
+	_mode_variant_id: String = ""
+) -> bool:
 	return match_mode == MatchController.MatchMode.FFA and round_active and remaining_competitors_after_elimination >= 2
 
 
