@@ -4,7 +4,7 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 
 ## Reglas vigentes
 
-- El modo principal del producto es score por causa; `Ultimo vivo` es variante alternativa de `FFA`.
+- El modo principal del producto es score por causa; `Ultimo vivo` es variante alternativa de `FFA` pero no se expone en `setup local` hasta tener gameplay completo.
 - `Ultimo vivo` debe presentarse dentro de `FFA` y usar estructura `best-of / first-to`.
 - Tratar escenas hermanas `base/validation` como contratos compartidos cuando representan el mismo slice jugable.
 - Endurecer fixtures y contexto de laboratorio antes de diagnosticar drift real de gameplay.
@@ -24,7 +24,7 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - Los control hints de practica deben salir de un seam comun (`RobotBase.get_control_reference_hint()` o equivalente central), no de prompts por modulo.
 - El aprendizaje aplicado no se resuelve con overlays largos: shell, practica, HUD y pausa solo agregan recordatorios breves y contextuales.
 - `HUD`, `pausa` y `resultados` solo deben reforzar recordatorios contextuales, no absorber onboarding completo.
-- El HUD normal es contextual por defecto; el HUD explicito debe quedar disponible desde opciones.
+- El HUD competitivo normal es contextual por defecto; el HUD explicito debe quedar disponible desde opciones y sigue siendo el default de `Practica`.
 - El cierre de partida lanzado desde `player_shell` debe quedar estable: sin prompts de laboratorio y sin autorestart.
 - El primer replay viable de `M10` es event-driven: snippets `Replay | tiempo/ronda/zona/causa/competidor`, no grabacion frame-by-frame ni playback fisico.
 - Resultados y recap pueden explicar la decision, pero no absorben onboarding largo ni tablas completas.
@@ -35,10 +35,12 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - `RosterCatalog` es la fuente unica del roster competitivo visible de seis arquetipos y de su copy player-facing.
 - `LocalSession` transporta por slot el `roster_entry_id` visible y el `archetype_path` runtime hasta match y practica.
 - `GameShell` y `MatchLaunchConfig` son la costura comun para armar loops integrados y QA del producto real; evitar ramas paralelas que instancien `main*.tscn` directo por fuera de ese contrato.
-- `Settings` vive en `menu principal` y solo cubre configuracion global persistente: audio, video, HUD y referencia corta de controles.
-- `setup local` vive antes del match y es la unica superficie para editar modo, slots activos, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.
-- La pausa solo toca opciones seguras de runtime: reanudar, reiniciar, volver al menu cuando aplica, HUD y volumenes. No reasigna slots, no cambia `Teams/FFA` y no toca video.
-- La direccion de producto para pausa completa suma acceso a `How to Play` y `Characters` sin convertir pausa en resumen detallado de match.
+- `Settings` global vive en `menu principal` y cubre configuracion persistente: audio, video, HUD y referencia corta de controles.
+- `Settings` en pausa solo muestra y aplica opciones seguras de runtime: volumenes y HUD. Video, ventana/vsync, controles, slots, modo, mapa y variante quedan fuera de pausa.
+- `setup local` vive antes del match y es la unica superficie para editar modo, mapa, variante visible, slots activos, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.
+- La variante visible de `setup local` queda transportada por `MatchLaunchConfig`; por ahora solo existe `Score por causa`.
+- La pausa solo toca acciones seguras de runtime: reanudar, reiniciar, volver al menu cuando aplica, HUD y volumenes. No reasigna slots, no cambia `Teams/FFA`, no cambia mapa/variante y no toca video.
+- La direccion de producto para pausa completa suma acceso a `Settings`, `How to Play` y `Characters` sin convertir pausa en resumen detallado de match.
 - La pausa la controla quien la abrio; salir usa confirmacion simple y salida inmediata.
 - El menu principal prioriza `Jugar primero`; el setup inicial solo agrega variante de modo sobre `modo + mapa + jugadores`.
 - Los mapas se agrupan por rango `2-4` y `5-8`; para `5-8`, el primer objetivo es un mapa fuerte por modo.

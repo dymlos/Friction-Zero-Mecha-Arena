@@ -8,7 +8,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 
 - Shell local jugable: `menu principal -> setup local -> characters/how to play -> match -> pausa -> volver al menu`.
 - `menu principal` es la entrada unica a `Settings`; la pantalla persiste configuracion global de audio, video y HUD mediante `UserSettingsStore`.
-- `setup local` es la autoridad de sesion antes del match: modo `Teams/FFA`, slots activos hasta `P8`, robot por slot, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.
+- `setup local` es la autoridad de sesion antes del match: modo `Teams/FFA`, mapa, variante visible `Score por causa`, slots activos hasta `P8`, robot por slot, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.
 - Cierre integrado `player_shell` revalidado en `Teams` y `FFA` con recap + resultado final estables.
 - Pantalla `Characters` de solo lectura accesible desde `menu principal` y `setup local`.
 - Pantalla `How to Play` accesible desde `menu principal` y `setup local`, con reglas base del match y controles `Easy/Hard`.
@@ -16,7 +16,8 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - `PracticeSetup` dedicado con orden fijo de modulos, robot recomendado, temas relacionados y slots `P1/P2` usando el mismo contrato operativo de dispositivos que el setup local.
 - Runtime `practice_mode` separado del laboratorio, con modulos `movimiento`, `impacto`, `energia`, `partes`, `recuperacion` y `sandbox`.
 - `PracticeHud` con modulo, objetivo, progreso, controles, callout corto y pausa, sin recap competitivo ni prompts de laboratorio.
-- Pausa operativa compacta en match y practica: acciones primarias, quick settings de `HUD/master/music/sfx` y resumen corto de dispositivos, sin reasignar slots ni cambiar modo.
+- Pausa completa en match lanzado desde shell: acciones primarias, quick settings de `HUD/master/music/sfx`, resumen corto de dispositivos y superficies `Settings`, `How to Play` y `Characters` montadas sobre el match pausado, sin reasignar slots ni cambiar modo.
+- `Settings` en pausa usa scope seguro `audio/HUD`; video, controles, slots, modo, mapa y variante quedan fuera del match congelado.
 - Cierre post-partida M10: lectura compacta de decision, snippets event-driven `Replay | ...`, diferencia de enfasis `Teams/FFA` y secciones HUD dedicadas sin reemplazar el resultado principal.
 - Fuente unica de copy del roster competitivo visible hoy en shell: `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla`.
 - `FFA` tiene aftermath neutral propio: una recompensa temporal de baja para vivos, sin nave post-muerte ni control del eliminado.
@@ -25,7 +26,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - Movimiento con inercia y choques con peso.
 - Dano modular por extremidad, energia y `Overdrive`.
 - Partes desprendidas, recuperacion aliada, negacion rival y explosion diferida del cuerpo inutilizado.
-- Primeros arquetipos, pickups de borde, presion progresiva y HUD explicito/contextual.
+- Primeros arquetipos, pickups de borde, presion progresiva y HUD contextual por defecto en match competitivo; HUD explicito sigue disponible desde opciones/pausa y arranca por defecto en `Practica`.
 - Primer slice jugable de soporte post-muerte en `Teams`.
 - Ruta de laboratorio separada de la ruta de jugador para QA y tuning.
 
@@ -48,6 +49,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - Fuente unica de identidad por personaje compartida entre shell, QA y tests.
 - Fuente unica de onboarding general compartida entre shell, QA y tests.
 - Paridad del flujo de shell en tests scene-level y QA visual de `menu`, `setup`, `characters`, `how to play` y overlay de pausa.
+- QA visual dedicada de pausa completa a `1280x720`: `main_pause_complete_settings_1280`, `main_pause_complete_how_to_play_1280` y `main_pause_complete_characters_1280`.
 - Paridad contractual de `Practica` en tests scene-level, QA visual y rotacion de modulos.
 - QA integrada del loop completo a `1280x720`:
   - `player_shell_loop_teams_1280`
@@ -76,6 +78,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
   - `2P mixto Easy/Hard`
   - lanzar `Teams`, `FFA` y `Practica`
   - abrir pausa y tocar `HUD/audio`
+  - abrir `Settings`, `How to Play` y `Characters` desde pausa y volver al overlay
   - entrada desde `How to Play`
   - volver al menu desde pausa
 - Paridad contractual entre escenas `base` y `validation`.

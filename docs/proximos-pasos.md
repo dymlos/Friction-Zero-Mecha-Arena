@@ -14,6 +14,8 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
    - joypad reservado desconectado/reconectado
    - lanzar `Teams`, `FFA` y `Practica`
    - abrir pausa y tocar `HUD/audio`
+   - abrir desde pausa `Settings`, `How to Play` y `Characters`, volver al overlay y reanudar
+   - confirmar que `Settings` en pausa solo muestra `audio/HUD`
    - `1P Easy`
    - `1P Hard`
    - `2P mixto Easy/Hard`
@@ -46,6 +48,7 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
 - nuevos arquetipos fuera del roster competitivo actual de seis
 - mas skills por personaje antes de cerrar bien la skill principal + acciones universales
 - reglas custom amplias antes de validar la sesion local clara
+- exponer `Ultimo vivo` en setup antes de tener su gameplay completo
 
 ## Regla de sesion
 
