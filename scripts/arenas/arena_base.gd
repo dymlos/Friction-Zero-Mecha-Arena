@@ -114,6 +114,35 @@ func get_safe_play_area_size() -> Vector2:
 	return _current_play_area_size if _current_play_area_size != Vector2.ZERO else safe_play_area_size
 
 
+func get_diegetic_pressure_snapshot() -> Dictionary:
+	var bands := [
+		north_pressure_band,
+		south_pressure_band,
+		west_pressure_band,
+		east_pressure_band,
+	]
+	var visible_count := 0
+	for band in bands:
+		if band != null and band.visible:
+			visible_count += 1
+
+	var full_area := safe_play_area_size
+	var current_area := get_safe_play_area_size()
+	var scale_x := current_area.x / maxf(full_area.x, 0.001)
+	var scale_y := current_area.y / maxf(full_area.y, 0.001)
+	var play_area_scale := minf(scale_x, scale_y)
+	var contraction_visible := play_area_scale < 0.995 and visible_count > 0
+
+	return {
+		"warning_strength": _pressure_warning_strength,
+		"warning_visible": _pressure_warning_strength > 0.01 and visible_count == 4,
+		"contraction_visible": contraction_visible,
+		"visible_band_count": visible_count,
+		"play_area_scale": play_area_scale,
+		"hud_is_secondary": true,
+	}
+
+
 func get_play_area_half_extents() -> Vector2:
 	return get_safe_play_area_size() * 0.5
 
