@@ -49,6 +49,10 @@ La coherencia final solo puede validarse cuando shell, mapas, roster, onboarding
 - La experiencia debe permitir entrar, configurar, jugar, pausar, practicar y cerrar sin huecos grandes.
 - Quedan diferidos video replay real, post-muerte avanzado/controlable en `FFA`, expansion extra de roster, reglas custom amplias y remapeo libre completo.
 
+## Estado de implementacion
+
+`M7` queda cubierto como baseline automatizada del loop integrado y como contrato de primer corte completo. El gap activo no es construir mas superficies dentro de M7, sino ejecutar el smoke manual de `qa/manual/m7/product-cut-smoke.md` y corregir solo fricciones concretas que bloqueen una sesion local clara.
+
 ## Criterio de salida
 
 - El loop integrado minimo esta documentado como coherente.

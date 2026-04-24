@@ -1,0 +1,16 @@
+{
+	"avg_frame_ms": 6.885,
+	"budget": {
+		"frame_budget_ms": 16.7,
+		"primary_reference": false,
+		"target_fps": 60.0,
+		"viewport": "1280x720",
+		"warning_frame_ms": 20.0
+	},
+	"frames": 600,
+	"max_frame_ms": 7.821,
+	"scene": "res://scenes/main/main.tscn",
+	"target_met_avg": true,
+	"viewport": "1280x720",
+	"warning_max_exceeded": false
+}

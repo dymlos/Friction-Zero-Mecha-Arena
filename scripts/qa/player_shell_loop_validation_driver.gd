@@ -52,7 +52,6 @@ func _run() -> void:
 
 	if _match_mode == MatchController.MatchMode.FFA and setup.has_method("set_match_mode"):
 		setup.call("set_match_mode", MatchController.MatchMode.FFA)
-		await _await_frames(1)
 
 	var launch_config: Variant = setup.call("build_launch_config")
 	if not (launch_config is MatchLaunchConfig):
@@ -89,25 +88,21 @@ func _run() -> void:
 			match_controller.match_config.round_intro_duration_teams = 0.0
 
 	match_controller.start_match()
-	await _await_frames(1)
 
 	for robot in robots:
 		robot.void_fall_y = -100.0
 
 	force_m6_audiovisual_readability_state(main)
-	await _await_frames(1)
 
 	if _match_mode == MatchController.MatchMode.FFA:
 		robots[0].fall_into_void()
-		await _await_frames(1)
 		robots[1].fall_into_void()
-		await _await_frames(1)
 		robots[2].fall_into_void()
 	else:
 		robots[2].fall_into_void()
 		robots[3].fall_into_void()
 
-	await _await_frames(2)
+	await _await_frames(1)
 	if not match_controller.is_match_over():
 		push_error("La validacion QA integrada deberia quedar detenida en cierre de match estable.")
 
