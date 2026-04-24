@@ -14,6 +14,12 @@ const COMPETITIVE_ENTRY_IDS := ["ariete", "grua", "cizalla", "patin", "aguja", "
 const DEFAULT_SLOT_ENTRY_IDS := ["ariete", "grua", "cizalla", "patin", "aguja", "ancla", "ariete", "patin"]
 const TEACHING_FOCUS_ENTRY_IDS := ["ariete", "patin", "cizalla"]
 const VISUAL_DIFFERENTIATION_SCOPE := "moderada"
+const VISUAL_IDENTITY_RULES := [
+	"misma familia robotica industrial",
+	"silueta/acento moderado",
+	"lectura primaria desde el cuerpo",
+	"HUD como refuerzo, no como unica lectura",
+]
 const CONFIG_BY_ID := {
 	"ariete": ARIETE_CONFIG,
 	"grua": GRUA_CONFIG,
@@ -96,6 +102,10 @@ static func get_teaching_focus_roster() -> Array:
 
 static func get_universal_action_labels() -> Array:
 	return ControlReferenceCatalog.get_universal_action_labels()
+
+
+static func get_visual_identity_rules() -> Array:
+	return VISUAL_IDENTITY_RULES.duplicate()
 
 
 static func get_default_entry_id_for_slot(player_slot: int) -> String:

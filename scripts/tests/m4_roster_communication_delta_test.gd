@@ -33,6 +33,11 @@ func _run() -> void:
 	_assert(button_reference.contains("Energia"), "La referencia de botones debe explicar energia.")
 	_assert(button_reference.contains("Overdrive"), "La referencia de botones debe explicar Overdrive.")
 
+	var visual_rules := RosterCatalog.get_visual_identity_rules()
+	_assert(visual_rules.has("misma familia robotica industrial"), "M4 debe preservar familia comun.")
+	_assert(visual_rules.has("silueta/acento moderado"), "M4 debe limitar la diferenciacion inicial a silueta/acento moderado.")
+	_assert(visual_rules.has("lectura primaria desde el cuerpo"), "M4 debe priorizar lectura corporal.")
+
 	for entry in RosterCatalog.get_shell_roster():
 		var entry_id := String(entry.get("id", ""))
 		var label := String(entry.get("label", ""))

@@ -5,6 +5,7 @@ const ARIETE_ARCHETYPE := preload("res://data/config/robots/ariete_archetype.tre
 const AGUJA_ARCHETYPE := preload("res://data/config/robots/aguja_archetype.tres")
 const ANCLA_ARCHETYPE := preload("res://data/config/robots/ancla_archetype.tres")
 const CIZALLA_ARCHETYPE := preload("res://data/config/robots/cizalla_archetype.tres")
+const PATIN_ARCHETYPE := preload("res://data/config/robots/patin_archetype.tres")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 var _failed := false
@@ -26,6 +27,8 @@ func _validate_archetype_accent_nodes_exist_and_differ() -> void:
 	var ariete := _spawn_robot(ARIETE_ARCHETYPE, 1, Vector3(-2.0, 0.0, 0.0))
 	var aguja := _spawn_robot(AGUJA_ARCHETYPE, 2, Vector3(0.0, 0.0, 0.0))
 	var ancla := _spawn_robot(ANCLA_ARCHETYPE, 3, Vector3(2.0, 0.0, 0.0))
+	var patin := _spawn_robot(PATIN_ARCHETYPE, 4, Vector3(4.0, 0.0, 0.0))
+	var cizalla := _spawn_robot(CIZALLA_ARCHETYPE, 5, Vector3(6.0, 0.0, 0.0))
 
 	await process_frame
 	await physics_frame
@@ -38,6 +41,8 @@ func _validate_archetype_accent_nodes_exist_and_differ() -> void:
 		await _cleanup_robot(ariete)
 		await _cleanup_robot(aguja)
 		await _cleanup_robot(ancla)
+		await _cleanup_robot(patin)
+		await _cleanup_robot(cizalla)
 		return
 
 	var ariete_signature := String(ariete.call("get_archetype_visual_signature"))
@@ -50,6 +55,9 @@ func _validate_archetype_accent_nodes_exist_and_differ() -> void:
 		ariete_signature != aguja_signature and aguja_signature != ancla_signature,
 		"Los arquetipos deberian distinguirse por algo mas que el texto del roster."
 	)
+	_assert_moderate_accent(ariete, "Ariete")
+	_assert_moderate_accent(patin, "Patin")
+	_assert_moderate_accent(cizalla, "Cizalla")
 
 	var ariete_accent := ariete.get_node_or_null("UpperBodyPivot/ArchetypeAccent") as Node3D
 	var aguja_accent := aguja.get_node_or_null("UpperBodyPivot/ArchetypeAccent") as Node3D
@@ -61,6 +69,8 @@ func _validate_archetype_accent_nodes_exist_and_differ() -> void:
 		await _cleanup_robot(ariete)
 		await _cleanup_robot(aguja)
 		await _cleanup_robot(ancla)
+		await _cleanup_robot(patin)
+		await _cleanup_robot(cizalla)
 		return
 
 	_assert(
@@ -94,6 +104,8 @@ func _validate_archetype_accent_nodes_exist_and_differ() -> void:
 	await _cleanup_robot(ariete)
 	await _cleanup_robot(aguja)
 	await _cleanup_robot(ancla)
+	await _cleanup_robot(patin)
+	await _cleanup_robot(cizalla)
 
 
 func _validate_runtime_loadout_rebuilds_the_accent() -> void:
@@ -246,6 +258,30 @@ func _validate_cizalla_dismantle_window_surfaces_on_body_and_roster() -> void:
 
 	await _cleanup_robot(cizalla)
 	await _cleanup_robot(victim)
+
+
+func _assert_moderate_accent(robot: RobotBase, label: String) -> void:
+	var signature := String(robot.call("get_archetype_visual_signature"))
+	_assert(signature != "", "%s debe declarar firma visual." % label)
+
+	var accent := robot.get_node_or_null("UpperBodyPivot/ArchetypeAccent") as Node3D
+	_assert(accent != null, "%s debe tener acento corporal." % label)
+	if accent == null:
+		return
+
+	_assert(accent.get_child_count() >= 1, "%s debe distinguirse por silueta/acento." % label)
+	_assert(accent.get_child_count() <= 3, "%s debe mantener diferenciacion moderada, no exceso de piezas." % label)
+
+	for child in accent.get_children():
+		if not (child is MeshInstance3D):
+			continue
+		var material := (child as MeshInstance3D).material_override as StandardMaterial3D
+		_assert(material != null, "%s debe tintar su acento con material runtime." % label)
+		if material != null:
+			_assert(
+				not material.albedo_color.is_equal_approx(Color.WHITE),
+				"%s debe usar un tinte de acento runtime en vez de un mesh blanco generico." % label
+			)
 
 
 func _spawn_robot(archetype: Resource, player_index: int, position: Vector3) -> RobotBase:
