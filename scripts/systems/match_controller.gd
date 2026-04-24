@@ -21,6 +21,20 @@ const SUPPORT_PAYLOAD_LABELS := {
 const MAX_POST_MATCH_STORY_LINES := 2
 const MAX_POST_MATCH_LOSER_LINES := 1
 const MAX_POST_MATCH_SNIPPET_LINES := 3
+const MAX_BASE_MATCH_RESULT_LINES := 22
+const OPTIONAL_RESULT_LINE_PREFIXES := [
+	"Cierre ronda |",
+	"Causa bajas |",
+	"Resumen |",
+	"Momento inicial |",
+	"Momento final |",
+	"Cierre |",
+]
+const REQUIRED_RESULT_LINE_PREFIXES := [
+	"Lectura |",
+	"Replay |",
+	"Stats |",
+]
 
 @export var match_mode: MatchMode = MatchMode.FFA
 @export var mode_variant_id := MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE
@@ -567,7 +581,7 @@ func get_match_result_lines() -> Array[String]:
 	if restart_prompt_line != "":
 		lines.append(restart_prompt_line)
 
-	return lines
+	return _apply_match_result_line_budget(lines)
 
 
 func get_post_match_review_summary() -> Dictionary:
@@ -615,6 +629,26 @@ func _append_post_match_review_lines(
 
 func _append_post_match_snippet_lines(lines: Array[String]) -> void:
 	_append_unique_lines(lines, get_post_match_snippet_lines(), MAX_POST_MATCH_SNIPPET_LINES)
+
+
+func _apply_match_result_line_budget(lines: Array[String]) -> Array[String]:
+	if lines.size() <= MAX_BASE_MATCH_RESULT_LINES:
+		return lines
+
+	var trimmed := lines.duplicate()
+	for prefix in OPTIONAL_RESULT_LINE_PREFIXES:
+		if trimmed.size() <= MAX_BASE_MATCH_RESULT_LINES:
+			break
+		_remove_first_line_with_prefix(trimmed, prefix)
+
+	return trimmed
+
+
+func _remove_first_line_with_prefix(lines: Array[String], prefix: String) -> void:
+	for index in range(lines.size()):
+		if lines[index].begins_with(prefix):
+			lines.remove_at(index)
+			return
 
 
 func get_match_restart_time_left() -> float:
