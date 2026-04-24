@@ -19,7 +19,12 @@ func _run() -> void:
 
 	_assert(audio_director.has_method("reset_debug_history"), "AudioDirector deberia permitir resetear historia antes de cada escenario.")
 	_assert(audio_director.has_method("get_music_state"), "AudioDirector deberia exponer el estado musical actual.")
-	if not (audio_director.has_method("reset_debug_history") and audio_director.has_method("get_music_state")):
+	_assert(audio_director.has_method("get_music_state_profile"), "AudioDirector deberia exponer perfiles musicales M6.")
+	if not (
+		audio_director.has_method("reset_debug_history")
+		and audio_director.has_method("get_music_state")
+		and audio_director.has_method("get_music_state_profile")
+	):
 		_finish()
 		return
 
@@ -66,6 +71,15 @@ func _run() -> void:
 	_assert(
 		String(audio_director.call("get_music_state")) == "final_pressure",
 		"Cuando entra la presion final real, Main deberia cambiar a `final_pressure`."
+	)
+	var pressure_profile: Dictionary = audio_director.call("get_music_state_profile", "final_pressure")
+	_assert(
+		String(pressure_profile.get("role", "")) == "final_escalation",
+		"`final_pressure` debe representar escalada final, no una pista de match generica."
+	)
+	_assert(
+		float(pressure_profile.get("music_gain", 1.0)) <= 0.72,
+		"La escalada final debe acompanar sin tapar SFX clave."
 	)
 
 	main.match_controller.set("_match_over", true)

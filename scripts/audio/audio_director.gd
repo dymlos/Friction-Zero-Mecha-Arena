@@ -11,6 +11,15 @@ const MUSIC_STATES := [
 	"results",
 ]
 
+const MUSIC_STATE_PROFILES := {
+	"shell": {"role": "shell_idle", "intensity": 0.25, "music_gain": 0.68},
+	"match_intro": {"role": "match_intro", "intensity": 0.48, "music_gain": 0.66},
+	"match_live": {"role": "match_base", "intensity": 0.58, "music_gain": 0.64},
+	"final_pressure": {"role": "final_escalation", "intensity": 0.82, "music_gain": 0.7},
+	"pause": {"role": "pause_low", "intensity": 0.2, "music_gain": 0.5},
+	"results": {"role": "results_release", "intensity": 0.45, "music_gain": 0.62},
+}
+
 const UI_PLAYER_COUNT := 3
 const SFX_PLAYER_COUNT := 6
 const MIN_VOLUME_DB := -80.0
@@ -58,6 +67,7 @@ func _process(delta: float) -> void:
 		return
 
 	_music_player.stream = _cue_bank.get_music_stream(_music_state)
+	_apply_music_profile_gain()
 	_music_player.play()
 
 
@@ -109,11 +119,17 @@ func set_music_state(state_name: String) -> void:
 
 	_music_player.bus = "Music"
 	_music_player.stream = _cue_bank.get_music_stream(_music_state)
+	_apply_music_profile_gain()
 	_music_player.play()
 
 
 func get_music_state() -> String:
 	return _music_state
+
+
+func get_music_state_profile(state_name: String) -> Dictionary:
+	var profile: Dictionary = MUSIC_STATE_PROFILES.get(state_name, {})
+	return profile.duplicate(true)
 
 
 func get_current_music_duck_gain() -> float:
@@ -231,8 +247,17 @@ func _update_music_duck(delta: float) -> void:
 		_music_duck_gain = minf(_music_duck_gain + delta * 4.0, 1.0)
 	else:
 		_music_duck_remaining = maxf(_music_duck_remaining - delta, 0.0)
-	if _audio_playback_enabled and _music_player != null:
-		_music_player.volume_db = linear_to_db(maxf(_music_duck_gain, 0.001))
+	_apply_music_profile_gain()
+
+
+func _apply_music_profile_gain() -> void:
+	if not _audio_playback_enabled or _music_player == null:
+		return
+
+	var profile: Dictionary = MUSIC_STATE_PROFILES.get(_music_state, {})
+	var profile_gain := clampf(float(profile.get("music_gain", 0.65)), 0.0, 1.0)
+	var final_gain := clampf(profile_gain * _music_duck_gain, 0.0, 1.0)
+	_music_player.volume_db = linear_to_db(maxf(final_gain, 0.001))
 
 
 func _release_player(player: AudioStreamPlayer) -> void:
