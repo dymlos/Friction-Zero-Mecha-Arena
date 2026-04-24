@@ -2,6 +2,8 @@ extends Node
 class_name MatchController
 
 const MatchConfig = preload("res://scripts/systems/match_config.gd")
+const PostMatchEvent = preload("res://scripts/systems/post_match_event.gd")
+const PostMatchReview = preload("res://scripts/systems/post_match_review.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 signal round_started(round_number: int)
@@ -64,6 +66,9 @@ var _pending_transition := ""
 var _last_round_closing_cause := -1
 var _last_round_was_draw := false
 var _runtime_match_restart_enabled := true
+var _post_match_review := PostMatchReview.new()
+var _post_match_event_sequence := 0
+var _last_match_close_event: Dictionary = {}
 
 
 func _ready() -> void:
@@ -133,6 +138,9 @@ func start_match() -> void:
 	_robot_support_state.clear()
 	_last_round_closing_cause = -1
 	_last_round_was_draw = false
+	_post_match_review.reset()
+	_post_match_event_sequence = 0
+	_last_match_close_event.clear()
 
 	for robot in registered_robots:
 		if is_instance_valid(robot):
@@ -524,6 +532,25 @@ func get_match_result_lines() -> Array[String]:
 	return lines
 
 
+func get_post_match_review_summary() -> Dictionary:
+	return _post_match_review.build_review(_build_post_match_context())
+
+
+func get_post_match_review_lines() -> Array[String]:
+	get_post_match_review_summary()
+	return _post_match_review.get_story_lines()
+
+
+func get_post_match_snippet_lines() -> Array[String]:
+	get_post_match_review_summary()
+	return _post_match_review.get_snippet_lines()
+
+
+func get_post_match_loser_reading_lines() -> Array[String]:
+	get_post_match_review_summary()
+	return _post_match_review.get_loser_reading_lines()
+
+
 func get_match_restart_time_left() -> float:
 	if not _match_over or not is_match_restart_enabled():
 		return 0.0
@@ -673,6 +700,15 @@ func record_support_payload_use(robot: RobotBase, payload_name: String = "", tar
 		var support_highlight := _build_support_highlight_line(robot, payload_name, target_robot)
 		if support_highlight != "":
 			_round_support_highlight_by_competitor[competitor_key] = support_highlight
+			_record_post_match_event(PostMatchEvent.TYPE_SUPPORT, 40, support_highlight.replace("Apoyo decisivo | ", ""), "", {
+				"competitor_key": competitor_key,
+				"competitor_label": _get_competitor_label_from_key(competitor_key),
+				"robot_name": robot.display_name,
+				"target_robot_name": target_robot.display_name if is_instance_valid(target_robot) else "",
+				"payload_name": payload_name,
+				"decisive": false,
+				"arena_zone": _get_robot_arena_zone(robot),
+			})
 
 
 func record_robot_elimination(
@@ -702,6 +738,7 @@ func record_robot_elimination(
 	robot.hold_for_round_reset()
 
 	var winner_key := _find_last_competitor_standing()
+	_record_post_match_elimination_event(robot, cause, source_robot, winner_key)
 	if winner_key == "":
 		if _get_remaining_competitor_count() == 0:
 			_finish_round_draw()
@@ -844,6 +881,76 @@ func _build_robot_part_state_summary(robot: RobotBase) -> String:
 		segments.append("sin %s" % ", ".join(missing_parts))
 
 	return " | ".join(segments)
+
+
+func _next_post_match_event_sequence() -> int:
+	_post_match_event_sequence += 1
+	return _post_match_event_sequence
+
+
+func _record_post_match_event(
+	event_type: String,
+	priority: int,
+	headline: String,
+	detail: String = "",
+	metadata: Dictionary = {}
+) -> Dictionary:
+	var event := PostMatchEvent.make_event(
+		_next_post_match_event_sequence(),
+		_round_number,
+		_round_elapsed_seconds,
+		event_type,
+		priority,
+		headline,
+		detail,
+		metadata
+	)
+	_post_match_review.record_event(event)
+	return event
+
+
+func _record_post_match_elimination_event(
+	robot: RobotBase,
+	cause: EliminationCause,
+	source_robot: RobotBase,
+	winner_key: String
+) -> void:
+	if robot == null:
+		return
+
+	var priority := 45
+	var is_round_closing_candidate := winner_key != ""
+	if is_round_closing_candidate:
+		var winner_score_after_round := int(_competitor_scores.get(winner_key, 0)) + _get_round_victory_points_for_cause(cause)
+		priority = 90 if winner_score_after_round >= get_rounds_to_win() else 75
+	elif _round_elimination_order_by_robot_id.size() == 1:
+		priority = 55
+
+	var competitor_key := _get_competitor_key(robot)
+	_record_post_match_event(PostMatchEvent.TYPE_ELIMINATION, priority, _last_elimination_summary, "", {
+		"robot_name": robot.display_name,
+		"source_robot_name": source_robot.display_name if is_instance_valid(source_robot) else "",
+		"competitor_key": competitor_key,
+		"competitor_label": _get_competitor_label_from_key(competitor_key),
+		"team_id": robot.get_team_identity(),
+		"cause": int(cause),
+		"cause_label": _get_match_closing_cause_label(int(cause)),
+		"arena_zone": _get_robot_arena_zone(robot),
+		"part_state_summary": _build_robot_part_state_summary(robot),
+		"is_round_closing_candidate": is_round_closing_candidate,
+	})
+
+
+func _get_robot_arena_zone(robot: RobotBase) -> String:
+	if not is_instance_valid(robot):
+		return "centro"
+
+	var position := robot.global_position
+	if absf(position.x) < 4.0 and absf(position.z) < 4.0:
+		return "centro"
+	if absf(position.x) >= absf(position.z):
+		return "borde este" if position.x >= 0.0 else "borde oeste"
+	return "borde sur" if position.z >= 0.0 else "borde norte"
 
 
 func _get_recap_ordered_robots() -> Array[RobotBase]:
@@ -1086,6 +1193,35 @@ func _build_round_closing_line() -> String:
 		_get_match_closing_cause_label(_last_round_closing_cause),
 		_get_round_victory_points_for_cause(_last_round_closing_cause),
 	]
+
+
+func _build_post_match_context() -> Dictionary:
+	var winner_key := _get_match_winner_competitor_key()
+	if winner_key == "":
+		winner_key = _get_round_winner_competitor_key()
+
+	return {
+		"match_mode": get_match_mode_label(),
+		"winner_label": _get_competitor_label_from_key(winner_key),
+		"winner_key": winner_key,
+		"score_line": _build_score_summary_line(),
+		"standings_line": _build_ffa_standings_line(),
+		"tiebreaker_line": _build_ffa_tiebreaker_line(),
+		"closing_cause_label": _get_match_closing_cause_label(_last_round_closing_cause),
+		"closing_summary_line": _build_match_closing_cause_summary_line(),
+		"part_loss_lines": _build_post_match_part_loss_lines(),
+		"support_summary_line": _build_match_support_summary_line(),
+		"last_elimination_line": _build_closing_elimination_line(),
+	}
+
+
+func _build_post_match_part_loss_lines() -> Array[String]:
+	var lines: Array[String] = []
+	for competitor_key in _get_match_stats_ordered_competitors():
+		var stats_line := _build_competitor_match_stats_line(competitor_key)
+		if stats_line.contains("partes perdidas"):
+			lines.append(stats_line)
+	return lines
 
 
 func _build_closing_elimination_line() -> String:
@@ -1340,6 +1476,15 @@ func _get_round_winner_competitor_key() -> String:
 		return ""
 
 	return _find_last_competitor_standing()
+
+
+func _get_match_winner_competitor_key() -> String:
+	if not _match_over:
+		return ""
+	for competitor_key in _competitor_order:
+		if int(_competitor_scores.get(competitor_key, 0)) >= get_rounds_to_win():
+			return competitor_key
+	return ""
 
 
 func _build_ffa_standings_line() -> String:
@@ -1645,15 +1790,61 @@ func _finish_round_with_winner(winner_key: String, finishing_cause: EliminationC
 	if _round_support_usage_by_competitor.has(winner_key):
 		_match_decided_rounds_with_support += 1
 		_increment_competitor_match_stat(winner_key, "support_rounds_decided")
+		_record_decisive_support_post_match_event(winner_key)
 	var round_points := _get_round_victory_points_for_cause(finishing_cause)
 	var winner_score := int(_competitor_scores.get(winner_key, 0)) + round_points
 	_competitor_scores[winner_key] = winner_score
+	_record_match_close_post_match_event(winner_key, finishing_cause, winner_score)
 	if winner_score >= get_rounds_to_win():
 		_finish_match_with_winner(winner_key, winner_score)
 		return
 
 	_round_status_line = "%s gana la ronda %s" % [_get_competitor_label_from_key(winner_key), _round_number]
 	_schedule_round_reset()
+
+
+func _record_match_close_post_match_event(
+	winner_key: String,
+	finishing_cause: EliminationCause,
+	winner_score: int
+) -> void:
+	var is_match_close := winner_score >= get_rounds_to_win()
+	var priority := 100 if is_match_close else 70
+	var winner_label := _get_competitor_label_from_key(winner_key)
+	var headline := "%s cerro la partida" % winner_label if is_match_close else "%s gano la ronda %s" % [winner_label, _round_number]
+	_last_match_close_event = _record_post_match_event(PostMatchEvent.TYPE_MATCH_CLOSE, priority, headline, "", {
+		"competitor_key": winner_key,
+		"competitor_label": winner_label,
+		"cause": int(finishing_cause),
+		"cause_label": _get_match_closing_cause_label(int(finishing_cause)),
+		"arena_zone": _get_last_eliminated_robot_arena_zone(),
+		"match_over": is_match_close,
+	})
+
+
+func _record_decisive_support_post_match_event(winner_key: String) -> void:
+	var highlight := str(_round_support_highlight_by_competitor.get(winner_key, ""))
+	var winner_label := _get_competitor_label_from_key(winner_key)
+	var headline := "Apoyo de %s preparo el cierre" % winner_label
+	if highlight != "":
+		headline = highlight.replace("Apoyo decisivo | ", "")
+	_record_post_match_event(PostMatchEvent.TYPE_SUPPORT, 65, headline, "", {
+		"competitor_key": winner_key,
+		"competitor_label": winner_label,
+		"cause_label": "apoyo",
+		"arena_zone": "centro",
+		"decisive": true,
+	})
+
+
+func _get_last_eliminated_robot_arena_zone() -> String:
+	for index in range(_round_elimination_order_by_robot_id.size(), 0, -1):
+		for robot in registered_robots:
+			if not is_instance_valid(robot):
+				continue
+			if int(_round_elimination_order_by_robot_id.get(robot.get_instance_id(), 0)) == index:
+				return _get_robot_arena_zone(robot)
+	return "centro"
 
 
 func _finish_round_draw() -> void:
