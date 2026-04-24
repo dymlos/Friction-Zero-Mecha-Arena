@@ -29,6 +29,18 @@ const CASES := [
 		"mode": MatchController.MatchMode.FFA,
 	},
 ]
+const LARGE_CASES := [
+	{
+		"label": "Teams 8P large",
+		"path": "res://scenes/main/main_teams_large.tscn",
+		"mode": MatchController.MatchMode.TEAMS,
+	},
+	{
+		"label": "FFA 8P large",
+		"path": "res://scenes/main/main_ffa_large.tscn",
+		"mode": MatchController.MatchMode.FFA,
+	},
+]
 
 var _failed := false
 
@@ -40,6 +52,8 @@ func _init() -> void:
 func _run() -> void:
 	for test_case in CASES:
 		await _assert_post_match_product_boundary(test_case)
+	for test_case in LARGE_CASES:
+		await _assert_large_result_does_not_expand_into_table(test_case)
 	_finish()
 
 
@@ -132,6 +146,67 @@ func _close_match(test_mode: int, robots: Array[RobotBase]) -> void:
 	robots[2].fall_into_void()
 	await create_timer(0.03).timeout
 	robots[3].fall_into_void()
+
+
+func _assert_large_result_does_not_expand_into_table(test_case: Dictionary) -> void:
+	var label := String(test_case.get("label", "Escena grande"))
+	var scene_path := String(test_case.get("path", ""))
+	var test_mode := int(test_case.get("mode", MatchController.MatchMode.TEAMS))
+	var main := await _instantiate_scene(scene_path)
+	if main == null:
+		return
+
+	var match_controller := main.get_node_or_null("Systems/MatchController") as MatchController
+	var robots := _get_scene_robots(main)
+	_assert(match_controller != null, "%s deberia exponer MatchController." % label)
+	if match_controller == null:
+		await _cleanup_main(main)
+		return
+	if robots.size() < 8:
+		await _cleanup_main(main)
+		return
+
+	match_controller.match_mode = test_mode
+	_assert(match_controller.match_config != null, "%s deberia cargar MatchConfig." % label)
+	if match_controller.match_config == null:
+		await _cleanup_main(main)
+		return
+
+	match_controller.match_config.rounds_to_win = 1
+	match_controller.match_config.round_intro_duration_ffa = 0.0
+	match_controller.match_config.round_intro_duration_teams = 0.0
+	match_controller.round_intro_duration = 0.0
+	match_controller.round_reset_delay = 0.1
+	match_controller.match_restart_delay = 0.2
+	match_controller.start_match()
+	await process_frame
+	await _close_large_match(test_mode, robots)
+	await create_timer(0.12).timeout
+
+	var lines := match_controller.get_match_result_lines()
+	_assert(match_controller.is_match_over(), "%s deberia cerrar la partida." % label)
+	_assert(_count_lines_containing(lines, "Replay |") <= 3, "%s debe mantener maximo tres snippets." % label)
+	_assert(_count_lines_containing(lines, "Stats |") <= robots.size(), "%s no debe generar tablas extra fuera de stats por competidor." % label)
+	_assert(not "\n".join(PackedStringArray(lines)).contains("Tabla |"), "%s no debe introducir tabla extensa." % label)
+
+	await _cleanup_main(main)
+
+
+func _close_large_match(test_mode: int, robots: Array[RobotBase]) -> void:
+	for index in range(robots.size()):
+		robots[index].void_fall_y = -100.0
+		robots[index].global_position = Vector3(8.0 + float(index), 0.0, 0.0)
+
+	if test_mode == MatchController.MatchMode.FFA:
+		for index in range(robots.size() - 1):
+			robots[index].fall_into_void()
+			await create_timer(0.02).timeout
+		return
+
+	for robot in robots:
+		if robot.team_id == 2:
+			robot.fall_into_void()
+			await create_timer(0.02).timeout
 
 
 func _instantiate_scene(scene_path: String) -> Node:
