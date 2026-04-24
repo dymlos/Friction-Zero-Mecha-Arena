@@ -21,6 +21,18 @@
       }
     },
     {
+      "text_contains": {
+        "target": "qa:shell_local_setup_variant",
+        "expected": "alternativa"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_mode",
+        "expected": "FFA"
+      }
+    },
+    {
       "inside_viewport": "qa:shell_local_setup_variant_cycle"
     },
     {

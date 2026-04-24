@@ -21,6 +21,12 @@
       }
     },
     {
+      "text_contains": {
+        "target": "qa:match_hud_round",
+        "expected": "ronda"
+      }
+    },
+    {
       "inside_viewport": "qa:match_hud_round"
     },
     {

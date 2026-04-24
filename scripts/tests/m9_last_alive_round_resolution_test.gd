@@ -48,6 +48,7 @@ func _run() -> void:
 	_assert(_has_line(match_controller.get_round_recap_panel_lines(), "Objetivo | Primero a 2 rondas"), "Objetivo debe hablar de rondas.")
 	_assert(_has_line_with_fragment(match_controller.get_round_recap_panel_lines(), "Cierre ronda | ultimo vivo (+1 ronda)"), "Cierre debe sumar una ronda plana.")
 	_assert(not _has_line_with_fragment(match_controller.get_round_recap_panel_lines(), "Puntos cierre"), "Ultimo vivo no debe mostrar perfil de puntos por causa.")
+	_assert(not _has_line_with_fragment(match_controller.get_round_recap_panel_lines(), "score por causa"), "Ultimo vivo no debe mencionar score por causa.")
 
 	await create_timer(match_controller.round_reset_delay + 0.25).timeout
 	_assert(match_controller.is_round_active(), "Si no llego a first-to, debe iniciar otra ronda.")

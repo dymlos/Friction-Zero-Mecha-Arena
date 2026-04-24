@@ -46,6 +46,7 @@ func _run() -> void:
 	var result_lines := match_controller.get_match_result_lines()
 	_assert(_has_line_with_fragment(result_lines, "gana la partida con 1 ronda"), "Resultado debe hablar de ronda, no puntos.")
 	_assert(not _has_line_with_fragment(result_lines, "Puntos cierre"), "Resultado last_alive no debe mostrar perfil de puntos por causa.")
+	_assert(not _has_line_with_fragment(result_lines, "score por causa"), "Resultado last_alive no debe mencionar score por causa.")
 	_assert(_has_line_with_fragment(result_lines, "Posiciones | 1."), "Resultado FFA debe conservar posiciones.")
 
 	await _cleanup_node(main)
