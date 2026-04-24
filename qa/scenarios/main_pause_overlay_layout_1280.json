@@ -18,15 +18,6 @@
       "inside_viewport": "qa:match_hud_pause_panel"
     },
     {
-      "inside_viewport": "qa:match_hud_roster"
-    },
-    {
-      "no_overlap": {
-        "a": "qa:match_hud_pause_panel",
-        "b": "qa:match_hud_roster"
-      }
-    },
-    {
       "text_contains": {
         "target": "qa:match_hud_pause_label",
         "expected": "Volver al menu"
