@@ -5,6 +5,11 @@ const MatchController = preload("res://scripts/systems/match_controller.gd")
 
 const VARIANT_SCORE_BY_CAUSE := "score_by_cause"
 const VARIANT_LAST_ALIVE := "last_alive"
+const PRESENTATION_ROLE_PRIMARY := "principal"
+const PRESENTATION_ROLE_FFA_ALTERNATIVE := "alternativa_ffa"
+const POST_DEATH_MODEL_FFA_AFTERMATH := "ffa_aftermath_neutral"
+const POST_DEATH_MODEL_TEAMS_SUPPORT := "teams_support_ship"
+const POST_DEATH_MODEL_NONE := "none"
 
 const _VARIANTS := [
 	{
@@ -12,6 +17,9 @@ const _VARIANTS := [
 		"label": "Score por causa",
 		"summary": "Puntos por causa: ring-out domina, destruccion total es via secundaria.",
 		"score_label": "puntos",
+		"presentation_role": PRESENTATION_ROLE_PRIMARY,
+		"post_death_model": POST_DEATH_MODEL_FFA_AFTERMATH,
+		"mode_identity": "ring-out dominante, destruccion modular secundaria",
 		"supports_teams": true,
 		"supports_ffa": true,
 		"enabled": true,
@@ -21,6 +29,9 @@ const _VARIANTS := [
 		"label": "Ultimo vivo",
 		"summary": "FFA por rondas: gana quien queda en pie, sin puntos por causa.",
 		"score_label": "rondas",
+		"presentation_role": PRESENTATION_ROLE_FFA_ALTERNATIVE,
+		"post_death_model": POST_DEATH_MODEL_FFA_AFTERMATH,
+		"mode_identity": "supervivencia por rondas, sin score por causa",
 		"supports_teams": false,
 		"supports_ffa": true,
 		"enabled": true,
@@ -46,6 +57,10 @@ static func get_default_variant_id(match_mode: int) -> String:
 	return String(variants[0].get("id", VARIANT_SCORE_BY_CAUSE))
 
 
+static func get_primary_variant_id(match_mode: int) -> String:
+	return VARIANT_SCORE_BY_CAUSE
+
+
 static func get_variant(variant_id: String) -> Dictionary:
 	for variant in _VARIANTS:
 		if String(variant.get("id", "")) == variant_id:
@@ -63,11 +78,36 @@ static func sanitize_variant_id(match_mode: int, variant_id: String) -> String:
 static func get_setup_summary_line(match_mode: int, variant_id: String) -> String:
 	var sanitized_id := sanitize_variant_id(match_mode, variant_id)
 	var variant := get_variant(sanitized_id)
-	return "Variante | %s" % String(variant.get("label", "Score por causa"))
+	var label := String(variant.get("label", "Score por causa"))
+	if match_mode == MatchController.MatchMode.FFA and is_subordinate_variant(match_mode, sanitized_id):
+		return "Variante | %s (alternativa)" % label
+	if match_mode == MatchController.MatchMode.FFA:
+		return "Variante | %s (principal)" % label
+	return "Variante | %s" % label
 
 
 static func is_last_alive(variant_id: String) -> bool:
 	return variant_id == VARIANT_LAST_ALIVE
+
+
+static func is_subordinate_variant(match_mode: int, variant_id: String) -> bool:
+	var sanitized_id := sanitize_variant_id(match_mode, variant_id)
+	if match_mode != MatchController.MatchMode.FFA:
+		return false
+	return sanitized_id != get_primary_variant_id(match_mode)
+
+
+static func get_variant_presentation_role(match_mode: int, variant_id: String) -> String:
+	var variant := get_variant(sanitize_variant_id(match_mode, variant_id))
+	return String(variant.get("presentation_role", PRESENTATION_ROLE_PRIMARY))
+
+
+static func get_post_death_model(match_mode: int, variant_id: String = "") -> String:
+	if match_mode == MatchController.MatchMode.TEAMS:
+		return POST_DEATH_MODEL_TEAMS_SUPPORT
+	var sanitized_id := sanitize_variant_id(match_mode, variant_id)
+	var variant := get_variant(sanitized_id)
+	return String(variant.get("post_death_model", POST_DEATH_MODEL_FFA_AFTERMATH))
 
 
 static func get_variant_label(match_mode: int, variant_id: String) -> String:

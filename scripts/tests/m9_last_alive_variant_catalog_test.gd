@@ -19,6 +19,12 @@ func _run() -> void:
 	_assert(String(ffa_variants[0].get("id", "")) == MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE, "Score por causa debe seguir default.")
 	_assert(String(ffa_variants[1].get("id", "")) == MatchModeVariantCatalog.VARIANT_LAST_ALIVE, "Ultimo vivo debe ser segunda variante FFA.")
 	_assert(MatchModeVariantCatalog.sanitize_variant_id(MatchController.MatchMode.TEAMS, MatchModeVariantCatalog.VARIANT_LAST_ALIVE) == MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE, "Ultimo vivo no debe sanear como Teams.")
+	_assert(MatchModeVariantCatalog.get_primary_variant_id(MatchController.MatchMode.FFA) == MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE, "Score por causa debe ser la variante primaria FFA.")
+	_assert(MatchModeVariantCatalog.is_subordinate_variant(MatchController.MatchMode.FFA, MatchModeVariantCatalog.VARIANT_LAST_ALIVE), "Ultimo vivo debe quedar subordinado en FFA.")
+	_assert(not MatchModeVariantCatalog.is_subordinate_variant(MatchController.MatchMode.FFA, MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE), "Score por causa no debe ser subordinado en FFA.")
+	_assert(MatchModeVariantCatalog.get_post_death_model(MatchController.MatchMode.TEAMS) == MatchModeVariantCatalog.POST_DEATH_MODEL_TEAMS_SUPPORT, "Teams debe declarar soporte post-muerte controlable.")
+	_assert(MatchModeVariantCatalog.get_post_death_model(MatchController.MatchMode.FFA, MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE) == MatchModeVariantCatalog.POST_DEATH_MODEL_FFA_AFTERMATH, "FFA score debe declarar aftermath neutral.")
+	_assert(MatchModeVariantCatalog.get_post_death_model(MatchController.MatchMode.FFA, MatchModeVariantCatalog.VARIANT_LAST_ALIVE) == MatchModeVariantCatalog.POST_DEATH_MODEL_FFA_AFTERMATH, "FFA Ultimo vivo debe declarar aftermath neutral.")
 	_finish()
 
 
