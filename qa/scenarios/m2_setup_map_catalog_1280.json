@@ -1,0 +1,48 @@
+{
+  "name": "m2_setup_map_catalog_1280",
+  "scene": "res://scenes/shell/local_match_setup.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 10
+    },
+    {
+      "snapshot": "m2_setup_map_catalog"
+    }
+  ],
+  "assert": [
+    {
+      "no_errors": true
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_map"
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_map_focus"
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_scale"
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_map",
+        "expected": "Fundicion compacta"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_map_focus",
+        "expected": "borde"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_scale",
+        "expected": "2-4 pulido"
+      }
+    }
+  ]
+}
