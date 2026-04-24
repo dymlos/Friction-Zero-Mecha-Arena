@@ -120,7 +120,7 @@ func _await_frames(count: int) -> void:
 
 
 func force_m6_audiovisual_readability_state(main: Node = null) -> void:
-	var robots := get_tree().get_nodes_in_group("robots")
+	var robots := _get_scene_robots(main)
 	if robots.size() >= 2:
 		var first_robot := robots[0] as RobotBase
 		var second_robot := robots[1] as RobotBase
