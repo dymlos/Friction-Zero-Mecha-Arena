@@ -7,6 +7,7 @@ const TYPE_PART_LOSS := "part_loss"
 const TYPE_PART_RETURN := "part_return"
 const TYPE_PART_DENIAL := "part_denial"
 const TYPE_EDGE_PICKUP := "edge_pickup"
+const TYPE_FFA_AFTERMATH := "ffa_aftermath"
 const TYPE_MATCH_CLOSE := "match_close"
 
 

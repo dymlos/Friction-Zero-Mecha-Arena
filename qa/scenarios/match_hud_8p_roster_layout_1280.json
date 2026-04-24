@@ -1,0 +1,54 @@
+{
+  "name": "match_hud_8p_roster_layout_1280",
+  "scene": "res://scenes/qa/match_hud_8p_roster_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "hud_8p_roster"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:match_hud_status"
+    },
+    {
+      "inside_viewport": "qa:match_hud_round"
+    },
+    {
+      "inside_viewport": "qa:match_hud_roster"
+    },
+    {
+      "no_overlap": {
+        "a": "qa:match_hud_round",
+        "b": "qa:match_hud_roster"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_roster",
+        "expected": "P5 Aguja | vivo | pulso 1/2"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_roster",
+        "expected": "P6 Ancla | vivo | baliza lista"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_round",
+        "expected": "+6"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

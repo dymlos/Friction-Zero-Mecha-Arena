@@ -106,7 +106,7 @@ func _assert_ffa_match_result_contract(scene_path: String) -> void:
 		"El panel final FFA deberia repetir la decision final con una lectura propia de FFA."
 	)
 	_assert(
-		match_result_label.text.contains("%s / Ancla | baja 3 | vacio" % robots[2].display_name),
+		match_result_label.text.contains("%s | baja 3 | vacio" % robots[2].get_roster_display_name()),
 		"El panel final FFA deberia repetir tambien el detalle compacto por robot para explicar el cierre individual."
 	)
 	_assert(
@@ -151,10 +151,10 @@ func _assert_ffa_match_result_contract(scene_path: String) -> void:
 		),
 		"El panel final FFA deberia dejar legible que jugadores ganan el desempate."
 	)
-	var winner_detail := "%s / Patin | sigue en pie | 4/4 partes" % robots[3].display_name
-	var third_place_detail := "%s / Ancla | baja 3 | vacio | 4/4 partes" % robots[2].display_name
-	var fourth_place_detail := "%s / Aguja | baja 2 | vacio | 4/4 partes" % robots[1].display_name
-	var fifth_place_detail := "%s / Ariete | baja 1 | vacio | 4/4 partes" % robots[0].display_name
+	var winner_detail := "%s | sigue en pie | 4/4 partes" % robots[3].get_roster_display_name()
+	var third_place_detail := "%s | baja 3 | vacio | 4/4 partes" % robots[2].get_roster_display_name()
+	var fourth_place_detail := "%s | baja 2 | vacio | 4/4 partes" % robots[1].get_roster_display_name()
+	var fifth_place_detail := "%s | baja 1 | vacio | 4/4 partes" % robots[0].get_roster_display_name()
 	var winner_stats := "Stats | %s | bajas sufridas 0" % robots[3].display_name
 	var third_place_stats := "Stats | %s | bajas sufridas 1 (1 vacio)" % robots[2].display_name
 	var fourth_place_stats := "Stats | %s | bajas sufridas 1 (1 vacio)" % robots[1].display_name

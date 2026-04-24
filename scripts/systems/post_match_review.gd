@@ -36,7 +36,7 @@ func record_event(event: Dictionary) -> void:
 
 func build_review(match_context: Dictionary) -> Dictionary:
 	_story_lines = _build_story_lines(match_context)
-	_snippet_lines = _build_snippet_lines()
+	_snippet_lines = _build_snippet_lines(match_context)
 	_loser_reading_lines = _build_loser_reading_lines(match_context)
 	return {
 		"story": _story_lines.duplicate(),
@@ -65,6 +65,9 @@ func _build_story_lines(match_context: Dictionary) -> Array[String]:
 
 	var mode := _normalized_mode(match_context.get("match_mode", ""))
 	if mode == "ffa":
+		var opportunity_line := _build_ffa_aftermath_story_line(match_context)
+		if opportunity_line != "":
+			lines.append(opportunity_line)
 		lines.append(_build_ffa_story_line(match_context))
 	else:
 		lines.append(_build_teams_story_line(match_context))
@@ -99,6 +102,23 @@ func _build_ffa_story_line(match_context: Dictionary) -> String:
 	return "Lectura | FFA premio supervivencia: %s quedo ultimo en pie." % winner_label
 
 
+func _build_ffa_aftermath_story_line(match_context: Dictionary) -> String:
+	var event := _find_decisive_ffa_aftermath_event(match_context)
+	if event.is_empty():
+		return ""
+
+	var collector_label := str(event.get("competitor_label", "")).strip_edges()
+	if collector_label.is_empty():
+		collector_label = str(event.get("robot_name", "robot")).strip_edges()
+	var source_label := str(event.get("source_eliminated_label", "una baja")).strip_edges()
+	if source_label.is_empty():
+		source_label = "una baja"
+	return "Oportunidad | %s tomo botin tras la baja de %s y sobrevivio al cierre." % [
+		collector_label,
+		source_label,
+	]
+
+
 func _build_loser_reading_lines(match_context: Dictionary) -> Array[String]:
 	var lines: Array[String] = []
 	if bool(match_context.get("is_draw", false)):
@@ -125,15 +145,15 @@ func _build_loser_reading_lines(match_context: Dictionary) -> Array[String]:
 	return lines
 
 
-func _build_snippet_lines() -> Array[String]:
-	var selected := _select_snippet_events()
+func _build_snippet_lines(match_context: Dictionary) -> Array[String]:
+	var selected := _select_snippet_events(match_context)
 	var lines: Array[String] = []
 	for event in selected:
 		lines.append(PostMatchEvent.format_replay_line(event))
 	return lines
 
 
-func _select_snippet_events() -> Array[Dictionary]:
+func _select_snippet_events(match_context: Dictionary) -> Array[Dictionary]:
 	var unique_events: Array[Dictionary] = []
 	var seen := {}
 	for event in _events:
@@ -145,6 +165,7 @@ func _select_snippet_events() -> Array[Dictionary]:
 
 	var close_events: Array[Dictionary] = []
 	var decisive_support_events: Array[Dictionary] = []
+	var decisive_aftermath_events: Array[Dictionary] = []
 	var other_events: Array[Dictionary] = []
 	for event in unique_events:
 		var event_type := str(event.get("event_type", ""))
@@ -152,16 +173,20 @@ func _select_snippet_events() -> Array[Dictionary]:
 			close_events.append(event)
 		elif event_type == PostMatchEvent.TYPE_SUPPORT and bool(event.get("decisive", false)):
 			decisive_support_events.append(event)
+		elif event_type == PostMatchEvent.TYPE_FFA_AFTERMATH and _is_decisive_ffa_aftermath_event(event, match_context):
+			decisive_aftermath_events.append(event)
 		else:
 			other_events.append(event)
 
 	close_events.sort_custom(_compare_events_by_priority)
 	decisive_support_events.sort_custom(_compare_events_by_priority)
+	decisive_aftermath_events.sort_custom(_compare_events_by_priority)
 	other_events.sort_custom(_compare_events_by_priority)
 
 	var selected: Array[Dictionary] = []
 	_append_selected_events(selected, close_events)
 	_append_selected_events(selected, decisive_support_events)
+	_append_selected_events(selected, decisive_aftermath_events)
 	_append_selected_events(selected, other_events)
 	return selected
 
@@ -201,6 +226,30 @@ func _has_real_support_summary(support_summary: String) -> bool:
 	if clean_summary.is_empty():
 		return false
 	return not clean_summary.contains("0/")
+
+
+func _find_decisive_ffa_aftermath_event(match_context: Dictionary) -> Dictionary:
+	var selected_events: Array[Dictionary] = []
+	for event in _events:
+		if str(event.get("event_type", "")) == PostMatchEvent.TYPE_FFA_AFTERMATH and _is_decisive_ffa_aftermath_event(event, match_context):
+			selected_events.append(event)
+	selected_events.sort_custom(_compare_events_by_priority)
+	if selected_events.is_empty():
+		return {}
+	return selected_events[0]
+
+
+func _is_decisive_ffa_aftermath_event(event: Dictionary, match_context: Dictionary) -> bool:
+	var winner_key := _context_text(match_context, "winner_key")
+	if winner_key != "" and str(event.get("competitor_key", "")) == winner_key:
+		return true
+
+	var match_time := float(match_context.get("match_time_seconds", 0.0))
+	if match_time > 0.0 and match_time - float(event.get("time_seconds", 0.0)) <= 20.0:
+		return true
+
+	var payload_id := str(event.get("payload_id", ""))
+	return payload_id == "carga" or payload_id == "impulso"
 
 
 static func _compare_events_by_sequence(a: Dictionary, b: Dictionary) -> bool:

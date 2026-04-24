@@ -725,13 +725,23 @@ func set_ffa_aftermath_context_line(line: String) -> void:
 	_ffa_aftermath_context_line = line
 
 
-func record_ffa_aftermath_collection(robot: RobotBase, payload_id: String, _source_eliminated_label: String, _arena_zone: String) -> void:
+func record_ffa_aftermath_collection(robot: RobotBase, payload_id: String, source_eliminated_label: String, arena_zone: String) -> void:
 	if robot == null:
 		return
 	if not _round_active or _round_reset_pending:
 		return
 
 	_increment_robot_match_stat(robot, "ffa_aftermath_collected")
+	var competitor_key := _get_competitor_key(robot)
+	_record_post_match_event(PostMatchEvent.TYPE_FFA_AFTERMATH, 65, "%s tomo botin" % robot.get_roster_display_name(), "", {
+		"competitor_key": competitor_key,
+		"competitor_label": _get_competitor_label_from_key(competitor_key),
+		"robot_name": robot.display_name,
+		"payload_id": payload_id,
+		"cause_label": "botin",
+		"source_eliminated_label": source_eliminated_label,
+		"arena_zone": arena_zone,
+	})
 	match payload_id:
 		"chatarra":
 			_increment_robot_match_stat(robot, "ffa_aftermath_scrap")
@@ -817,6 +827,9 @@ func record_robot_elimination(
 
 
 func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
+	if registered_robots.size() > 4:
+		return _build_compact_robot_status_line(robot, contextual_hud)
+
 	var control_label := "P%s" % robot.player_index if robot.is_player_controlled else "CPU"
 	var support_state := get_robot_support_state(robot)
 	var has_active_support := match_mode == MatchMode.TEAMS and support_state != ""
@@ -868,7 +881,7 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 			segments.append("%s/%s partes" % [robot.get_active_part_count(), RobotBase.BODY_PARTS.size()])
 	if can_show_robot_combat_state:
 		var core_skill_summary := robot.get_core_skill_status_summary()
-		if core_skill_summary != "":
+		if core_skill_summary != "" and _should_show_core_skill_summary(robot, contextual_hud):
 			segments.append(core_skill_summary)
 		var passive_summary := robot.get_passive_status_summary()
 		if passive_summary != "":
@@ -893,6 +906,81 @@ func _build_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
 		segments.append(support_state)
 
 	return "%s %s | %s" % [control_label, robot.get_roster_display_name(), " | ".join(segments)]
+
+
+func _build_compact_robot_status_line(robot: RobotBase, contextual_hud: bool) -> String:
+	var control_label := "P%s" % robot.player_index if robot.is_player_controlled else "CPU"
+	var roster_label := robot.get_archetype_label()
+	if roster_label.is_empty():
+		roster_label = robot.display_name
+
+	var support_state := get_robot_support_state(robot)
+	var has_active_support := match_mode == MatchMode.TEAMS and support_state != ""
+	var is_eliminated := is_robot_eliminated(robot)
+	var segments: Array[String] = []
+	if is_eliminated:
+		segments.append("apoyo" if has_active_support else "fuera")
+		if has_active_support and support_state != "":
+			segments.append(_compact_status_text(support_state))
+		else:
+			var cause_label := _get_elimination_cause_label(_get_robot_elimination_cause(robot))
+			if cause_label != "":
+				segments.append(cause_label)
+	elif robot.is_disabled_state():
+		segments.append("inutilizado")
+		var explosion_time_left := robot.get_disabled_explosion_time_left()
+		if explosion_time_left > 0.0:
+			segments.append("%.1fs" % snappedf(explosion_time_left, 0.1))
+	else:
+		segments.append("vivo")
+		var core_skill_summary := robot.get_core_skill_status_summary()
+		if core_skill_summary != "" and _should_show_core_skill_summary(robot, contextual_hud):
+			segments.append(_compact_core_skill_summary(core_skill_summary))
+		if robot.get_active_part_count() < RobotBase.BODY_PARTS.size():
+			segments.append("%s/4 partes" % robot.get_active_part_count())
+		if robot.is_energy_surge_active():
+			segments.append("energia")
+		if robot.is_mobility_boost_active():
+			segments.append("impulso")
+		if robot.has_method("is_mobility_skill_active") and robot.is_mobility_skill_active():
+			segments.append("derrape")
+		if robot.is_ram_skill_active():
+			segments.append("embestida")
+		if robot.is_control_zone_suppressed():
+			segments.append("zona")
+
+	return "%s %s | %s" % [control_label, roster_label, " | ".join(segments)]
+
+
+func _should_show_core_skill_summary(robot: RobotBase, contextual_hud: bool) -> bool:
+	if not contextual_hud:
+		return true
+	if _ffa_aftermath_context_line != "":
+		return true
+	if robot != null and robot.get_active_part_count() < RobotBase.BODY_PARTS.size():
+		return true
+	return not _round_active or _round_reset_pending or _match_over
+
+
+func _compact_core_skill_summary(summary: String) -> String:
+	var clean_summary := summary.strip_edges()
+	if clean_summary.begins_with("skill "):
+		clean_summary = clean_summary.substr(6).strip_edges()
+	var parts := clean_summary.split(" ", false)
+	if parts.size() >= 2:
+		var charge_segment := str(parts[parts.size() - 1])
+		if charge_segment.contains("/"):
+			var values := charge_segment.split("/", false)
+			if values.size() == 2 and values[0] == values[1]:
+				return "%s lista" % str(parts[0]).to_lower()
+	return clean_summary.to_lower()
+
+
+func _compact_status_text(summary: String) -> String:
+	var clean_summary := summary.strip_edges()
+	if clean_summary.length() <= 28:
+		return clean_summary
+	return clean_summary.substr(0, 27).strip_edges() + "..."
 
 
 func _build_space_reduction_warning_line() -> String:
@@ -1278,6 +1366,7 @@ func _build_post_match_context() -> Dictionary:
 		"part_loss_lines": _build_post_match_part_loss_lines(),
 		"support_summary_line": _build_match_support_summary_line(),
 		"last_elimination_line": _build_closing_elimination_line(),
+		"match_time_seconds": _round_elapsed_seconds,
 	}
 
 
@@ -1565,6 +1654,8 @@ func _build_ffa_standings_line() -> String:
 
 	var ordered_competitors := _competitor_order.duplicate()
 	ordered_competitors.sort_custom(_compare_ffa_competitors_for_standings)
+	if ordered_competitors.size() > 4:
+		return _build_compact_ffa_standings_line(ordered_competitors)
 	var segments: Array[String] = []
 	for index in range(ordered_competitors.size()):
 		var competitor_key := str(ordered_competitors[index])
@@ -1573,6 +1664,34 @@ func _build_ffa_standings_line() -> String:
 			_get_competitor_label_from_key(competitor_key),
 			int(_competitor_scores.get(competitor_key, 0)),
 		])
+
+	return "Posiciones | %s" % " | ".join(segments)
+
+
+func _build_compact_ffa_standings_line(ordered_competitors: Array) -> String:
+	var visible_keys: Array[String] = []
+	if not ordered_competitors.is_empty():
+		visible_keys.append(str(ordered_competitors[0]))
+	if ordered_competitors.size() > 1:
+		visible_keys.append(str(ordered_competitors[1]))
+
+	var last_standing_key := _find_last_competitor_standing()
+	if last_standing_key != "" and not visible_keys.has(last_standing_key):
+		visible_keys.append(last_standing_key)
+
+	var hidden_count := maxi(ordered_competitors.size() - visible_keys.size(), 0)
+	var segments: Array[String] = []
+	for competitor_key in visible_keys:
+		var index := ordered_competitors.find(competitor_key)
+		if index < 0:
+			continue
+		segments.append("%s. %s (%s)" % [
+			index + 1,
+			_get_competitor_label_from_key(competitor_key),
+			int(_competitor_scores.get(competitor_key, 0)),
+		])
+	if hidden_count > 0:
+		segments.append("+%s" % hidden_count)
 
 	return "Posiciones | %s" % " | ".join(segments)
 
