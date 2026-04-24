@@ -126,6 +126,8 @@ func _refresh_hud() -> void:
 	if progress_lines.is_empty():
 		progress_lines = ["%s jugador(es) activos" % _player_robots.size()]
 	practice_hud.set_progress_lines(progress_lines)
+	practice_hud.set_context_card_title(practice_director.get_context_card_title())
+	practice_hud.set_context_card_lines(practice_director.get_context_card_lines())
 	practice_hud.set_controls_lines(_build_control_lines())
 	practice_hud.set_callout_lines(practice_director.get_callout_lines())
 	practice_hud.set_pause_lines(_build_pause_lines())

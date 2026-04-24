@@ -18,9 +18,18 @@
       "inside_viewport": "qa:practice_hud_module"
     },
     {
+      "inside_viewport": "qa:practice_hud_context_card"
+    },
+    {
       "text_contains": {
         "target": "qa:practice_hud_module",
         "expected": "Sandbox"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:practice_hud_context_card",
+        "expected": "Combina"
       }
     },
     {

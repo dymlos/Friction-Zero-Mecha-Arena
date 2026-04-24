@@ -24,6 +24,9 @@
       "inside_viewport": "qa:practice_hud_progress"
     },
     {
+      "inside_viewport": "qa:practice_hud_context_card"
+    },
+    {
       "inside_viewport": "qa:practice_hud_controls"
     },
     {
@@ -36,6 +39,12 @@
       "text_contains": {
         "target": "qa:practice_hud_module",
         "expected": "Movimiento"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:practice_hud_context_card",
+        "expected": "Arranca"
       }
     },
     {
