@@ -65,6 +65,29 @@ func _run() -> void:
 		String(game_shell.call("get_active_screen_id")) == "main_menu",
 		"La shell deberia arrancar mostrando el menu principal."
 	)
+	var main_menu_initial: Variant = game_shell.call("get_active_screen")
+	_assert(main_menu_initial != null, "GameShell deberia exponer MainMenu al arrancar.")
+	if main_menu_initial != null:
+		_assert(main_menu_initial.has_method("focus_play_local_button"), "MainMenu deberia exponer foco explicito en Jugar local.")
+		main_menu_initial.call("focus_play_local_button")
+		await process_frame
+		var initial_focus := root.get_viewport().gui_get_focus_owner()
+		_assert(
+			initial_focus != null and String(initial_focus.name) == "PlayLocalButton",
+			"El arranque nuevo del menu deberia enfocar Jugar local."
+		)
+		var vbox := main_menu_initial.get_node_or_null("CenterPanel/Margin/VBox") as VBoxContainer
+		_assert(vbox != null, "MainMenu deberia conservar VBox navegable.")
+		if vbox != null:
+			var first_button: Button = null
+			for child in vbox.get_children():
+				if child is Button:
+					first_button = child as Button
+					break
+			_assert(
+				first_button != null and String(first_button.name) == "PlayLocalButton",
+				"Jugar local deberia ser el primer boton navegable del menu."
+			)
 
 	game_shell.call("open_characters")
 	await process_frame

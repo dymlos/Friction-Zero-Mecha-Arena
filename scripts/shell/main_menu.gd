@@ -26,7 +26,7 @@ func _ready() -> void:
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_label.text = "Friction Zero"
-	subtitle_label.text = "Shell local minima para entrar al match sin herramientas de laboratorio."
+	subtitle_label.text = "Entrar, configurar, practicar y revisar reglas sin herramientas de laboratorio."
 	play_local_button.text = "Jugar local"
 	characters_button.text = "Characters"
 	how_to_play_button.text = "How to Play"

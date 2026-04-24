@@ -21,6 +21,9 @@
       "inside_viewport": "qa:shell_main_menu_play_local"
     },
     {
+      "inside_viewport": "qa:shell_main_menu_subtitle"
+    },
+    {
       "inside_viewport": "qa:shell_main_menu_characters"
     },
     {
@@ -45,6 +48,12 @@
       "text_contains": {
         "target": "qa:shell_main_menu_play_local",
         "expected": "Jugar local"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_main_menu_subtitle",
+        "expected": "Entrar, configurar"
       }
     },
     {
