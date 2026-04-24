@@ -17,6 +17,9 @@ const SUPPORT_PAYLOAD_LABELS := {
 	"mobility": "movilidad",
 	"interference": "interferencia",
 }
+const MAX_POST_MATCH_STORY_LINES := 2
+const MAX_POST_MATCH_LOSER_LINES := 1
+const MAX_POST_MATCH_SNIPPET_LINES := 3
 
 @export var match_mode: MatchMode = MatchMode.FFA
 @export var match_config: MatchConfig
@@ -426,6 +429,9 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	if _match_over:
+		_append_unique_lines(lines, get_post_match_review_lines(), 1)
+		_append_unique_lines(lines, get_post_match_loser_reading_lines(), MAX_POST_MATCH_LOSER_LINES)
 	var round_closing_line := _build_round_closing_line()
 	if round_closing_line != "":
 		lines.append(round_closing_line)
@@ -450,6 +456,8 @@ func get_round_recap_panel_lines() -> Array[String]:
 	var recap_line := get_round_recap_line()
 	if recap_line != "":
 		lines.append(recap_line)
+	if _match_over:
+		_append_unique_lines(lines, get_post_match_snippet_lines(), MAX_POST_MATCH_SNIPPET_LINES)
 	if _match_over:
 		lines.append_array(_build_match_stats_lines())
 	lines.append_array(_build_round_highlight_lines())
@@ -492,6 +500,8 @@ func get_match_result_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
+	_append_unique_lines(lines, get_post_match_review_lines(), MAX_POST_MATCH_STORY_LINES)
+	_append_unique_lines(lines, get_post_match_loser_reading_lines(), MAX_POST_MATCH_LOSER_LINES)
 	var match_closing_cause_line := _build_match_closing_cause_summary_line()
 	if match_closing_cause_line != "":
 		lines.append(match_closing_cause_line)
@@ -513,6 +523,7 @@ func get_match_result_lines() -> Array[String]:
 	var recap_line := get_round_recap_line()
 	if recap_line != "":
 		lines.append(recap_line)
+	_append_unique_lines(lines, get_post_match_snippet_lines(), MAX_POST_MATCH_SNIPPET_LINES)
 	lines.append_array(_build_match_stats_lines())
 	lines.append_array(_build_round_highlight_lines())
 	for robot in _get_recap_ordered_robots():
@@ -549,6 +560,20 @@ func get_post_match_snippet_lines() -> Array[String]:
 func get_post_match_loser_reading_lines() -> Array[String]:
 	get_post_match_review_summary()
 	return _post_match_review.get_loser_reading_lines()
+
+
+func _append_unique_lines(target: Array[String], source: Array[String], max_count: int = -1) -> void:
+	var appended := 0
+	for line in source:
+		if max_count >= 0 and appended >= max_count:
+			return
+		if line == "":
+			continue
+		if target.has(line):
+			continue
+
+		target.append(line)
+		appended += 1
 
 
 func get_match_restart_time_left() -> float:
