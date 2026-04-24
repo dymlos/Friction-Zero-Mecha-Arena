@@ -51,6 +51,24 @@
       }
     },
     {
+      "no_overlap": {
+        "a": "qa:shell_practice_setup_topics",
+        "b": "qa:shell_practice_setup_context_card"
+      }
+    },
+    {
+      "no_overlap": {
+        "a": "qa:shell_practice_setup_context_card",
+        "b": "qa:shell_practice_setup_scope"
+      }
+    },
+    {
+      "no_overlap": {
+        "a": "qa:shell_practice_setup_scope",
+        "b": "qa:shell_practice_setup_slots"
+      }
+    },
+    {
       "text_contains": {
         "target": "qa:shell_practice_setup_title",
         "expected": "Movimiento"

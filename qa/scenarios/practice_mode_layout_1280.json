@@ -36,6 +36,30 @@
       "inside_viewport": "qa:practice_hud_pause"
     },
     {
+      "no_overlap": {
+        "a": "qa:practice_hud_objective",
+        "b": "qa:practice_hud_progress"
+      }
+    },
+    {
+      "no_overlap": {
+        "a": "qa:practice_hud_progress",
+        "b": "qa:practice_hud_context_card"
+      }
+    },
+    {
+      "no_overlap": {
+        "a": "qa:practice_hud_context_card",
+        "b": "qa:practice_hud_controls"
+      }
+    },
+    {
+      "no_overlap": {
+        "a": "qa:practice_hud_controls",
+        "b": "qa:practice_hud_callout"
+      }
+    },
+    {
       "text_contains": {
         "target": "qa:practice_hud_module",
         "expected": "Movimiento"

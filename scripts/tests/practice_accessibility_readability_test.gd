@@ -3,6 +3,7 @@ extends SceneTree
 const PRACTICE_SETUP_SCENE := preload("res://scenes/shell/practice_setup.tscn")
 const HOW_TO_PLAY_SCENE := preload("res://scenes/shell/how_to_play_screen.tscn")
 const PRACTICE_HUD_SCENE := preload("res://scenes/ui/practice_hud.tscn")
+const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 var _failed := false
 
@@ -58,6 +59,29 @@ func _run() -> void:
 	if context_label != null:
 		_assert(String(context_label.text).contains("Arranca"), "PracticeHud deberia renderizar tarjeta contextual.")
 	_assert(String(how_to_play.get_node_or_null("Frame/VBox/Footer/PracticeButton").text).begins_with("Probar"), "How to Play deberia usar un CTA corto y contextual.")
+	var objective_value_label = practice_hud.get_node_or_null("Root/Panel/Margin/VBox/ObjectiveValueLabel")
+	var progress_value_label = practice_hud.get_node_or_null("Root/Panel/Margin/VBox/ProgressValueLabel")
+	var controls_value_label = practice_hud.get_node_or_null("Root/Panel/Margin/VBox/ControlsValueLabel")
+	var callout_value_label = practice_hud.get_node_or_null("Root/Panel/Margin/VBox/CalloutValueLabel")
+	var context_card_value_label = practice_hud.get_node_or_null("Root/Panel/Margin/VBox/ContextCardValueLabel")
+	var max_line_length := 110
+	for label in [
+		objective_value_label,
+		progress_value_label,
+		controls_value_label,
+		callout_value_label,
+		context_card_value_label,
+	]:
+		if label == null:
+			continue
+		for line in String(label.text).split("\n"):
+			_assert(line.length() <= max_line_length, "Practice HUD tiene linea demasiado larga: %s" % line)
+	var robot := RobotBase.new()
+	_assert(
+		robot.has_method("get_control_reference_hint"),
+		"Los prompts de practica deben salir del seam central del robot."
+	)
+	robot.free()
 
 	await _cleanup_node(practice_setup)
 	await _cleanup_node(how_to_play)
