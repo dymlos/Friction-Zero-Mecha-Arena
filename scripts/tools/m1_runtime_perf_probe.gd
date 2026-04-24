@@ -2,6 +2,7 @@ extends SceneTree
 
 const LocalScaleContract = preload("res://scripts/systems/local_scale_contract.gd")
 const SELF_PATH := "res://scripts/tools/m1_runtime_perf_probe.gd"
+const DEFAULT_WARMUP_FRAMES := 30
 
 
 func _init() -> void:
@@ -13,7 +14,20 @@ func _init() -> void:
 
 
 func run_probe_for_test(scene_path: String, viewport_size: Vector2i, frames: int) -> Dictionary:
-	return await _measure_scene(scene_path, viewport_size, frames)
+	return await _measure_scene(scene_path, viewport_size, frames, DEFAULT_WARMUP_FRAMES)
+
+
+func build_milestone_result(
+	result: Dictionary,
+	milestone_id: String,
+	visual_pass: bool,
+	audio_pass: bool
+) -> Dictionary:
+	var tagged := result.duplicate(true)
+	tagged["milestone"] = milestone_id
+	tagged["visual_pass"] = visual_pass
+	tagged["audio_pass"] = audio_pass
+	return tagged
 
 
 func _run_cli() -> void:
@@ -28,10 +42,16 @@ func _run_cli() -> void:
 	var scene_path := _read_arg(args, "--scene", "res://scenes/main/main.tscn")
 	var viewport_id := _read_arg(args, "--viewport", LocalScaleContract.PRIMARY_VIEWPORT)
 	var frames := int(_read_arg(args, "--frames", "600"))
+	var warmup_frames := int(_read_arg(args, "--warmup-frames", str(DEFAULT_WARMUP_FRAMES)))
 	var out_path := _read_arg(args, "--out", "")
+	var milestone_id := _read_arg(args, "--milestone", "")
+	var visual_pass := args.has("--visual-pass")
+	var audio_pass := args.has("--audio-pass")
 	var viewport_size := _parse_viewport(viewport_id)
 
-	var result := await _measure_scene(scene_path, viewport_size, frames)
+	var result := await _measure_scene(scene_path, viewport_size, frames, warmup_frames)
+	if milestone_id != "":
+		result = build_milestone_result(result, milestone_id, visual_pass, audio_pass)
 	var json := JSON.stringify(result, "\t")
 	if out_path != "":
 		var file := FileAccess.open(out_path, FileAccess.WRITE)
@@ -45,13 +65,14 @@ func _run_cli() -> void:
 	quit(0)
 
 
-func _measure_scene(scene_path: String, viewport_size: Vector2i, frames: int) -> Dictionary:
+func _measure_scene(scene_path: String, viewport_size: Vector2i, frames: int, warmup_frames: int = DEFAULT_WARMUP_FRAMES) -> Dictionary:
 	var tree := Engine.get_main_loop() as SceneTree
 	if tree == null:
 		return {
 			"scene": scene_path,
 			"viewport": _format_viewport(viewport_size),
 			"frames": 0,
+			"warmup_frames": 0,
 			"error": "scene_tree_not_available",
 			"budget": LocalScaleContract.get_performance_budget(_format_viewport(viewport_size)),
 		}
@@ -63,6 +84,7 @@ func _measure_scene(scene_path: String, viewport_size: Vector2i, frames: int) ->
 			"scene": scene_path,
 			"viewport": _format_viewport(viewport_size),
 			"frames": 0,
+			"warmup_frames": 0,
 			"error": "scene_not_found",
 			"budget": LocalScaleContract.get_performance_budget(_format_viewport(viewport_size)),
 		}
@@ -72,6 +94,9 @@ func _measure_scene(scene_path: String, viewport_size: Vector2i, frames: int) ->
 	tree.current_scene = scene
 	await tree.process_frame
 	await tree.process_frame
+	var warmup_count := maxi(warmup_frames, 0)
+	for _index in range(warmup_count):
+		await tree.process_frame
 
 	var measured_frames := maxi(frames, 1)
 	var samples: Array[float] = []
@@ -98,6 +123,7 @@ func _measure_scene(scene_path: String, viewport_size: Vector2i, frames: int) ->
 		"scene": scene_path,
 		"viewport": _format_viewport(viewport_size),
 		"frames": measured_frames,
+		"warmup_frames": warmup_count,
 		"avg_frame_ms": snappedf(avg_ms, 0.001),
 		"max_frame_ms": snappedf(max_ms, 0.001),
 		"target_met_avg": avg_ms <= frame_budget,
