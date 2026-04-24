@@ -1,0 +1,42 @@
+{
+  "name": "m6_audio_visual_pressure_1920",
+  "scene": "res://scenes/qa/player_shell_loop_ffa_validation.tscn",
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "steps": [
+    {
+      "wait_frames": 90
+    },
+    {
+      "snapshot": "m6_audio_visual_pressure"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:match_hud_recap_panel"
+    },
+    {
+      "inside_viewport": "qa:match_hud_result_panel"
+    },
+    {
+      "inside_viewport": "qa:match_hud_post_match_snippets"
+    },
+    {
+      "no_overlap": {
+        "a": "qa:match_hud_recap_panel",
+        "b": "qa:match_hud_result_panel"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_post_match_snippets",
+        "expected": "Replay |"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

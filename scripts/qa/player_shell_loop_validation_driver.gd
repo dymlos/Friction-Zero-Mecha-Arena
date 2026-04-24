@@ -3,6 +3,7 @@ class_name PlayerShellLoopValidationDriver
 
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
+const ArenaBase = preload("res://scripts/arenas/arena_base.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const GAME_SHELL_SCENE = preload("res://scenes/shell/game_shell.tscn")
 
@@ -93,6 +94,9 @@ func _run() -> void:
 	for robot in robots:
 		robot.void_fall_y = -100.0
 
+	force_m6_audiovisual_readability_state(main)
+	await _await_frames(1)
+
 	if _match_mode == MatchController.MatchMode.FFA:
 		robots[0].fall_into_void()
 		await _await_frames(1)
@@ -115,6 +119,23 @@ func _await_frames(count: int) -> void:
 		await get_tree().process_frame
 
 
+func force_m6_audiovisual_readability_state(main: Node = null) -> void:
+	var robots := get_tree().get_nodes_in_group("robots")
+	if robots.size() >= 2:
+		var first_robot := robots[0] as RobotBase
+		var second_robot := robots[1] as RobotBase
+		if first_robot != null:
+			first_robot.apply_damage_to_part("left_arm", 45.0)
+			first_robot.set_energy_focus("right_leg")
+			first_robot.activate_overdrive()
+		if second_robot != null:
+			second_robot.apply_damage_to_part("left_leg", 70.0)
+
+	var arena := _get_scene_arena(main)
+	if arena != null:
+		arena.set_pressure_warning_strength(0.65)
+
+
 func _get_scene_robots(main: Node) -> Array[RobotBase]:
 	var robots: Array[RobotBase] = []
 	if main == null:
@@ -129,3 +150,18 @@ func _get_scene_robots(main: Node) -> Array[RobotBase]:
 			robots.append(child as RobotBase)
 
 	return robots
+
+
+func _get_scene_arena(main: Node) -> ArenaBase:
+	if main == null:
+		return null
+
+	var arena_root := main.get_node_or_null("ArenaRoot")
+	if arena_root == null:
+		return null
+
+	for child in arena_root.get_children():
+		if child is ArenaBase:
+			return child as ArenaBase
+
+	return null
