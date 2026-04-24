@@ -117,6 +117,19 @@ func _run() -> void:
 		String(practice_setup.call("get_selected_module_id")) == "impacto",
 		"Setup y How to Play deberian poder abrir PracticeSetup con modulo preseleccionado."
 	)
+	practice_setup.call("set_slot_control_mode", 2, 1)
+	practice_setup.call("set_slot_input_source", 2, "joypad")
+	practice_setup.call("reserve_joypad_for_slot", 2, 31, true)
+	var practice_launch_config = practice_setup.call("build_launch_config")
+	_assert(
+		practice_launch_config.local_slots.size() == 2,
+		"PracticeSetup deberia heredar solo P1/P2 del contrato operativo."
+	)
+	_assert(
+		String(practice_launch_config.local_slots[1].get("input_source", "")) == "joypad"
+		and int(practice_launch_config.local_slots[1].get("device_id", -1)) == 31,
+		"PracticeSetup deberia conservar el dispositivo reclamado para P2."
+	)
 
 	practice_setup.call("emit_signal", "back_requested")
 	await process_frame

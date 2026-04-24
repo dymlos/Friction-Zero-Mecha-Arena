@@ -7,6 +7,7 @@ const LOCAL_MATCH_SETUP_SCENE := preload("res://scenes/shell/local_match_setup.t
 const MAIN_MENU_SCENE := preload("res://scenes/shell/main_menu.tscn")
 const PRACTICE_SETUP_SCENE := preload("res://scenes/shell/practice_setup.tscn")
 const SETTINGS_SCENE := preload("res://scenes/shell/settings_screen.tscn")
+const LocalSessionDraft = preload("res://scripts/systems/local_session_draft.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
 
@@ -19,6 +20,7 @@ var _how_to_play_return_screen_id := "main_menu"
 var _practice_return_screen_id := "main_menu"
 var _settings_return_screen_id := "main_menu"
 var _shell_session := ShellSession.new()
+var _local_session_draft := LocalSessionDraft.new()
 
 
 func _ready() -> void:
@@ -133,6 +135,8 @@ func _mount_screen(screen_scene: PackedScene, screen_id: String) -> void:
 func _wire_screen(screen: Control) -> void:
 	if screen == null:
 		return
+	if screen.has_method("set_session_draft"):
+		screen.call("set_session_draft", _local_session_draft)
 
 	if screen.has_signal("play_local_requested"):
 		screen.play_local_requested.connect(func() -> void:

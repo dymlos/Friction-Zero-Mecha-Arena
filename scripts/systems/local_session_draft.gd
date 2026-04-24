@@ -1,0 +1,211 @@
+extends Resource
+class_name LocalSessionDraft
+
+const MatchController = preload("res://scripts/systems/match_controller.gd")
+const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder.gd")
+
+const INPUT_SOURCE_KEYBOARD := "keyboard"
+const INPUT_SOURCE_JOYPAD := "joypad"
+
+@export_range(1, 8) var max_slots := 4
+@export var match_mode: MatchController.MatchMode = MatchController.MatchMode.TEAMS
+
+var _slots: Dictionary = {}
+
+
+func _init() -> void:
+	configure(max_slots)
+
+
+func configure(next_max_slots: int) -> void:
+	max_slots = clampi(next_max_slots, 1, 8)
+	for slot in range(1, max_slots + 1):
+		if not _slots.has(slot):
+			_slots[slot] = _build_default_slot(slot)
+	for slot_key in _slots.keys():
+		if int(slot_key) > max_slots:
+			_slots.erase(slot_key)
+
+
+func set_match_mode(next_match_mode: int) -> void:
+	match_mode = next_match_mode as MatchController.MatchMode
+
+
+func set_slot_active(player_slot: int, active: bool) -> void:
+	if not _slots.has(player_slot):
+		return
+	var slot_info: Dictionary = _slots[player_slot]
+	slot_info["active"] = active
+	_slots[player_slot] = slot_info
+
+
+func set_slot_control_mode(player_slot: int, control_mode: int) -> void:
+	if not _slots.has(player_slot):
+		return
+	var slot_info: Dictionary = _slots[player_slot]
+	slot_info["control_mode"] = _sanitize_control_mode(control_mode)
+	_slots[player_slot] = slot_info
+
+
+func toggle_slot_control_mode(player_slot: int) -> void:
+	if not _slots.has(player_slot):
+		return
+	var current_mode := int(_slots[player_slot].get("control_mode", RobotBase.ControlMode.EASY))
+	set_slot_control_mode(
+		player_slot,
+		RobotBase.ControlMode.EASY if current_mode == RobotBase.ControlMode.HARD else RobotBase.ControlMode.HARD
+	)
+
+
+func set_slot_input_source(player_slot: int, input_source: String) -> void:
+	if not _slots.has(player_slot):
+		return
+	var slot_info: Dictionary = _slots[player_slot]
+	var sanitized_source := _sanitize_input_source(input_source)
+	slot_info["input_source"] = sanitized_source
+	if sanitized_source == INPUT_SOURCE_KEYBOARD:
+		slot_info["keyboard_profile"] = LocalSessionBuilder.get_default_keyboard_profile_for_slot(player_slot)
+		slot_info["device_id"] = -1
+		slot_info["device_connected"] = true
+	else:
+		slot_info["keyboard_profile"] = RobotBase.KeyboardProfile.NONE
+	_slots[player_slot] = slot_info
+
+
+func reserve_joypad_for_slot(player_slot: int, device_id: int, connected: bool = true) -> void:
+	if not _slots.has(player_slot):
+		return
+	var slot_info: Dictionary = _slots[player_slot]
+	slot_info["active"] = true
+	slot_info["input_source"] = INPUT_SOURCE_JOYPAD
+	slot_info["keyboard_profile"] = RobotBase.KeyboardProfile.NONE
+	slot_info["device_id"] = device_id
+	slot_info["device_connected"] = connected
+	_slots[player_slot] = slot_info
+
+
+func cycle_slot_state(player_slot: int) -> void:
+	if not _slots.has(player_slot):
+		return
+	var slot_info: Dictionary = _slots[player_slot]
+	if not bool(slot_info.get("active", true)):
+		set_slot_active(player_slot, true)
+		set_slot_input_source(player_slot, INPUT_SOURCE_KEYBOARD)
+		set_slot_control_mode(player_slot, RobotBase.ControlMode.EASY)
+		return
+	if String(slot_info.get("input_source", INPUT_SOURCE_KEYBOARD)) == INPUT_SOURCE_KEYBOARD:
+		if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.EASY:
+			set_slot_control_mode(player_slot, RobotBase.ControlMode.HARD)
+		else:
+			reserve_joypad_for_slot(player_slot, int(slot_info.get("device_id", player_slot - 1)), false)
+			set_slot_control_mode(player_slot, RobotBase.ControlMode.EASY)
+		return
+	set_slot_active(player_slot, false)
+
+
+func is_slot_launchable(player_slot: int) -> bool:
+	if not _slots.has(player_slot):
+		return false
+	var slot_info: Dictionary = _slots[player_slot]
+	if not bool(slot_info.get("active", false)):
+		return false
+	if String(slot_info.get("input_source", INPUT_SOURCE_KEYBOARD)) == INPUT_SOURCE_JOYPAD:
+		return bool(slot_info.get("device_connected", false)) and int(slot_info.get("device_id", -1)) >= 0
+	return true
+
+
+func can_launch(max_active_slots: int = -1) -> bool:
+	var active_specs := build_active_slot_specs(max_active_slots)
+	if active_specs.is_empty():
+		return false
+	for slot_spec in active_specs:
+		var slot := int(slot_spec.get("slot", -1))
+		if not is_slot_launchable(slot):
+			return false
+	return true
+
+
+func get_slot_summary_lines(max_visible_slots: int = -1) -> Array[String]:
+	var lines: Array[String] = []
+	var visible_slots := max_slots if max_visible_slots <= 0 else mini(max_visible_slots, max_slots)
+	for slot in range(1, visible_slots + 1):
+		lines.append(_build_slot_summary_line(slot))
+	return lines
+
+
+func build_active_slot_specs(max_active_slots: int = -1) -> Array[Dictionary]:
+	var specs: Array[Dictionary] = []
+	var limit := max_slots if max_active_slots <= 0 else mini(max_active_slots, max_slots)
+	for slot in range(1, limit + 1):
+		var slot_info: Dictionary = _slots.get(slot, _build_default_slot(slot))
+		if not bool(slot_info.get("active", false)):
+			continue
+		specs.append(_sanitize_slot_spec(slot_info, slot))
+	return specs
+
+
+func get_slot_info(player_slot: int) -> Dictionary:
+	return (_slots.get(player_slot, _build_default_slot(player_slot)) as Dictionary).duplicate(true)
+
+
+func copy_from(other: LocalSessionDraft) -> void:
+	if other == null:
+		return
+	max_slots = other.max_slots
+	match_mode = other.match_mode
+	_slots.clear()
+	for slot in range(1, max_slots + 1):
+		_slots[slot] = other.get_slot_info(slot)
+
+
+func _build_default_slot(player_slot: int) -> Dictionary:
+	return {
+		"slot": player_slot,
+		"active": true,
+		"control_mode": RobotBase.ControlMode.EASY,
+		"input_source": INPUT_SOURCE_KEYBOARD,
+		"keyboard_profile": LocalSessionBuilder.get_default_keyboard_profile_for_slot(player_slot),
+		"device_id": -1,
+		"device_connected": true,
+	}
+
+
+func _build_slot_summary_line(player_slot: int) -> String:
+	var slot_info: Dictionary = _slots.get(player_slot, _build_default_slot(player_slot))
+	if not bool(slot_info.get("active", false)):
+		return "P%s | inactivo" % player_slot
+	var mode_label := "Hard" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Easy"
+	var input_source := String(slot_info.get("input_source", INPUT_SOURCE_KEYBOARD))
+	if input_source == INPUT_SOURCE_JOYPAD:
+		var device_id := int(slot_info.get("device_id", -1))
+		var connection_label := "conectado" if bool(slot_info.get("device_connected", false)) else "desconectado"
+		return "P%s | %s | joypad %s %s" % [player_slot, mode_label, device_id, connection_label]
+	var profile := int(slot_info.get("keyboard_profile", LocalSessionBuilder.get_default_keyboard_profile_for_slot(player_slot)))
+	return "P%s | %s | teclado %s" % [player_slot, mode_label, LocalSessionBuilder.get_keyboard_profile_label(profile)]
+
+
+func _sanitize_slot_spec(slot_info: Dictionary, fallback_slot: int) -> Dictionary:
+	var slot := int(slot_info.get("slot", fallback_slot))
+	var input_source := _sanitize_input_source(String(slot_info.get("input_source", INPUT_SOURCE_KEYBOARD)))
+	var keyboard_profile := int(slot_info.get("keyboard_profile", LocalSessionBuilder.get_default_keyboard_profile_for_slot(slot)))
+	if input_source == INPUT_SOURCE_KEYBOARD and keyboard_profile == RobotBase.KeyboardProfile.NONE:
+		keyboard_profile = LocalSessionBuilder.get_default_keyboard_profile_for_slot(slot)
+	if input_source == INPUT_SOURCE_JOYPAD:
+		keyboard_profile = RobotBase.KeyboardProfile.NONE
+	return {
+		"slot": slot,
+		"control_mode": _sanitize_control_mode(int(slot_info.get("control_mode", RobotBase.ControlMode.EASY))),
+		"input_source": input_source,
+		"keyboard_profile": keyboard_profile,
+		"device_id": int(slot_info.get("device_id", -1)),
+		"device_connected": bool(slot_info.get("device_connected", true)),
+	}
+
+
+func _sanitize_input_source(input_source: String) -> String:
+	return INPUT_SOURCE_JOYPAD if input_source == INPUT_SOURCE_JOYPAD else INPUT_SOURCE_KEYBOARD
+
+
+func _sanitize_control_mode(control_mode: int) -> int:
+	return RobotBase.ControlMode.HARD if control_mode == RobotBase.ControlMode.HARD else RobotBase.ControlMode.EASY

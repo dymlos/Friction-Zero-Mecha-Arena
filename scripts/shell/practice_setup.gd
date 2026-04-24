@@ -2,6 +2,7 @@ extends Control
 class_name PracticeSetup
 
 const OnboardingCatalog = preload("res://scripts/systems/onboarding_catalog.gd")
+const LocalSessionDraft = preload("res://scripts/systems/local_session_draft.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const PracticeCatalog = preload("res://scripts/systems/practice_catalog.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
@@ -28,7 +29,7 @@ const DEFAULT_LOCAL_SLOTS := [1, 2]
 
 var _modules: Array = []
 var _selected_index := -1
-var _slot_control_modes := {}
+var _session_draft := LocalSessionDraft.new()
 
 
 func _ready() -> void:
@@ -44,12 +45,11 @@ func _ready() -> void:
 		back_requested.emit()
 	)
 	start_button.pressed.connect(_on_start_pressed)
-	for slot in DEFAULT_LOCAL_SLOTS:
-		_slot_control_modes[slot] = RobotBase.ControlMode.EASY
+	_session_draft.configure(2)
 	for index in range(slot_buttons.size()):
 		var slot := index + 1
 		slot_buttons[index].pressed.connect(func() -> void:
-			toggle_slot_control_mode(slot)
+			cycle_slot_state(slot)
 		)
 
 	_modules = PracticeCatalog.get_modules()
@@ -99,14 +99,41 @@ func focus_back_button() -> void:
 		back_button.grab_focus()
 
 
-func toggle_slot_control_mode(player_slot: int) -> void:
-	if not _slot_control_modes.has(player_slot):
+func set_session_draft(session_draft: LocalSessionDraft) -> void:
+	if session_draft == null:
 		return
+	_session_draft = session_draft
+	_session_draft.configure(4)
+	_refresh_slot_summary()
 
-	var next_mode := RobotBase.ControlMode.HARD
-	if int(_slot_control_modes[player_slot]) == RobotBase.ControlMode.HARD:
-		next_mode = RobotBase.ControlMode.EASY
-	_slot_control_modes[player_slot] = next_mode
+
+func set_slot_active(player_slot: int, active: bool) -> void:
+	_session_draft.set_slot_active(player_slot, active)
+	_refresh_slot_summary()
+
+
+func set_slot_control_mode(player_slot: int, control_mode: int) -> void:
+	_session_draft.set_slot_control_mode(player_slot, control_mode)
+	_refresh_slot_summary()
+
+
+func set_slot_input_source(player_slot: int, input_source: String) -> void:
+	_session_draft.set_slot_input_source(player_slot, input_source)
+	_refresh_slot_summary()
+
+
+func reserve_joypad_for_slot(player_slot: int, device_id: int, connected: bool = true) -> void:
+	_session_draft.reserve_joypad_for_slot(player_slot, device_id, connected)
+	_refresh_slot_summary()
+
+
+func cycle_slot_state(player_slot: int) -> void:
+	_session_draft.cycle_slot_state(player_slot)
+	_refresh_slot_summary()
+
+
+func toggle_slot_control_mode(player_slot: int) -> void:
+	_session_draft.toggle_slot_control_mode(player_slot)
 	_refresh_slot_summary()
 
 
@@ -115,7 +142,7 @@ func build_launch_config() -> MatchLaunchConfig:
 	launch_config.configure_for_practice(
 		get_selected_module_id(),
 		"res://scenes/practice/practice_mode.tscn",
-		_build_slot_specs()
+		_session_draft.build_active_slot_specs(DEFAULT_LOCAL_SLOTS.size())
 	)
 	return launch_config
 
@@ -147,23 +174,11 @@ func _refresh_slot_summary() -> void:
 	var lines: PackedStringArray = []
 	for index in range(slot_buttons.size()):
 		var player_slot := index + 1
-		var control_mode := int(_slot_control_modes.get(player_slot, RobotBase.ControlMode.EASY))
-		var mode_label := "Hard" if control_mode == RobotBase.ControlMode.HARD else "Easy"
-		slot_buttons[index].text = "P%s: %s" % [player_slot, mode_label]
-		lines.append("P%s listo | %s" % [player_slot, mode_label])
+		var line := String(_session_draft.get_slot_summary_lines(DEFAULT_LOCAL_SLOTS.size())[index])
+		slot_buttons[index].text = line.replace(" | ", ": ")
+		lines.append(line)
 
 	slots_summary_label.text = "\n".join(lines)
-
-
-func _build_slot_specs() -> Array:
-	var slot_specs: Array = []
-	for player_slot in DEFAULT_LOCAL_SLOTS:
-		slot_specs.append({
-			"slot": player_slot,
-			"control_mode": int(_slot_control_modes.get(player_slot, RobotBase.ControlMode.EASY)),
-		})
-
-	return slot_specs
 
 
 func _get_selected_module() -> Dictionary:

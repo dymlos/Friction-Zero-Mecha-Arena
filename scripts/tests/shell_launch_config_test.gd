@@ -58,8 +58,8 @@ func _run() -> void:
 		MatchController.MatchMode.FFA,
 		"res://scenes/main/main_ffa.tscn",
 		[
-			{"slot": 1, "control_mode": 0},
-			{"slot": 2, "control_mode": 1},
+			{"slot": 1, "control_mode": 0, "input_source": "keyboard", "keyboard_profile": 1},
+			{"slot": 2, "control_mode": 1, "input_source": "joypad", "device_id": 24, "device_connected": true},
 			{"slot": 2, "control_mode": 0},
 			{"slot": 9, "control_mode": 1},
 		]
@@ -89,6 +89,15 @@ func _run() -> void:
 	_assert(
 		int(launch_slots[1].get("control_mode", -1)) == 1,
 		"El primer valor valido por slot deberia quedar congelado para evitar drift entre setup y match."
+	)
+	_assert(
+		String(launch_slots[1].get("input_source", "")) == "joypad"
+		and int(launch_slots[1].get("device_id", -1)) == 24,
+		"El launch config deberia transportar fuente de input y device_id completos."
+	)
+	_assert(
+		int(launch_slots[1].get("keyboard_profile", -2)) == 0,
+		"Un slot joypad no deberia arrastrar perfil de teclado."
 	)
 
 	shell_session.call("store_match_launch_config", launch_config)

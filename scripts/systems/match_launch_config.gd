@@ -2,6 +2,7 @@ extends Resource
 class_name MatchLaunchConfig
 
 const MatchConfig = preload("res://scripts/systems/match_config.gd")
+const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const UserSettingsStore = preload("res://scripts/autoload/user_settings_store.gd")
 
@@ -50,33 +51,7 @@ func duplicate_for_runtime() -> MatchLaunchConfig:
 
 
 func _sanitize_local_slots(slot_specs: Array) -> Array[Dictionary]:
-	var result: Array[Dictionary] = []
-	var seen_slots := {}
-	for slot_spec_variant in slot_specs:
-		if not (slot_spec_variant is Dictionary):
-			continue
-
-		var slot_spec := slot_spec_variant as Dictionary
-		var slot := int(slot_spec.get("slot", -1))
-		if slot <= 0 or slot > DEFAULT_MAX_LOCAL_SLOTS:
-			continue
-		if seen_slots.has(slot):
-			continue
-
-		var control_mode := int(slot_spec.get("control_mode", RobotBase.ControlMode.EASY))
-		if control_mode != RobotBase.ControlMode.HARD:
-			control_mode = RobotBase.ControlMode.EASY
-
-		seen_slots[slot] = true
-		result.append({
-			"slot": slot,
-			"control_mode": control_mode,
-		})
-
-	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		return int(a.get("slot", 0)) < int(b.get("slot", 0))
-	)
-	return result
+	return LocalSessionBuilder.sanitize_slot_specs(slot_specs)
 
 
 func _resolve_effective_hud_detail_mode() -> MatchConfig.HudDetailMode:

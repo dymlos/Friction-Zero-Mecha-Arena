@@ -27,8 +27,8 @@ func _run() -> void:
 		"impacto",
 		"res://scenes/practice/practice_mode.tscn",
 		[
-			{"slot": 2, "control_mode": RobotBase.ControlMode.HARD},
-			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY},
+			{"slot": 2, "control_mode": RobotBase.ControlMode.HARD, "input_source": "joypad", "device_id": 9, "device_connected": true},
+			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY, "input_source": "keyboard", "keyboard_profile": RobotBase.KeyboardProfile.WASD_SPACE},
 			{"slot": 2, "control_mode": RobotBase.ControlMode.EASY},
 			{"slot": 12, "control_mode": RobotBase.ControlMode.HARD},
 		]
@@ -54,6 +54,11 @@ func _run() -> void:
 		int(launch_config.local_slots[0].get("slot", -1)) == 1
 		and int(launch_config.local_slots[1].get("slot", -1)) == 2,
 		"Practica deberia ordenar slots locales por indice ascendente."
+	)
+	_assert(
+		String(launch_config.local_slots[1].get("input_source", "")) == "joypad"
+		and int(launch_config.local_slots[1].get("device_id", -1)) == 9,
+		"Practica deberia transportar el contrato completo de dispositivo por slot."
 	)
 
 	shell_session.store_match_launch_config(launch_config)
