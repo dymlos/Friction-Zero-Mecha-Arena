@@ -2,6 +2,7 @@ extends Node3D
 class_name PracticeMode
 
 const LocalSession = preload("res://scripts/systems/local_session.gd")
+const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const PauseController = preload("res://scripts/systems/pause_controller.gd")
 const PracticeCatalog = preload("res://scripts/systems/practice_catalog.gd")
@@ -43,6 +44,10 @@ func get_active_module_id() -> String:
 	return practice_director.get_active_module_id()
 
 
+func get_local_session() -> LocalSession:
+	return _local_session
+
+
 func request_module_restart() -> void:
 	_pause_controller.reset()
 	get_tree().paused = false
@@ -77,24 +82,10 @@ func _apply_pending_entry_context() -> void:
 
 
 func _build_local_session() -> LocalSession:
-	var session := DEFAULT_LOCAL_SESSION_CONFIG.duplicate(true) as LocalSession
-	if session == null:
-		session = LocalSession.new()
-
-	var slot_count: int = maxi(1, _get_active_slot_specs().size())
-	session.configure(max(session.max_local_slots, slot_count), slot_count)
-	for slot_spec in _get_active_slot_specs():
-		var slot := int(slot_spec.get("slot", 0))
-		if slot <= 0:
-			continue
-
-		session.assign_keyboard_slot(
-			slot,
-			_get_default_keyboard_profile_for_slot(slot),
-			int(slot_spec.get("control_mode", RobotBase.ControlMode.EASY))
-		)
-
-	return session
+	var default_session := DEFAULT_LOCAL_SESSION_CONFIG.duplicate(true) as LocalSession
+	if default_session == null:
+		default_session = LocalSession.new()
+	return LocalSessionBuilder.build_from_slot_specs(_get_active_slot_specs(), default_session)
 
 
 func _spawn_player_robots() -> void:
@@ -257,13 +248,13 @@ func _build_pause_lines() -> Array[String]:
 func _get_active_slot_specs() -> Array[Dictionary]:
 	var slot_specs: Array[Dictionary] = []
 	if _pending_match_launch_config == null or _pending_match_launch_config.local_slots.is_empty():
-		return [{"slot": 1, "control_mode": RobotBase.ControlMode.EASY}]
+		return LocalSessionBuilder.sanitize_slot_specs([{"slot": 1, "control_mode": RobotBase.ControlMode.EASY}])
 
 	for slot_spec in _pending_match_launch_config.local_slots:
 		if slot_spec is Dictionary:
 			slot_specs.append(slot_spec)
 
-	return slot_specs
+	return LocalSessionBuilder.sanitize_slot_specs(slot_specs)
 
 
 func _on_lane_completed() -> void:
@@ -271,14 +262,4 @@ func _on_lane_completed() -> void:
 
 
 func _get_default_keyboard_profile_for_slot(player_slot: int) -> int:
-	match player_slot:
-		1:
-			return RobotBase.KeyboardProfile.WASD_SPACE
-		2:
-			return RobotBase.KeyboardProfile.ARROWS_ENTER
-		3:
-			return RobotBase.KeyboardProfile.NUMPAD
-		4:
-			return RobotBase.KeyboardProfile.IJKL
-		_:
-			return RobotBase.KeyboardProfile.NONE
+	return LocalSessionBuilder.get_default_keyboard_profile_for_slot(player_slot)

@@ -4,6 +4,7 @@ class_name Main
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchHud = preload("res://scripts/ui/match_hud.gd")
 const LocalSession = preload("res://scripts/systems/local_session.gd")
+const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const PauseController = preload("res://scripts/systems/pause_controller.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
@@ -541,39 +542,28 @@ func _apply_match_mode_bootstrap(robots: Array[RobotBase]) -> void:
 
 
 func _bootstrap_local_session(robot_count: int) -> void:
-	_local_session = _duplicate_default_local_session()
 	var max_local_slots: int = max(robot_count, 1)
 	var active_match_slots: int = min(robot_count, 1)
 	if _is_player_shell_context() and not _player_shell_local_slots.is_empty():
-		active_match_slots = _player_shell_local_slots.size()
+		_local_session = LocalSessionBuilder.build_from_slot_specs(
+			_player_shell_local_slots,
+			_duplicate_default_local_session()
+		)
+		return
+	_local_session = _duplicate_default_local_session()
 	if match_controller != null:
-		if not (_is_player_shell_context() and not _player_shell_local_slots.is_empty()):
-			active_match_slots = min(match_controller.get_local_player_count(), robot_count)
+		active_match_slots = min(match_controller.get_local_player_count(), robot_count)
 		if match_controller.match_config != null:
 			max_local_slots = max(max_local_slots, int(match_controller.match_config.max_local_slots))
-			if not (_is_player_shell_context() and not _player_shell_local_slots.is_empty()):
-				active_match_slots = min(
-					active_match_slots,
-					int(match_controller.match_config.active_match_slots)
-				)
+			active_match_slots = min(
+				active_match_slots,
+				int(match_controller.match_config.active_match_slots)
+			)
 	elif _local_session != null:
 		max_local_slots = max(max_local_slots, _local_session.get_max_local_slots())
 		active_match_slots = min(active_match_slots, _local_session.get_active_match_slots())
 
 	_local_session.configure(max_local_slots, max(active_match_slots, 1))
-	if _is_player_shell_context() and not _player_shell_local_slots.is_empty():
-		for slot_spec in _player_shell_local_slots:
-			var player_slot := int(slot_spec.get("slot", 0))
-			if player_slot <= 0:
-				continue
-
-			_local_session.assign_keyboard_slot(
-				player_slot,
-				_get_default_keyboard_profile_for_slot(player_slot),
-				_resolve_control_mode_for_slot(player_slot)
-			)
-		return
-
 	for player_slot in range(1, _local_session.get_active_match_slots() + 1):
 		_local_session.assign_keyboard_slot(
 			player_slot,
@@ -591,17 +581,7 @@ func _duplicate_default_local_session() -> LocalSession:
 
 
 func _get_default_keyboard_profile_for_slot(player_slot: int) -> int:
-	match player_slot:
-		1:
-			return RobotBase.KeyboardProfile.WASD_SPACE
-		2:
-			return RobotBase.KeyboardProfile.ARROWS_ENTER
-		3:
-			return RobotBase.KeyboardProfile.NUMPAD
-		4:
-			return RobotBase.KeyboardProfile.IJKL
-		_:
-			return RobotBase.KeyboardProfile.NONE
+	return LocalSessionBuilder.get_default_keyboard_profile_for_slot(player_slot)
 
 
 func _get_scene_robots() -> Array[RobotBase]:
@@ -1750,17 +1730,7 @@ func _apply_pending_entry_context() -> void:
 		match_controller.apply_runtime_hud_detail_mode(int(_pending_match_launch_config.hud_detail_mode))
 		match_controller.set_runtime_match_restart_enabled(bool(_pending_match_launch_config.auto_restart_on_match_end))
 
-	for slot_spec in _pending_match_launch_config.local_slots:
-		if not (slot_spec is Dictionary):
-			continue
-
-		var normalized_slot := {
-			"slot": int(slot_spec.get("slot", 0)),
-			"control_mode": int(slot_spec.get("control_mode", RobotBase.ControlMode.EASY)),
-		}
-		if int(normalized_slot.get("slot", 0)) <= 0:
-			continue
-
+	for normalized_slot in LocalSessionBuilder.sanitize_slot_specs(_pending_match_launch_config.local_slots):
 		_player_shell_local_slots.append(normalized_slot)
 		if int(normalized_slot.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD:
 			hard_mode_player_slots.append(int(normalized_slot.get("slot", 0)))
