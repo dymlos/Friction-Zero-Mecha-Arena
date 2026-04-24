@@ -44,6 +44,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - Cierre `player_shell` sin `Reinicio | F5`, sin autorestart y con panels de recap/resultado auditados en producto integrado.
 - Cierre `player_shell` con story/snippets post-match auditados: `player_shell_post_match_review_teams_1280` y `player_shell_post_match_review_ffa_1280`.
 - HUD M11 compacta roster 8P y standings FFA grandes con `+N`; post-partida puede mostrar `Oportunidad | ...` cuando aftermath afecto el cierre.
+- Matriz M1 de produccion base: `1080p` como referencia principal, `2-4` como tier pulido, `5-8` como escala soportada en validacion, y pausa owner-aware con salida confirmada.
 - Fuente unica de identidad por personaje compartida entre shell, QA y tests.
 - Fuente unica de onboarding general compartida entre shell, QA y tests.
 - Paridad del flujo de shell en tests scene-level y QA visual de `menu`, `setup`, `characters`, `how to play` y overlay de pausa.
@@ -85,6 +86,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 
 - El siguiente gap ya no es construir shell operativa, sino validar manualmente legibilidad de settings, slots/dispositivos y pausa con jugadores reales.
 - La shell extendida y practica todavia necesitan evidencia humana con mas jugadores reales; este slice cerro la baseline automatizada, no el playtest humano.
+- M1 queda automatizado, pero la paridad percibida de `5-8` sigue dependiendo de playtest humano; no tratarla como experiencia igual de pulida que `2-4`.
 - M11 necesita playtest humano especifico de legibilidad en `FFA 4P`, `FFA 6P/8P` y `Teams 4v4`, especialmente alrededor de aftermath, roster compacto y seleccion de `Aguja`/`Ancla`.
 - El pacing fino del opening sigue siendo pregunta de tuning.
 - La paridad `base/validation` sigue siendo el riesgo tecnico mas sensible cuando se tocan escenas o HUD.

@@ -9,6 +9,10 @@ Cerrar los contratos tecnicos y de UX que condicionan todo lo demas:
 - presupuesto de performance
 - supuestos reales de shared-screen
 
+## Matriz activa
+
+- [M1 - Matriz de produccion base](./m1-matriz-produccion-base.md) fija la referencia `1080p`, los tiers `2-4` vs `5-8`, la politica de input/pausa y la evidencia minima para cerrar el milestone.
+
 ## Por que existe
 
 Si estos contratos siguen abiertos, el resto del roadmap corre sobre intuicion:
