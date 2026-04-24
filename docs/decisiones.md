@@ -27,6 +27,10 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - `Modo Practica` ya es una ruta de jugador propia y debe seguir separada del laboratorio.
 - `Practica` valida sistemas reales con modulos guiados cortos + `sandbox`; no duplica copy larga que ya vive en `How to Play` o `Characters`.
 - `Practica` debe usar HUD explicito por defecto y soportar `1-2` jugadores locales como primer alcance.
+- `Practica` queda contratada como sandbox guiado para `1-2` jugadores locales; mas jugadores pertenecen al match competitivo y a validaciones separadas.
+- El HUD de `Practica` arranca explicito por defecto; el HUD contextual sigue siendo preferencia del match competitivo normal.
+- La practica de skill en M8 vive dentro de estaciones existentes, no en un modulo nuevo: `partes` usa `Cizalla/Corte` como skill aplicada a dano modular.
+- El primer pase recomendado de `Practica` prioriza `movimiento -> impacto -> partes -> sandbox` antes de capas mas amplias.
 - Los control hints de practica deben salir de un seam comun (`RobotBase.get_control_reference_hint()` o equivalente central), no de prompts por modulo.
 - El aprendizaje aplicado no se resuelve con overlays largos: shell, practica, HUD y pausa solo agregan recordatorios breves y contextuales.
 - `HUD`, `pausa` y `resultados` solo deben reforzar recordatorios contextuales, no absorber onboarding completo.

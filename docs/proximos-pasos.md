@@ -22,10 +22,7 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
    - entrada desde `How to Play`
    - volver al menu desde pausa
 3. Ejecutar smoke manual especifico de `Practica`:
-   - lanzar `Practica` desde menu principal, setup local y CTA de `How to Play`
-   - probar `movimiento`, `impacto`, `energia`, `partes`, `recuperacion` y `sandbox`
-   - repetir `1P Easy`, `1P Hard` y `2P mixto Easy/Hard`
-   - confirmar que HUD explicito, prompts y tarjetas se leen a distancia shared-screen
+   - Ejecutar smoke manual M8 delta: `1P Easy`, `1P Hard`, `2P mixto Easy/Hard`, ruta recomendada `movimiento -> impacto -> partes -> sandbox`, uso de `Corte` en `partes`, entrada desde `How to Play` y vuelta al menu desde pausa.
 4. Ejecutar playtest M11 enfocado:
    - `FFA 4P` con aftermath visible tras bajas tempranas.
    - `FFA 6P/8P` si hay suficientes controles, revisando roster compacto y standings `+N`.

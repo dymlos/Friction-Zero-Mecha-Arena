@@ -16,6 +16,8 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - `PracticeSetup` dedicado con orden fijo de modulos, robot recomendado, temas relacionados y slots `P1/P2` usando el mismo contrato operativo de dispositivos que el setup local.
 - Runtime `practice_mode` separado del laboratorio, con modulos `movimiento`, `impacto`, `energia`, `partes`, `recuperacion` y `sandbox`.
 - `PracticeHud` con modulo, objetivo, progreso, controles, tarjeta contextual/callout corto y pausa, sin recap competitivo ni prompts de laboratorio.
+- `Practica` queda contratada como sandbox guiado `1-2P`: todos los modulos soportan `P1/P2`, el runtime capea slots fuera del alcance y el HUD arranca explicito por defecto.
+- El primer pase recomendado de practica prioriza `movimiento -> impacto -> partes -> sandbox`; `partes` usa `Cizalla/Corte` para ensenar skill aplicada sobre dano modular sin crear otro modulo.
 - Pausa completa en match lanzado desde shell: acciones primarias, quick settings de `HUD/master/music/sfx`, resumen corto de dispositivos y superficies `Settings`, `How to Play` y `Characters` montadas sobre el match pausado, sin reasignar slots ni cambiar modo.
 - `Settings` en pausa usa scope seguro `audio/HUD`; video, controles, slots, modo, mapa y variante quedan fuera del match congelado.
 - Cierre post-partida M10: lectura compacta de decision, snippets event-driven `Replay | ...`, diferencia de enfasis `Teams/FFA` y secciones HUD dedicadas sin reemplazar el resultado principal.
@@ -56,6 +58,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - Paridad del flujo de shell en tests scene-level y QA visual de `menu`, `setup`, `characters`, `how to play` y overlay de pausa.
 - QA visual dedicada de pausa completa a `1280x720`: `main_pause_complete_settings_1280`, `main_pause_complete_how_to_play_1280` y `main_pause_complete_characters_1280`.
 - Paridad contractual de `Practica` en tests scene-level, QA visual y rotacion de modulos.
+- Contrato M8 delta cubierto por tests: alcance `1-2P`, HUD explicito por defecto, ruta recomendada de primer pase y estacion `partes` con skill + dano modular.
 - QA integrada del loop completo a `1280x720`:
   - `player_shell_loop_teams_1280`
   - `player_shell_loop_ffa_1280`
