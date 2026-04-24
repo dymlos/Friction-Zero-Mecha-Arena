@@ -88,6 +88,12 @@ func _run() -> void:
 		robot.has_method("get_control_reference_hint"),
 		"Los prompts de practica deben salir del seam central del robot."
 	)
+	robot.keyboard_profile = RobotBase.KeyboardProfile.NONE
+	robot.joypad_device = -1
+	_assert(
+		robot.get_control_reference_hint().contains("ataca Sur"),
+		"Joypad generico debe conservar fallback legible para practica."
+	)
 	robot.free()
 
 	await _cleanup_node(practice_setup)

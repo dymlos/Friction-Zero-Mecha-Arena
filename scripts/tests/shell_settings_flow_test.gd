@@ -121,6 +121,10 @@ func _run() -> void:
 		controls_summary.to_lower().contains("joypad"),
 		"Settings deberia listar joypads conectados o su ausencia."
 	)
+	_assert(
+		controls_summary.contains("Joypads | ninguno conectado") or controls_summary.contains("Joypad "),
+		"Settings deberia listar joypads conectados con prompt o declarar ausencia."
+	)
 
 	settings_screen.call("set_master_volume", 0.35)
 	settings_screen.call("set_music_volume", 0.45)

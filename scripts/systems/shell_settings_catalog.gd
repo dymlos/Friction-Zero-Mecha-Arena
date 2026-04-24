@@ -2,6 +2,7 @@ extends RefCounted
 class_name ShellSettingsCatalog
 
 const MatchConfig = preload("res://scripts/systems/match_config.gd")
+const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const UserSettings = preload("res://scripts/systems/user_settings.gd")
 
@@ -69,18 +70,7 @@ static func get_control_mode_lines() -> Array[String]:
 
 
 static func get_connected_joypad_lines() -> Array[String]:
-	var lines: Array[String] = []
-	var connected := Input.get_connected_joypads()
-	if connected.is_empty():
-		lines.append("Joypads | ninguno conectado")
-		return lines
-
-	for device_id in connected:
-		var joy_name := Input.get_joy_name(int(device_id)).strip_edges()
-		if joy_name.is_empty():
-			joy_name = "Joypad"
-		lines.append("Joypad %s | %s" % [int(device_id), joy_name])
-	return lines
+	return InputPromptCatalog.get_connected_joypad_lines()
 
 
 static func get_controls_note() -> String:

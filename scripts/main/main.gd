@@ -1059,8 +1059,7 @@ func _build_pause_device_lines() -> Array[String]:
 	for robot in _get_scene_robots():
 		if robot == null or not robot.is_player_controlled:
 			continue
-		var input_label := "joy %s" % robot.joypad_device if robot.joypad_device >= 0 else "teclado"
-		active_segments.append("P%s %s" % [robot.player_index, input_label])
+		active_segments.append("P%s %s" % [robot.player_index, robot.get_input_hint()])
 	if not active_segments.is_empty():
 		lines.append(", ".join(active_segments))
 	var disconnected_line := get_local_session_summary_line()

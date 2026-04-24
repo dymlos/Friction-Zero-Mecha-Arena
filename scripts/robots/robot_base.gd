@@ -2,6 +2,7 @@ extends CharacterBody3D
 class_name RobotBase
 
 const DetachedPart = preload("res://scripts/robots/detached_part.gd")
+const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.gd")
 const PulseBolt = preload("res://scripts/projectiles/pulse_bolt.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
 const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
@@ -941,55 +942,28 @@ func get_energy_surge_time_left() -> float:
 
 func get_input_hint() -> String:
 	if uses_keyboard_input():
-		var move_label := str(KEYBOARD_PROFILE_LABELS.get(keyboard_profile, "teclado"))
-		if control_mode == ControlMode.HARD:
-			var aim_label := str(KEYBOARD_PROFILE_HARD_AIM_LABELS.get(keyboard_profile, "stick derecho"))
-			return "%s + aim %s" % [move_label, aim_label]
-
-		return move_label
+		return InputPromptCatalog.get_keyboard_short_hint(keyboard_profile, control_mode)
 
 	if joypad_device >= 0:
-		return "joy %s" % joypad_device
+		return InputPromptCatalog.get_joypad_short_hint(joypad_device)
 
 	return "sin dispositivo"
 
 
 func get_support_input_hint() -> String:
 	if uses_keyboard_input():
-		match keyboard_profile:
-			KeyboardProfile.WASD_SPACE:
-				return "usa C | objetivo Q/E"
-			KeyboardProfile.ARROWS_ENTER:
-				return "usa / | objetivo ,/."
-			KeyboardProfile.NUMPAD:
-				return "usa KP+ | objetivo KP1/KP3"
-			KeyboardProfile.IJKL:
-				return "usa N | objetivo Y/H"
-			_:
-				return "usa apoyo | objetivo previo/siguiente"
+		return InputPromptCatalog.get_keyboard_support_hint(keyboard_profile)
 
-	return "usa X | objetivo LB/RB"
+	return InputPromptCatalog.get_joypad_support_hint(joypad_device)
 
 
 func get_control_reference_hint() -> String:
 	if uses_keyboard_input():
-		var segments: Array[String] = [
-			"mueve %s" % str(KEYBOARD_PROFILE_LABELS.get(keyboard_profile, "teclado")),
-		]
-		if control_mode == ControlMode.HARD:
-			segments.append(
-				"aim %s" % str(KEYBOARD_PROFILE_HARD_AIM_LABELS.get(keyboard_profile, "stick derecho"))
-			)
-		segments.append("ataca %s" % str(KEYBOARD_PROFILE_ATTACK_LABELS.get(keyboard_profile, "?")))
-		segments.append("energia %s" % str(KEYBOARD_PROFILE_ENERGY_LABELS.get(keyboard_profile, "?/?")))
-		segments.append("overdrive %s" % str(KEYBOARD_PROFILE_OVERDRIVE_LABELS.get(keyboard_profile, "?")))
-		segments.append("suelta %s" % str(KEYBOARD_PROFILE_THROW_LABELS.get(keyboard_profile, "?")))
-		return " | ".join(segments)
+		return InputPromptCatalog.get_keyboard_reference_hint(keyboard_profile, control_mode)
 
-	if control_mode == ControlMode.HARD:
-		return "mueve stick izq | aim stick der | ataca Sur | energia LB/RB | overdrive Norte | suelta Oeste"
-
-	return "mueve stick izq | ataca Sur | energia LB/RB | overdrive Norte | suelta Oeste"
+	if joypad_device >= 0:
+		return InputPromptCatalog.get_joypad_reference_hint(joypad_device, control_mode)
+	return InputPromptCatalog.get_joypad_reference_hint_for_name("", control_mode)
 
 
 func get_player_move_input_vector() -> Vector2:

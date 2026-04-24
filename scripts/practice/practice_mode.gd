@@ -312,8 +312,7 @@ func _build_pause_quick_setting_lines() -> Array[String]:
 func _build_pause_device_lines() -> Array[String]:
 	var segments: Array[String] = []
 	for robot in _player_robots:
-		var input_label := "joy %s" % robot.joypad_device if robot.joypad_device >= 0 else "teclado"
-		segments.append("P%s %s" % [robot.player_index, input_label])
+		segments.append("P%s %s" % [robot.player_index, robot.get_input_hint()])
 	var lines: Array[String] = []
 	if segments.is_empty():
 		lines.append("sin slots activos")

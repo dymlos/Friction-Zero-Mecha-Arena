@@ -4,6 +4,7 @@ class_name LocalSessionDraft
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder.gd")
+const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.gd")
 const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 const MapCatalog = preload("res://scripts/systems/map_catalog.gd")
 const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_variant_catalog.gd")
@@ -269,7 +270,14 @@ func _build_slot_summary_line(player_slot: int) -> String:
 	if input_source == INPUT_SOURCE_JOYPAD:
 		var device_id := int(slot_info.get("device_id", -1))
 		var connection_label := "conectado" if bool(slot_info.get("device_connected", false)) else "desconectado"
-		return "P%s | %s | joypad %s %s | %s" % [player_slot, mode_label, device_id, connection_label, roster_label]
+		return "P%s | %s | joy %s %s | %s | %s" % [
+			player_slot,
+			mode_label,
+			device_id,
+			connection_label,
+			roster_label,
+			InputPromptCatalog.get_joypad_short_hint(device_id),
+		]
 	var profile := int(slot_info.get("keyboard_profile", LocalSessionBuilder.get_default_keyboard_profile_for_slot(player_slot)))
 	return "P%s | %s | teclado %s | %s" % [player_slot, mode_label, LocalSessionBuilder.get_keyboard_profile_label(profile), roster_label]
 
