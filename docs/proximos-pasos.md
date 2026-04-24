@@ -45,6 +45,7 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
 7. Mantener ownership estricto: `setup local` = seleccion, `Characters` = identidad, `How to Play` = reglas base, `Practica` = experimentacion segura, `match` = decision tactica bajo presion.
 8. Mantener la disciplina de paridad `base/validation` mientras se toque shell, practica, HUD o cierre post-partida.
 9. Si se trabaja sobre `Ultimo vivo`, tratarlo como variante de `FFA` con estructura `best-of / first-to`, sin post-muerte controlable y sin score por causa.
+10. Ejecutar playtest audiovisual M6 en `1080p`: confirmar que dano se lee desde robot, estados desde robot/arena/pickup, impactos y partes destruidas se oyen sobre musica, y la escalada final aumenta presion sin tapar SFX.
 
 ## Diferidos explicitos de este cierre parcial
 
@@ -56,6 +57,8 @@ Las decisiones de producto de la entrevista ya estan consolidadas en `docs/decis
 - mas skills por personaje antes de cerrar bien la skill principal + acciones universales
 - reglas custom amplias antes de validar la sesion local clara
 - exponer `Ultimo vivo` en setup antes de tener su gameplay completo
+- soundtrack final, mezcla/mastering final o pipeline externo completo de audio
+- postprocess visual global caro antes de nueva evidencia `1080p`
 
 ## Regla de sesion
 

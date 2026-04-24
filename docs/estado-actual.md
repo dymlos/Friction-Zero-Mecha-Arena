@@ -49,6 +49,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - Cierre `player_shell` con story/snippets post-match auditados: `player_shell_post_match_review_teams_1280` y `player_shell_post_match_review_ffa_1280`.
 - HUD M11 compacta roster 8P y standings FFA grandes con `+N`; post-partida puede mostrar `Oportunidad | ...` cuando aftermath afecto el cierre.
 - Matriz M1 de produccion base: `1080p` como referencia principal, `2-4` como tier pulido, `5-8` como escala soportada en validacion, y pausa owner-aware con salida confirmada.
+- Delta M6 audiovisual revalidado: snapshots diegeticos de robot/arena, cues funcionales con perfiles, ducking simple de musica ante SFX clave y evidencia `1080p` especifica del pase.
 - Fuente unica de identidad por personaje compartida entre shell, QA y tests.
 - Contrato M4 de silueta/acento moderado, foco inicial y botones cubierto por tests scene-level y QA visual de `Characters`.
 - Fuente unica de onboarding general compartida entre shell, QA y tests.
@@ -103,6 +104,7 @@ Las decisiones de producto tomadas en entrevista quedan consolidadas en `docs/de
 - Aftermath FFA puede volverse demasiado valioso si cada baja fuerza una carrera automatica; los valores actuales son bajos y requieren playtest.
 - La lectura post-partida M10 esta validada por tests/QA, pero todavia necesita playtest humano de ritmo de revancha y comprension en menos de 10 segundos.
 - No aparecio un problema nuevo de `1080p` en este slice; la resolucion sigue siendo el checkpoint sensible para shell y practica.
+- M6 queda cubierto por contratos automatizados, pero la mezcla final y la lectura audiovisual real siguen necesitando playtest humano en shared-screen con varios jugadores.
 
 ## Contexto adicional
 

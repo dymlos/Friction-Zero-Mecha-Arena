@@ -52,6 +52,9 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - Los mapas se agrupan por rango `2-4` y `5-8`; para `5-8`, el primer objetivo es un mapa fuerte por modo.
 - Los mapas grandes priorizan rutas y zonas utiles antes que distancia vacia.
 - La direccion audiovisual prioriza peso industrial, feedback funcional fuerte y `1080p` fluido.
+- En el pase audiovisual, dano/deterioro y estados de combate se leen primero en robot, arena o pickup; el HUD solo refuerza.
+- Los SFX funcionales de impacto, dano modular, recuperacion, negacion, pickups y presion tienen prioridad sobre la musica.
+- La musica usa base de match + escalada final y debe acompanar sin tapar SFX clave.
 - `M9` no abre remapeo libre completo; solo referencia visible de controles, perfiles de teclado fijos y joypads con `device_id` legible.
 - `LocalSessionDraft` pertenece a shell; `LocalSessionBuilder` es la unica costura para convertir specs de slots en `LocalSession` tanto en match como en practica.
 
