@@ -13,6 +13,9 @@ const MUSIC_STATES := [
 
 const UI_PLAYER_COUNT := 3
 const SFX_PLAYER_COUNT := 6
+const MIN_VOLUME_DB := -80.0
+
+static var _singleton: Node = null
 
 var _cue_bank := ProceduralCueBank.new()
 var _ui_players: Array[AudioStreamPlayer] = []
@@ -28,7 +31,12 @@ var _is_shutting_down := false
 var _audio_playback_enabled := true
 
 
+static func get_singleton() -> Node:
+	return _singleton
+
+
 func _ready() -> void:
+	_singleton = self
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_audio_playback_enabled = DisplayServer.get_name() != "headless"
 	_ensure_bus("UI")
@@ -52,6 +60,8 @@ func _process(_delta: float) -> void:
 
 func _exit_tree() -> void:
 	_shutdown_audio_graph()
+	if _singleton == self:
+		_singleton = null
 
 
 func play_cue(cue_id: String) -> void:
@@ -97,6 +107,30 @@ func set_music_state(state_name: String) -> void:
 
 func get_music_state() -> String:
 	return _music_state
+
+
+func set_master_volume(next_volume: float) -> void:
+	_set_bus_volume_linear("Master", next_volume)
+
+
+func get_master_volume() -> float:
+	return _get_bus_volume_linear("Master")
+
+
+func set_music_volume(next_volume: float) -> void:
+	_set_bus_volume_linear("Music", next_volume)
+
+
+func get_music_volume() -> float:
+	return _get_bus_volume_linear("Music")
+
+
+func set_sfx_volume(next_volume: float) -> void:
+	_set_bus_volume_linear("SFX", next_volume)
+
+
+func get_sfx_volume() -> float:
+	return _get_bus_volume_linear("SFX")
 
 
 func reset_debug_history() -> void:
@@ -183,3 +217,36 @@ func _record_debug(entry_type: String, value: String) -> void:
 		"type": entry_type,
 		"value": value,
 	})
+
+
+func _set_bus_volume_linear(bus_name: String, next_volume: float) -> void:
+	var bus_index := AudioServer.get_bus_index(bus_name)
+	if bus_index < 0:
+		if bus_name == "Master":
+			return
+		_ensure_bus(bus_name)
+		bus_index = AudioServer.get_bus_index(bus_name)
+	if bus_index < 0:
+		return
+	var normalized_volume := clampf(next_volume, 0.0, 1.0)
+	AudioServer.set_bus_volume_db(bus_index, _linear_to_db_safe(normalized_volume))
+
+
+func _get_bus_volume_linear(bus_name: String) -> float:
+	var bus_index := AudioServer.get_bus_index(bus_name)
+	if bus_index < 0:
+		return 1.0
+	return _db_to_linear_safe(AudioServer.get_bus_volume_db(bus_index))
+
+
+func _linear_to_db_safe(value: float) -> float:
+	var normalized_value := clampf(value, 0.0, 1.0)
+	if normalized_value <= 0.0:
+		return MIN_VOLUME_DB
+	return linear_to_db(normalized_value)
+
+
+func _db_to_linear_safe(value_db: float) -> float:
+	if value_db <= MIN_VOLUME_DB:
+		return 0.0
+	return clampf(db_to_linear(value_db), 0.0, 1.0)

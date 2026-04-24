@@ -3,6 +3,7 @@ class_name MatchLaunchConfig
 
 const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
+const UserSettingsStore = preload("res://scripts/autoload/user_settings_store.gd")
 
 const ENTRY_CONTEXT_PLAYER_SHELL := "player_shell"
 const ENTRY_CONTEXT_PRACTICE := "practice"
@@ -26,6 +27,7 @@ func configure_for_local_match(
 	target_scene_path = next_target_scene_path
 	entry_context = ENTRY_CONTEXT_PLAYER_SHELL
 	auto_restart_on_match_end = false
+	hud_detail_mode = _resolve_effective_hud_detail_mode()
 	local_slots = _sanitize_local_slots(slot_specs)
 
 
@@ -39,6 +41,7 @@ func configure_for_practice(
 	entry_context = ENTRY_CONTEXT_PRACTICE
 	practice_module_id = module_id
 	auto_restart_on_match_end = false
+	hud_detail_mode = _resolve_effective_hud_detail_mode()
 	local_slots = _sanitize_local_slots(slot_specs)
 
 
@@ -74,3 +77,10 @@ func _sanitize_local_slots(slot_specs: Array) -> Array[Dictionary]:
 		return int(a.get("slot", 0)) < int(b.get("slot", 0))
 	)
 	return result
+
+
+func _resolve_effective_hud_detail_mode() -> MatchConfig.HudDetailMode:
+	var settings_store := UserSettingsStore.get_singleton()
+	if settings_store == null:
+		return MatchConfig.HudDetailMode.EXPLICIT
+	return settings_store.get_default_hud_detail_mode()

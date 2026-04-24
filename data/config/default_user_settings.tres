@@ -1,0 +1,12 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/user_settings.gd" id="1_settings"]
+
+[resource]
+script = ExtResource("1_settings")
+audio_master_volume = 1.0
+audio_music_volume = 1.0
+audio_sfx_volume = 1.0
+window_mode = "windowed"
+vsync_enabled = true
+default_hud_detail_mode = 0
