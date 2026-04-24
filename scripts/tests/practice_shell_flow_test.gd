@@ -66,6 +66,14 @@ func _run() -> void:
 		practice_setup.has_method("cycle_slot_roster_entry"),
 		"PracticeSetup deberia permitir cambiar el robot de P1/P2."
 	)
+	_assert(
+		practice_setup.has_method("get_context_card_lines"),
+		"PracticeSetup deberia exponer la tarjeta contextual del modulo."
+	)
+	_assert(
+		practice_setup.has_method("get_player_scope_line"),
+		"PracticeSetup deberia exponer el alcance 1-2P/HUD explicito."
+	)
 	if not (
 		practice_setup.has_method("set_selected_module")
 		and practice_setup.has_method("get_selected_module_id")
@@ -91,6 +99,18 @@ func _run() -> void:
 		not String(practice_setup.call("get_recommended_robot_label")).is_empty(),
 		"PracticeSetup deberia mostrar un robot recomendado legible."
 	)
+	if practice_setup.has_method("get_context_card_lines"):
+		var context_card_lines: Array = practice_setup.call("get_context_card_lines")
+		_assert(not context_card_lines.is_empty(), "PracticeSetup deberia mostrar tarjeta contextual.")
+	if practice_setup.has_method("get_player_scope_line"):
+		_assert(
+			String(practice_setup.call("get_player_scope_line")).contains("1-2"),
+			"PracticeSetup deberia comunicar el alcance 1-2 jugadores."
+		)
+		_assert(
+			String(practice_setup.call("get_player_scope_line")).contains("HUD explicito"),
+			"PracticeSetup deberia comunicar HUD explicito por defecto."
+		)
 	var initial_practice_launch_config = practice_setup.call("build_launch_config")
 	_assert(
 		String(initial_practice_launch_config.local_slots[0].get("roster_entry_id", "")) == "patin",

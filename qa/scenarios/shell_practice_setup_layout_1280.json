@@ -30,6 +30,12 @@
       "inside_viewport": "qa:shell_practice_setup_topics"
     },
     {
+      "inside_viewport": "qa:shell_practice_setup_context_card"
+    },
+    {
+      "inside_viewport": "qa:shell_practice_setup_scope"
+    },
+    {
       "inside_viewport": "qa:shell_practice_setup_slots"
     },
     {
@@ -54,6 +60,18 @@
       "text_contains": {
         "target": "qa:shell_practice_setup_recommended",
         "expected": "Patin"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_practice_setup_scope",
+        "expected": "1-2"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_practice_setup_context_card",
+        "expected": "Arranca"
       }
     },
     {

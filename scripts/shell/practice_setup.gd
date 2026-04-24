@@ -20,6 +20,8 @@ signal start_requested(launch_config: MatchLaunchConfig)
 @onready var summary_value_label: Label = %SummaryValueLabel
 @onready var recommended_value_label: Label = %RecommendedValueLabel
 @onready var related_topics_value_label: Label = %RelatedTopicsValueLabel
+@onready var context_card_value_label: Label = %ContextCardValueLabel
+@onready var player_scope_value_label: Label = %PlayerScopeValueLabel
 @onready var slots_summary_label: Label = %SlotsSummaryLabel
 @onready var slot_buttons: Array[Button] = [%Slot1Button, %Slot2Button]
 @onready var slot_roster_buttons: Array[Button] = [%Slot1RosterButton, %Slot2RosterButton]
@@ -99,6 +101,20 @@ func get_related_topic_labels() -> Array[String]:
 			labels.append(label)
 
 	return labels
+
+
+func get_context_card_lines() -> Array[String]:
+	var context_card: Dictionary = _get_selected_module().get("context_card", {})
+	var lines: Array[String] = []
+	for line in context_card.get("lines", []):
+		var normalized := String(line).strip_edges()
+		if not normalized.is_empty():
+			lines.append(normalized)
+	return lines
+
+
+func get_player_scope_line() -> String:
+	return "1-2 jugadores locales | HUD explicito | sin score competitivo"
 
 
 func focus_back_button() -> void:
@@ -183,6 +199,8 @@ func _apply_module(module_spec: Dictionary) -> void:
 	summary_value_label.text = String(module_spec.get("summary", ""))
 	recommended_value_label.text = get_recommended_robot_label()
 	related_topics_value_label.text = " · ".join(get_related_topic_labels())
+	context_card_value_label.text = "\n".join(get_context_card_lines())
+	player_scope_value_label.text = get_player_scope_line()
 	if not _preserve_existing_roster:
 		_session_draft.set_slot_roster_entry(1, String(module_spec.get("recommended_roster_entry_id", "")))
 	_refresh_slot_summary()
@@ -244,6 +262,8 @@ func _install_qa_ids() -> void:
 	summary_value_label.set_meta("qa_id", "shell_practice_setup_summary")
 	recommended_value_label.set_meta("qa_id", "shell_practice_setup_recommended")
 	related_topics_value_label.set_meta("qa_id", "shell_practice_setup_topics")
+	context_card_value_label.set_meta("qa_id", "shell_practice_setup_context_card")
+	player_scope_value_label.set_meta("qa_id", "shell_practice_setup_scope")
 	slots_summary_label.set_meta("qa_id", "shell_practice_setup_slots")
 	start_button.set_meta("qa_id", "shell_practice_setup_start")
 	back_button.set_meta("qa_id", "shell_practice_setup_back")

@@ -27,6 +27,14 @@ func _run() -> void:
 	_assert(practice_setup.has_method("get_selected_module_id"), "PracticeSetup deberia exponer el modulo activo.")
 	_assert(practice_setup.has_method("get_recommended_robot_label"), "PracticeSetup deberia exponer el robot recomendado.")
 	_assert(practice_setup.has_method("get_related_topic_labels"), "PracticeSetup deberia exponer los temas relacionados.")
+	_assert(
+		practice_setup.get_node_or_null("Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ContextCardValueLabel") != null,
+		"PracticeSetup deberia tener label de tarjeta contextual."
+	)
+	_assert(
+		practice_setup.get_node_or_null("Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/PlayerScopeValueLabel") != null,
+		"PracticeSetup deberia tener label visible para 1-2P/HUD explicito."
+	)
 	_assert(how_to_play.has_method("focus_practice_button"), "How to Play deberia poder devolver el foco al CTA de Practica.")
 	_assert(practice_hud.has_method("set_callout_lines"), "PracticeHud deberia poder mostrar callouts cortos.")
 
