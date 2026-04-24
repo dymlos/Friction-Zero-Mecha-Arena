@@ -15,6 +15,9 @@
   ],
   "assert": [
     {
+      "inside_viewport": "qa:practice_hud_panel"
+    },
+    {
       "inside_viewport": "qa:practice_hud_module"
     },
     {

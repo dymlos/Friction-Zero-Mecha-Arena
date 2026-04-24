@@ -2,6 +2,7 @@ extends Control
 class_name PracticeHud
 
 @onready var module_value_label: Label = %ModuleValueLabel
+@onready var panel: PanelContainer = $Root/Panel
 @onready var objective_value_label: Label = %ObjectiveValueLabel
 @onready var progress_value_label: Label = %ProgressValueLabel
 @onready var context_card_title_label: Label = %ContextCardTitleLabel
@@ -56,6 +57,7 @@ func is_explicit_layout() -> bool:
 
 
 func _install_qa_ids() -> void:
+	panel.set_meta("qa_id", "practice_hud_panel")
 	module_value_label.set_meta("qa_id", "practice_hud_module")
 	objective_value_label.set_meta("qa_id", "practice_hud_objective")
 	progress_value_label.set_meta("qa_id", "practice_hud_progress")
