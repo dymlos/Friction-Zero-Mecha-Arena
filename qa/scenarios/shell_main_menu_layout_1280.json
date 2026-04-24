@@ -27,6 +27,9 @@
       "inside_viewport": "qa:shell_main_menu_how_to_play"
     },
     {
+      "inside_viewport": "qa:shell_main_menu_settings"
+    },
+    {
       "inside_viewport": "qa:shell_main_menu_practice"
     },
     {
@@ -54,6 +57,12 @@
       "text_contains": {
         "target": "qa:shell_main_menu_how_to_play",
         "expected": "How to Play"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_main_menu_settings",
+        "expected": "Settings"
       }
     },
     {

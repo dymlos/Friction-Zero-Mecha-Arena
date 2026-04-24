@@ -1,0 +1,57 @@
+{
+  "name": "shell_settings_layout_1280",
+  "scene": "res://scenes/qa/shell_settings_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "settings"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:shell_settings_title"
+    },
+    {
+      "inside_viewport": "qa:shell_settings_audio"
+    },
+    {
+      "inside_viewport": "qa:shell_settings_video"
+    },
+    {
+      "inside_viewport": "qa:shell_settings_hud"
+    },
+    {
+      "inside_viewport": "qa:shell_settings_controls"
+    },
+    {
+      "inside_viewport": "qa:shell_settings_back"
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_settings_title",
+        "expected": "Settings"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_settings_audio",
+        "expected": "Audio"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_settings_controls",
+        "expected": "Controles"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

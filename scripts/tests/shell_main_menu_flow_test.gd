@@ -43,6 +43,7 @@ func _run() -> void:
 	_assert(game_shell.has_method("open_local_setup"), "GameShell deberia poder abrir el setup local.")
 	_assert(game_shell.has_method("open_characters"), "GameShell deberia poder abrir Characters desde la shell.")
 	_assert(game_shell.has_method("open_how_to_play"), "GameShell deberia poder abrir How to Play desde la shell.")
+	_assert(game_shell.has_method("open_settings"), "GameShell deberia poder abrir Settings desde la shell.")
 	_assert(game_shell.has_method("open_practice_setup"), "GameShell deberia poder abrir Practica desde la shell.")
 	_assert(game_shell.has_method("return_to_main_menu"), "GameShell deberia poder volver al menu principal.")
 	_assert(game_shell.has_method("launch_local_match"), "GameShell deberia poder lanzar un match local.")
@@ -51,6 +52,7 @@ func _run() -> void:
 		and game_shell.has_method("open_local_setup")
 		and game_shell.has_method("open_characters")
 		and game_shell.has_method("open_how_to_play")
+		and game_shell.has_method("open_settings")
 		and game_shell.has_method("open_practice_setup")
 		and game_shell.has_method("return_to_main_menu")
 		and game_shell.has_method("launch_local_match")
@@ -129,6 +131,16 @@ func _run() -> void:
 		String(game_shell.call("get_active_screen_id")) == "main_menu",
 		"`Volver` desde setup deberia regresar al menu principal sin cambiar de escena."
 	)
+
+	game_shell.call("return_to_main_menu")
+	await process_frame
+	await process_frame
+
+	var main_menu: Variant = game_shell.call("get_active_screen")
+	_assert(main_menu != null, "GameShell deberia volver a exponer el menu principal.")
+	if main_menu != null:
+		_assert(main_menu.has_signal("settings_requested"), "El menu principal deberia exponer acceso a Settings.")
+		_assert(main_menu.has_method("focus_settings_button"), "El menu principal deberia poder restaurar foco en Settings.")
 
 	game_shell.call("open_local_setup")
 	await process_frame
