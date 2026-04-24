@@ -4,7 +4,7 @@ class_name MatchConfig
 enum HudDetailMode { EXPLICIT, CONTEXTUAL }
 
 @export_range(2, 8) var max_players := 4
-@export_range(1, 4) var local_player_count := 4
+@export_range(1, 8) var local_player_count := 4
 @export_range(1, 8) var max_local_slots := 8
 @export_range(1, 8) var active_match_slots := 4
 @export var round_time_seconds := 60

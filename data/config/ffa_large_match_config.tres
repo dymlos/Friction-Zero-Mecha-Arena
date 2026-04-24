@@ -1,0 +1,27 @@
+[gd_resource type="Resource" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/match_config.gd" id="1_config"]
+[ext_resource type="PackedScene" path="res://scenes/arenas/arena_ffa_large.tscn" id="2_arena"]
+[ext_resource type="PackedScene" path="res://scenes/robots/robot_base.tscn" id="3_robot"]
+
+[resource]
+script = ExtResource("1_config")
+max_players = 8
+local_player_count = 8
+active_match_slots = 8
+round_time_seconds = 30
+rounds_to_win = 3
+allow_team_mode = false
+progressive_space_reduction = true
+space_reduction_start_ratio = 0.4
+space_reduction_min_scale = 0.5
+hud_detail_mode = 0
+hud_detail_mode_ffa = 0
+hud_detail_mode_teams = 0
+round_intro_duration_ffa = 0.9
+round_intro_duration_teams = 0.6
+void_elimination_round_points = 2
+destruction_elimination_round_points = 1
+unstable_elimination_round_points = 4
+default_arena_scene = ExtResource("2_arena")
+default_robot_scene = ExtResource("3_robot")

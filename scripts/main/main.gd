@@ -548,6 +548,11 @@ func _get_team_opening_rows() -> PackedFloat32Array:
 func _apply_match_mode_bootstrap(robots: Array[RobotBase]) -> void:
 	if match_controller == null:
 		return
+	if match_controller.match_mode == MatchController.MatchMode.TEAMS and robots.size() > 4:
+		for index in range(robots.size()):
+			var robot := robots[index]
+			robot.team_id = 1 if (index + 1) % 2 == 1 else 2
+		return
 	if match_controller.match_mode != MatchController.MatchMode.FFA:
 		return
 

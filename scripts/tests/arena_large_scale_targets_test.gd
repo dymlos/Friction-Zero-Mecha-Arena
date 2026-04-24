@@ -8,14 +8,36 @@ const SCENE_SPECS := [
 		"path": "res://scenes/main/main_teams_large_validation.tscn",
 		"arena_name": "ArenaTeamsLargeValidation",
 		"mode": "teams",
+		"expected_robots": 4,
+		"expected_spawns": 4,
 		"max_spawn_to_crossing_distance": 5.4,
+		"min_edge_pickup_distance": 7.2,
+	},
+	{
+		"path": "res://scenes/main/main_teams_large.tscn",
+		"arena_name": "ArenaTeamsLarge",
+		"mode": "teams",
+		"expected_robots": 8,
+		"expected_spawns": 8,
+		"max_spawn_to_crossing_distance": 6.9,
 		"min_edge_pickup_distance": 7.2,
 	},
 	{
 		"path": "res://scenes/main/main_ffa_large_validation.tscn",
 		"arena_name": "ArenaFFALargeValidation",
 		"mode": "ffa",
+		"expected_robots": 4,
+		"expected_spawns": 4,
 		"max_spawn_to_crossing_distance": 6.2,
+		"min_edge_pickup_distance": 6.8,
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large.tscn",
+		"arena_name": "ArenaFFALarge",
+		"mode": "ffa",
+		"expected_robots": 8,
+		"expected_spawns": 8,
+		"max_spawn_to_crossing_distance": 5.9,
 		"min_edge_pickup_distance": 6.8,
 	},
 ]
@@ -48,23 +70,25 @@ func _assert_large_scale_slice(scene_spec: Dictionary) -> void:
 
 	var arena := main.get_node_or_null("ArenaRoot/%s" % String(scene_spec.arena_name)) as ArenaBase
 	var robots := _get_scene_robots(main)
+	var expected_robots := int(scene_spec.get("expected_robots", 4))
+	var expected_spawns := int(scene_spec.get("expected_spawns", 4))
 	_assert(arena != null, "La escena %s deberia montar su arena dedicada." % String(scene_spec.path))
-	_assert(robots.size() == 4, "La escena %s deberia bootear con cuatro robots." % String(scene_spec.path))
-	if arena == null or robots.size() != 4:
+	_assert(robots.size() == expected_robots, "La escena %s deberia bootear con %s robots." % [String(scene_spec.path), expected_robots])
+	if arena == null or robots.size() != expected_robots:
 		await _cleanup_main(main)
 		return
 
 	var spawn_positions: Array[Vector2] = arena.get_spawn_local_planar_positions()
 	var edge_pickup_positions: Array[Vector2] = arena.get_edge_pickup_local_planar_positions()
 	_assert(
-		spawn_positions.size() == 4,
-		"La escena %s deberia exponer cuatro spawns medibles desde ArenaBase." % String(scene_spec.path)
+		spawn_positions.size() == expected_spawns,
+		"La escena %s deberia exponer %s spawns medibles desde ArenaBase." % [String(scene_spec.path), expected_spawns]
 	)
 	_assert(
 		not edge_pickup_positions.is_empty(),
 		"La escena %s deberia exponer pickups de borde medibles desde ArenaBase." % String(scene_spec.path)
 	)
-	if spawn_positions.size() != 4 or edge_pickup_positions.is_empty():
+	if spawn_positions.size() != expected_spawns or edge_pickup_positions.is_empty():
 		await _cleanup_main(main)
 		return
 
@@ -83,7 +107,8 @@ func _assert_large_scale_slice(scene_spec: Dictionary) -> void:
 
 	if String(scene_spec.mode) == "teams":
 		_assert(_teams_keep_center_relatively_clean(arena), "Teams large deberia conservar un centro relativamente limpio.")
-		_assert(_robots_keep_ally_pairing(robots), "Teams large deberia dejar aliados mas cerca entre si que de los rivales.")
+		if expected_robots == 4:
+			_assert(_robots_keep_ally_pairing(robots), "Teams large deberia dejar aliados mas cerca entre si que de los rivales.")
 	else:
 		_assert(_spawns_cover_four_quadrants(spawn_positions), "FFA large deberia repartir el arranque sobre cuatro cuadrantes.")
 		_assert(_center_remains_faster_than_edge(spawn_positions, edge_pickup_positions), "FFA large no deberia convertir el centro en tiempo muerto respecto del borde.")
@@ -146,7 +171,7 @@ func _spawns_cover_four_quadrants(spawn_positions: Array[Vector2]) -> bool:
 	var quadrants := {}
 	for point in spawn_positions:
 		if absf(point.x) < 0.5 or absf(point.y) < 0.5:
-			return false
+			continue
 		quadrants["%s:%s" % [signi(point.x), signi(point.y)]] = true
 	return quadrants.size() == 4
 

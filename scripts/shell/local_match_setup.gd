@@ -168,9 +168,14 @@ func _refresh_view() -> void:
 
 
 func _resolve_target_scene_path() -> String:
+	var active_slots := _session_draft.build_active_slot_specs(DEFAULT_LOCAL_SLOTS.size()).size()
 	if _session_draft.match_mode == MatchController.MatchMode.FFA:
+		if active_slots > 4:
+			return "res://scenes/main/main_ffa_large.tscn"
 		return "res://scenes/main/main_ffa.tscn"
 
+	if active_slots > 4:
+		return "res://scenes/main/main_teams_large.tscn"
 	return "res://scenes/main/main.tscn"
 
 

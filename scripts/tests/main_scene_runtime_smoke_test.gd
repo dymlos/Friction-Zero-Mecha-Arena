@@ -33,6 +33,16 @@ const SCENE_SPECS := [
 		"requires_distinct_ffa": false,
 	},
 	{
+		"path": "res://scenes/main/main_teams_large.tscn",
+		"arena_name": "ArenaTeamsLarge",
+		"mode": MatchController.MatchMode.TEAMS,
+		"expects_match_config": true,
+		"expected_robot_count": 8,
+		"requires_team_pairs": false,
+		"requires_balanced_large_teams": true,
+		"requires_distinct_ffa": false,
+	},
+	{
 		"path": "res://scenes/main/main_ffa.tscn",
 		"arena_name": "ArenaBlockout",
 		"mode": MatchController.MatchMode.FFA,
@@ -53,6 +63,15 @@ const SCENE_SPECS := [
 		"arena_name": "ArenaFFALargeValidation",
 		"mode": MatchController.MatchMode.FFA,
 		"expects_match_config": true,
+		"requires_team_pairs": false,
+		"requires_distinct_ffa": true,
+	},
+	{
+		"path": "res://scenes/main/main_ffa_large.tscn",
+		"arena_name": "ArenaFFALarge",
+		"mode": MatchController.MatchMode.FFA,
+		"expects_match_config": true,
+		"expected_robot_count": 8,
 		"requires_team_pairs": false,
 		"requires_distinct_ffa": true,
 	},
@@ -95,12 +114,13 @@ func _assert_main_scene_contract(scene_spec: Dictionary) -> void:
 	var arena_name := String(scene_spec.get("arena_name", ""))
 	var arena := main.get_node_or_null("ArenaRoot/%s" % arena_name) as ArenaBase
 	var robots := _get_scene_robots(main)
+	var expected_robot_count := int(scene_spec.get("expected_robot_count", 4))
 
 	_assert(match_controller != null, "La escena %s deberia montar MatchController." % scene_path)
 	_assert(hud != null, "La escena %s deberia montar MatchHud." % scene_path)
 	_assert(arena != null, "La escena %s deberia usar el arena %s." % [scene_path, arena_name])
-	_assert(robots.size() == 4, "La escena %s deberia bootear con cuatro robots del laboratorio." % scene_path)
-	if match_controller == null or hud == null or arena == null or robots.size() != 4:
+	_assert(robots.size() == expected_robot_count, "La escena %s deberia bootear con %s robots." % [scene_path, expected_robot_count])
+	if match_controller == null or hud == null or arena == null or robots.size() != expected_robot_count:
 		await _cleanup_main(main)
 		return
 
@@ -139,6 +159,10 @@ func _assert_main_scene_contract(scene_spec: Dictionary) -> void:
 	var requires_team_pairs := bool(scene_spec.get("requires_team_pairs", false))
 	if requires_team_pairs:
 		_assert(_uses_two_team_pairs(robots), "La escena %s deberia conservar las parejas 2v2 del laboratorio Teams." % scene_path)
+
+	var requires_balanced_large_teams := bool(scene_spec.get("requires_balanced_large_teams", false))
+	if requires_balanced_large_teams:
+		_assert(_uses_balanced_large_teams(robots), "La escena %s deberia asignar P1/P3/P5/P7 vs P2/P4/P6/P8." % scene_path)
 
 	var requires_distinct_ffa := bool(scene_spec.get("requires_distinct_ffa", false))
 	if requires_distinct_ffa:
@@ -189,6 +213,16 @@ func _uses_two_team_pairs(robots: Array[RobotBase]) -> bool:
 		and robots[2].team_id == robots[3].team_id
 		and robots[0].team_id != robots[2].team_id
 	)
+
+
+func _uses_balanced_large_teams(robots: Array[RobotBase]) -> bool:
+	if robots.size() != 8:
+		return false
+	for index in range(robots.size()):
+		var expected_team := 1 if (index + 1) % 2 == 1 else 2
+		if robots[index].team_id != expected_team:
+			return false
+	return true
 
 
 func _all_robots_are_ffa(robots: Array[RobotBase]) -> bool:
