@@ -44,6 +44,24 @@ func _run() -> void:
 	var perf_720 := LocalScaleContract.get_performance_budget("1280x720")
 	_assert(not bool(perf_720.get("primary_reference", true)), "720p debe ser comparacion secundaria.")
 
+	var setup_scene := load("res://scenes/shell/local_match_setup.tscn") as PackedScene
+	_assert(setup_scene != null, "Setup local debe existir.")
+	var setup := setup_scene.instantiate()
+	root.add_child(setup)
+	await process_frame
+	await process_frame
+	_assert(setup.has_method("get_scale_status_line"), "Setup local debe exponer get_scale_status_line().")
+	if setup.has_method("get_scale_status_line"):
+		_assert(String(setup.call("get_scale_status_line")).contains("2-4 pulido"), "Setup default 4P debe comunicar el foco pulido.")
+		for slot in range(5, 9):
+			setup.call("set_slot_active", slot, true)
+			setup.call("set_slot_input_source", slot, "joypad")
+			setup.call("reserve_joypad_for_slot", slot, 40 + slot, true)
+		_assert(String(setup.call("get_scale_status_line")).contains("5-8 validacion"), "Setup 8P debe comunicar validacion.")
+	root.remove_child(setup)
+	setup.free()
+	await process_frame
+
 	_finish()
 
 

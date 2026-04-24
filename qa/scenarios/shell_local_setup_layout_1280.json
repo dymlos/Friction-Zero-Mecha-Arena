@@ -18,6 +18,9 @@
       "inside_viewport": "qa:shell_local_setup_mode"
     },
     {
+      "inside_viewport": "qa:shell_local_setup_scale"
+    },
+    {
       "inside_viewport": "qa:shell_local_setup_slots"
     },
     {
@@ -45,6 +48,18 @@
       "text_contains": {
         "target": "qa:shell_local_setup_mode",
         "expected": "FFA"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_scale",
+        "expected": "2-4 pulido"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_scale",
+        "expected": "FFA 4P"
       }
     },
     {

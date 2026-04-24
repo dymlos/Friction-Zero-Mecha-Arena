@@ -81,6 +81,13 @@ layout_mode = 2
 theme_type_variation = &"ShellButtonSecondary"
 text = "FFA"
 
+[node name="ScaleStatusLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ShellMeta"
+autowrap_mode = 2
+text = "Escala | Teams 4P | 2-4 pulido | objetivo de UX actual"
+
 [node name="SlotsTitleLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"

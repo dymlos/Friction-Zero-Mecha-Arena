@@ -5,6 +5,7 @@ const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const LocalSessionDraft = preload("res://scripts/systems/local_session_draft.gd")
+const LocalScaleContract = preload("res://scripts/systems/local_scale_contract.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
@@ -19,6 +20,7 @@ const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4, 5, 6, 7, 8]
 
 @onready var backdrop: ColorRect = $Backdrop
 @onready var mode_value_label: Label = %ModeValueLabel
+@onready var scale_status_label: Label = %ScaleStatusLabel
 @onready var slot_summary_label: Label = %SlotSummaryLabel
 @onready var teams_button: Button = %TeamsButton
 @onready var ffa_button: Button = %FFAButton
@@ -154,11 +156,19 @@ func get_slot_summary_lines() -> Array[String]:
 	return _session_draft.get_slot_summary_lines(DEFAULT_LOCAL_SLOTS.size())
 
 
+func get_scale_status_line() -> String:
+	return LocalScaleContract.get_setup_status_line(
+		_session_draft.build_active_slot_specs(DEFAULT_LOCAL_SLOTS.size()).size(),
+		_session_draft.match_mode
+	)
+
+
 func _refresh_view() -> void:
 	mode_value_label.text = "FFA" if _session_draft.match_mode == MatchController.MatchMode.FFA else "Equipos"
 	teams_button.disabled = _session_draft.match_mode == MatchController.MatchMode.TEAMS
 	ffa_button.disabled = _session_draft.match_mode == MatchController.MatchMode.FFA
 	var slot_lines := get_slot_summary_lines()
+	scale_status_label.text = get_scale_status_line()
 	slot_summary_label.text = "\n".join(slot_lines)
 	for index in range(slot_buttons.size()):
 		var player_slot := index + 1
@@ -234,6 +244,7 @@ func focus_practice_button() -> void:
 
 func _install_qa_ids() -> void:
 	mode_value_label.set_meta("qa_id", "shell_local_setup_mode")
+	scale_status_label.set_meta("qa_id", "shell_local_setup_scale")
 	slot_summary_label.set_meta("qa_id", "shell_local_setup_slots")
 	teams_button.set_meta("qa_id", "shell_local_setup_teams")
 	ffa_button.set_meta("qa_id", "shell_local_setup_ffa")
