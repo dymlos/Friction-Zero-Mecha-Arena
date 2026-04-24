@@ -77,6 +77,22 @@ func _run() -> void:
 	_assert(range_labels.has("Grua"), "El filtro Rango / zona deberia incluir Grua por comunicacion tactica.")
 	_assert(not range_labels.has("Ariete"), "El filtro Rango / zona deberia ocultar Ariete.")
 
+	characters_screen.call("set_filter", "teaching_focus")
+	await process_frame
+	var focus_labels: Array = characters_screen.call("get_visible_character_labels")
+	_assert(
+		focus_labels == ["Ariete", "Patin", "Cizalla"],
+		"El filtro Foco inicial deberia mostrar Ariete, Patin y Cizalla en orden ensenable."
+	)
+	characters_screen.call("select_character_by_id", "cizalla")
+	await process_frame
+	var cizalla_detail := String(characters_screen.call("get_detail_text"))
+	_assert(cizalla_detail.contains("Corte"), "Seleccionar Cizalla deberia mostrar Corte como skill principal.")
+	_assert(cizalla_detail.contains("Skill/carga"), "Characters deberia mostrar el boton de skill/carga.")
+	_assert(cizalla_detail.contains("Choque"), "Characters deberia mostrar el boton de choque/ataque.")
+	_assert(cizalla_detail.contains("Energia"), "Characters deberia mostrar los botones de energia.")
+	_assert(cizalla_detail.contains("Overdrive"), "Characters deberia mostrar el boton de Overdrive.")
+
 	characters_screen.call("focus_back_button")
 	await process_frame
 	characters_screen.call("go_back")

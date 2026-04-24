@@ -27,12 +27,21 @@
       "inside_viewport": "qa:shell_characters_name"
     },
     {
+      "inside_viewport": "qa:shell_characters_buttons"
+    },
+    {
       "inside_viewport": "qa:shell_characters_back"
     },
     {
       "text_contains": {
         "target": "qa:shell_characters_title",
         "expected": "Characters"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_characters_buttons",
+        "expected": "Skill/carga"
       }
     },
     {

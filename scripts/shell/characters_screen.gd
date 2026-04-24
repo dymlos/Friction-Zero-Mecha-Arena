@@ -12,6 +12,7 @@ const SURFACE_SCOPE_PAUSE := "pause"
 @onready var backdrop: ColorRect = $Backdrop
 @onready var title_label: Label = %TitleLabel
 @onready var subtitle_label: Label = %SubtitleLabel
+@onready var teaching_focus_filter_button: Button = %TeachingFocusFilterButton
 @onready var all_filter_button: Button = %AllFilterButton
 @onready var impact_filter_button: Button = %ImpactFilterButton
 @onready var range_zone_filter_button: Button = %RangeZoneFilterButton
@@ -25,6 +26,7 @@ const SURFACE_SCOPE_PAUSE := "pause"
 @onready var strength_value_label: Label = %StrengthValueLabel
 @onready var risk_value_label: Label = %RiskValueLabel
 @onready var signature_value_label: Label = %SignatureValueLabel
+@onready var buttons_value_label: Label = %ButtonsValueLabel
 @onready var body_read_value_label: Label = %BodyReadValueLabel
 @onready var easy_value_label: Label = %EasyValueLabel
 @onready var hard_value_label: Label = %HardValueLabel
@@ -37,6 +39,7 @@ var _active_filter := "all"
 var _surface_scope := SURFACE_SCOPE_GLOBAL
 
 const FILTER_ALL := "all"
+const FILTER_TEACHING_FOCUS := "teaching_focus"
 const FILTER_IMPACT := "impact"
 const FILTER_RANGE_ZONE := "range_zone"
 const IMPACT_ENTRY_IDS := ["ariete", "cizalla", "patin"]
@@ -49,11 +52,15 @@ func _ready() -> void:
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_label.text = "Characters"
 	subtitle_label.text = "Roster competitivo visible. Identidad por robot, sin mezclar reglas generales del match."
+	teaching_focus_filter_button.text = "Foco inicial"
 	all_filter_button.text = "Todos"
 	impact_filter_button.text = "Impacto"
 	range_zone_filter_button.text = "Rango / zona"
 	back_button.text = "Volver"
 	back_button.pressed.connect(go_back)
+	teaching_focus_filter_button.pressed.connect(func() -> void:
+		set_filter(FILTER_TEACHING_FOCUS)
+	)
 	all_filter_button.pressed.connect(func() -> void:
 		set_filter(FILTER_ALL)
 	)
@@ -103,6 +110,7 @@ func get_detail_text() -> String:
 		strength_value_label.text,
 		risk_value_label.text,
 		signature_value_label.text,
+		buttons_value_label.text,
 		body_read_value_label.text,
 		easy_value_label.text,
 		hard_value_label.text,
@@ -112,7 +120,7 @@ func get_detail_text() -> String:
 
 func set_filter(filter_id: String) -> void:
 	var previous_id := _get_selected_entry_id()
-	if not [FILTER_ALL, FILTER_IMPACT, FILTER_RANGE_ZONE].has(filter_id):
+	if not [FILTER_ALL, FILTER_TEACHING_FOCUS, FILTER_IMPACT, FILTER_RANGE_ZONE].has(filter_id):
 		filter_id = FILTER_ALL
 
 	_active_filter = filter_id
@@ -164,7 +172,8 @@ func _apply_entry(entry: Dictionary) -> void:
 	fantasy_value_label.text = String(entry.get("fantasy", ""))
 	strength_value_label.text = String(entry.get("strength", ""))
 	risk_value_label.text = String(entry.get("risk", ""))
-	signature_value_label.text = String(entry.get("signature", ""))
+	signature_value_label.text = String(entry.get("primary_skill", entry.get("signature", "")))
+	buttons_value_label.text = String(entry.get("button_reference", ""))
 	body_read_value_label.text = String(entry.get("body_read", ""))
 	easy_value_label.text = String(entry.get("easy", ""))
 	hard_value_label.text = String(entry.get("hard", ""))
@@ -193,6 +202,9 @@ func _apply_surface_scope() -> void:
 
 func _filter_roster(roster: Array) -> Array:
 	var entries: Array = []
+	if _active_filter == FILTER_TEACHING_FOCUS:
+		return RosterCatalog.get_teaching_focus_roster()
+
 	for entry in roster:
 		var entry_id := String(entry.get("id", ""))
 		if _active_filter == FILTER_ALL:
@@ -224,12 +236,14 @@ func _get_selected_entry_id() -> String:
 
 func _install_qa_ids() -> void:
 	title_label.set_meta("qa_id", "shell_characters_title")
+	teaching_focus_filter_button.set_meta("qa_id", "shell_characters_filter_teaching_focus")
 	all_filter_button.set_meta("qa_id", "shell_characters_filter_all")
 	impact_filter_button.set_meta("qa_id", "shell_characters_filter_impact")
 	range_zone_filter_button.set_meta("qa_id", "shell_characters_filter_range_zone")
 	character_list.set_meta("qa_id", "shell_characters_list")
 	name_label.set_meta("qa_id", "shell_characters_name")
 	signature_value_label.set_meta("qa_id", "shell_characters_signature")
+	buttons_value_label.set_meta("qa_id", "shell_characters_buttons")
 	ffa_mode_value_label.set_meta("qa_id", "shell_characters_mode_ffa")
 	teams_mode_value_label.set_meta("qa_id", "shell_characters_mode_teams")
 	back_button.set_meta("qa_id", "shell_characters_back")

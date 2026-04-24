@@ -6,5 +6,5 @@ extends Node
 func _ready() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
-	characters_screen.set_filter("range_zone")
-	characters_screen.select_character_by_id("ancla")
+	characters_screen.set_filter("teaching_focus")
+	characters_screen.select_character_by_id("cizalla")

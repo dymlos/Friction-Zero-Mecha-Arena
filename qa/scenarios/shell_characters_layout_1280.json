@@ -21,6 +21,9 @@
       "inside_viewport": "qa:shell_characters_list"
     },
     {
+      "inside_viewport": "qa:shell_characters_filter_teaching_focus"
+    },
+    {
       "inside_viewport": "qa:shell_characters_filter_range_zone"
     },
     {
@@ -31,6 +34,9 @@
     },
     {
       "inside_viewport": "qa:shell_characters_mode_teams"
+    },
+    {
+      "inside_viewport": "qa:shell_characters_buttons"
     },
     {
       "inside_viewport": "qa:shell_characters_back"
@@ -44,13 +50,19 @@
     {
       "text_contains": {
         "target": "qa:shell_characters_name",
-        "expected": "Ancla"
+        "expected": "Cizalla"
       }
     },
     {
       "text_contains": {
         "target": "qa:shell_characters_signature",
-        "expected": "Baliza"
+        "expected": "Corte"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_characters_buttons",
+        "expected": "Skill/carga"
       }
     },
     {

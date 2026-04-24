@@ -52,6 +52,10 @@ func _run() -> void:
 		"Characters deberia exponer scope global/pausa."
 	)
 	_assert(
+		characters_screen.has_method("set_filter"),
+		"Characters debe poder mostrar el foco inicial M4."
+	)
+	_assert(
 		String(characters_screen.call("get_selected_character_label")) == "Ariete",
 		"Characters deberia arrancar mostrando a Ariete primero."
 	)
@@ -61,6 +65,16 @@ func _run() -> void:
 			visible_labels.size() == 6 and visible_labels.has("Aguja") and visible_labels.has("Ancla"),
 			"Characters deberia arrancar con las seis fichas competitivas visibles."
 		)
+
+	if characters_screen.has_method("set_filter") and characters_screen.has_method("get_visible_character_labels"):
+		characters_screen.call("set_filter", "teaching_focus")
+		await process_frame
+		_assert(
+			characters_screen.call("get_visible_character_labels") == ["Ariete", "Patin", "Cizalla"],
+			"El filtro Foco inicial debe mostrar los tres arquetipos mas ensenables."
+		)
+		characters_screen.call("set_filter", "all")
+		await process_frame
 
 	var focus_owner := root.get_viewport().gui_get_focus_owner()
 	_assert(
