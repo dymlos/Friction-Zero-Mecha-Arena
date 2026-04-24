@@ -11,12 +11,17 @@ const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.g
 const LocalSessionDraft = preload("res://scripts/systems/local_session_draft.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
+const STICK_NAV_DEADZONE := 0.55
+const STICK_NAV_FIRST_REPEAT_SECONDS := 0.28
+const STICK_NAV_HELD_REPEAT_SECONDS := 0.16
 
 @onready var screen_root: Control = %ScreenRoot
 
 var _active_screen: Control = null
 var _active_screen_id := ""
 var _help_label: Label = null
+var _stick_nav_direction := Vector2i.ZERO
+var _stick_nav_cooldown := 0.0
 var _characters_return_screen_id := "main_menu"
 var _how_to_play_return_screen_id := "main_menu"
 var _practice_return_screen_id := "main_menu"
@@ -30,6 +35,10 @@ func _ready() -> void:
 	_create_help_label()
 	_set_shell_music_state()
 	open_main_menu()
+
+
+func _process(delta: float) -> void:
+	_update_stick_navigation(delta)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -359,3 +368,63 @@ func _refresh_help_label() -> void:
 
 	var start_enabled := is_instance_valid(_active_screen) and _active_screen.has_method("request_start_from_shortcut")
 	_help_label.text = InputPromptCatalog.get_menu_navigation_help_line(start_enabled, true)
+
+
+func _update_stick_navigation(delta: float) -> void:
+	var next_direction := _get_left_stick_navigation_direction()
+	if next_direction == Vector2i.ZERO:
+		_stick_nav_direction = Vector2i.ZERO
+		_stick_nav_cooldown = 0.0
+		return
+
+	_stick_nav_cooldown = maxf(_stick_nav_cooldown - delta, 0.0)
+	if next_direction == _stick_nav_direction and _stick_nav_cooldown > 0.0:
+		return
+
+	_dispatch_navigation_action(next_direction)
+	if next_direction != _stick_nav_direction:
+		_stick_nav_cooldown = STICK_NAV_FIRST_REPEAT_SECONDS
+	else:
+		_stick_nav_cooldown = STICK_NAV_HELD_REPEAT_SECONDS
+	_stick_nav_direction = next_direction
+
+
+func _get_left_stick_navigation_direction() -> Vector2i:
+	var strongest_vector := Vector2.ZERO
+	for device_id in Input.get_connected_joypads():
+		var raw_vector := Vector2(
+			Input.get_joy_axis(int(device_id), JOY_AXIS_LEFT_X),
+			Input.get_joy_axis(int(device_id), JOY_AXIS_LEFT_Y)
+		)
+		if raw_vector.length_squared() > strongest_vector.length_squared():
+			strongest_vector = raw_vector
+
+	if strongest_vector.length() < STICK_NAV_DEADZONE:
+		return Vector2i.ZERO
+	if absf(strongest_vector.y) >= absf(strongest_vector.x):
+		return Vector2i(0, 1 if strongest_vector.y > 0.0 else -1)
+	return Vector2i(1 if strongest_vector.x > 0.0 else -1, 0)
+
+
+func _dispatch_navigation_action(direction: Vector2i) -> void:
+	var action_name := ""
+	if direction.y < 0:
+		action_name = "ui_up"
+	elif direction.y > 0:
+		action_name = "ui_down"
+	elif direction.x < 0:
+		action_name = "ui_left"
+	elif direction.x > 0:
+		action_name = "ui_right"
+	if action_name == "":
+		return
+
+	var press_event := InputEventAction.new()
+	press_event.action = StringName(action_name)
+	press_event.pressed = true
+	Input.parse_input_event(press_event)
+
+	var release_event := InputEventAction.new()
+	release_event.action = StringName(action_name)
+	release_event.pressed = false
+	Input.parse_input_event(release_event)

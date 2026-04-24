@@ -41,6 +41,8 @@ func _run() -> void:
 	_assert(_action_has_joy_button("ui_cancel", JOY_BUTTON_B, -1), "ui_cancel debe aceptar B de cualquier joystick en la shell.")
 	_assert(_action_has_joy_button(InputPromptCatalog.MENU_START_ACTION, JOY_BUTTON_START, -1), "Start debe quedar mapeado como accion de inicio de menu.")
 	_assert(_action_has_joy_button(InputPromptCatalog.MENU_PAUSE_ACTION, JOY_BUTTON_BACK, -1), "Select debe quedar mapeado como accion de pausa de menu.")
+	_assert(not _action_has_joy_motion("ui_up"), "El stick izquierdo no debe quedar mapeado directo a ui_up; la shell lo discretiza.")
+	_assert(not _action_has_joy_motion("ui_down"), "El stick izquierdo no debe quedar mapeado directo a ui_down; la shell lo discretiza.")
 
 	var robot := RobotBase.new()
 	robot.is_player_controlled = true
@@ -70,6 +72,16 @@ func _action_has_joy_button(action_name: String, button_index: int, device_id: i
 		if not (event is InputEventJoypadButton):
 			continue
 		if int(event.button_index) == button_index and int(event.device) == device_id:
+			return true
+	return false
+
+
+func _action_has_joy_motion(action_name: String) -> bool:
+	if not InputMap.has_action(StringName(action_name)):
+		return false
+
+	for event in InputMap.action_get_events(StringName(action_name)):
+		if event is InputEventJoypadMotion:
 			return true
 	return false
 

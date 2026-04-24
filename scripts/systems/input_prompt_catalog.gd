@@ -171,10 +171,10 @@ static func ensure_menu_input_actions() -> void:
 	_add_joy_button_event(MENU_START_ACTION, JOY_BUTTON_START)
 	_add_joy_button_event(MENU_PAUSE_ACTION, JOY_BUTTON_BACK)
 
-	_add_joy_motion_event("ui_up", JOY_AXIS_LEFT_Y, -1.0)
-	_add_joy_motion_event("ui_down", JOY_AXIS_LEFT_Y, 1.0)
-	_add_joy_motion_event("ui_left", JOY_AXIS_LEFT_X, -1.0)
-	_add_joy_motion_event("ui_right", JOY_AXIS_LEFT_X, 1.0)
+	_remove_joy_motion_events("ui_up")
+	_remove_joy_motion_events("ui_down")
+	_remove_joy_motion_events("ui_left")
+	_remove_joy_motion_events("ui_right")
 
 
 static func get_menu_navigation_help_line(include_start: bool = false, include_pause: bool = false) -> String:
@@ -243,6 +243,13 @@ static func _add_joy_motion_event(action_name: String, axis: int, axis_value: fl
 	input_event.axis = axis
 	input_event.axis_value = axis_value
 	InputMap.action_add_event(action, input_event)
+
+
+static func _remove_joy_motion_events(action_name: String) -> void:
+	var action := StringName(action_name)
+	for event in InputMap.action_get_events(action):
+		if event is InputEventJoypadMotion:
+			InputMap.action_erase_event(action, event)
 
 
 static func _has_joy_button_event(action: StringName, button_index: int) -> bool:

@@ -17,6 +17,14 @@ func _run() -> void:
 	await process_frame
 
 	var help_label := game_shell.get_node_or_null("GamepadHelpLabel") as Label
+	var main_menu: Control = game_shell.call("get_active_screen")
+	var subtitle_label: Label = null
+	if main_menu != null:
+		subtitle_label = main_menu.get_node_or_null("CenterPanel/Margin/VBox/SubtitleLabel") as Label
+	_assert(
+		subtitle_label != null and not subtitle_label.visible,
+		"El menu principal no deberia mostrar un subtitulo ambiguo sobre las opciones."
+	)
 	_assert(help_label != null, "La shell deberia mostrar ayuda de joystick persistente.")
 	if help_label != null:
 		var help_text := help_label.text
