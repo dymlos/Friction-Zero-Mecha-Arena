@@ -25,6 +25,9 @@ const FfaAftermathRules = preload("res://scripts/systems/ffa_aftermath_rules.gd"
 const FfaAftermathPickup = preload("res://scripts/pickups/ffa_aftermath_pickup.gd")
 const PILOT_SUPPORT_SHIP_SCENE = preload("res://scenes/support/pilot_support_ship.tscn")
 const FFA_AFTERMATH_PICKUP_SCENE = preload("res://scenes/pickups/ffa_aftermath_pickup.tscn")
+const SETTINGS_SCREEN_SCENE = preload("res://scenes/shell/settings_screen.tscn")
+const HOW_TO_PLAY_SCREEN_SCENE = preload("res://scenes/shell/how_to_play_screen.tscn")
+const CHARACTERS_SCREEN_SCENE = preload("res://scenes/shell/characters_screen.tscn")
 const ARIETE_ARCHETYPE = preload("res://data/config/robots/ariete_archetype.tres")
 const GRUA_ARCHETYPE = preload("res://data/config/robots/grua_archetype.tres")
 const CIZALLA_ARCHETYPE = preload("res://data/config/robots/cizalla_archetype.tres")
@@ -108,6 +111,8 @@ var _round_close_audio_fired := false
 var _final_pressure_warning_audio_fired := false
 var _aftermath_root: Node3D = null
 var _ffa_aftermath_pickups: Array[FfaAftermathPickup] = []
+var _active_pause_surface: Control = null
+var _active_pause_surface_id := ""
 var _ffa_aftermath_spawned_robot_ids := {}
 
 
@@ -266,6 +271,8 @@ func activate_pause_menu_selection_for_slot(player_slot: int) -> String:
 			_step_pause_audio_volume("music")
 		"audio_sfx":
 			_step_pause_audio_volume("sfx")
+		"settings", "how_to_play", "characters":
+			_open_pause_surface(action)
 		"confirm_return_to_menu":
 			_sync_pause_state()
 		"return_to_menu":
@@ -276,6 +283,16 @@ func activate_pause_menu_selection_for_slot(player_slot: int) -> String:
 
 func get_pause_overlay_lines() -> Array[String]:
 	return _build_pause_overlay_lines()
+
+
+func get_active_pause_surface_id() -> String:
+	return _active_pause_surface_id
+
+
+func close_active_pause_surface_for_slot(player_slot: int) -> bool:
+	if not _pause_controller.is_paused() or player_slot != _pause_controller.get_pause_owner_slot():
+		return false
+	return _close_active_pause_surface()
 
 
 func cycle_lab_selector_slot() -> void:
@@ -1150,6 +1167,10 @@ func _try_handle_pause_input(event: InputEvent) -> bool:
 			continue
 
 		if _pause_controller.is_paused():
+			if _active_pause_surface != null:
+				if player_slot == _pause_controller.get_pause_owner_slot():
+					return _close_active_pause_surface()
+				return true
 			if _pause_controller.cancel_return_to_menu_confirmation(player_slot):
 				_sync_pause_state()
 				return true
@@ -1161,6 +1182,10 @@ func _try_handle_pause_input(event: InputEvent) -> bool:
 
 	var owner_slot := _pause_controller.get_pause_owner_slot()
 	if owner_slot <= 0:
+		return false
+	if _active_pause_surface != null:
+		if event.is_action_pressed(StringName("p%s_attack" % owner_slot)):
+			return _close_active_pause_surface()
 		return false
 
 	if event.is_action_pressed(StringName("p%s_move_forward" % owner_slot)):
@@ -1175,6 +1200,8 @@ func _try_handle_pause_input(event: InputEvent) -> bool:
 
 func _sync_pause_state() -> void:
 	var paused_state := _pause_controller.is_paused()
+	if not paused_state:
+		_close_active_pause_surface(false)
 	get_tree().paused = paused_state
 	match_controller.set_pause_state(paused_state, _pause_controller.get_pause_owner_slot())
 	ui.show_status(_build_hud_toggle_status())
@@ -1255,6 +1282,64 @@ func _return_to_shell_from_pause() -> bool:
 	_sync_pause_state()
 	get_tree().change_scene_to_file("res://scenes/shell/game_shell.tscn")
 	return true
+
+
+func _open_pause_surface(surface_id: String) -> bool:
+	if not _pause_controller.is_paused() or ui == null:
+		return false
+	var surface_scene: PackedScene = null
+	match surface_id:
+		"settings":
+			surface_scene = SETTINGS_SCREEN_SCENE
+		"how_to_play":
+			surface_scene = HOW_TO_PLAY_SCREEN_SCENE
+		"characters":
+			surface_scene = CHARACTERS_SCREEN_SCENE
+		_:
+			return false
+
+	_close_active_pause_surface(false)
+	var surface := surface_scene.instantiate() as Control
+	if surface == null:
+		return false
+	if surface.has_method("set_surface_scope"):
+		surface.call("set_surface_scope", "pause")
+	_set_process_mode_when_paused(surface)
+	var surface_root := ui.get_pause_surface_root()
+	surface_root.add_child(surface)
+	if surface.has_signal("back_requested"):
+		surface.connect("back_requested", Callable(self, "_close_active_pause_surface"))
+	_active_pause_surface = surface
+	_active_pause_surface_id = surface_id
+	ui.set_pause_surface_visible(true)
+	_refresh_hud()
+	return true
+
+
+func _close_active_pause_surface(refresh_hud: bool = true) -> bool:
+	if _active_pause_surface == null and _active_pause_surface_id == "":
+		if ui != null:
+			ui.set_pause_surface_visible(false)
+		return false
+	var surface := _active_pause_surface
+	_active_pause_surface = null
+	_active_pause_surface_id = ""
+	if ui != null:
+		if surface != null and is_instance_valid(surface):
+			var parent := surface.get_parent()
+			if parent != null:
+				parent.remove_child(surface)
+			surface.queue_free()
+		ui.set_pause_surface_visible(false)
+	if refresh_hud:
+		_refresh_hud()
+	return true
+
+
+func _set_process_mode_when_paused(node: Node) -> void:
+	node.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	for child in node.get_children():
+		_set_process_mode_when_paused(child)
 
 
 func _connect_joypad_session_monitor() -> void:

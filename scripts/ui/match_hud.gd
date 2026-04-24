@@ -17,6 +17,7 @@ class_name MatchHud
 @onready var pause_panel: Control = %PausePanel
 @onready var pause_title_label: Label = %PauseTitleLabel
 @onready var pause_label: Label = %PauseLabel
+@onready var pause_surface_root: Control = %PauseSurfaceRoot
 
 
 func _ready() -> void:
@@ -85,7 +86,7 @@ func show_post_match_review(story_lines: Array[String], snippet_lines: Array[Str
 
 func show_pause_overlay(title: String, lines: Array[String]) -> void:
 	var should_show := title != "" and not lines.is_empty()
-	pause_panel.visible = should_show
+	pause_panel.visible = should_show and not pause_surface_root.visible
 	if not should_show:
 		pause_title_label.text = ""
 		pause_label.text = ""
@@ -97,11 +98,34 @@ func show_pause_overlay(title: String, lines: Array[String]) -> void:
 	_sync_primary_stack_visibility()
 
 
+func get_pause_surface_root() -> Control:
+	return pause_surface_root
+
+
+func set_pause_surface_visible(is_visible: bool) -> void:
+	pause_surface_root.visible = is_visible
+	if is_visible:
+		pause_panel.visible = false
+	_sync_primary_stack_visibility()
+
+
+func clear_pause_surface() -> void:
+	for child in pause_surface_root.get_children():
+		pause_surface_root.remove_child(child)
+		child.queue_free()
+	set_pause_surface_visible(false)
+
+
 func _sync_primary_stack_visibility() -> void:
 	if top_left_stack == null:
 		return
 
-	top_left_stack.visible = not (recap_panel.visible or match_result_panel.visible or pause_panel.visible)
+	top_left_stack.visible = not (
+		recap_panel.visible
+		or match_result_panel.visible
+		or pause_panel.visible
+		or pause_surface_root.visible
+	)
 
 
 func _install_qa_ids() -> void:
@@ -120,3 +144,4 @@ func _install_qa_ids() -> void:
 	pause_panel.set_meta("qa_id", "match_hud_pause_panel")
 	pause_title_label.set_meta("qa_id", "match_hud_pause_title")
 	pause_label.set_meta("qa_id", "match_hud_pause_label")
+	pause_surface_root.set_meta("qa_id", "match_hud_pause_surface_root")
