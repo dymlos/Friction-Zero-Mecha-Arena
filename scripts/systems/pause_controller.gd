@@ -3,7 +3,17 @@ class_name PauseController
 
 const LocalSession = preload("res://scripts/systems/local_session.gd")
 
-enum PauseAction { RESUME, RESTART, RETURN_TO_MENU }
+enum PauseAction { RESUME, RESTART, TOGGLE_HUD, AUDIO_MASTER, AUDIO_MUSIC, AUDIO_SFX, RETURN_TO_MENU }
+
+const ACTION_IDS := {
+	PauseAction.RESUME: "resume",
+	PauseAction.RESTART: "restart",
+	PauseAction.TOGGLE_HUD: "toggle_hud",
+	PauseAction.AUDIO_MASTER: "audio_master",
+	PauseAction.AUDIO_MUSIC: "audio_music",
+	PauseAction.AUDIO_SFX: "audio_sfx",
+	PauseAction.RETURN_TO_MENU: "return_to_menu",
+}
 
 var _paused := false
 var _pause_owner_slot := 0
@@ -74,6 +84,16 @@ func move_selection(slot: int, direction: int) -> bool:
 	return true
 
 
+func select_action(slot: int, action_id: String) -> bool:
+	if not _paused or slot != _pause_owner_slot or _confirm_return_to_menu:
+		return false
+	for action in _get_available_actions():
+		if String(ACTION_IDS.get(action, "")) == action_id:
+			_selected_action = action
+			return true
+	return false
+
+
 func activate_selected_action(slot: int) -> String:
 	if not _paused or slot != _pause_owner_slot:
 		return ""
@@ -83,6 +103,14 @@ func activate_selected_action(slot: int) -> String:
 			return "resume"
 		PauseAction.RESTART:
 			return "restart"
+		PauseAction.TOGGLE_HUD:
+			return "toggle_hud"
+		PauseAction.AUDIO_MASTER:
+			return "audio_master"
+		PauseAction.AUDIO_MUSIC:
+			return "audio_music"
+		PauseAction.AUDIO_SFX:
+			return "audio_sfx"
 		PauseAction.RETURN_TO_MENU:
 			if _confirm_return_to_menu:
 				return "return_to_menu"
@@ -109,6 +137,10 @@ func get_action_labels() -> Array[String]:
 	return lines
 
 
+func get_selected_action_id() -> String:
+	return String(ACTION_IDS.get(_selected_action, ""))
+
+
 func reset() -> void:
 	_paused = false
 	_pause_owner_slot = 0
@@ -124,6 +156,10 @@ func _get_available_actions() -> Array[int]:
 	]
 	if _allow_return_to_menu:
 		actions.append(PauseAction.RETURN_TO_MENU)
+	actions.append(PauseAction.TOGGLE_HUD)
+	actions.append(PauseAction.AUDIO_MASTER)
+	actions.append(PauseAction.AUDIO_MUSIC)
+	actions.append(PauseAction.AUDIO_SFX)
 
 	return actions
 
@@ -134,6 +170,14 @@ func _get_action_label(action: int) -> String:
 			return "Reanudar"
 		PauseAction.RESTART:
 			return "Reiniciar"
+		PauseAction.TOGGLE_HUD:
+			return "HUD"
+		PauseAction.AUDIO_MASTER:
+			return "Master"
+		PauseAction.AUDIO_MUSIC:
+			return "Musica"
+		PauseAction.AUDIO_SFX:
+			return "SFX"
 		PauseAction.RETURN_TO_MENU:
 			return "Volver al menu"
 
