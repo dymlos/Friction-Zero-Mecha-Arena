@@ -104,12 +104,22 @@ func _assert_large_scale_slice(scene_spec: Dictionary) -> void:
 		_get_shortest_center_distance(edge_pickup_positions) >= float(scene_spec.min_edge_pickup_distance),
 		"La escena %s deberia seguir tentando hacia el borde con pickups realmente periféricos." % String(scene_spec.path)
 	)
+	var zones := arena.get_map_zone_local_planar_positions()
+	_assert(zones.has("center_transition"), "La escena %s debe exponer centro de transicion medible." % String(scene_spec.path))
 
 	if String(scene_spec.mode) == "teams":
+		_assert(
+			zones.has("west_rescue_route") and zones.has("east_rescue_route"),
+			"Teams large debe exponer rutas laterales de rescate."
+		)
 		_assert(_teams_keep_center_relatively_clean(arena), "Teams large deberia conservar un centro relativamente limpio.")
 		if expected_robots == 4:
 			_assert(_robots_keep_ally_pairing(robots), "Teams large deberia dejar aliados mas cerca entre si que de los rivales.")
 	else:
+		_assert(
+			zones.has("west_third_party_entry") and zones.has("east_third_party_entry"),
+			"FFA large debe exponer entradas third-party."
+		)
 		_assert(_spawns_cover_four_quadrants(spawn_positions), "FFA large deberia repartir el arranque sobre cuatro cuadrantes.")
 		_assert(_center_remains_faster_than_edge(spawn_positions, edge_pickup_positions), "FFA large no deberia convertir el centro en tiempo muerto respecto del borde.")
 

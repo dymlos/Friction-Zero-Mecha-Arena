@@ -152,6 +152,26 @@ func get_edge_pickup_local_planar_positions() -> Array[Vector2]:
 	return positions
 
 
+func get_map_zone_local_planar_positions() -> Dictionary:
+	var zones := {}
+	var zone_root := get_node_or_null("MapZones")
+	if zone_root == null:
+		return zones
+	for child in zone_root.get_children():
+		if not (child is Node3D):
+			continue
+		var zone_id := String(child.name).to_snake_case()
+		if child.has_meta("zone_id"):
+			zone_id = String(child.get_meta("zone_id"))
+		zones[zone_id] = _to_local_planar_position((child as Node3D).global_position)
+	return zones
+
+
+func get_map_zone_local_planar_position(zone_id: String) -> Vector2:
+	var zones := get_map_zone_local_planar_positions()
+	return zones.get(zone_id, Vector2.INF) as Vector2
+
+
 func set_play_area_scale(scale_ratio: float) -> void:
 	var clamped_ratio := clampf(scale_ratio, 0.35, 1.0)
 	set_current_play_area_size(safe_play_area_size * clamped_ratio)

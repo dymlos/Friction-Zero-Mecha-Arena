@@ -11,6 +11,28 @@ pressure_band_thickness = 1.2
 pressure_band_inset = 0.6
 pressure_band_length_ratio = 0.74
 
+[node name="MapZones" type="Node3D" parent="."]
+
+[node name="CenterTransition" type="Marker3D" parent="MapZones"]
+metadata/zone_id = "center_transition"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+
+[node name="WestRescueRoute" type="Marker3D" parent="MapZones"]
+metadata/zone_id = "west_rescue_route"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.0, 0.8, -1.2)
+
+[node name="EastRescueRoute" type="Marker3D" parent="MapZones"]
+metadata/zone_id = "east_rescue_route"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.0, 0.8, 1.2)
+
+[node name="NorthEdgeValue" type="Marker3D" parent="MapZones"]
+metadata/zone_id = "north_edge_value"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 0.8, -7.3)
+
+[node name="SouthEdgeValue" type="Marker3D" parent="MapZones"]
+metadata/zone_id = "south_edge_value"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3, 0.8, 7.3)
+
 [node name="SpawnPlayer1" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.6, 0.8, -2.1)
 
