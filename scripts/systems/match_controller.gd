@@ -538,7 +538,6 @@ func get_match_result_lines() -> Array[String]:
 	if restart_prompt_line != "":
 		lines.append(restart_prompt_line)
 
-	_trim_match_result_noise(lines)
 	return lines
 
 
