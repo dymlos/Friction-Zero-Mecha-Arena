@@ -53,7 +53,7 @@ func _run() -> void:
 	)
 	_assert(
 		launch_config.local_slots.size() == 2,
-		"El launch config de practica deberia sanear slots igual que player shell."
+		"El launch config de practica deberia sanear slots a P1/P2."
 	)
 	_assert(
 		int(launch_config.local_slots[0].get("slot", -1)) == 1

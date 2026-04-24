@@ -95,7 +95,7 @@ func complete_lane() -> void:
 	lane_status_changed.emit()
 
 
-func _sanitize_lines(lines: Array[String]) -> Array[String]:
+func _sanitize_lines(lines: Array) -> Array[String]:
 	var sanitized: Array[String] = []
 	for line in lines:
 		var normalized := String(line).strip_edges()

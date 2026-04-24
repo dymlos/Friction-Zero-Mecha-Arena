@@ -41,6 +41,10 @@ func set_pause_lines(lines: Array) -> void:
 	pause_value_label.text = "\n".join(lines)
 
 
+func is_explicit_layout() -> bool:
+	return true
+
+
 func _install_qa_ids() -> void:
 	module_value_label.set_meta("qa_id", "practice_hud_module")
 	objective_value_label.set_meta("qa_id", "practice_hud_objective")

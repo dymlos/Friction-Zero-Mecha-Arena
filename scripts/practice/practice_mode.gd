@@ -49,6 +49,10 @@ func get_local_session() -> LocalSession:
 	return _local_session
 
 
+func get_hud_detail_mode() -> int:
+	return _hud_detail_mode
+
+
 func request_module_restart() -> void:
 	_pause_controller.reset()
 	get_tree().paused = false
@@ -384,7 +388,15 @@ func _get_active_slot_specs() -> Array[Dictionary]:
 		if slot_spec is Dictionary:
 			slot_specs.append(slot_spec)
 
-	return LocalSessionBuilder.sanitize_slot_specs(slot_specs)
+	var sanitized := LocalSessionBuilder.sanitize_slot_specs(slot_specs)
+	var capped: Array[Dictionary] = []
+	for spec in sanitized:
+		if int(spec.get("slot", 0)) > 2:
+			continue
+		capped.append(spec)
+		if capped.size() >= 2:
+			break
+	return capped
 
 
 func _on_lane_completed() -> void:

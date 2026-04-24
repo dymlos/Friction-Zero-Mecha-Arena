@@ -2,6 +2,7 @@ extends SceneTree
 
 const PRACTICE_MODE_SCENE := preload("res://scenes/practice/practice_mode.tscn")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
+const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
 
@@ -23,6 +24,14 @@ func _run() -> void:
 		[
 			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY},
 			{"slot": 2, "control_mode": RobotBase.ControlMode.HARD},
+		],
+		2
+	)
+	await _assert_practice_bootstrap(
+		[
+			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY},
+			{"slot": 2, "control_mode": RobotBase.ControlMode.HARD},
+			{"slot": 3, "control_mode": RobotBase.ControlMode.EASY},
 		],
 		2
 	)
@@ -68,12 +77,26 @@ func _assert_practice_bootstrap(slot_specs: Array, expected_players: int) -> voi
 		"PracticeMode deberia poder volver a la shell sin pasar por el laboratorio."
 	)
 	_assert(
+		practice_mode.has_method("get_hud_detail_mode"),
+		"PracticeMode deberia exponer modo de HUD para contrato de practica."
+	)
+	if practice_mode.has_method("get_hud_detail_mode"):
+		_assert(
+			int(practice_mode.call("get_hud_detail_mode")) == MatchConfig.HudDetailMode.EXPLICIT,
+			"PracticeMode deberia quedar en HUD explicito por defecto."
+		)
+	_assert(
 		String(practice_mode.call("get_active_module_id")) == "movimiento",
 		"PracticeMode deberia consumir `practice_module_id` desde ShellSession."
 	)
 	_assert(robot_root != null, "PracticeMode deberia exponer RobotRoot.")
 	_assert(fixture_root != null, "PracticeMode deberia exponer FixtureRoot separado.")
 	_assert(practice_hud != null, "PracticeMode deberia exponer PracticeHud.")
+	if practice_hud != null:
+		_assert(
+			practice_hud.has_method("is_explicit_layout") and bool(practice_hud.call("is_explicit_layout")),
+			"PracticeHud deberia declararse explicito en practica."
+		)
 	_assert(
 		robots.size() == expected_players,
 		"PracticeMode deberia instanciar solo los robots jugables pedidos por launch config."
