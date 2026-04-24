@@ -59,6 +59,10 @@ func get_loser_reading_lines() -> Array[String]:
 
 func _build_story_lines(match_context: Dictionary) -> Array[String]:
 	var lines: Array[String] = []
+	if bool(match_context.get("is_draw", false)):
+		lines.append("Lectura | Nadie cerro la ronda: el desempate quedo sin ganador.")
+		return lines
+
 	var mode := _normalized_mode(match_context.get("match_mode", ""))
 	if mode == "ffa":
 		lines.append(_build_ffa_story_line(match_context))
@@ -97,6 +101,9 @@ func _build_ffa_story_line(match_context: Dictionary) -> String:
 
 func _build_loser_reading_lines(match_context: Dictionary) -> Array[String]:
 	var lines: Array[String] = []
+	if bool(match_context.get("is_draw", false)):
+		return lines
+
 	var mode := _normalized_mode(match_context.get("match_mode", ""))
 	if mode == "ffa":
 		var standings_line := _context_text(match_context, "standings_line")

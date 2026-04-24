@@ -430,8 +430,7 @@ func get_round_recap_panel_lines() -> Array[String]:
 	if score_line != "":
 		lines.append(score_line)
 	if _match_over:
-		_append_unique_lines(lines, get_post_match_review_lines(), 1)
-		_append_unique_lines(lines, get_post_match_loser_reading_lines(), MAX_POST_MATCH_LOSER_LINES)
+		_append_post_match_review_lines(lines, true, 1)
 	var round_closing_line := _build_round_closing_line()
 	if round_closing_line != "":
 		lines.append(round_closing_line)
@@ -457,7 +456,7 @@ func get_round_recap_panel_lines() -> Array[String]:
 	if recap_line != "":
 		lines.append(recap_line)
 	if _match_over:
-		_append_unique_lines(lines, get_post_match_snippet_lines(), MAX_POST_MATCH_SNIPPET_LINES)
+		_append_post_match_snippet_lines(lines)
 	if _match_over:
 		lines.append_array(_build_match_stats_lines())
 	lines.append_array(_build_round_highlight_lines())
@@ -500,8 +499,7 @@ func get_match_result_lines() -> Array[String]:
 	var score_line := _build_score_summary_line()
 	if score_line != "":
 		lines.append(score_line)
-	_append_unique_lines(lines, get_post_match_review_lines(), MAX_POST_MATCH_STORY_LINES)
-	_append_unique_lines(lines, get_post_match_loser_reading_lines(), MAX_POST_MATCH_LOSER_LINES)
+	_append_post_match_review_lines(lines, true, MAX_POST_MATCH_STORY_LINES)
 	var match_closing_cause_line := _build_match_closing_cause_summary_line()
 	if match_closing_cause_line != "":
 		lines.append(match_closing_cause_line)
@@ -523,7 +521,7 @@ func get_match_result_lines() -> Array[String]:
 	var recap_line := get_round_recap_line()
 	if recap_line != "":
 		lines.append(recap_line)
-	_append_unique_lines(lines, get_post_match_snippet_lines(), MAX_POST_MATCH_SNIPPET_LINES)
+	_append_post_match_snippet_lines(lines)
 	lines.append_array(_build_match_stats_lines())
 	lines.append_array(_build_round_highlight_lines())
 	for robot in _get_recap_ordered_robots():
@@ -540,6 +538,7 @@ func get_match_result_lines() -> Array[String]:
 	if restart_prompt_line != "":
 		lines.append(restart_prompt_line)
 
+	_trim_match_result_noise(lines)
 	return lines
 
 
@@ -574,6 +573,35 @@ func _append_unique_lines(target: Array[String], source: Array[String], max_coun
 
 		target.append(line)
 		appended += 1
+
+
+func _append_post_match_review_lines(
+	lines: Array[String],
+	include_loser_reading: bool,
+	story_line_limit: int = MAX_POST_MATCH_STORY_LINES
+) -> void:
+	_append_unique_lines(lines, get_post_match_review_lines(), story_line_limit)
+	if include_loser_reading:
+		_append_unique_lines(lines, get_post_match_loser_reading_lines(), MAX_POST_MATCH_LOSER_LINES)
+
+
+func _append_post_match_snippet_lines(lines: Array[String]) -> void:
+	_append_unique_lines(lines, get_post_match_snippet_lines(), MAX_POST_MATCH_SNIPPET_LINES)
+
+
+func _trim_match_result_noise(lines: Array[String]) -> void:
+	while lines.size() > 22:
+		var removable_index := _find_line_index_with_prefix(lines, "Puntos cierre |")
+		if removable_index < 0:
+			return
+		lines.remove_at(removable_index)
+
+
+func _find_line_index_with_prefix(lines: Array[String], prefix: String) -> int:
+	for index in range(lines.size()):
+		if lines[index].begins_with(prefix):
+			return index
+	return -1
 
 
 func get_match_restart_time_left() -> float:
@@ -1229,6 +1257,7 @@ func _build_post_match_context() -> Dictionary:
 		"match_mode": get_match_mode_label(),
 		"winner_label": _get_competitor_label_from_key(winner_key),
 		"winner_key": winner_key,
+		"is_draw": _last_round_was_draw,
 		"score_line": _build_score_summary_line(),
 		"standings_line": _build_ffa_standings_line(),
 		"tiebreaker_line": _build_ffa_tiebreaker_line(),
@@ -1303,6 +1332,8 @@ func _build_match_support_summary_line() -> String:
 		return ""
 
 	if _match_decided_rounds <= 0:
+		return ""
+	if _match_decided_rounds_with_support <= 0:
 		return ""
 
 	var support_decider_percent := int(round((float(_match_decided_rounds_with_support) / float(_match_decided_rounds)) * 100.0))
