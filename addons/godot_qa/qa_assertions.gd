@@ -350,6 +350,11 @@ func _control_disabled(control: Control) -> Variant:
 func _control_text(control: Control) -> String:
 	if control == null:
 		return ""
+	if control is ItemList:
+		var items := PackedStringArray()
+		for item_index in range((control as ItemList).item_count):
+			items.append((control as ItemList).get_item_text(item_index))
+		return "\n".join(items)
 	if _has_property(control, "text"):
 		return str(control.get("text"))
 	return ""

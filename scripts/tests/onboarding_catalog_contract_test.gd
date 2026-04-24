@@ -20,11 +20,12 @@ func _run() -> void:
 
 	var sections: Array = OnboardingCatalog.get_sections()
 	var expected_ids := [
+		"controls",
 		"victory",
+		"combat",
 		"parts",
 		"energy",
 		"recovery",
-		"controls",
 	]
 	var actual_ids: Array[String] = []
 	for entry in sections:
@@ -49,7 +50,7 @@ func _run() -> void:
 
 	_assert(
 		actual_ids == expected_ids,
-		"How to Play deberia conservar el orden victoria, partes, energia, recuperacion y controles."
+		"How to Play deberia conservar el orden movimiento/control, victoria, combate, partes, energia y recuperacion."
 	)
 	_finish()
 

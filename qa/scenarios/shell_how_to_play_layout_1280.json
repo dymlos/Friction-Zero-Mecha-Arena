@@ -40,26 +40,32 @@
     },
     {
       "text_contains": {
+        "target": "qa:shell_how_to_play_list",
+        "expected": "Movimiento"
+      }
+    },
+    {
+      "text_contains": {
         "target": "qa:shell_how_to_play_detail_title",
-        "expected": "Como ganar"
+        "expected": "Movimiento"
       }
     },
     {
       "text_contains": {
         "target": "qa:shell_how_to_play_summary",
-        "expected": "Ganas"
+        "expected": "Aprende"
       }
     },
     {
       "text_contains": {
         "target": "qa:shell_how_to_play_callout",
-        "expected": "primer choque"
+        "expected": "patinaje"
       }
     },
     {
       "text_contains": {
         "target": "qa:shell_how_to_play_practice",
-        "expected": "Probar"
+        "expected": "Probar Movimiento"
       }
     },
     {

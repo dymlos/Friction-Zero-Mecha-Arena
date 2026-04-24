@@ -52,8 +52,8 @@ func _run() -> void:
 		"How to Play deberia exponer scope global/pausa."
 	)
 	_assert(
-		String(how_to_play_screen.call("get_selected_topic_id")) == "victory",
-		"How to Play deberia arrancar mostrando victoria primero."
+		String(how_to_play_screen.call("get_selected_topic_id")) == "controls",
+		"How to Play deberia arrancar mostrando movimiento/control primero."
 	)
 
 	var focus_owner := root.get_viewport().gui_get_focus_owner()
@@ -142,8 +142,8 @@ func _run() -> void:
 		_assert(practice_setup != null, "La shell deberia montar PracticeSetup desde How to Play.")
 		if practice_setup != null:
 			_assert(
-				String(practice_setup.call("get_selected_module_id")) == "impacto",
-				"El tema `victory` deberia enlazar al modulo `impacto`."
+				String(practice_setup.call("get_selected_module_id")) == "movimiento",
+				"El tema inicial `controls` deberia enlazar al modulo `movimiento`."
 			)
 			practice_setup.call("emit_signal", "back_requested")
 			await process_frame
