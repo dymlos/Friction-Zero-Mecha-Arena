@@ -1,6 +1,7 @@
 extends SceneTree
 
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
+const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const ShellSession = preload("res://scripts/systems/shell_session.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
@@ -45,6 +46,10 @@ func _run() -> void:
 	_assert(
 		String(launch_config.target_scene_path) == "res://scenes/practice/practice_mode.tscn",
 		"El launch config de practica deberia apuntar a practice_mode."
+	)
+	_assert(
+		int(launch_config.hud_detail_mode) == MatchConfig.HudDetailMode.EXPLICIT,
+		"Practica deberia arrancar con HUD explicito aunque el default competitivo sea contextual."
 	)
 	_assert(
 		launch_config.local_slots.size() == 2,

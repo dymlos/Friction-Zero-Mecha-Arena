@@ -48,8 +48,8 @@ func _run() -> void:
 		return
 
 	_assert(
-		int(defaults.default_hud_detail_mode) == MatchConfig.HudDetailMode.EXPLICIT,
-		"El modo de HUD persistente deberia arrancar en explicito por default."
+		int(defaults.default_hud_detail_mode) == MatchConfig.HudDetailMode.CONTEXTUAL,
+		"El modo de HUD persistente deberia arrancar en contextual por default."
 	)
 	_assert(
 		is_equal_approx(float(defaults.audio_master_volume), 1.0),
@@ -63,7 +63,7 @@ func _run() -> void:
 	defaults.audio_master_volume = 0.42
 	defaults.audio_music_volume = 0.18
 	defaults.audio_sfx_volume = 1.7
-	defaults.default_hud_detail_mode = MatchConfig.HudDetailMode.CONTEXTUAL
+	defaults.default_hud_detail_mode = MatchConfig.HudDetailMode.EXPLICIT
 	defaults.window_mode = "borderless"
 	defaults.vsync_enabled = false
 	var saved := bool(store.save_settings())
@@ -85,8 +85,8 @@ func _run() -> void:
 		"Los volumenes invalidos deberian clampse al persistir settings."
 	)
 	_assert(
-		persisted != null and int(persisted.default_hud_detail_mode) == MatchConfig.HudDetailMode.CONTEXTUAL,
-		"El default persistente de HUD deberia sobrevivir entre instancias."
+		persisted != null and int(persisted.default_hud_detail_mode) == MatchConfig.HudDetailMode.EXPLICIT,
+		"El default persistente de HUD explicito deberia sobrevivir entre instancias."
 	)
 	_assert(
 		persisted != null and String(persisted.window_mode) == "borderless",
@@ -104,15 +104,15 @@ func _run() -> void:
 		[{"slot": 1, "control_mode": 0}]
 	)
 	_assert(
-		int(launch_config.hud_detail_mode) == MatchConfig.HudDetailMode.CONTEXTUAL,
+		int(launch_config.hud_detail_mode) == MatchConfig.HudDetailMode.EXPLICIT,
 		"MatchLaunchConfig deberia usar el HUD efectivo de UserSettingsStore al preparar el runtime."
 	)
 
 	reloaded.reset_to_defaults()
 	var reset_settings = reloaded.get_settings()
 	_assert(
-		reset_settings != null and int(reset_settings.default_hud_detail_mode) == MatchConfig.HudDetailMode.EXPLICIT,
-		"Resetear defaults deberia volver a HUD explicito."
+		reset_settings != null and int(reset_settings.default_hud_detail_mode) == MatchConfig.HudDetailMode.CONTEXTUAL,
+		"Resetear defaults deberia volver a HUD contextual."
 	)
 	_assert(
 		reset_settings != null and is_equal_approx(float(reset_settings.audio_master_volume), 1.0),

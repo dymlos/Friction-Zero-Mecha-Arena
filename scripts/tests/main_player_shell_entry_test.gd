@@ -109,6 +109,51 @@ func _run() -> void:
 	)
 
 	await _cleanup_main(main)
+
+	var default_shell_session := ShellSession.new()
+	var default_launch_config := MatchLaunchConfig.new()
+	default_launch_config.configure_for_local_match(
+		MatchController.MatchMode.FFA,
+		"res://scenes/main/main_ffa.tscn",
+		[
+			{"slot": 1, "control_mode": RobotBase.ControlMode.EASY},
+			{"slot": 2, "control_mode": RobotBase.ControlMode.HARD},
+		]
+	)
+	default_shell_session.store_match_launch_config(default_launch_config)
+
+	var default_main = MAIN_FFA_SCENE.instantiate()
+	root.add_child(default_main)
+	await process_frame
+	await process_frame
+
+	var default_match_controller := default_main.get_node_or_null("Systems/MatchController") as MatchController
+	var default_round_label := default_main.get_node_or_null("UI/MatchHud/Root/TopLeftStack/RoundLabel") as Label
+	_assert(default_match_controller != null, "La escena FFA deberia exponer MatchController en arranque default.")
+	_assert(default_round_label != null, "La escena FFA deberia exponer RoundLabel en arranque default.")
+	if default_match_controller != null and default_round_label != null:
+		_assert(
+			default_match_controller.get_runtime_hud_detail_mode() == MatchConfig.HudDetailMode.CONTEXTUAL,
+			"Un match local lanzado desde shell sin override deberia arrancar con HUD contextual."
+		)
+		_assert(
+			not default_round_label.text.contains("Modo |"),
+			"El HUD contextual competitivo no deberia mostrar la linea explicita de modo."
+		)
+		_assert(
+			not default_round_label.text.contains("HUD |"),
+			"El HUD contextual competitivo no deberia mostrar prompts explicitos de HUD."
+		)
+		_assert(
+			not default_round_label.text.contains("Lab |"),
+			"El HUD contextual competitivo no deberia mostrar metadata de laboratorio."
+		)
+		_assert(
+			not default_round_label.text.contains("Control P"),
+			"El HUD contextual competitivo no deberia mostrar selector interno de laboratorio."
+		)
+
+	await _cleanup_main(default_main)
 	_finish()
 
 

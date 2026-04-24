@@ -18,7 +18,7 @@ const VALID_WINDOW_MODES := [
 @export_range(0.0, 1.0, 0.01) var audio_sfx_volume := 1.0
 @export var window_mode := WINDOW_MODE_WINDOWED
 @export var vsync_enabled := true
-@export var default_hud_detail_mode: MatchConfig.HudDetailMode = MatchConfig.HudDetailMode.EXPLICIT
+@export var default_hud_detail_mode: MatchConfig.HudDetailMode = MatchConfig.HudDetailMode.CONTEXTUAL
 
 
 func sanitize_in_place():

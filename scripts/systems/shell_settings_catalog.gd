@@ -21,7 +21,7 @@ static func get_sections() -> Array[Dictionary]:
 		{
 			"id": "hud",
 			"title": "HUD",
-			"summary": "Define el detalle por default al entrar a match o practica.",
+			"summary": "Contextual por defecto en match competitivo; explicito disponible para lectura completa. Practica arranca explicita.",
 		},
 		{
 			"id": "controls",
@@ -41,8 +41,8 @@ static func get_window_mode_options() -> Array[Dictionary]:
 
 static func get_hud_mode_options() -> Array[Dictionary]:
 	return [
-		{"value": MatchConfig.HudDetailMode.EXPLICIT, "label": "Explicito"},
 		{"value": MatchConfig.HudDetailMode.CONTEXTUAL, "label": "Contextual"},
+		{"value": MatchConfig.HudDetailMode.EXPLICIT, "label": "Explicito"},
 	]
 
 

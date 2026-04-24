@@ -158,7 +158,6 @@ func build_launch_config() -> MatchLaunchConfig:
 	var active_slot_specs := _session_draft.build_active_slot_specs(DEFAULT_LOCAL_SLOTS.size())
 	var active_slot_count := active_slot_specs.size()
 	var map_id := _session_draft.get_selected_map_id(active_slot_count)
-	launch_config.hud_detail_mode = MatchConfig.HudDetailMode.EXPLICIT
 	launch_config.auto_restart_on_match_end = false
 	launch_config.configure_for_local_match(
 		_session_draft.match_mode,

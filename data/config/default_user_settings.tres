@@ -9,4 +9,4 @@ audio_music_volume = 1.0
 audio_sfx_volume = 1.0
 window_mode = "windowed"
 vsync_enabled = true
-default_hud_detail_mode = 0
+default_hud_detail_mode = 1

@@ -46,7 +46,7 @@ func configure_for_practice(
 	entry_context = ENTRY_CONTEXT_PRACTICE
 	practice_module_id = module_id
 	auto_restart_on_match_end = false
-	hud_detail_mode = _resolve_effective_hud_detail_mode()
+	hud_detail_mode = MatchConfig.HudDetailMode.EXPLICIT
 	local_slots = _sanitize_local_slots(slot_specs)
 
 

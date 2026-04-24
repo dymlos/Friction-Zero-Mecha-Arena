@@ -86,7 +86,7 @@ func _run() -> void:
 	)
 	var snapshot := settings_screen.call("get_settings_snapshot") as Dictionary
 	_assert(
-		int(snapshot.get("default_hud_detail_mode", -1)) == MatchConfig.HudDetailMode.EXPLICIT,
+		int(snapshot.get("default_hud_detail_mode", -1)) == MatchConfig.HudDetailMode.CONTEXTUAL,
 		"Settings deberia arrancar con el HUD default persistente."
 	)
 	_assert(
