@@ -1,6 +1,10 @@
 extends RefCounted
 class_name PracticeCatalog
 
+const FIRST_PASS_MODULE_IDS := ["movimiento", "impacto", "partes", "sandbox"]
+const PLAYER_SCOPE_LABEL := "1-2 jugadores locales"
+const HUD_DEFAULT_LABEL := "explicito"
+
 
 static func get_modules() -> Array:
 	return [
@@ -13,6 +17,9 @@ static func get_modules() -> Array:
 			"lane_scene_path": "res://scenes/practice/stations/movement_lane.tscn",
 			"supports_two_players": true,
 			"explicit_hud_default": true,
+			"player_scope": PLAYER_SCOPE_LABEL,
+			"hud_default": HUD_DEFAULT_LABEL,
+			"teaching_tags": ["movimiento", "easy_hard", "control"],
 			"context_card": {
 				"title": "Que probar",
 				"lines": [
@@ -30,6 +37,9 @@ static func get_modules() -> Array:
 			"lane_scene_path": "res://scenes/practice/stations/impact_lane.tscn",
 			"supports_two_players": true,
 			"explicit_hud_default": true,
+			"player_scope": PLAYER_SCOPE_LABEL,
+			"hud_default": HUD_DEFAULT_LABEL,
+			"teaching_tags": ["choque", "borde", "timing"],
 			"context_card": {
 				"title": "Que probar",
 				"lines": [
@@ -47,6 +57,9 @@ static func get_modules() -> Array:
 			"lane_scene_path": "res://scenes/practice/stations/energy_lane.tscn",
 			"supports_two_players": true,
 			"explicit_hud_default": true,
+			"player_scope": PLAYER_SCOPE_LABEL,
+			"hud_default": HUD_DEFAULT_LABEL,
+			"teaching_tags": ["energia", "overdrive", "recursos"],
 			"context_card": {
 				"title": "Que probar",
 				"lines": [
@@ -58,17 +71,20 @@ static func get_modules() -> Array:
 		{
 			"id": "partes",
 			"label": "Partes",
-			"summary": "Practicar dano modular y leer que cambia cuando un robot pierde brazos o piernas.",
+			"summary": "Usar Corte para abrir una ventana de desarme y leer dano modular en el cuerpo.",
 			"recommended_roster_entry_id": "cizalla",
 			"onboarding_topic_ids": ["parts"],
 			"lane_scene_path": "res://scenes/practice/stations/parts_lane.tscn",
 			"supports_two_players": true,
 			"explicit_hud_default": true,
+			"player_scope": PLAYER_SCOPE_LABEL,
+			"hud_default": HUD_DEFAULT_LABEL,
+			"teaching_tags": ["skill", "dano_modular", "corte", "lectura_corporal"],
 			"context_card": {
 				"title": "Que probar",
 				"lines": [
-					"Golpea una parte y mira el cuerpo antes que el numero.",
-					"Perder piezas debe doler sin cerrar todo comeback.",
+					"Activa Corte antes de castigar una parte tocada.",
+					"Mira el cuerpo: brazos al frente, piernas atras.",
 				],
 			},
 		},
@@ -81,6 +97,9 @@ static func get_modules() -> Array:
 			"lane_scene_path": "res://scenes/practice/stations/recovery_lane.tscn",
 			"supports_two_players": true,
 			"explicit_hud_default": true,
+			"player_scope": PLAYER_SCOPE_LABEL,
+			"hud_default": HUD_DEFAULT_LABEL,
+			"teaching_tags": ["recuperacion", "negacion", "partes"],
 			"context_card": {
 				"title": "Que probar",
 				"lines": [
@@ -99,6 +118,9 @@ static func get_modules() -> Array:
 			"lane_scene_path": "res://scenes/practice/stations/sandbox_lane.tscn",
 			"supports_two_players": true,
 			"explicit_hud_default": true,
+			"player_scope": PLAYER_SCOPE_LABEL,
+			"hud_default": HUD_DEFAULT_LABEL,
+			"teaching_tags": ["sandbox_guiado", "skill", "movimiento", "choque", "dano_modular"],
 			"context_card": {
 				"title": "Que probar",
 				"lines": [
@@ -108,6 +130,13 @@ static func get_modules() -> Array:
 			},
 		},
 	]
+
+
+static func get_first_pass_module_ids() -> Array[String]:
+	var module_ids: Array[String] = []
+	for module_id in FIRST_PASS_MODULE_IDS:
+		module_ids.append(String(module_id))
+	return module_ids
 
 
 static func get_module(module_id: String) -> Dictionary:

@@ -125,6 +125,34 @@ func _run() -> void:
 			"PracticeCatalog.get_module() deberia devolver el modulo correcto por id."
 		)
 
+	var first_pass_ids := PracticeCatalog.get_first_pass_module_ids()
+	_assert(
+		first_pass_ids == ["movimiento", "impacto", "partes", "sandbox"],
+		"El primer pase M8 debe priorizar movimiento, choque, skill/dano modular y sandbox."
+	)
+	for module_spec in modules:
+		var module_id := String(module_spec.get("id", ""))
+		_assert(
+			String(module_spec.get("player_scope", "")) == "1-2 jugadores locales",
+			"%s debe declarar alcance de producto 1-2P." % module_id
+		)
+		_assert(
+			String(module_spec.get("hud_default", "")) == "explicito",
+			"%s debe declarar HUD explicito por defecto." % module_id
+		)
+		_assert(
+			module_spec.get("teaching_tags", []) is Array and not (module_spec.get("teaching_tags", []) as Array).is_empty(),
+			"%s debe declarar tags pedagogicos verificables." % module_id
+		)
+	_assert(
+		(PracticeCatalog.get_module("partes").get("teaching_tags", []) as Array).has("skill"),
+		"`partes` debe absorber la practica aplicada de skill sin crear un modulo nuevo."
+	)
+	_assert(
+		(PracticeCatalog.get_module("partes").get("teaching_tags", []) as Array).has("dano_modular"),
+		"`partes` debe cubrir dano modular como prioridad M8."
+	)
+
 	_assert(
 		PracticeCatalog.get_module("desconocido").is_empty(),
 		"Un modulo desconocido deberia devolver un diccionario vacio."
