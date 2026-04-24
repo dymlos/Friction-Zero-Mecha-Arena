@@ -19,6 +19,11 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - `HUD`, `pausa` y `resultados` solo deben reforzar recordatorios contextuales, no absorber onboarding completo.
 - El cierre de partida lanzado desde `player_shell` debe quedar estable: sin prompts de laboratorio y sin autorestart.
 - `GameShell` y `MatchLaunchConfig` son la costura comun para armar loops integrados y QA del producto real; evitar ramas paralelas que instancien `main*.tscn` directo por fuera de ese contrato.
+- `Settings` vive en `menu principal` y solo cubre configuracion global persistente: audio, video, HUD y referencia corta de controles.
+- `setup local` vive antes del match y es la unica superficie para editar modo, slots activos, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.
+- La pausa solo toca opciones seguras de runtime: reanudar, reiniciar, volver al menu cuando aplica, HUD y volumenes. No reasigna slots, no cambia `Teams/FFA` y no toca video.
+- `M9` no abre remapeo libre completo; solo referencia visible de controles, perfiles de teclado fijos y joypads con `device_id` legible.
+- `LocalSessionDraft` pertenece a shell; `LocalSessionBuilder` es la unica costura para convertir specs de slots en `LocalSession` tanto en match como en practica.
 
 ## Regla documental
 

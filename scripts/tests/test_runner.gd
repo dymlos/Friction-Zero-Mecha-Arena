@@ -28,7 +28,7 @@ func _run() -> void:
 	var executable_path := OS.get_executable_path()
 	var project_path := ProjectSettings.globalize_path("res://")
 
-	print("Running %s tests from %s" % [discovered.size(), TESTS_ROOT])
+	print("Running %s auto-discovered tests from %s" % [discovered.size(), TESTS_ROOT])
 	for test_path in discovered:
 		var output: Array[String] = []
 		var args := PackedStringArray([

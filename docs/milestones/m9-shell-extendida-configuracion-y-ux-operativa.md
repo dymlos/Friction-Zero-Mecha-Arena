@@ -48,7 +48,14 @@ Sin ese trabajo, la ruta de jugador sigue siendo funcional pero no suficientemen
 
 ## Criterio de salida
 
-- Queda documentado que vive en `menu principal`, `setup`, `pausa` y settings.
-- El jugador puede entender y ajustar las opciones operativas minimas sin depender del laboratorio.
-- La UX de controles, slots y dispositivos queda clara para sesiones locales reales.
+- Queda implementado y documentado que vive en `menu principal`, `Settings`, `setup local` y `pausa`.
+- El jugador puede ajustar opciones operativas minimas sin depender del laboratorio:
+  - `Settings`: audio, video, HUD default y referencia corta de controles.
+  - `setup local`: `Teams/FFA`, slots activos, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.
+  - `pausa`: reanudar, reiniciar, volver al menu cuando aplica, HUD runtime y volumenes.
+- `MatchLaunchConfig.local_slots` transporta specs completos y `LocalSessionBuilder` los consume tanto en match como en practica.
 - La shell crece sin romper claridad, ownership de copy ni la ruta integrada cerrada en `M7`.
+
+## Estado de implementacion
+
+`M9` queda cubierto en automatizacion. Queda pendiente smoke manual con jugadores reales para confirmar legibilidad de settings, slots/dispositivos, hot-plug y pausa operacional.

@@ -5,13 +5,16 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 ## Lo que ya existe
 
 - Shell local jugable: `menu principal -> setup local -> characters/how to play -> match -> pausa -> volver al menu`.
+- `menu principal` es la entrada unica a `Settings`; la pantalla persiste configuracion global de audio, video y HUD mediante `UserSettingsStore`.
+- `setup local` es la autoridad de sesion antes del match: modo `Teams/FFA`, slots activos, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.
 - Cierre integrado `player_shell` revalidado en `Teams` y `FFA` con recap + resultado final estables.
 - Pantalla `Characters` de solo lectura accesible desde `menu principal` y `setup local`.
 - Pantalla `How to Play` accesible desde `menu principal` y `setup local`, con reglas base del match y controles `Easy/Hard`.
 - `Modo Practica` accesible desde `menu principal`, `setup local` y CTA contextual de `How to Play`.
-- `PracticeSetup` dedicado con orden fijo de modulos, robot recomendado, temas relacionados y slots `P1/P2` con `Easy/Hard`.
+- `PracticeSetup` dedicado con orden fijo de modulos, robot recomendado, temas relacionados y slots `P1/P2` usando el mismo contrato operativo de dispositivos que el setup local.
 - Runtime `practice_mode` separado del laboratorio, con modulos `movimiento`, `impacto`, `energia`, `partes`, `recuperacion` y `sandbox`.
 - `PracticeHud` con modulo, objetivo, progreso, controles, callout corto y pausa, sin recap competitivo ni prompts de laboratorio.
+- Pausa operativa compacta en match y practica: acciones primarias, quick settings de `HUD/master/music/sfx` y resumen corto de dispositivos, sin reasignar slots ni cambiar modo.
 - Fuente unica de copy del roster base visible hoy en shell: `Ariete`, `Grua`, `Cizalla` y `Patin`.
 - Fuente unica de copy de onboarding general compartida entre shell, QA y tests.
 - Movimiento con inercia y choques con peso.
@@ -24,6 +27,10 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 ## Lo que hoy esta mas validado
 
 - Contrato de entrada `player_shell` vs `lab`, con metadata de laboratorio oculta en partidas lanzadas desde shell.
+- `UserSettingsStore` como seam persistente de settings globales.
+- `LocalSessionDraft` como seam editable de shell para slots/dispositivos.
+- `LocalSessionBuilder` como seam comun para sanitizar specs y construir `LocalSession` en match y practica.
+- `MatchLaunchConfig.local_slots` transporta specs completos de slot: `slot`, `control_mode`, `input_source`, `keyboard_profile`, `device_id`, `device_connected`.
 - Navegacion shell entre `menu`, `setup`, `characters`, `how to play`, `match` y `pausa`, con retorno owner-aware y restauracion de foco.
 - Loop integrado automatizado desde `game_shell` hasta cierre de match en:
   - `Teams` base
@@ -37,6 +44,8 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
   - `player_shell_loop_teams_1280`
   - `player_shell_loop_ffa_1280`
 - QA integrada de practica a `1280x720`:
+  - `shell_settings_layout_1280`
+  - `shell_local_setup_layout_1280`
   - `shell_practice_setup_layout_1280`
   - `practice_mode_layout_1280`
   - `practice_mode_module_rotation_1280`
@@ -48,9 +57,14 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
   - `scenes/qa/shell_practice_setup_validation.tscn`
   - `scenes/qa/practice_mode_validation.tscn`
 - Checklist manual pendiente de repetir sobre practica construida:
+  - `menu principal -> settings -> volver`
+  - `setup local` con `1P`, `2P` y mezcla teclado/joypad
+  - desconectar/reconectar joypad reservado
   - `1P Easy`
   - `1P Hard`
   - `2P mixto Easy/Hard`
+  - lanzar `Teams`, `FFA` y `Practica`
+  - abrir pausa y tocar `HUD/audio`
   - entrada desde `How to Play`
   - volver al menu desde pausa
 - Paridad contractual entre escenas `base` y `validation`.
@@ -59,8 +73,8 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 
 ## Riesgos activos
 
-- El siguiente gap ya no es construir `Modo Practica`, sino validar manualmente su legibilidad y ritmo con jugadores reales.
-- La shell minima y practica todavia necesitan evidencia humana con mas jugadores reales; este slice cerro la baseline automatizada, no el playtest humano.
+- El siguiente gap ya no es construir shell operativa, sino validar manualmente legibilidad de settings, slots/dispositivos y pausa con jugadores reales.
+- La shell extendida y practica todavia necesitan evidencia humana con mas jugadores reales; este slice cerro la baseline automatizada, no el playtest humano.
 - El pacing fino del opening sigue siendo pregunta de tuning.
 - La paridad `base/validation` sigue siendo el riesgo tecnico mas sensible cuando se tocan escenas o HUD.
 - El soporte post-muerte `Teams` necesita mas validacion manual de legibilidad e impacto real.
