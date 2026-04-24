@@ -97,6 +97,27 @@ func _run() -> void:
 			module_spec.has("supports_two_players"),
 			"Cada modulo de practica deberia declarar si soporta dos jugadores."
 		)
+		var context_card: Dictionary = module_spec.get("context_card", {})
+		_assert(
+			not context_card.is_empty(),
+			"Cada modulo de practica deberia declarar una tarjeta contextual."
+		)
+		_assert(
+			String(context_card.get("title", "")).strip_edges() != "",
+			"Cada tarjeta contextual deberia tener titulo."
+		)
+		_assert(
+			context_card.get("lines", []) is Array and not (context_card.get("lines", []) as Array).is_empty(),
+			"Cada tarjeta contextual deberia tener lineas cortas."
+		)
+		_assert(
+			bool(module_spec.get("supports_two_players", false)),
+			"El primer alcance M5 deberia soportar P1/P2 en todos los modulos."
+		)
+		_assert(
+			bool(module_spec.get("explicit_hud_default", false)),
+			"Practica deberia declarar HUD explicito por defecto por modulo."
+		)
 
 		var resolved_module: Dictionary = PracticeCatalog.get_module(expected_module_id)
 		_assert(

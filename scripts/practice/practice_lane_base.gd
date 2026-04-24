@@ -11,6 +11,8 @@ var _player_robots: Array[RobotBase] = []
 var _objective_lines: Array[String] = []
 var _progress_lines: Array[String] = []
 var _callout_lines: Array[String] = []
+var _context_card_lines: Array[String] = []
+var _context_card_title := ""
 var _lane_completed := false
 
 
@@ -24,6 +26,9 @@ func configure_lane(module_spec: Dictionary, player_robots: Array) -> void:
 	_objective_lines = _sanitize_lines(get_objective_lines())
 	_progress_lines.clear()
 	_callout_lines.clear()
+	var context_card: Dictionary = _module_spec.get("context_card", {})
+	_context_card_title = String(context_card.get("title", "Que probar")).strip_edges()
+	_context_card_lines = _sanitize_lines(context_card.get("lines", []))
 	if _objective_lines.is_empty():
 		_objective_lines = [String(_module_spec.get("summary", ""))]
 	lane_status_changed.emit()
@@ -39,6 +44,14 @@ func get_progress_lines() -> Array[String]:
 
 func get_callout_lines() -> Array[String]:
 	return _callout_lines.duplicate()
+
+
+func get_context_card_title() -> String:
+	return _context_card_title
+
+
+func get_context_card_lines() -> Array[String]:
+	return _context_card_lines.duplicate()
 
 
 func get_module_spec() -> Dictionary:
@@ -65,6 +78,11 @@ func set_progress_lines(lines: Array[String]) -> void:
 
 func set_callout_lines(lines: Array[String]) -> void:
 	_callout_lines = _sanitize_lines(lines)
+	lane_status_changed.emit()
+
+
+func set_context_card_lines(lines: Array[String]) -> void:
+	_context_card_lines = _sanitize_lines(lines)
 	lane_status_changed.emit()
 
 

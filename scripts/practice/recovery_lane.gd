@@ -111,6 +111,10 @@ func _sync_lane_state() -> void:
 			"Aprendiste: devolver ayuda al comeback y negar partes cierra espacio.",
 			"Siguiente sugerido: Sandbox.",
 		])
+		set_context_card_lines([
+			"Aprendiste a convertir una parte caida en ventaja tactica.",
+			"Siguiente sugerido: Sandbox.",
+		])
 		complete_lane()
 
 

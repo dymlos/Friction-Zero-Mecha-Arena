@@ -63,6 +63,27 @@ func get_callout_lines() -> Array[String]:
 	return []
 
 
+func get_context_card_title() -> String:
+	if _active_lane != null:
+		return _active_lane.get_context_card_title()
+
+	var context_card: Dictionary = _active_module_spec.get("context_card", {})
+	return String(context_card.get("title", "Que probar"))
+
+
+func get_context_card_lines() -> Array[String]:
+	if _active_lane != null:
+		return _active_lane.get_context_card_lines()
+
+	var context_card: Dictionary = _active_module_spec.get("context_card", {})
+	var lines: Array[String] = []
+	for line in context_card.get("lines", []):
+		var normalized := String(line).strip_edges()
+		if not normalized.is_empty():
+			lines.append(normalized)
+	return lines
+
+
 func restart_lane(fixture_root: Node3D, player_robots: Array[RobotBase]) -> void:
 	_mount_lane(fixture_root, player_robots)
 

@@ -12,6 +12,14 @@ static func get_modules() -> Array:
 			"onboarding_topic_ids": ["controls"],
 			"lane_scene_path": "res://scenes/practice/stations/movement_lane.tscn",
 			"supports_two_players": true,
+			"explicit_hud_default": true,
+			"context_card": {
+				"title": "Que probar",
+				"lines": [
+					"Arranca tarde, desliza libre y frena antes de perder lectura.",
+					"Compara Easy y Hard sin cambiar la pista.",
+				],
+			},
 		},
 		{
 			"id": "impacto",
@@ -21,6 +29,14 @@ static func get_modules() -> Array:
 			"onboarding_topic_ids": ["victory", "controls"],
 			"lane_scene_path": "res://scenes/practice/stations/impact_lane.tscn",
 			"supports_two_players": true,
+			"explicit_hud_default": true,
+			"context_card": {
+				"title": "Que probar",
+				"lines": [
+					"Busca angulo y timing antes de acelerar.",
+					"El objetivo es desplazar, no solo tocar.",
+				],
+			},
 		},
 		{
 			"id": "energia",
@@ -30,6 +46,14 @@ static func get_modules() -> Array:
 			"onboarding_topic_ids": ["energy"],
 			"lane_scene_path": "res://scenes/practice/stations/energy_lane.tscn",
 			"supports_two_players": true,
+			"explicit_hud_default": true,
+			"context_card": {
+				"title": "Que probar",
+				"lines": [
+					"Piernas cambian control; brazos cambian empuje.",
+					"Overdrive es una apuesta corta con castigo despues.",
+				],
+			},
 		},
 		{
 			"id": "partes",
@@ -39,6 +63,14 @@ static func get_modules() -> Array:
 			"onboarding_topic_ids": ["parts"],
 			"lane_scene_path": "res://scenes/practice/stations/parts_lane.tscn",
 			"supports_two_players": true,
+			"explicit_hud_default": true,
+			"context_card": {
+				"title": "Que probar",
+				"lines": [
+					"Golpea una parte y mira el cuerpo antes que el numero.",
+					"Perder piezas debe doler sin cerrar todo comeback.",
+				],
+			},
 		},
 		{
 			"id": "recuperacion",
@@ -48,6 +80,14 @@ static func get_modules() -> Array:
 			"onboarding_topic_ids": ["recovery", "parts"],
 			"lane_scene_path": "res://scenes/practice/stations/recovery_lane.tscn",
 			"supports_two_players": true,
+			"explicit_hud_default": true,
+			"context_card": {
+				"title": "Que probar",
+				"lines": [
+					"Devuelve una parte aliada o niega una rival.",
+					"Cargar partes bloquea otras acciones activas.",
+				],
+			},
 		},
 		{
 			"id": "sandbox",
@@ -58,6 +98,14 @@ static func get_modules() -> Array:
 			"onboarding_topic_ids": ["controls", "energy", "parts", "recovery"],
 			"lane_scene_path": "res://scenes/practice/stations/sandbox_lane.tscn",
 			"supports_two_players": true,
+			"explicit_hud_default": true,
+			"context_card": {
+				"title": "Que probar",
+				"lines": [
+					"Combina movimiento, impacto, energia y partes sin fallo.",
+					"Experimenta sin perder lectura de borde y cuerpo.",
+				],
+			},
 		},
 	]
 

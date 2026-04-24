@@ -74,4 +74,8 @@ func _sync_lane_state() -> void:
 			"Aprendiste: un golpe bueno cambia el cuerpo y la lectura del rival.",
 			"Siguiente sugerido: Sandbox.",
 		])
+		set_context_card_lines([
+			"Aprendiste a mirar el cuerpo despues del golpe.",
+			"Siguiente sugerido: Sandbox.",
+		])
 		complete_lane()

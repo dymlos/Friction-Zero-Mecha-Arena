@@ -68,4 +68,8 @@ func _sync_lane_state() -> void:
 			"Aprendiste: redistribuir energia cambia lectura y rendimiento.",
 			"Siguiente sugerido: Recuperacion.",
 		])
+		set_context_card_lines([
+			"Aprendiste a leer piernas, brazos y Overdrive como plan.",
+			"Siguiente sugerido: Recuperacion.",
+		])
 		complete_lane()

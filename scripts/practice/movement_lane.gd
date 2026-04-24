@@ -50,4 +50,8 @@ func _sync_lane_state() -> void:
 		"Aprendiste: entrar, frenar y volver a acelerar sin perder control.",
 		"Siguiente sugerido: Impacto.",
 	])
+	set_context_card_lines([
+		"Aprendiste a entrar, frenar y volver a acelerar.",
+		"Siguiente sugerido: Impacto.",
+	])
 	complete_lane()

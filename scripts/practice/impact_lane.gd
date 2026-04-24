@@ -82,4 +82,8 @@ func _sync_lane_state() -> void:
 			"Aprendiste: el angulo correcto convierte un choque en salida.",
 			"Siguiente sugerido: Partes.",
 		])
+		set_context_card_lines([
+			"Aprendiste a convertir timing y angulo en desplazamiento.",
+			"Siguiente sugerido: Partes.",
+		])
 		complete_lane()
