@@ -24,8 +24,10 @@ func _run() -> void:
 			"Teams deberia exponer una sola variante activa: score_by_cause."
 		)
 		_assert(
-			ffa_variants.size() == 1 and String(ffa_variants[0].get("id", "")) == "score_by_cause",
-			"FFA deberia exponer una sola variante activa: score_by_cause."
+			ffa_variants.size() == 2
+			and String(ffa_variants[0].get("id", "")) == "score_by_cause"
+			and String(ffa_variants[1].get("id", "")) == "last_alive",
+			"FFA deberia exponer Score por causa y Ultimo vivo."
 		)
 		_assert(
 			String(catalog_script.get_variant("score_by_cause").get("label", "")) == "Score por causa",
@@ -43,10 +45,16 @@ func _run() -> void:
 			"LocalSessionDraft deberia sanitizar variantes desconocidas a score_by_cause."
 		)
 	if draft.has_method("cycle_mode_variant") and draft.has_method("get_selected_mode_variant_id"):
+		draft.call("set_match_mode", MatchController.MatchMode.FFA)
 		draft.call("cycle_mode_variant")
 		_assert(
+			String(draft.call("get_selected_mode_variant_id")) == "last_alive",
+			"Ciclar FFA debe llegar a Ultimo vivo."
+		)
+		draft.call("set_match_mode", MatchController.MatchMode.TEAMS)
+		_assert(
 			String(draft.call("get_selected_mode_variant_id")) == "score_by_cause",
-			"Ciclar con una sola variante activa deberia conservar score_by_cause."
+			"Teams debe sanear Ultimo vivo a Score por causa."
 		)
 
 	var setup := LOCAL_MATCH_SETUP_SCENE.instantiate()

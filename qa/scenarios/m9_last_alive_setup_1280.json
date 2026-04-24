@@ -1,0 +1,30 @@
+{
+  "name": "m9_last_alive_setup_1280",
+  "scene": "res://scenes/qa/m9_last_alive_setup_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 3
+    },
+    {
+      "snapshot": "last_alive_setup"
+    }
+  ],
+  "assert": [
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_variant",
+        "expected": "Ultimo vivo"
+      }
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_variant_cycle"
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

@@ -4,17 +4,27 @@ class_name MatchModeVariantCatalog
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 
 const VARIANT_SCORE_BY_CAUSE := "score_by_cause"
+const VARIANT_LAST_ALIVE := "last_alive"
 
 const _VARIANTS := [
 	{
 		"id": VARIANT_SCORE_BY_CAUSE,
 		"label": "Score por causa",
 		"summary": "Puntos por causa: ring-out domina, destruccion total es via secundaria.",
+		"score_label": "puntos",
 		"supports_teams": true,
 		"supports_ffa": true,
 		"enabled": true,
 	},
-	# Ultimo vivo necesita reglas de match propias antes de exponerse en runtime.
+	{
+		"id": VARIANT_LAST_ALIVE,
+		"label": "Ultimo vivo",
+		"summary": "FFA por rondas: gana quien queda en pie, sin puntos por causa.",
+		"score_label": "rondas",
+		"supports_teams": false,
+		"supports_ffa": true,
+		"enabled": true,
+	},
 ]
 
 
@@ -54,6 +64,15 @@ static func get_setup_summary_line(match_mode: int, variant_id: String) -> Strin
 	var sanitized_id := sanitize_variant_id(match_mode, variant_id)
 	var variant := get_variant(sanitized_id)
 	return "Variante | %s" % String(variant.get("label", "Score por causa"))
+
+
+static func is_last_alive(variant_id: String) -> bool:
+	return variant_id == VARIANT_LAST_ALIVE
+
+
+static func get_variant_label(match_mode: int, variant_id: String) -> String:
+	var variant := get_variant(sanitize_variant_id(match_mode, variant_id))
+	return String(variant.get("label", "Score por causa"))
 
 
 static func _variant_supports_match_mode(variant: Dictionary, match_mode: int) -> bool:
