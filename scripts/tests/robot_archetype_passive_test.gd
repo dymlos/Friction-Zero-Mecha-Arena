@@ -74,6 +74,10 @@ func _validate_cizalla_punishes_parts_that_are_already_damaged() -> void:
 	)
 	if has_attacker_aware_attack:
 		victim_against_ariete.call("receive_attack_hit_from_robot", Vector3.RIGHT, 18.0, ariete)
+		_assert(
+			cizalla.use_core_skill(),
+			"Cizalla deberia activar Corte antes de castigar fuerte una parte ya tocada."
+		)
 		victim_against_cizalla.call("receive_attack_hit_from_robot", Vector3.RIGHT, 18.0, cizalla)
 
 		_assert(
