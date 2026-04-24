@@ -17,6 +17,7 @@ func _run() -> void:
 	_assert_snippets_are_limited_to_three()
 	_assert_decisive_support_beats_common_pickup()
 	_assert_mode_specific_reading()
+	_assert_review_copy_stays_out_of_onboarding()
 	_finish()
 
 
@@ -126,6 +127,37 @@ func _assert_mode_specific_reading() -> void:
 	var ffa_story := ffa_summary.get("story", []) as Array
 	_assert(_has_line_containing(ffa_story, "Lectura | FFA"), "FFA deberia producir lectura centrada en supervivencia/posiciones.")
 	_assert(_has_line_containing(ffa_review.get_loser_reading_lines(), "Como perdiste |"), "FFA deberia producir una lectura compacta global, no por jugador.")
+
+
+func _assert_review_copy_stays_out_of_onboarding() -> void:
+	for context in [_teams_context(), _ffa_context()]:
+		var review := PostMatchReview.new()
+		review.record_event(PostMatchEvent.make_event(
+			1,
+			1,
+			12.0,
+			PostMatchEvent.TYPE_MATCH_CLOSE,
+			100,
+			"%s cerro la partida" % String(context.get("winner_label", "Ganador")),
+			"",
+			{
+				"arena_zone": "borde este",
+				"cause_label": "ring-out",
+				"competitor_label": String(context.get("winner_label", "Ganador")),
+			}
+		))
+		review.build_review(context)
+
+		var lines: Array[String] = []
+		lines.append_array(review.get_story_lines())
+		lines.append_array(review.get_loser_reading_lines())
+		lines.append_array(review.get_snippet_lines())
+		var joined_lines := "\n".join(PackedStringArray(lines))
+		for forbidden in ["How to Play", "Controles", "Easy", "Hard", "Tutorial", "Practica", "tabla"]:
+			_assert(
+				not joined_lines.contains(forbidden),
+				"PostMatchReview no debe emitir onboarding: %s" % forbidden
+			)
 
 
 func _teams_context() -> Dictionary:
