@@ -56,6 +56,35 @@ func _run() -> void:
 			not String(module_spec.get("recommended_roster_entry_id", "")).is_empty(),
 			"Cada modulo de practica deberia recomendar un entry id del roster."
 		)
+		if expected_module_id == "impacto":
+			_assert(
+				String(module_spec.get("recommended_roster_entry_id", "")) == "ariete",
+				"El modulo impacto deberia recomendar Ariete."
+			)
+		elif expected_module_id == "energia":
+			_assert(
+				String(module_spec.get("recommended_roster_entry_id", "")) == "aguja",
+				"El modulo energia deberia recomendar Aguja para practicar cargas y decision de skill."
+			)
+		elif expected_module_id == "partes":
+			_assert(
+				String(module_spec.get("recommended_roster_entry_id", "")) == "cizalla",
+				"El modulo partes deberia recomendar Cizalla."
+			)
+		elif expected_module_id == "recuperacion":
+			_assert(
+				String(module_spec.get("recommended_roster_entry_id", "")) == "grua",
+				"El modulo recuperacion deberia recomendar Grua."
+			)
+		elif expected_module_id == "sandbox":
+			_assert(
+				String(module_spec.get("recommended_roster_entry_id", "")) == "patin",
+				"Sandbox deberia mantener Patin como default si no hay ultimo robot elegido."
+			)
+			_assert(
+				(module_spec.get("alternate_roster_entry_ids", []) as Array).has("ancla"),
+				"Sandbox deberia dejar Ancla como alternativa recomendada de zona."
+			)
 		_assert(
 			module_spec.get("onboarding_topic_ids", []) is Array and not (module_spec.get("onboarding_topic_ids", []) as Array).is_empty(),
 			"Cada modulo de practica deberia enlazar al menos un tema de onboarding."

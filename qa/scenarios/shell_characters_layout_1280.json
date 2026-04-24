@@ -21,7 +21,16 @@
       "inside_viewport": "qa:shell_characters_list"
     },
     {
+      "inside_viewport": "qa:shell_characters_filter_range_zone"
+    },
+    {
       "inside_viewport": "qa:shell_characters_name"
+    },
+    {
+      "inside_viewport": "qa:shell_characters_mode_ffa"
+    },
+    {
+      "inside_viewport": "qa:shell_characters_mode_teams"
     },
     {
       "inside_viewport": "qa:shell_characters_back"
@@ -35,13 +44,25 @@
     {
       "text_contains": {
         "target": "qa:shell_characters_name",
-        "expected": "Ariete"
+        "expected": "Ancla"
       }
     },
     {
       "text_contains": {
         "target": "qa:shell_characters_signature",
-        "expected": "Embestida"
+        "expected": "Baliza"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_characters_mode_ffa",
+        "expected": "FFA |"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_characters_mode_teams",
+        "expected": "Teams |"
       }
     },
     {

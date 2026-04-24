@@ -136,7 +136,7 @@ text = ""
 [node name="RecommendedTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
-text = "Robot recomendado"
+text = "Robot recomendado (editable)"
 
 [node name="RecommendedValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
 unique_name_in_owner = true

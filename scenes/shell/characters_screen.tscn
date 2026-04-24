@@ -40,11 +40,11 @@ theme_override_constants/margin_bottom = 0
 
 [node name="VBox" type="VBoxContainer" parent="Frame"]
 layout_mode = 2
-theme_override_constants/separation = 18
+theme_override_constants/separation = 12
 
 [node name="Header" type="VBoxContainer" parent="Frame/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 4
 
 [node name="TitleLabel" type="Label" parent="Frame/VBox/Header"]
 unique_name_in_owner = true
@@ -68,14 +68,14 @@ theme_override_constants/separation = 18
 layout_mode = 2
 theme_type_variation = &"ShellPanel"
 size_flags_horizontal = 1
-custom_minimum_size = Vector2(250, 0)
+custom_minimum_size = Vector2(340, 0)
 
 [node name="ListMargin" type="MarginContainer" parent="Frame/VBox/Body/ListPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
 
 [node name="ListVBox" type="VBoxContainer" parent="Frame/VBox/Body/ListPanel/ListMargin"]
 layout_mode = 2
@@ -85,6 +85,31 @@ theme_override_constants/separation = 12
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Roster base"
+
+[node name="FilterRow" type="HBoxContainer" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AllFilterButton" type="Button" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox/FilterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
+text = "Todos"
+
+[node name="ImpactFilterButton" type="Button" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox/FilterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
+text = "Impacto"
+
+[node name="RangeZoneFilterButton" type="Button" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox/FilterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
+text = "Rango / zona"
 
 [node name="CharacterList" type="ItemList" parent="Frame/VBox/Body/ListPanel/ListMargin/ListVBox"]
 unique_name_in_owner = true
@@ -102,137 +127,159 @@ size_flags_vertical = 3
 
 [node name="DetailMargin" type="MarginContainer" parent="Frame/VBox/Body/DetailPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 22
-theme_override_constants/margin_top = 22
-theme_override_constants/margin_right = 22
-theme_override_constants/margin_bottom = 22
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
 
-[node name="DetailVBox" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin"]
+[node name="DetailScroll" type="ScrollContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DetailVBox" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="TopBand" type="HBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="TopBand" type="HBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="AccentPanel" type="ColorRect" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand"]
+[node name="AccentPanel" type="ColorRect" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TopBand"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(10, 52)
 layout_mode = 2
 color = Color(1, 1, 1, 1)
 
-[node name="NameBlock" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand"]
+[node name="NameBlock" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TopBand"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
-[node name="NameLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand/NameBlock"]
+[node name="NameLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TopBand/NameBlock"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ShellBodyStrong"
 text = "Ariete"
 
-[node name="RoleRow" type="HBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand/NameBlock"]
+[node name="RoleRow" type="HBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TopBand/NameBlock"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="RoleLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand/NameBlock/RoleRow"]
+[node name="RoleLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TopBand/NameBlock/RoleRow"]
 layout_mode = 2
 text = "Rol:"
 
-[node name="RoleValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/TopBand/NameBlock/RoleRow"]
+[node name="RoleValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TopBand/NameBlock/RoleRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 autowrap_mode = 2
 text = ""
 
-[node name="FantasyTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="ModeNotes" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="FfaModeValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ModeNotes"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="TeamsModeValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ModeNotes"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = ""
+
+[node name="FantasyTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Fantasy"
 
-[node name="FantasyValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="FantasyValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2
 text = ""
 
-[node name="StrengthTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="StrengthTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Fortaleza principal"
 
-[node name="StrengthValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="StrengthValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2
 text = ""
 
-[node name="RiskTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="RiskTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Riesgo principal"
 
-[node name="RiskValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="RiskValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2
 text = ""
 
-[node name="SignatureTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SignatureTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Skill o identidad clave"
 
-[node name="SignatureValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SignatureValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2
 text = ""
 
-[node name="BodyReadTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="BodyReadTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Lectura corporal"
 
-[node name="BodyReadValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="BodyReadValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2
 text = ""
 
-[node name="ControlsRow" type="HBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox"]
+[node name="ControlsRow" type="HBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="EasyBlock" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow"]
+[node name="EasyBlock" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ControlsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
-[node name="EasyTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow/EasyBlock"]
+[node name="EasyTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ControlsRow/EasyBlock"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Easy"
 
-[node name="EasyValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow/EasyBlock"]
+[node name="EasyValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ControlsRow/EasyBlock"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2
 text = ""
 
-[node name="HardBlock" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow"]
+[node name="HardBlock" type="VBoxContainer" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ControlsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
-[node name="HardTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow/HardBlock"]
+[node name="HardTitle" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ControlsRow/HardBlock"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
 text = "Hard"
 
-[node name="HardValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailVBox/ControlsRow/HardBlock"]
+[node name="HardValueLabel" type="Label" parent="Frame/VBox/Body/DetailPanel/DetailMargin/DetailScroll/DetailVBox/ControlsRow/HardBlock"]
 unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 2

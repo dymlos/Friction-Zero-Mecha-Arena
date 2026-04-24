@@ -44,9 +44,19 @@ func _run() -> void:
 		"Characters deberia exponer la ficha seleccionada para tests de flujo."
 	)
 	_assert(
+		characters_screen.has_method("get_visible_character_labels"),
+		"Characters deberia exponer el roster visible para tests de flujo."
+	)
+	_assert(
 		String(characters_screen.call("get_selected_character_label")) == "Ariete",
 		"Characters deberia arrancar mostrando a Ariete primero."
 	)
+	if characters_screen.has_method("get_visible_character_labels"):
+		var visible_labels: Array = characters_screen.call("get_visible_character_labels")
+		_assert(
+			visible_labels.size() == 6 and visible_labels.has("Aguja") and visible_labels.has("Ancla"),
+			"Characters deberia arrancar con las seis fichas competitivas visibles."
+		)
 
 	var focus_owner := root.get_viewport().gui_get_focus_owner()
 	_assert(
