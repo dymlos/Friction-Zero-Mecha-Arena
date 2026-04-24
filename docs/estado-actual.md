@@ -15,6 +15,7 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 - Runtime `practice_mode` separado del laboratorio, con modulos `movimiento`, `impacto`, `energia`, `partes`, `recuperacion` y `sandbox`.
 - `PracticeHud` con modulo, objetivo, progreso, controles, callout corto y pausa, sin recap competitivo ni prompts de laboratorio.
 - Pausa operativa compacta en match y practica: acciones primarias, quick settings de `HUD/master/music/sfx` y resumen corto de dispositivos, sin reasignar slots ni cambiar modo.
+- Cierre post-partida M10: lectura compacta de decision, snippets event-driven `Replay | ...`, diferencia de enfasis `Teams/FFA` y secciones HUD dedicadas sin reemplazar el resultado principal.
 - Fuente unica de copy del roster base visible hoy en shell: `Ariete`, `Grua`, `Cizalla` y `Patin`.
 - Fuente unica de copy de onboarding general compartida entre shell, QA y tests.
 - Movimiento con inercia y choques con peso.
@@ -36,6 +37,7 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
   - `Teams` base
   - `FFA` base
 - Cierre `player_shell` sin `Reinicio | F5`, sin autorestart y con panels de recap/resultado auditados en producto integrado.
+- Cierre `player_shell` con story/snippets post-match auditados: `player_shell_post_match_review_teams_1280` y `player_shell_post_match_review_ffa_1280`.
 - Fuente unica de identidad por personaje compartida entre shell, QA y tests.
 - Fuente unica de onboarding general compartida entre shell, QA y tests.
 - Paridad del flujo de shell en tests scene-level y QA visual de `menu`, `setup`, `characters`, `how to play` y overlay de pausa.
@@ -43,6 +45,8 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 - QA integrada del loop completo a `1280x720`:
   - `player_shell_loop_teams_1280`
   - `player_shell_loop_ffa_1280`
+  - `player_shell_post_match_review_teams_1280`
+  - `player_shell_post_match_review_ffa_1280`
 - QA integrada de practica a `1280x720`:
   - `shell_settings_layout_1280`
   - `shell_local_setup_layout_1280`
@@ -78,6 +82,7 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 - El pacing fino del opening sigue siendo pregunta de tuning.
 - La paridad `base/validation` sigue siendo el riesgo tecnico mas sensible cuando se tocan escenas o HUD.
 - El soporte post-muerte `Teams` necesita mas validacion manual de legibilidad e impacto real.
+- La lectura post-partida M10 esta validada por tests/QA, pero todavia necesita playtest humano de ritmo de revancha y comprension en menos de 10 segundos.
 - No aparecio un problema nuevo de `1080p` en este slice; la resolucion sigue siendo el checkpoint sensible para shell y practica.
 
 ## Contexto adicional

@@ -1,6 +1,6 @@
 # Proximos pasos
 
-La siguiente iteracion recomendada debe tomar la shell operativa de `M9` como nueva base cerrada: settings persistentes, slots/dispositivos reales, match, practica y pausa ya quedaron revalidados de forma automatizada. Lo siguiente no es ampliar configuracion, sino validar la UX con evidencia humana y corregir solo fricciones concretas.
+La siguiente iteracion recomendada debe tomar la shell operativa de `M9` y el cierre post-partida de `M10` como base cerrada: settings persistentes, slots/dispositivos reales, match, practica, pausa y lectura final ya quedaron revalidados de forma automatizada. Lo siguiente no es ampliar configuracion ni replay, sino validar la UX con evidencia humana y corregir solo fricciones concretas.
 
 ## Prioridad inmediata
 
@@ -16,14 +16,17 @@ La siguiente iteracion recomendada debe tomar la shell operativa de `M9` como nu
    - `2P mixto Easy/Hard`
    - entrada desde `How to Play`
    - volver al menu desde pausa
-2. Revalidar manualmente shell + practica en shared-screen con jugadores reales antes de abrir remapeo libre o polish audiovisual.
-3. Mantener ownership estricto: `Characters` = identidad, `How to Play` = reglas base, `Practica` = experimentacion segura, `match` = decision tactica bajo presion.
-4. Mantener la disciplina de paridad `base/validation` mientras se toque shell, practica o HUD.
-5. Con esa evidencia, decidir si el siguiente bloque es cierre/post-match (`M10`) o un polish puntual de UX operativa.
+2. Revalidar manualmente el cierre M10:
+   - `Teams`: leer decision, `Replay | ...`, desgaste/apoyo y "como perdi" en menos de 10 segundos.
+   - `FFA`: leer posiciones, desempate, supervivencia y replay sin ayuda externa.
+   - repetir un cierre por explosion normal y uno con apoyo post-muerte antes del cierre.
+3. Revalidar manualmente shell + practica en shared-screen con jugadores reales antes de abrir remapeo libre, video replay real o polish audiovisual.
+4. Mantener ownership estricto: `Characters` = identidad, `How to Play` = reglas base, `Practica` = experimentacion segura, `match` = decision tactica bajo presion.
+5. Mantener la disciplina de paridad `base/validation` mientras se toque shell, practica, HUD o cierre post-partida.
 
 ## Diferidos explicitos de este cierre parcial
 
-- replay snippets
+- video replay real, ghost replay, captura frame-by-frame o timeline interactivo
 - post-muerte `FFA`
 - remapeo libre tecla por tecla o editor completo de controles
 - extensiones amplias de shell fuera del contrato operativo actual

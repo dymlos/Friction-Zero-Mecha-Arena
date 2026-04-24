@@ -18,6 +18,10 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - El aprendizaje aplicado no se resuelve con overlays largos: shell, practica, HUD y pausa solo agregan recordatorios breves y contextuales.
 - `HUD`, `pausa` y `resultados` solo deben reforzar recordatorios contextuales, no absorber onboarding completo.
 - El cierre de partida lanzado desde `player_shell` debe quedar estable: sin prompts de laboratorio y sin autorestart.
+- El primer replay viable de `M10` es event-driven: snippets `Replay | tiempo/ronda/zona/causa/competidor`, no grabacion frame-by-frame ni playback fisico.
+- Resultados y recap pueden explicar la decision, pero no absorben onboarding largo ni tablas completas.
+- El cierre post-partida muestra como maximo tres snippets visibles y prioriza cierre de match, apoyo decisivo y primer/ultimo error de posicionamiento.
+- `Teams` debe leer coordinacion, apoyo, rescates/negaciones y desgaste; `FFA` debe leer supervivencia, posiciones y desempate aunque exista fuente de baja.
 - `GameShell` y `MatchLaunchConfig` son la costura comun para armar loops integrados y QA del producto real; evitar ramas paralelas que instancien `main*.tscn` directo por fuera de ese contrato.
 - `Settings` vive en `menu principal` y solo cubre configuracion global persistente: audio, video, HUD y referencia corta de controles.
 - `setup local` vive antes del match y es la unica superficie para editar modo, slots activos, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.

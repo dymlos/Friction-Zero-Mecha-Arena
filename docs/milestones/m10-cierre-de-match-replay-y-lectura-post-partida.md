@@ -22,17 +22,17 @@ Para eso hace falta una capa post-partida que explique mejor:
 ## Grupos de trabajo
 
 - `Recap y resultados`
-  - profundizar resultados sin convertirlos en una tabla ruidosa
-  - reforzar explicaciones de derrota, cierre y desempate segun modo
-  - decidir que estadisticas realmente ayudan a entender el match
+  - implementado: resultado y recap agregan `Lectura | ...`, `Como perdiste | ...` y conservan stats existentes sin tabla nueva
+  - implementado: `Teams` prioriza equipo/cierre/desgaste/apoyo; `FFA` prioriza supervivencia, posiciones y desempate
+  - limite activo: el resultado base de cuatro jugadores no debe superar el presupuesto visual de 22 lineas
 - `Replay snippets`
-  - definir el primer formato viable de highlight o repeticion corta
-  - elegir que eventos merecen snippet: baja decisiva, ring-out, explosion, clutch de rescate
-  - fijar costos y limites para no comprometer claridad ni performance
+  - implementado: primer formato viable event-driven, no video
+  - valen la pena: cierre de match, baja decisiva, ring-out, destruccion total, explosion inestable, apoyo decisivo y errores de posicionamiento temprano/final
+  - descartado para este milestone: grabacion frame-by-frame, timeline interactivo, guardado entre sesiones y metricas largas
 - `Lectura post-partida`
-  - conectar recap, resultado y futuras repeticiones en una sola historia
-  - reforzar identidad distinta de `Teams` y `FFA` en el cierre
-  - decidir cuanto explica texto, cuanto explica orden visual y cuanto explican clips
+  - implementado: `MatchController` captura eventos y `PostMatchReview` arma historia/snippets sin decidir reglas de match
+  - implementado: `MatchHud` expone story/snippets/hint con QA ids dedicados y mantiene `MatchResultLabel`
+  - pendiente humano: confirmar que jugadores entienden "como perdi" y si quieren revancha sin friccion
 
 ## Dependencias
 
@@ -42,14 +42,14 @@ Para eso hace falta una capa post-partida que explique mejor:
 
 ## Riesgos y preguntas abiertas
 
-- Un exceso de stats o highlights puede empeorar legibilidad y ritmo de revancha.
-- Los replay snippets pueden ser costosos o complejos si se intentan resolver demasiado pronto o con demasiados casos.
-- El cierre puede sobredisenarse para espectador y perder utilidad inmediata para el jugador local.
-- `Teams` y `FFA` probablemente necesiten enfasis distintos para explicar bien el final del match.
+- Un exceso de stats o highlights sigue siendo riesgo; por eso M10 limita snippets y poda ruido antes que agregar mas metricas.
+- Video replay real queda como investigacion futura, no como gap de M10.
+- Falta playtest humano para medir comprension y ritmo de revancha.
+- `Teams` y `FFA` ya tienen enfasis distintos en texto; falta validar si esos enfasis se leen igual de bien en shared-screen.
 
 ## Criterio de salida
 
-- Existe una propuesta clara de cierre post-partida mas rica que el baseline de `M7`.
-- El roadmap explicita que momentos, stats o snippets valen la pena y cuales no.
-- La lectura de derrota o victoria mejora sin romper rapidez, claridad ni replayability.
-- Replay y resultados quedan alineados con el fantasy central y con la identidad de cada modo.
+- Cumplido: existe cierre post-partida mas rico que el baseline de `M7`, con lectura compacta, snippets event-driven y secciones HUD auditadas.
+- Cumplido: el roadmap explicita que momentos valen la pena y deja video replay/timeline fuera de M10.
+- Cumplido en automatizacion: tests scene-level y QA visual cubren resultado, recap, snippets, causa, ruido y `player_shell`.
+- Pendiente de producto: playtest humano de lectura y ritmo de revancha.
