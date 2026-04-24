@@ -1,16 +1,16 @@
 {
-  "name": "player_shell_post_match_review_ffa_1280",
+  "name": "player_shell_post_match_review_ffa_1920",
   "scene": "res://scenes/qa/player_shell_loop_ffa_validation.tscn",
   "viewport": {
-    "width": 1280,
-    "height": 720
+    "width": 1920,
+    "height": 1080
   },
   "steps": [
     {
       "wait_frames": 90
     },
     {
-      "snapshot": "player_shell_post_match_review_ffa"
+      "snapshot": "player_shell_post_match_review_ffa_1920"
     }
   ],
   "assert": [

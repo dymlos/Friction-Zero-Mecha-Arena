@@ -39,6 +39,12 @@
       }
     },
     {
+      "text_contains": {
+        "target": "qa:match_hud_result_label",
+        "expected": "Stats |"
+      }
+    },
+    {
       "no_overlap": {
         "a": "qa:match_hud_recap_panel",
         "b": "qa:match_hud_result_panel"

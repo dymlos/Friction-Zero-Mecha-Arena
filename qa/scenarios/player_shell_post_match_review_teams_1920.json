@@ -1,16 +1,16 @@
 {
-  "name": "player_shell_post_match_review_ffa_1280",
-  "scene": "res://scenes/qa/player_shell_loop_ffa_validation.tscn",
+  "name": "player_shell_post_match_review_teams_1920",
+  "scene": "res://scenes/qa/player_shell_loop_teams_validation.tscn",
   "viewport": {
-    "width": 1280,
-    "height": 720
+    "width": 1920,
+    "height": 1080
   },
   "steps": [
     {
       "wait_frames": 90
     },
     {
-      "snapshot": "player_shell_post_match_review_ffa"
+      "snapshot": "player_shell_post_match_review_teams_1920"
     }
   ],
   "assert": [
@@ -23,7 +23,7 @@
     {
       "text_contains": {
         "target": "qa:match_hud_post_match_story",
-        "expected": "FFA"
+        "expected": "Equipo"
       }
     },
     {
@@ -35,13 +35,7 @@
     {
       "text_contains": {
         "target": "qa:match_hud_result_label",
-        "expected": "Posiciones | 1."
-      }
-    },
-    {
-      "text_contains": {
-        "target": "qa:match_hud_result_label",
-        "expected": "Desempate |"
+        "expected": "gana la partida"
       }
     },
     {
