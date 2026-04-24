@@ -8,6 +8,9 @@ const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_p
 signal back_requested
 signal practice_requested(module_id: String)
 
+const SURFACE_SCOPE_GLOBAL := "global"
+const SURFACE_SCOPE_PAUSE := "pause"
+
 @onready var backdrop: ColorRect = $Backdrop
 @onready var title_label: Label = %TitleLabel
 @onready var subtitle_label: Label = %SubtitleLabel
@@ -21,6 +24,7 @@ signal practice_requested(module_id: String)
 
 var _sections: Array = []
 var _selected_index := -1
+var _surface_scope := SURFACE_SCOPE_GLOBAL
 
 
 func _ready() -> void:
@@ -35,9 +39,17 @@ func _ready() -> void:
 	topic_list.item_selected.connect(_on_topic_selected)
 	_sections = OnboardingCatalog.get_sections()
 	_rebuild_list()
+	_apply_surface_scope()
 	if not _sections.is_empty():
 		_select_index(0)
 	call_deferred("_focus_initial_list")
+
+
+func set_surface_scope(scope_id: String) -> void:
+	if not [SURFACE_SCOPE_GLOBAL, SURFACE_SCOPE_PAUSE].has(scope_id):
+		scope_id = SURFACE_SCOPE_GLOBAL
+	_surface_scope = scope_id
+	_apply_surface_scope()
 
 
 func get_selected_topic_id() -> String:
@@ -53,6 +65,8 @@ func focus_back_button() -> void:
 
 
 func open_selected_topic_practice() -> void:
+	if _surface_scope == SURFACE_SCOPE_PAUSE:
+		return
 	var module_id := OnboardingCatalog.get_practice_module_id_for_section(get_selected_topic_id())
 	if module_id.is_empty():
 		return
@@ -88,8 +102,9 @@ func _apply_section(section: Dictionary) -> void:
 	bullets_value_label.text = "\n".join(bullets)
 	callout_value_label.text = String(section.get("callout", ""))
 	var practice_module_id := String(section.get("practice_module_id", ""))
-	practice_button.disabled = practice_module_id.is_empty()
+	practice_button.disabled = _surface_scope == SURFACE_SCOPE_PAUSE or practice_module_id.is_empty()
 	practice_button.text = _get_practice_button_label(practice_module_id)
+	_apply_surface_scope()
 
 
 func _on_topic_selected(index: int) -> void:
@@ -106,6 +121,20 @@ func _focus_initial_list() -> void:
 func focus_practice_button() -> void:
 	if practice_button != null and not practice_button.disabled:
 		practice_button.grab_focus()
+
+
+func _apply_surface_scope() -> void:
+	if not is_node_ready():
+		return
+	var pause_scope := _surface_scope == SURFACE_SCOPE_PAUSE
+	practice_button.visible = not pause_scope
+	if pause_scope:
+		practice_button.disabled = true
+	subtitle_label.text = (
+		"Lectura breve de reglas durante pausa. Practica queda fuera del match congelado."
+		if pause_scope
+		else "Reglas base del match, controles Easy/Hard y lectura general sin repetir identidad de Characters."
+	)
 
 
 func _install_qa_ids() -> void:

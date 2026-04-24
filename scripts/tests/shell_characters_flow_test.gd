@@ -48,6 +48,10 @@ func _run() -> void:
 		"Characters deberia exponer el roster visible para tests de flujo."
 	)
 	_assert(
+		characters_screen.has_method("set_surface_scope"),
+		"Characters deberia exponer scope global/pausa."
+	)
+	_assert(
 		String(characters_screen.call("get_selected_character_label")) == "Ariete",
 		"Characters deberia arrancar mostrando a Ariete primero."
 	)

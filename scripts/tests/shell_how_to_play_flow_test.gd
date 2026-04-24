@@ -48,6 +48,10 @@ func _run() -> void:
 		"How to Play deberia exponer un CTA para abrir Practica desde el tema activo."
 	)
 	_assert(
+		how_to_play_screen.has_method("set_surface_scope"),
+		"How to Play deberia exponer scope global/pausa."
+	)
+	_assert(
 		String(how_to_play_screen.call("get_selected_topic_id")) == "victory",
 		"How to Play deberia arrancar mostrando victoria primero."
 	)

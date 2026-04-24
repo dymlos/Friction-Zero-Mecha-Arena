@@ -6,6 +6,9 @@ const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_p
 
 signal back_requested
 
+const SURFACE_SCOPE_GLOBAL := "global"
+const SURFACE_SCOPE_PAUSE := "pause"
+
 @onready var backdrop: ColorRect = $Backdrop
 @onready var title_label: Label = %TitleLabel
 @onready var subtitle_label: Label = %SubtitleLabel
@@ -31,6 +34,7 @@ var _roster: Array = []
 var _visible_roster: Array = []
 var _selected_index := -1
 var _active_filter := "all"
+var _surface_scope := SURFACE_SCOPE_GLOBAL
 
 const FILTER_ALL := "all"
 const FILTER_IMPACT := "impact"
@@ -61,6 +65,7 @@ func _ready() -> void:
 	)
 	character_list.item_selected.connect(_on_character_selected)
 	_roster = RosterCatalog.get_shell_roster()
+	_apply_surface_scope()
 	_rebuild_list()
 	if not _visible_roster.is_empty():
 		_select_index(0)
@@ -72,6 +77,13 @@ func get_selected_character_label() -> String:
 		return ""
 
 	return String(_visible_roster[_selected_index].get("label", ""))
+
+
+func set_surface_scope(scope_id: String) -> void:
+	if not [SURFACE_SCOPE_GLOBAL, SURFACE_SCOPE_PAUSE].has(scope_id):
+		scope_id = SURFACE_SCOPE_GLOBAL
+	_surface_scope = scope_id
+	_apply_surface_scope()
 
 
 func get_visible_character_labels() -> Array:
@@ -167,6 +179,16 @@ func _focus_initial_list() -> void:
 		return
 
 	character_list.grab_focus()
+
+
+func _apply_surface_scope() -> void:
+	if not is_node_ready():
+		return
+	subtitle_label.text = (
+		"Identidad del roster durante pausa, sin cambiar seleccion de slots."
+		if _surface_scope == SURFACE_SCOPE_PAUSE
+		else "Roster competitivo visible. Identidad por robot, sin mezclar reglas generales del match."
+	)
 
 
 func _filter_roster(roster: Array) -> Array:

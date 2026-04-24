@@ -62,6 +62,7 @@ func _run() -> void:
 		return
 
 	_assert(settings_screen.has_method("get_section_ids"), "Settings deberia exponer sus secciones para tests.")
+	_assert(settings_screen.has_method("set_surface_scope"), "Settings deberia exponer scope global/pausa.")
 	_assert(settings_screen.has_method("get_settings_snapshot"), "Settings deberia exponer el snapshot activo.")
 	_assert(settings_screen.has_method("set_master_volume"), "Settings deberia permitir editar master.")
 	_assert(settings_screen.has_method("set_music_volume"), "Settings deberia permitir editar musica.")
@@ -83,6 +84,12 @@ func _run() -> void:
 	_assert(
 		section_ids == ["audio", "video", "hud", "controls"],
 		"Settings deberia mantener el ordering Audio/Video/HUD/Controles."
+	)
+	settings_screen.call("set_surface_scope", "global")
+	section_ids = settings_screen.call("get_section_ids")
+	_assert(
+		section_ids == ["audio", "video", "hud", "controls"],
+		"Settings en scope global deberia conservar Audio/Video/HUD/Controles."
 	)
 	var snapshot := settings_screen.call("get_settings_snapshot") as Dictionary
 	_assert(

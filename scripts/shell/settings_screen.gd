@@ -7,6 +7,10 @@ const UserSettings = preload("res://scripts/systems/user_settings.gd")
 
 signal back_requested
 
+const SURFACE_SCOPE_GLOBAL := "global"
+const SURFACE_SCOPE_PAUSE := "pause"
+const PAUSE_SECTION_IDS := ["audio", "hud"]
+
 @onready var backdrop: ColorRect = $Backdrop
 @onready var title_label: Label = %TitleLabel
 @onready var subtitle_label: Label = %SubtitleLabel
@@ -34,6 +38,7 @@ signal back_requested
 var _store: Node = null
 var _settings: UserSettings = null
 var _active_section_id := "audio"
+var _surface_scope := SURFACE_SCOPE_GLOBAL
 
 
 func _ready() -> void:
@@ -48,15 +53,26 @@ func _ready() -> void:
 	_settings = _store.call("get_settings") if _store != null and _store.has_method("get_settings") else UserSettings.new()
 	_populate_catalog()
 	_bind_controls()
+	_apply_surface_scope()
 	_apply_settings_to_controls()
 	_select_section("audio")
 	call_deferred("focus_back_button")
 
 
+func set_surface_scope(scope_id: String) -> void:
+	if not [SURFACE_SCOPE_GLOBAL, SURFACE_SCOPE_PAUSE].has(scope_id):
+		scope_id = SURFACE_SCOPE_GLOBAL
+	_surface_scope = scope_id
+	_apply_surface_scope()
+
+
 func get_section_ids() -> Array[String]:
 	var ids: Array[String] = []
 	for section in ShellSettingsCatalog.get_sections():
-		ids.append(String(section.get("id", "")))
+		var section_id := String(section.get("id", ""))
+		if _surface_scope == SURFACE_SCOPE_PAUSE and not PAUSE_SECTION_IDS.has(section_id):
+			continue
+		ids.append(section_id)
 	return ids
 
 
@@ -71,34 +87,44 @@ func get_settings_snapshot() -> Dictionary:
 	}
 
 
-func set_master_volume(value: float) -> void:
+func set_master_volume(value: float) -> bool:
 	_settings.audio_master_volume = value
 	_persist_settings()
+	return true
 
 
-func set_music_volume(value: float) -> void:
+func set_music_volume(value: float) -> bool:
 	_settings.audio_music_volume = value
 	_persist_settings()
+	return true
 
 
-func set_sfx_volume(value: float) -> void:
+func set_sfx_volume(value: float) -> bool:
 	_settings.audio_sfx_volume = value
 	_persist_settings()
+	return true
 
 
-func set_window_mode(value: String) -> void:
+func set_window_mode(value: String) -> bool:
+	if _surface_scope == SURFACE_SCOPE_PAUSE:
+		return false
 	_settings.window_mode = value
 	_persist_settings()
+	return true
 
 
-func set_vsync_enabled(is_enabled: bool) -> void:
+func set_vsync_enabled(is_enabled: bool) -> bool:
+	if _surface_scope == SURFACE_SCOPE_PAUSE:
+		return false
 	_settings.vsync_enabled = is_enabled
 	_persist_settings()
+	return true
 
 
-func set_hud_detail_mode(mode: int) -> void:
+func set_hud_detail_mode(mode: int) -> bool:
 	_settings.default_hud_detail_mode = mode
 	_persist_settings()
+	return true
 
 
 func get_controls_summary_text() -> String:
@@ -123,6 +149,23 @@ func _populate_catalog() -> void:
 	_rebuild_window_mode_options()
 	_rebuild_hud_mode_options()
 	controls_summary_label.text = _build_controls_summary()
+
+
+func _apply_surface_scope() -> void:
+	if not is_node_ready():
+		return
+	var pause_scope := _surface_scope == SURFACE_SCOPE_PAUSE
+	video_button.visible = not pause_scope
+	controls_button.visible = not pause_scope
+	video_button.disabled = pause_scope or _active_section_id == "video"
+	controls_button.disabled = pause_scope or _active_section_id == "controls"
+	subtitle_label.text = (
+		"Ajustes seguros de pausa: audio y HUD. Video, controles, slots y modo quedan fuera del match congelado."
+		if pause_scope
+		else "Configuracion global persistente. Slots y reglas del match siguen fuera de esta pantalla."
+	)
+	if pause_scope and not PAUSE_SECTION_IDS.has(_active_section_id):
+		_select_section("audio")
 
 
 func _bind_controls() -> void:
@@ -178,15 +221,17 @@ func _persist_settings() -> void:
 
 
 func _select_section(section_id: String) -> void:
+	if _surface_scope == SURFACE_SCOPE_PAUSE and not PAUSE_SECTION_IDS.has(section_id):
+		section_id = "audio"
 	_active_section_id = section_id
 	audio_content.visible = section_id == "audio"
 	video_content.visible = section_id == "video"
 	hud_content.visible = section_id == "hud"
 	controls_content.visible = section_id == "controls"
 	audio_button.disabled = section_id == "audio"
-	video_button.disabled = section_id == "video"
+	video_button.disabled = _surface_scope == SURFACE_SCOPE_PAUSE or section_id == "video"
 	hud_button.disabled = section_id == "hud"
-	controls_button.disabled = section_id == "controls"
+	controls_button.disabled = _surface_scope == SURFACE_SCOPE_PAUSE or section_id == "controls"
 	_refresh_section_summary()
 
 
