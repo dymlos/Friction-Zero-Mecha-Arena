@@ -1,0 +1,30 @@
+{
+  "name": "player_shell_last_alive_1280",
+  "scene": "res://scenes/qa/player_shell_last_alive_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 8
+    },
+    {
+      "snapshot": "last_alive_runtime"
+    }
+  ],
+  "assert": [
+    {
+      "text_contains": {
+        "target": "qa:match_hud_round",
+        "expected": "Ultimo vivo"
+      }
+    },
+    {
+      "inside_viewport": "qa:match_hud_round"
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

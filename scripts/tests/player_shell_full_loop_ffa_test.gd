@@ -3,6 +3,7 @@ extends SceneTree
 const GAME_SHELL_SCENE := preload("res://scenes/shell/game_shell.tscn")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
 const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd")
+const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_variant_catalog.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 var _failed := false
@@ -38,6 +39,10 @@ func _run() -> void:
 		await _cleanup_current_scene()
 		_finish()
 		return
+	_assert(
+		launch_config.mode_variant_id == MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE,
+		"El loop FFA principal debe seguir default en Score por causa."
+	)
 
 	game_shell.call("launch_local_match", launch_config)
 	await process_frame
