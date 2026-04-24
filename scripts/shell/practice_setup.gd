@@ -113,8 +113,21 @@ func get_context_card_lines() -> Array[String]:
 	return lines
 
 
+func get_first_pass_module_labels() -> Array[String]:
+	var labels: Array[String] = []
+	for module_id in PracticeCatalog.get_first_pass_module_ids():
+		var module_spec := PracticeCatalog.get_module(String(module_id))
+		var label := String(module_spec.get("label", ""))
+		if not label.is_empty():
+			labels.append(label)
+	return labels
+
+
 func get_player_scope_line() -> String:
-	return "1-2 jugadores locales | HUD explicito | sin score competitivo"
+	var module_spec := _get_selected_module()
+	var player_scope := String(module_spec.get("player_scope", "1-2 jugadores locales"))
+	var hud_default := String(module_spec.get("hud_default", "explicito"))
+	return "%s | HUD %s | sin score competitivo" % [player_scope, hud_default]
 
 
 func focus_back_button() -> void:
@@ -199,7 +212,9 @@ func _apply_module(module_spec: Dictionary) -> void:
 	summary_value_label.text = String(module_spec.get("summary", ""))
 	recommended_value_label.text = get_recommended_robot_label()
 	related_topics_value_label.text = " · ".join(get_related_topic_labels())
-	context_card_value_label.text = "\n".join(get_context_card_lines())
+	var context_lines := get_context_card_lines()
+	context_lines.append("Ruta sugerida: %s." % " -> ".join(get_first_pass_module_labels()))
+	context_card_value_label.text = "\n".join(context_lines)
 	player_scope_value_label.text = get_player_scope_line()
 	if not _preserve_existing_roster:
 		_session_draft.set_slot_roster_entry(1, String(module_spec.get("recommended_roster_entry_id", "")))

@@ -83,13 +83,19 @@
     {
       "text_contains": {
         "target": "qa:shell_practice_setup_scope",
-        "expected": "1-2"
+        "expected": "1-2 jugadores locales"
       }
     },
     {
       "text_contains": {
         "target": "qa:shell_practice_setup_context_card",
         "expected": "Arranca"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_practice_setup_context_card",
+        "expected": "Ruta sugerida"
       }
     },
     {

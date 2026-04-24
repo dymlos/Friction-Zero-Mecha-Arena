@@ -74,6 +74,23 @@ func _run() -> void:
 		practice_setup.has_method("get_player_scope_line"),
 		"PracticeSetup deberia exponer el alcance 1-2P/HUD explicito."
 	)
+	_assert(
+		practice_setup.has_method("get_first_pass_module_labels"),
+		"PracticeSetup debe exponer la ruta recomendada del primer pase M8."
+	)
+	if practice_setup.has_method("get_first_pass_module_labels"):
+		_assert(
+			practice_setup.call("get_first_pass_module_labels") == ["Movimiento", "Impacto", "Partes", "Sandbox"],
+			"PracticeSetup debe comunicar la ruta recomendada sin ocultar los otros modulos."
+		)
+	_assert(
+		String(practice_setup.call("get_player_scope_line")).contains("1-2 jugadores locales"),
+		"PracticeSetup debe comunicar explicitamente el alcance 1-2P."
+	)
+	_assert(
+		String(practice_setup.call("get_player_scope_line")).contains("HUD explicito"),
+		"PracticeSetup debe comunicar que Practica arranca con HUD explicito."
+	)
 	if not (
 		practice_setup.has_method("set_selected_module")
 		and practice_setup.has_method("get_selected_module_id")
