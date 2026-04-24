@@ -1565,7 +1565,12 @@ func _spawn_ffa_aftermath_if_needed(eliminated_robot: RobotBase, source_robot: R
 	if _ffa_aftermath_spawned_robot_ids.has(eliminated_id):
 		return
 	var remaining := _get_remaining_competitors_after_aftermath_elimination(eliminated_robot)
-	if not FfaAftermathRules.should_spawn_aftermath(match_controller.match_mode, match_controller.is_round_active(), remaining):
+	if not FfaAftermathRules.should_spawn_aftermath(
+		match_controller.match_mode,
+		match_controller.is_round_active(),
+		remaining,
+		match_controller.get_mode_variant_id()
+	):
 		return
 	_ensure_aftermath_root()
 	var pickup := FFA_AFTERMATH_PICKUP_SCENE.instantiate() as FfaAftermathPickup

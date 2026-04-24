@@ -18,6 +18,7 @@ static func should_spawn_aftermath(
 	remaining_competitors_after_elimination: int,
 	_mode_variant_id: String = ""
 ) -> bool:
+	# El aftermath es identidad neutral de FFA; no cambia entre score_by_cause y last_alive.
 	return match_mode == MatchController.MatchMode.FFA and round_active and remaining_competitors_after_elimination >= 2
 
 

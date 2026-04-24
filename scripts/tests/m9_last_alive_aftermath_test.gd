@@ -4,6 +4,7 @@ const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
 const FfaAftermathRules = preload("res://scripts/systems/ffa_aftermath_rules.gd")
 const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_variant_catalog.gd")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
+const FfaAftermathPickup = preload("res://scripts/pickups/ffa_aftermath_pickup.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 
 var _failed := false
@@ -50,6 +51,12 @@ func _run() -> void:
 	robots[0].fall_into_void()
 	await create_timer(0.1).timeout
 	_assert(get_nodes_in_group("ffa_aftermath_pickups").size() == 1, "Ultimo vivo debe conservar aftermath neutral en baja no final.")
+	var pickup := get_nodes_in_group("ffa_aftermath_pickups")[0] as FfaAftermathPickup
+	if pickup != null:
+		_assert(not pickup.has_method("use_support_payload"), "El botin FFA no debe exponer uso de payload de nave.")
+		_assert(not pickup.has_method("cycle_target"), "El botin FFA no debe exponer seleccion de objetivo.")
+		_assert(not pickup.has_method("set_owner_player"), "El botin FFA no debe tener ownership del eliminado.")
+		_assert(not pickup.has_method("process_player_input"), "El botin FFA no debe procesar input ofensivo del eliminado.")
 
 	robots[1].fall_into_void()
 	await create_timer(0.1).timeout
