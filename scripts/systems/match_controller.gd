@@ -781,6 +781,8 @@ func set_ffa_aftermath_context_line(line: String) -> void:
 
 
 func record_ffa_aftermath_collection(robot: RobotBase, payload_id: String, source_eliminated_label: String, arena_zone: String) -> void:
+	if match_mode != MatchMode.FFA:
+		return
 	if robot == null:
 		return
 	if not _round_active or _round_reset_pending:
@@ -807,6 +809,8 @@ func record_ffa_aftermath_collection(robot: RobotBase, payload_id: String, sourc
 
 
 func record_support_pickup_collection(robot: RobotBase, payload_name: String = "") -> void:
+	if match_mode != MatchMode.TEAMS:
+		return
 	if robot == null:
 		return
 	if not _round_active or _round_reset_pending:
@@ -817,6 +821,8 @@ func record_support_pickup_collection(robot: RobotBase, payload_name: String = "
 
 
 func record_support_payload_use(robot: RobotBase, payload_name: String = "", target_robot: RobotBase = null) -> void:
+	if match_mode != MatchMode.TEAMS:
+		return
 	if robot == null:
 		return
 	if not _round_active or _round_reset_pending:

@@ -75,10 +75,12 @@ func _assert_post_match_event_capture(scene_spec: Dictionary) -> void:
 		robots[index].global_position = Vector3(5.0 + float(index), 0.0, 0.0)
 
 	if test_mode == MatchController.MatchMode.FFA:
+		match_controller.record_support_payload_use(robots[0], "interference", robots[1])
 		robots[1].fall_into_void()
 		robots[2].fall_into_void()
 		robots[3].fall_into_void()
 	else:
+		match_controller.record_ffa_aftermath_collection(robots[0], "impulso", robots[1].get_roster_display_name(), "borde oeste")
 		robots[2].fall_into_void()
 		robots[3].fall_into_void()
 
@@ -99,8 +101,12 @@ func _assert_post_match_event_capture(scene_spec: Dictionary) -> void:
 			_has_line_containing(story_lines, "FFA") or _has_line_containing(story_lines, "Posiciones") or _has_line_containing(story_lines, "desempate"),
 			"%s deberia enfocar FFA en supervivencia, posiciones o desempate." % label
 		)
+		_assert(not _has_line_containing(snippet_lines, "apoyo"), "%s no deberia serializar eventos de soporte en FFA." % label)
+		_assert(not _has_line_containing(story_lines, "Apoyo activo"), "%s no deberia mostrar apoyo activo en FFA." % label)
 	else:
 		_assert(_has_line_containing(story_lines, "Equipo"), "%s deberia enfocar Teams en equipos." % label)
+		_assert(not _has_line_containing(snippet_lines, "botin"), "%s no deberia serializar aftermath FFA en Teams." % label)
+		_assert(not _has_line_containing(story_lines, "Oportunidad |"), "%s no deberia mostrar oportunidad FFA en Teams." % label)
 
 	await _cleanup_main(main)
 
