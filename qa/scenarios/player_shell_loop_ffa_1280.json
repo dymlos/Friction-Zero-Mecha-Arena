@@ -21,6 +21,12 @@
       "inside_viewport": "qa:match_hud_result_panel"
     },
     {
+      "inside_viewport": "qa:match_hud_post_match_story"
+    },
+    {
+      "inside_viewport": "qa:match_hud_post_match_snippets"
+    },
+    {
       "inside_viewport": "qa:match_hud_round"
     },
     {
@@ -45,6 +51,12 @@
       "text_contains": {
         "target": "qa:match_hud_result_title",
         "expected": "Partida cerrada"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_post_match_snippets",
+        "expected": "Replay |"
       }
     },
     {

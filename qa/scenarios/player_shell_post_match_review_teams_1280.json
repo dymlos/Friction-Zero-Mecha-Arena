@@ -1,0 +1,51 @@
+{
+  "name": "player_shell_post_match_review_teams_1280",
+  "scene": "res://scenes/qa/player_shell_loop_teams_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 90
+    },
+    {
+      "snapshot": "player_shell_post_match_review_teams"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:match_hud_post_match_story"
+    },
+    {
+      "inside_viewport": "qa:match_hud_post_match_snippets"
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_post_match_story",
+        "expected": "Equipo"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_post_match_snippets",
+        "expected": "Replay |"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_result_label",
+        "expected": "gana la partida"
+      }
+    },
+    {
+      "no_overlap": {
+        "a": "qa:match_hud_recap_panel",
+        "b": "qa:match_hud_result_panel"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}
