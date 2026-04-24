@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Cerrar la capa de aprendizaje y experimentacion que todavia falta despues de `m7`:
+Cerrar la capa de aprendizaje y experimentacion aplicada que faltaba despues de `m7`:
 - `Modo Practica`
 - validacion segura de sistemas
 - learnability aplicada fuera del match competitivo
@@ -17,6 +17,30 @@ La shell actual ya explica identidad y reglas base, pero el juego todavia no ofr
 - diferencias entre `Easy` y `Hard`
 
 Sin esa capa, el onboarding depende demasiado de leer antes de jugar o de aprender directamente en un match competitivo.
+
+## Alcance aterrizado
+
+- `Practica` entra desde `menu principal`, `setup local` y `How to Play`.
+- La shell conserva ownership claro:
+  - `Characters` = identidad
+  - `How to Play` = reglas base
+  - `Practica` = experimentacion segura y validacion de sistemas
+  - `match competitivo` = lectura, riesgo y decision bajo presion
+- El runtime jugable vive en `practice_mode`, separado de `main*.tscn` y del laboratorio.
+- Los modulos activos del milestone son:
+  - `movimiento`
+  - `impacto`
+  - `energia`
+  - `partes`
+  - `recuperacion`
+  - `sandbox`
+- El HUD de practica mantiene visibles solo capas cortas y persistentes:
+  - modulo
+  - objetivo actual
+  - progreso corto
+  - controles por jugador
+  - callout breve
+  - pausa/contexto
 
 ## Grupos de trabajo
 
@@ -43,14 +67,20 @@ Sin esa capa, el onboarding depende demasiado de leer antes de jugar o de aprend
 
 ## Riesgos y preguntas abiertas
 
-- `Modo Practica` puede crecer demasiado si intenta resolver sandbox, tutorial, drills y multiplayer al mismo tiempo.
-- Una ayuda demasiado guiada puede ir contra la fantasia de lectura, precision y decision tactica.
-- Si practica duplica texto o prompts de shell, se rompe la arquitectura de informacion ya cerrada.
-- La accesibilidad debe mejorar comprension y accionabilidad, no abrir una lista abstracta imposible de sostener.
+- Evitar que practica derive otra vez en laboratorio disfrazado o reexponga metadata de QA.
+- Evitar texto largo en HUD/callouts que compita con `How to Play`.
+- Mantener legible la shared-screen a `1280x720` y `1920x1080`.
+- Validar con playtest humano que el ritmo de modulos cortos realmente ensena sin volver la capa demasiado guiada.
 
 ## Criterio de salida
 
-- El primer alcance de `Modo Practica` queda explicitado y justificado.
-- Existe una capa de aprendizaje jugable que complementa a la shell sin reemplazar al match real.
-- Los minimos de accesibilidad y learnability quedan documentados sobre superficies concretas.
-- Queda claro que ensena cada capa: shell, practica y match competitivo.
+- `Modo Practica` existe como ruta real de jugador y ya no como pendiente abstracta.
+- Hay runtime propio con modulos guiados + `sandbox`, sin prompts de laboratorio ni recap competitivo.
+- `How to Play` y practica quedan conectados por CTA/contexto sin duplicar copy.
+- Los minimos de learnability/accesibilidad quedan visibles en shell y practica, con QA automatizada.
+- Queda pendiente solo el smoke manual del slice:
+  - `1P Easy`
+  - `1P Hard`
+  - `2P mixto Easy/Hard`
+  - entrada desde `How to Play`
+  - volver al menu desde pausa

@@ -35,8 +35,10 @@ Este documento resume la direccion activa del juego. Es una referencia viva de a
 - `Characters` debe reutilizar una sola fuente de verdad de copy para shell, QA y tests; no reescribir cada ficha en superficies paralelas.
 - `How to Play` vive en la shell y cubre reglas generales del juego: victoria, dano modular, energia, `Overdrive`, recuperacion/negacion de partes y diferencia `Easy/Hard`.
 - `How to Play` debe seguir siendo corto y escaneable: lista de temas + detalle breve, sin competir con `Characters` ni convertirse en tutorial largo.
+- `Modo Practica` es la capa de experimentacion segura y validacion de sistemas: conecta `How to Play` con juego real sin duplicar parrafos ni reemplazar al match.
+- `Practica` debe ensenar "como se siente" cada sistema con modulos cortos y `sandbox`; las reglas base siguen viviendo en `How to Play`.
+- El match competitivo sigue siendo la capa de lectura bajo presion, decision tactica y consecuencias reales.
 - `HUD`, `pausa` y `resultados` solo deben reforzar recordatorios contextuales; no son la superficie principal de onboarding.
-- `Modo Practica` queda como capa posterior para experimentar sistemas sin la presion del match, no como reemplazo de la ayuda base.
 
 ## Regla practica
 

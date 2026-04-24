@@ -8,6 +8,10 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 - Cierre integrado `player_shell` revalidado en `Teams` y `FFA` con recap + resultado final estables.
 - Pantalla `Characters` de solo lectura accesible desde `menu principal` y `setup local`.
 - Pantalla `How to Play` accesible desde `menu principal` y `setup local`, con reglas base del match y controles `Easy/Hard`.
+- `Modo Practica` accesible desde `menu principal`, `setup local` y CTA contextual de `How to Play`.
+- `PracticeSetup` dedicado con orden fijo de modulos, robot recomendado, temas relacionados y slots `P1/P2` con `Easy/Hard`.
+- Runtime `practice_mode` separado del laboratorio, con modulos `movimiento`, `impacto`, `energia`, `partes`, `recuperacion` y `sandbox`.
+- `PracticeHud` con modulo, objetivo, progreso, controles, callout corto y pausa, sin recap competitivo ni prompts de laboratorio.
 - Fuente unica de copy del roster base visible hoy en shell: `Ariete`, `Grua`, `Cizalla` y `Patin`.
 - Fuente unica de copy de onboarding general compartida entre shell, QA y tests.
 - Movimiento con inercia y choques con peso.
@@ -28,26 +32,37 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 - Fuente unica de identidad por personaje compartida entre shell, QA y tests.
 - Fuente unica de onboarding general compartida entre shell, QA y tests.
 - Paridad del flujo de shell en tests scene-level y QA visual de `menu`, `setup`, `characters`, `how to play` y overlay de pausa.
+- Paridad contractual de `Practica` en tests scene-level, QA visual y rotacion de modulos.
 - QA integrada del loop completo a `1280x720`:
   - `player_shell_loop_teams_1280`
   - `player_shell_loop_ffa_1280`
+- QA integrada de practica a `1280x720`:
+  - `shell_practice_setup_layout_1280`
+  - `practice_mode_layout_1280`
+  - `practice_mode_module_rotation_1280`
 - `layout audit` verde a `1280x720` y `1920x1080` para:
   - `scenes/qa/player_shell_loop_teams_validation.tscn`
   - `scenes/qa/player_shell_loop_ffa_validation.tscn`
   - `scenes/main/main.tscn`
   - `scenes/main/main_ffa.tscn`
+- Checklist manual pendiente de repetir sobre practica construida:
+  - `1P Easy`
+  - `1P Hard`
+  - `2P mixto Easy/Hard`
+  - entrada desde `How to Play`
+  - volver al menu desde pausa
 - Paridad contractual entre escenas `base` y `validation`.
 - Apertura del match, presion del arena, recap, cierre y resolucion de ronda.
 - Lectura superior del HUD y framing del helper post-muerte.
 
 ## Riesgos activos
 
-- `Modo Practica` sigue pendiente; hoy la shell explica reglas base pero todavia no ofrece experimentacion segura de sistemas.
-- La shell minima todavia necesita validacion manual de legibilidad y navegacion con mas jugadores reales; este slice cerro la baseline automatizada, no el playtest humano.
+- El siguiente gap ya no es construir `Modo Practica`, sino validar manualmente su legibilidad y ritmo con jugadores reales.
+- La shell minima y practica todavia necesitan evidencia humana con mas jugadores reales; este slice cerro la baseline automatizada, no el playtest humano.
 - El pacing fino del opening sigue siendo pregunta de tuning.
 - La paridad `base/validation` sigue siendo el riesgo tecnico mas sensible cuando se tocan escenas o HUD.
 - El soporte post-muerte `Teams` necesita mas validacion manual de legibilidad e impacto real.
-- No aparecio un problema nuevo de `1080p` en este slice; la resolucion quedo auditada en rutas integradas y escenas base.
+- No aparecio un problema nuevo de `1080p` en este slice; la resolucion sigue siendo el checkpoint sensible para shell y practica.
 
 ## Contexto adicional
 
