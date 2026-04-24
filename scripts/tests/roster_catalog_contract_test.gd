@@ -17,9 +17,9 @@ func _run() -> void:
 		return
 
 	var roster: Array = RosterCatalog.get_shell_roster()
-	_assert(roster.size() == 4, "El roster visible de shell deberia incluir exactamente cuatro fichas base.")
+	_assert(roster.size() == 6, "El roster visible de shell deberia incluir exactamente seis fichas competitivas.")
 
-	var expected_labels := ["Ariete", "Grua", "Cizalla", "Patin"]
+	var expected_labels := ["Ariete", "Grua", "Cizalla", "Patin", "Aguja", "Ancla"]
 	var actual_labels: Array[String] = []
 	for entry in roster:
 		var label := String(entry.get("label", ""))
@@ -37,13 +37,18 @@ func _run() -> void:
 			"body_read",
 			"easy",
 			"hard",
+			"archetype_family",
+			"config_path",
 		]:
 			_assert(
 				String(entry.get(field_name, "")).strip_edges() != "",
 				"La ficha %s no deberia dejar vacio `%s`." % [label, field_name]
 			)
+		var mode_notes: Dictionary = entry.get("mode_notes", {})
+		_assert(String(mode_notes.get("ffa", "")).strip_edges() != "", "La ficha %s deberia tener nota FFA." % label)
+		_assert(String(mode_notes.get("teams", "")).strip_edges() != "", "La ficha %s deberia tener nota Teams." % label)
 
-	_assert(actual_labels == expected_labels, "Characters deberia conservar el orden Ariete, Grua, Cizalla y Patin.")
+	_assert(actual_labels == expected_labels, "Characters deberia conservar el orden competitivo de seis arquetipos.")
 	_finish()
 
 

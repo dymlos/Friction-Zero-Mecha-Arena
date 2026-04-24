@@ -4,6 +4,7 @@ const MAIN_SCENE := preload("res://scenes/main/main.tscn")
 const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const MatchController = preload("res://scripts/systems/match_controller.gd")
+const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 
 var _failed := false
 
@@ -13,10 +14,19 @@ func _init() -> void:
 
 
 func _run() -> void:
+	_validate_competitive_roster_exists()
 	await _validate_archetype_configs_exist_and_drive_stats()
 	await _validate_lab_hud_surfaces_the_roster_identity()
 	await _validate_cizalla_passive_reaches_the_roster()
 	_finish()
+
+
+func _validate_competitive_roster_exists() -> void:
+	var expected_ids := ["ariete", "grua", "cizalla", "patin", "aguja", "ancla"]
+	_assert(
+		RosterCatalog.get_competitive_entry_ids() == expected_ids,
+		"El roster competitivo completo deberia existir sin cambiar todavia los defaults de escenas 4P."
+	)
 
 
 func _validate_archetype_configs_exist_and_drive_stats() -> void:
@@ -25,6 +35,8 @@ func _validate_archetype_configs_exist_and_drive_stats() -> void:
 		"res://data/config/robots/grua_archetype.tres",
 		"res://data/config/robots/cizalla_archetype.tres",
 		"res://data/config/robots/patin_archetype.tres",
+		"res://data/config/robots/aguja_archetype.tres",
+		"res://data/config/robots/ancla_archetype.tres",
 	]
 	for config_path in required_configs:
 		_assert(load(config_path) is Resource, "Falta el recurso de arquetipo %s para el roster base." % config_path)
