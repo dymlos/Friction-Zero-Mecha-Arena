@@ -22,6 +22,10 @@ Estas son las reglas activas que hoy siguen condicionando cambios. No intentan c
 - Resultados y recap pueden explicar la decision, pero no absorben onboarding largo ni tablas completas.
 - El cierre post-partida muestra como maximo tres snippets visibles y prioriza cierre de match, apoyo decisivo y primer/ultimo error de posicionamiento.
 - `Teams` debe leer coordinacion, apoyo, rescates/negaciones y desgaste; `FFA` debe leer supervivencia, posiciones y desempate aunque exista fuente de baja.
+- `Teams` conserva soporte post-muerte controlable como identidad propia de coordinacion y rescate.
+- `FFA` no copia ese soporte: usa aftermath neutral de baja, temporal y sin control del eliminado.
+- `RosterCatalog` es la fuente unica del roster competitivo visible de seis arquetipos y de su copy player-facing.
+- `LocalSession` transporta por slot el `roster_entry_id` visible y el `archetype_path` runtime hasta match y practica.
 - `GameShell` y `MatchLaunchConfig` son la costura comun para armar loops integrados y QA del producto real; evitar ramas paralelas que instancien `main*.tscn` directo por fuera de ese contrato.
 - `Settings` vive en `menu principal` y solo cubre configuracion global persistente: audio, video, HUD y referencia corta de controles.
 - `setup local` vive antes del match y es la unica superficie para editar modo, slots activos, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.

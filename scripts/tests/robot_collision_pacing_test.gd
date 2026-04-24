@@ -34,6 +34,7 @@ const MATCH_SCENES := [
 		"path": "res://scenes/main/main_ffa_large_validation.tscn",
 		"label": "FFA main_ffa_large_validation",
 		"mode": MatchController.MatchMode.FFA,
+		"use_opponent_probe_after_first_round": true,
 	},
 ]
 
@@ -161,7 +162,13 @@ func _run_short_sessions_for_scene(scene_spec: Dictionary) -> void:
 		var round_id := "Ronda %s" % (round_index + 1)
 
 		await _await_round_intro_clear(controller, label)
-		var collision_probe := await _capture_runtime_collision_probe(controller, robots, "%s | %s" % [label, round_id])
+		var use_opponent_probe := bool(scene_spec.get("use_opponent_probe_after_first_round", false)) and round_index > 0
+		var collision_probe := await _capture_runtime_collision_probe(
+			controller,
+			robots,
+			"%s | %s" % [label, round_id],
+			use_opponent_probe
+		)
 		_assert(
 			bool(collision_probe.get("meaningful_collision", false)),
 			"%s | el primer choque post-respawn deberia provocar daño modular visible." % ["%s | %s" % [label, round_id]]
@@ -190,7 +197,8 @@ func _run_short_sessions_for_scene(scene_spec: Dictionary) -> void:
 func _capture_runtime_collision_probe(
 	controller: MatchController,
 	robots: Array[RobotBase],
-	context: String
+	context: String,
+	use_opponent_probe := false
 ) -> Dictionary:
 	var result := {
 		"meaningful_collision": false,
@@ -222,7 +230,10 @@ func _capture_runtime_collision_probe(
 
 	var timeout_msec := Time.get_ticks_msec() + 1800
 	while Time.get_ticks_msec() < timeout_msec and not controller.is_round_reset_pending() and controller.is_round_active():
-		_apply_runtime_center_drive_inputs(robots)
+		if use_opponent_probe:
+			_apply_runtime_collision_probe_inputs(controller, robots)
+		else:
+			_apply_runtime_center_drive_inputs(robots)
 		await physics_frame
 
 		for robot in robots:
@@ -285,6 +296,49 @@ func _apply_runtime_center_drive_inputs(robots: Array[RobotBase]) -> void:
 		var to_center := Vector3.ZERO - robot.global_position
 		to_center.y = 0.0
 		_set_robot_move_inputs(robot, to_center)
+
+
+func _apply_runtime_collision_probe_inputs(controller: MatchController, robots: Array[RobotBase]) -> void:
+	for robot in robots:
+		if not is_instance_valid(robot):
+			continue
+		if not robot.visible or robot.is_disabled_state():
+			_release_robot_move_inputs(robot)
+			continue
+
+		var target := _find_nearest_runtime_opponent(controller, robot, robots)
+		if target == null:
+			_release_robot_move_inputs(robot)
+			continue
+
+		var to_target := target.global_position - robot.global_position
+		to_target.y = 0.0
+		_set_robot_move_inputs(robot, to_target)
+
+
+func _find_nearest_runtime_opponent(
+	controller: MatchController,
+	source_robot: RobotBase,
+	robots: Array[RobotBase]
+) -> RobotBase:
+	var nearest: RobotBase = null
+	var nearest_distance_sq := INF
+	for candidate in robots:
+		if not is_instance_valid(candidate) or candidate == source_robot:
+			continue
+		if not candidate.visible or candidate.is_disabled_state():
+			continue
+		if controller.match_mode == MatchController.MatchMode.TEAMS and candidate.team_id == source_robot.team_id:
+			continue
+
+		var distance_sq := source_robot.global_position.distance_squared_to(candidate.global_position)
+		if distance_sq >= nearest_distance_sq:
+			continue
+
+		nearest = candidate
+		nearest_distance_sq = distance_sq
+
+	return nearest
 
 
 func _release_runtime_center_drive_inputs(robots: Array[RobotBase]) -> void:

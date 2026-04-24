@@ -1,7 +1,7 @@
 extends SceneTree
 
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
-const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
+const FFA_LARGE_SCENE := preload("res://scenes/main/main_ffa_large.tscn")
 const PULSE_BOLT_SCENE := preload("res://scenes/projectiles/pulse_bolt.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
@@ -236,7 +236,7 @@ func _validate_core_skill_readability_stays_on_robot_body() -> void:
 
 
 func _validate_ffa_lab_exposes_the_new_archetype_identity() -> void:
-	var main := FFA_SCENE.instantiate()
+	var main := FFA_LARGE_SCENE.instantiate()
 	root.add_child(main)
 
 	await process_frame
@@ -246,10 +246,12 @@ func _validate_ffa_lab_exposes_the_new_archetype_identity() -> void:
 	_assert(roster_label is Label, "La escena FFA deberia seguir exponiendo el roster compacto.")
 	if roster_label is Label:
 		var roster_text := (roster_label as Label).text
-		_assert(roster_text.contains("Aguja"), "La escena FFA deberia exponer el nuevo arquetipo Poke/Skillshot.")
+		_assert(roster_text.contains("Aguja"), "La escena FFA grande deberia exponer el nuevo arquetipo Poke/Skillshot.")
 		_assert(
-			roster_text.contains("skill Pulso") or roster_text.contains("skill pulso"),
-			"El roster FFA deberia dejar visible la skill propia por cargas de Aguja."
+			roster_text.contains("skill Pulso")
+			or roster_text.contains("skill pulso")
+			or roster_text.contains("pulso lista"),
+			"El roster FFA grande deberia dejar visible la skill propia por cargas de Aguja."
 		)
 
 	await _cleanup_node(main)

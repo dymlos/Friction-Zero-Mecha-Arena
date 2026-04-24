@@ -1,0 +1,45 @@
+{
+  "name": "m11_large_teams_setup_1280",
+  "scene": "res://scenes/qa/m11_large_teams_setup_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "m11_large_teams_setup"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:shell_local_setup_slots"
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_slot_8_robot"
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_mode",
+        "expected": "Equipos"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_slots",
+        "expected": "P8"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_slot_6_robot",
+        "expected": "Ancla"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

@@ -26,6 +26,7 @@ Este documento resume la direccion activa del juego. Es una referencia viva de a
 ## Modos y lectura
 
 - `FFA` debe premiar supervivencia, oportunismo y third-party sin depender de reglas pensadas para equipos.
+- `FFA` no usa nave post-muerte controlable. Su capa propia de post-baja es aftermath neutral: una recompensa temporal cerca de la baja que solo pueden tomar robots vivos y que refuerza oportunismo sin devolver control ofensivo al eliminado.
 - `Teams` debe reforzar rescates, coordinacion y presion tactica.
 - La UI y el cuerpo de los robots deben explicar el estado del match con la menor cantidad posible de ruido.
 
@@ -33,6 +34,8 @@ Este documento resume la direccion activa del juego. Es una referencia viva de a
 
 - `Characters` comunica identidad por personaje: rol corto, fantasy, fortaleza, riesgo, skill o pasiva clave, lectura corporal y referencia `Easy/Hard`.
 - `Characters` debe reutilizar una sola fuente de verdad de copy para shell, QA y tests; no reescribir cada ficha en superficies paralelas.
+- El roster competitivo visible son seis arquetipos: `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla`.
+- La seleccion de robot vive en `setup local` por slot; `Characters` mantiene ownership de identidad y lectura, no de seleccion.
 - `How to Play` vive en la shell y cubre reglas generales del juego: victoria, dano modular, energia, `Overdrive`, recuperacion/negacion de partes y diferencia `Easy/Hard`.
 - `How to Play` debe seguir siendo corto y escaneable: lista de temas + detalle breve, sin competir con `Characters` ni convertirse en tutorial largo.
 - `Modo Practica` es la capa de experimentacion segura y validacion de sistemas: conecta `How to Play` con juego real sin duplicar parrafos ni reemplazar al match.

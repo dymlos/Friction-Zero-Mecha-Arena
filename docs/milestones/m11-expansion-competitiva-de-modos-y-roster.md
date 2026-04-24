@@ -51,7 +51,10 @@ Ademas, los milestones anteriores solo cerraron un primer slice de shell, comuni
 
 ## Criterio de salida
 
-- Queda documentado como puede crecer `FFA` sin perder su identidad base.
-- La expansion futura de roster tiene reglas claras de entrada, lectura y comunicacion.
-- Las implicancias de shell, `Characters` y post-partida para el contenido nuevo quedan explicitadas.
-- El roadmap deja de tratar post-muerte `FFA` y roster futuro como cajon de sastre y pasa a tener criterios concretos de expansion.
+- Cumplido: `FFA` crece con aftermath neutral de baja, sin nave post-muerte controlable ni control ofensivo del eliminado.
+- Cumplido: el roster competitivo visible queda en seis arquetipos (`Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja`, `Ancla`) con `RosterCatalog` como fuente unica.
+- Cumplido: `setup local` selecciona robot por slot y transporta `roster_entry_id`/`archetype_path` hasta match y practica.
+- Cumplido: existen rutas grandes de producto para `FFA` y `Teams` 8P, separadas de escenas `_validation`.
+- Cumplido: `Characters`, HUD y post-partida comunican roster/aftermath con lineas breves y sin duplicar onboarding.
+- Cumplido: tests scene-level y escenarios `godot-qa` de cierre M11 pasaron en la implementacion.
+- Pendiente humano: playtest de legibilidad real en `FFA 4P`, `FFA 6P/8P` y `Teams 4v4`.

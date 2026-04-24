@@ -49,6 +49,12 @@
     },
     {
       "text_contains": {
+        "target": "qa:match_hud_post_match_story",
+        "expected": "Lectura | FFA"
+      }
+    },
+    {
+      "text_contains": {
         "target": "qa:match_hud_result_title",
         "expected": "Partida cerrada"
       }

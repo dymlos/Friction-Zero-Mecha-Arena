@@ -1,6 +1,6 @@
 # Proximos pasos
 
-La siguiente iteracion recomendada debe tomar la shell operativa de `M9` y el cierre post-partida de `M10` como base cerrada: settings persistentes, slots/dispositivos reales, match, practica, pausa y lectura final ya quedaron revalidados de forma automatizada. Lo siguiente no es ampliar configuracion ni replay, sino validar la UX con evidencia humana y corregir solo fricciones concretas.
+La siguiente iteracion recomendada debe tomar la expansion M11 como base cerrada: roster competitivo de seis, seleccion por slot, rutas grandes `FFA/Teams`, aftermath neutral FFA, HUD compacto 8P y cierre post-partida con `Oportunidad | ...` ya quedaron revalidados de forma automatizada. Lo siguiente no es ampliar configuracion ni replay, sino validar la UX con evidencia humana y corregir solo fricciones concretas.
 
 ## Prioridad inmediata
 
@@ -16,21 +16,28 @@ La siguiente iteracion recomendada debe tomar la shell operativa de `M9` y el ci
    - `2P mixto Easy/Hard`
    - entrada desde `How to Play`
    - volver al menu desde pausa
-2. Revalidar manualmente el cierre M10:
+2. Ejecutar playtest M11 enfocado:
+   - `FFA 4P` con aftermath visible tras bajas tempranas.
+   - `FFA 6P/8P` si hay suficientes controles, revisando roster compacto y standings `+N`.
+   - `Teams 4v4`, revisando asignacion por slots y soporte post-muerte.
+   - seleccion de `Aguja` y `Ancla` desde setup local antes de lanzar match.
+   - lectura de `Characters` con filtros `Impacto` y `Rango / zona`.
+   - cierre post-partida donde el ganador tome aftermath y aparezca `Oportunidad | ...`.
+3. Revalidar manualmente el cierre post-partida:
    - `Teams`: leer decision, `Replay | ...`, desgaste/apoyo y "como perdi" en menos de 10 segundos.
    - `FFA`: leer posiciones, desempate, supervivencia y replay sin ayuda externa.
    - repetir un cierre por explosion normal y uno con apoyo post-muerte antes del cierre.
-3. Revalidar manualmente shell + practica en shared-screen con jugadores reales antes de abrir remapeo libre, video replay real o polish audiovisual.
-4. Mantener ownership estricto: `Characters` = identidad, `How to Play` = reglas base, `Practica` = experimentacion segura, `match` = decision tactica bajo presion.
-5. Mantener la disciplina de paridad `base/validation` mientras se toque shell, practica, HUD o cierre post-partida.
+4. Revalidar manualmente shell + practica en shared-screen con jugadores reales antes de abrir remapeo libre, video replay real o polish audiovisual.
+5. Mantener ownership estricto: `setup local` = seleccion, `Characters` = identidad, `How to Play` = reglas base, `Practica` = experimentacion segura, `match` = decision tactica bajo presion.
+6. Mantener la disciplina de paridad `base/validation` mientras se toque shell, practica, HUD o cierre post-partida.
 
 ## Diferidos explicitos de este cierre parcial
 
 - video replay real, ghost replay, captura frame-by-frame o timeline interactivo
-- post-muerte `FFA`
+- soporte post-muerte controlable en `FFA`
 - remapeo libre tecla por tecla o editor completo de controles
 - extensiones amplias de shell fuera del contrato operativo actual
-- expansion futura de roster
+- nuevos arquetipos fuera del roster competitivo actual de seis
 
 ## Regla de sesion
 

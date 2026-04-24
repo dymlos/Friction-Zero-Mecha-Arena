@@ -6,7 +6,7 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 
 - Shell local jugable: `menu principal -> setup local -> characters/how to play -> match -> pausa -> volver al menu`.
 - `menu principal` es la entrada unica a `Settings`; la pantalla persiste configuracion global de audio, video y HUD mediante `UserSettingsStore`.
-- `setup local` es la autoridad de sesion antes del match: modo `Teams/FFA`, slots activos, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.
+- `setup local` es la autoridad de sesion antes del match: modo `Teams/FFA`, slots activos hasta `P8`, robot por slot, `Easy/Hard`, teclado/joypad, perfil de teclado y joypad reservado.
 - Cierre integrado `player_shell` revalidado en `Teams` y `FFA` con recap + resultado final estables.
 - Pantalla `Characters` de solo lectura accesible desde `menu principal` y `setup local`.
 - Pantalla `How to Play` accesible desde `menu principal` y `setup local`, con reglas base del match y controles `Easy/Hard`.
@@ -16,7 +16,9 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 - `PracticeHud` con modulo, objetivo, progreso, controles, callout corto y pausa, sin recap competitivo ni prompts de laboratorio.
 - Pausa operativa compacta en match y practica: acciones primarias, quick settings de `HUD/master/music/sfx` y resumen corto de dispositivos, sin reasignar slots ni cambiar modo.
 - Cierre post-partida M10: lectura compacta de decision, snippets event-driven `Replay | ...`, diferencia de enfasis `Teams/FFA` y secciones HUD dedicadas sin reemplazar el resultado principal.
-- Fuente unica de copy del roster base visible hoy en shell: `Ariete`, `Grua`, `Cizalla` y `Patin`.
+- Fuente unica de copy del roster competitivo visible hoy en shell: `Ariete`, `Grua`, `Cizalla`, `Patin`, `Aguja` y `Ancla`.
+- `FFA` tiene aftermath neutral propio: una recompensa temporal de baja para vivos, sin nave post-muerte ni control del eliminado.
+- Rutas grandes de producto para `FFA` y `Teams` soportan hasta ocho slots; `Teams` usa asignacion inicial `P1/P3/P5/P7` vs `P2/P4/P6/P8`.
 - Fuente unica de copy de onboarding general compartida entre shell, QA y tests.
 - Movimiento con inercia y choques con peso.
 - Dano modular por extremidad, energia y `Overdrive`.
@@ -32,12 +34,14 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 - `LocalSessionDraft` como seam editable de shell para slots/dispositivos.
 - `LocalSessionBuilder` como seam comun para sanitizar specs y construir `LocalSession` en match y practica.
 - `MatchLaunchConfig.local_slots` transporta specs completos de slot: `slot`, `control_mode`, `input_source`, `keyboard_profile`, `device_id`, `device_connected`.
+- `MatchLaunchConfig.local_slots` tambien transporta `roster_entry_id` y `archetype_path`; `LocalSession` aplica el arquetipo elegido al robot runtime.
 - Navegacion shell entre `menu`, `setup`, `characters`, `how to play`, `match` y `pausa`, con retorno owner-aware y restauracion de foco.
 - Loop integrado automatizado desde `game_shell` hasta cierre de match en:
   - `Teams` base
   - `FFA` base
 - Cierre `player_shell` sin `Reinicio | F5`, sin autorestart y con panels de recap/resultado auditados en producto integrado.
 - Cierre `player_shell` con story/snippets post-match auditados: `player_shell_post_match_review_teams_1280` y `player_shell_post_match_review_ffa_1280`.
+- HUD M11 compacta roster 8P y standings FFA grandes con `+N`; post-partida puede mostrar `Oportunidad | ...` cuando aftermath afecto el cierre.
 - Fuente unica de identidad por personaje compartida entre shell, QA y tests.
 - Fuente unica de onboarding general compartida entre shell, QA y tests.
 - Paridad del flujo de shell en tests scene-level y QA visual de `menu`, `setup`, `characters`, `how to play` y overlay de pausa.
@@ -79,9 +83,11 @@ El prototipo ya tiene un loop integrado revalidado desde shell hasta cierre de m
 
 - El siguiente gap ya no es construir shell operativa, sino validar manualmente legibilidad de settings, slots/dispositivos y pausa con jugadores reales.
 - La shell extendida y practica todavia necesitan evidencia humana con mas jugadores reales; este slice cerro la baseline automatizada, no el playtest humano.
+- M11 necesita playtest humano especifico de legibilidad en `FFA 4P`, `FFA 6P/8P` y `Teams 4v4`, especialmente alrededor de aftermath, roster compacto y seleccion de `Aguja`/`Ancla`.
 - El pacing fino del opening sigue siendo pregunta de tuning.
 - La paridad `base/validation` sigue siendo el riesgo tecnico mas sensible cuando se tocan escenas o HUD.
 - El soporte post-muerte `Teams` necesita mas validacion manual de legibilidad e impacto real.
+- Aftermath FFA puede volverse demasiado valioso si cada baja fuerza una carrera automatica; los valores actuales son bajos y requieren playtest.
 - La lectura post-partida M10 esta validada por tests/QA, pero todavia necesita playtest humano de ritmo de revancha y comprension en menos de 10 segundos.
 - No aparecio un problema nuevo de `1080p` en este slice; la resolucion sigue siendo el checkpoint sensible para shell y practica.
 

@@ -1,7 +1,7 @@
 extends SceneTree
 
 const ROBOT_SCENE := preload("res://scenes/robots/robot_base.tscn")
-const FFA_SCENE := preload("res://scenes/main/main_ffa.tscn")
+const FFA_LARGE_SCENE := preload("res://scenes/main/main_ffa_large.tscn")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RobotArchetypeConfig = preload("res://scripts/robots/robot_archetype_config.gd")
 
@@ -121,7 +121,7 @@ func _validate_zone_skill_spawns_single_beacon_and_suppresses_enemy() -> void:
 
 
 func _validate_ffa_lab_exposes_control_archetype_identity() -> void:
-	var main := FFA_SCENE.instantiate()
+	var main := FFA_LARGE_SCENE.instantiate()
 	root.add_child(main)
 
 	await process_frame
@@ -131,10 +131,12 @@ func _validate_ffa_lab_exposes_control_archetype_identity() -> void:
 	_assert(roster_label is Label, "La escena FFA deberia seguir exponiendo el roster compacto.")
 	if roster_label is Label:
 		var roster_text := (roster_label as Label).text
-		_assert(roster_text.contains("Ancla"), "La escena FFA deberia exponer el arquetipo Control/Zona en el roster jugable.")
+		_assert(roster_text.contains("Ancla"), "La escena FFA grande deberia exponer el arquetipo Control/Zona en el roster jugable.")
 		_assert(
-			roster_text.contains("skill Baliza") or roster_text.contains("skill baliza"),
-			"El roster FFA deberia dejar visible la skill propia Baliza."
+			roster_text.contains("skill Baliza")
+			or roster_text.contains("skill baliza")
+			or roster_text.contains("baliza lista"),
+			"El roster FFA grande deberia dejar visible la skill propia Baliza."
 		)
 
 	await _cleanup_node(main)

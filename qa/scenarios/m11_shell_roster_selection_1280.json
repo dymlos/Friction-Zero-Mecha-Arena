@@ -1,0 +1,48 @@
+{
+  "name": "m11_shell_roster_selection_1280",
+  "scene": "res://scenes/qa/m11_shell_roster_selection_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "m11_shell_roster"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:shell_local_setup_slots"
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_slot_1_robot"
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_slot_5_robot"
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_mode",
+        "expected": "FFA"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_slot_1_robot",
+        "expected": "Ancla"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_slot_5_robot",
+        "expected": "Aguja"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

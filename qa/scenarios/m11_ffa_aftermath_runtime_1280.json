@@ -1,0 +1,33 @@
+{
+  "name": "m11_ffa_aftermath_runtime_1280",
+  "scene": "res://scenes/qa/m11_ffa_aftermath_runtime_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 18
+    },
+    {
+      "snapshot": "m11_ffa_aftermath"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:match_hud_round"
+    },
+    {
+      "inside_viewport": "qa:match_hud_roster"
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_round",
+        "expected": "Botin | baja reciente"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}
