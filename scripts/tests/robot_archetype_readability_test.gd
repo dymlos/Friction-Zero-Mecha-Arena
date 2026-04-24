@@ -208,12 +208,24 @@ func _validate_cizalla_dismantle_window_surfaces_on_body_and_roster() -> void:
 	victim.receive_attack_hit_from_robot(Vector3.RIGHT, 18.0, cizalla)
 	await process_frame
 	await physics_frame
+	_assert(
+		not victim_cue.visible,
+		"Sin activar Corte, golpear una parte ya tocada no deberia prender el cue de desarme."
+	)
+
+	_assert(
+		cizalla.use_core_skill(),
+		"Cizalla deberia activar Corte antes de amplificar una parte ya tocada."
+	)
+	victim.receive_attack_hit_from_robot(Vector3.RIGHT, 18.0, cizalla)
+	await process_frame
+	await physics_frame
 
 	var triggered_summary := String(cizalla.call("get_passive_status_summary"))
 	var triggered_energy := _get_accent_peak_emission_energy(cizalla)
 	_assert(
-		triggered_summary == "corte",
-		"Cuando Cizalla cobra el bonus sobre una parte ya dañada, el roster deberia mostrar un cue corto de corte."
+		triggered_summary.contains("corte"),
+		"Cuando Cizalla cobra el bonus sobre una parte ya danada, el roster deberia mostrar un cue corto de corte."
 	)
 	_assert(
 		triggered_energy > baseline_energy + 0.08,

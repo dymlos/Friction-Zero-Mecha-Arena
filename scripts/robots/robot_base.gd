@@ -407,6 +407,8 @@ var _damage_feedback_nodes: Dictionary = {}
 var _collision_damage_ready_at: Dictionary = {}
 var _damaged_part_bonus_remaining := 0.0
 var _damaged_part_bonus_cue_remaining: Dictionary = {}
+var _dismantle_focus_remaining := 0.0
+var _dismantle_focus_hit_cue_remaining := 0.0
 var _carried_part: DetachedPart = null
 var _carried_item_name := ""
 var _carry_indicator: MeshInstance3D = null
@@ -670,15 +672,22 @@ func get_recent_elimination_source() -> RobotBase:
 func get_damaged_part_bonus_damage_multiplier() -> float:
 	if archetype_config == null:
 		return 1.0
+	if (
+		archetype_config.core_skill_type == RobotArchetypeConfig.CoreSkillType.DISMANTLE_FOCUS
+		and _dismantle_focus_remaining <= 0.0
+	):
+		return 1.0
 
 	return maxf(archetype_config.damaged_part_bonus_damage_multiplier, 1.0)
 
 
 func get_passive_status_summary() -> String:
-	if _damaged_part_bonus_remaining <= 0.0:
-		return ""
+	if _dismantle_focus_remaining > 0.0:
+		return "corte listo"
+	if _damaged_part_bonus_remaining > 0.0 or _dismantle_focus_hit_cue_remaining > 0.0:
+		return "corte"
 
-	return "corte"
+	return ""
 
 
 func get_return_support_repair_ratio() -> float:
@@ -877,6 +886,8 @@ func use_core_skill() -> bool:
 			used = _use_ram_boost()
 		RobotArchetypeConfig.CoreSkillType.MOBILITY_BURST:
 			used = _use_mobility_burst()
+		RobotArchetypeConfig.CoreSkillType.DISMANTLE_FOCUS:
+			used = _use_dismantle_focus()
 		_:
 			used = false
 
@@ -1058,6 +1069,21 @@ func _use_mobility_burst() -> bool:
 	_planar_velocity += burst_direction * burst_speed
 	external_impulse += burst_direction * burst_speed * 0.32
 	if _mobility_skill_remaining > previous_remaining:
+		_refresh_visual_state()
+
+	return true
+
+
+func _use_dismantle_focus() -> bool:
+	var duration := _get_core_skill_active_duration()
+	if duration <= 0.0:
+		return false
+	if _is_respawning or _is_disabled:
+		return false
+
+	var previous_remaining := _dismantle_focus_remaining
+	_dismantle_focus_remaining = maxf(_dismantle_focus_remaining, duration)
+	if _dismantle_focus_remaining > previous_remaining:
 		_refresh_visual_state()
 
 	return true
@@ -1266,6 +1292,8 @@ func reset_modular_state() -> void:
 	_collision_damage_ready_at.clear()
 	_damaged_part_bonus_remaining = 0.0
 	_damaged_part_bonus_cue_remaining.clear()
+	_dismantle_focus_remaining = 0.0
+	_dismantle_focus_hit_cue_remaining = 0.0
 	_selected_energy_part_name = "left_arm"
 	_energy_shift_cooldown_remaining = 0.0
 	_overdrive_part_name = ""
@@ -1556,9 +1584,11 @@ func apply_damage_to_part(
 
 	var effective_damage := damage_amount
 	if is_instance_valid(source_robot) and current_health < max_part_health:
-		effective_damage *= source_robot.get_damaged_part_bonus_damage_multiplier()
-		source_robot._trigger_damaged_part_bonus_feedback()
-		_trigger_damaged_part_bonus_victim_feedback(part_name)
+		var damaged_part_multiplier := source_robot.get_damaged_part_bonus_damage_multiplier()
+		if damaged_part_multiplier > 1.0:
+			effective_damage *= damaged_part_multiplier
+			source_robot._trigger_damaged_part_bonus_feedback()
+			_trigger_damaged_part_bonus_victim_feedback(part_name)
 	_remember_recent_elimination_source(source_robot)
 
 	part_health[part_name] = maxf(current_health - effective_damage, 0.0)
@@ -3880,6 +3910,12 @@ func _get_damaged_part_pose_severity(health_ratio: float) -> float:
 
 func _update_passive_status_state(delta: float) -> void:
 	var should_refresh := false
+	if _dismantle_focus_remaining > 0.0:
+		_dismantle_focus_remaining = maxf(_dismantle_focus_remaining - delta, 0.0)
+		should_refresh = true
+	if _dismantle_focus_hit_cue_remaining > 0.0:
+		_dismantle_focus_hit_cue_remaining = maxf(_dismantle_focus_hit_cue_remaining - delta, 0.0)
+		should_refresh = true
 	if _damaged_part_bonus_remaining > 0.0:
 		_damaged_part_bonus_remaining = maxf(_damaged_part_bonus_remaining - delta, 0.0)
 		should_refresh = true
@@ -3902,6 +3938,7 @@ func _trigger_damaged_part_bonus_feedback() -> void:
 
 	var previous_remaining := _damaged_part_bonus_remaining
 	_damaged_part_bonus_remaining = maxf(_damaged_part_bonus_remaining, damaged_part_bonus_highlight_duration)
+	_dismantle_focus_hit_cue_remaining = maxf(_dismantle_focus_hit_cue_remaining, damaged_part_bonus_highlight_duration)
 	if _damaged_part_bonus_remaining > previous_remaining:
 		_refresh_visual_state()
 
@@ -3987,6 +4024,8 @@ func _get_core_skill_accent_color() -> Color:
 			return Color(1.0, 0.56, 0.18, 1.0)
 		RobotArchetypeConfig.CoreSkillType.MOBILITY_BURST:
 			return Color(0.22, 0.98, 0.76, 1.0)
+		RobotArchetypeConfig.CoreSkillType.DISMANTLE_FOCUS:
+			return Color(1.0, 0.34, 0.24, 1.0)
 		_:
 			return _get_archetype_accent_color()
 
@@ -4014,6 +4053,8 @@ func _get_archetype_accent_core_skill_active_blend() -> float:
 		return 1.0
 	if is_mobility_skill_active():
 		return 0.92
+	if _dismantle_focus_remaining > 0.0:
+		return 0.86
 	if is_instance_valid(_active_control_beacon):
 		return 0.52
 
@@ -4021,12 +4062,21 @@ func _get_archetype_accent_core_skill_active_blend() -> float:
 
 
 func _get_passive_accent_blend() -> float:
-	if _damaged_part_bonus_remaining <= 0.0:
-		return 0.0
-	if damaged_part_bonus_highlight_duration <= 0.0:
-		return 1.0
+	var active_ratio := 0.0
+	if _dismantle_focus_remaining > 0.0:
+		var duration := maxf(_get_core_skill_active_duration(), 0.001)
+		active_ratio = clampf(_dismantle_focus_remaining / duration, 0.0, 1.0)
 
-	var time_ratio := clampf(_damaged_part_bonus_remaining / damaged_part_bonus_highlight_duration, 0.0, 1.0)
+	var hit_ratio := 0.0
+	if _damaged_part_bonus_remaining > 0.0:
+		if damaged_part_bonus_highlight_duration <= 0.0:
+			hit_ratio = 1.0
+		else:
+			hit_ratio = clampf(_damaged_part_bonus_remaining / damaged_part_bonus_highlight_duration, 0.0, 1.0)
+
+	var time_ratio := maxf(active_ratio, hit_ratio)
+	if time_ratio <= 0.0:
+		return 0.0
 	var wave := (sin(_carry_indicator_animation_time * 8.0) + 1.0) * 0.5
 	var pulse := 0.82 + wave * 0.18
 	return clampf(time_ratio * pulse, 0.0, 1.0)

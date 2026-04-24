@@ -147,6 +147,10 @@ func _validate_cizalla_passive_reaches_the_roster() -> void:
 	var cizalla := robots[2]
 	var victim := robots[0]
 	victim.apply_damage_to_part("right_arm", 12.0, Vector3.RIGHT)
+	_assert(
+		cizalla.use_core_skill(),
+		"Cizalla deberia activar Corte antes de comunicar su ventana fuerte en el roster."
+	)
 	victim.receive_attack_hit_from_robot(Vector3.RIGHT, 18.0, cizalla)
 	await process_frame
 	await physics_frame
@@ -161,7 +165,7 @@ func _validate_cizalla_passive_reaches_the_roster() -> void:
 	_assert(cizalla_line != "", "El roster deberia seguir exponiendo una linea para Cizalla.")
 	_assert(
 		cizalla_line.contains("corte"),
-		"Cuando Cizalla castiga una parte ya tocada, el roster compacto deberia mostrar ese cue sin abrir otra UI."
+		"Cuando la skill activa de Corte castiga una parte ya tocada, el roster compacto deberia mostrar ese cue sin abrir otra UI."
 	)
 
 	await _cleanup_node(main)
