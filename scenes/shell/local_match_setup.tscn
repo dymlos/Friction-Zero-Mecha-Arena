@@ -46,7 +46,7 @@ theme_override_constants/margin_bottom = 24
 
 [node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="TitleLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
@@ -113,6 +113,24 @@ theme_type_variation = &"ShellMeta"
 autowrap_mode = 2
 text = "Foco | borde valioso y centro de transicion"
 
+[node name="VariantRow" type="HBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="VariantSummaryLabel" type="Label" parent="Panel/Margin/VBox/VariantRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ShellMeta"
+autowrap_mode = 2
+text = "Variante | Score por causa"
+
+[node name="VariantCycleButton" type="Button" parent="Panel/Margin/VBox/VariantRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
+text = "Variante"
+
 [node name="SlotsTitleLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
 theme_type_variation = &"ShellSectionTitle"
@@ -121,7 +139,6 @@ text = "Slots locales"
 [node name="SlotSummaryLabel" type="Label" parent="Panel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-autowrap_mode = 2
 text = ""
 
 [node name="SlotButtons" type="GridContainer" parent="Panel/Margin/VBox"]

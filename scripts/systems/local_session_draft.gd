@@ -6,6 +6,7 @@ const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder.gd")
 const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 const MapCatalog = preload("res://scripts/systems/map_catalog.gd")
+const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_variant_catalog.gd")
 
 const INPUT_SOURCE_KEYBOARD := "keyboard"
 const INPUT_SOURCE_JOYPAD := "joypad"
@@ -15,6 +16,7 @@ const INPUT_SOURCE_JOYPAD := "joypad"
 @export var selected_map_id := ""
 
 var _slots: Dictionary = {}
+var _selected_mode_variant_by_mode: Dictionary = {}
 
 
 func _init() -> void:
@@ -34,6 +36,7 @@ func configure(next_max_slots: int) -> void:
 func set_match_mode(next_match_mode: int) -> void:
 	match_mode = next_match_mode as MatchController.MatchMode
 	selected_map_id = MapCatalog.sanitize_map_id(selected_map_id, match_mode, build_active_slot_specs(max_slots).size())
+	_ensure_mode_variant_for_current_mode()
 
 
 func set_selected_map_id(map_id: String, active_slots: int = 4) -> void:
@@ -57,6 +60,32 @@ func cycle_selected_map(active_slots: int = 4, direction: int = 1) -> void:
 			current_index = index
 			break
 	selected_map_id = String(candidates[wrapi(current_index + direction, 0, candidates.size())].get("id", ""))
+
+
+func get_selected_mode_variant_id() -> String:
+	return _ensure_mode_variant_for_current_mode()
+
+
+func set_selected_mode_variant_id(variant_id: String) -> void:
+	_selected_mode_variant_by_mode[int(match_mode)] = MatchModeVariantCatalog.sanitize_variant_id(match_mode, variant_id)
+
+
+func cycle_mode_variant(direction: int = 1) -> void:
+	var variants := MatchModeVariantCatalog.get_enabled_variants(match_mode)
+	if variants.is_empty():
+		set_selected_mode_variant_id("")
+		return
+	var current_id := get_selected_mode_variant_id()
+	var current_index := 0
+	for index in range(variants.size()):
+		if String(variants[index].get("id", "")) == current_id:
+			current_index = index
+			break
+	set_selected_mode_variant_id(String(variants[wrapi(current_index + direction, 0, variants.size())].get("id", "")))
+
+
+func get_mode_variant_summary_line() -> String:
+	return MatchModeVariantCatalog.get_setup_summary_line(match_mode, get_selected_mode_variant_id())
 
 
 func set_slot_active(player_slot: int, active: bool) -> void:
@@ -207,6 +236,7 @@ func copy_from(other: LocalSessionDraft) -> void:
 	max_slots = other.max_slots
 	match_mode = other.match_mode
 	selected_map_id = other.selected_map_id
+	_selected_mode_variant_by_mode = other._selected_mode_variant_by_mode.duplicate(true)
 	_slots.clear()
 	for slot in range(1, max_slots + 1):
 		_slots[slot] = other.get_slot_info(slot)
@@ -270,3 +300,11 @@ func _sanitize_input_source(input_source: String) -> String:
 
 func _sanitize_control_mode(control_mode: int) -> int:
 	return RobotBase.ControlMode.HARD if control_mode == RobotBase.ControlMode.HARD else RobotBase.ControlMode.EASY
+
+
+func _ensure_mode_variant_for_current_mode() -> String:
+	var mode_key := int(match_mode)
+	var current_id := String(_selected_mode_variant_by_mode.get(mode_key, ""))
+	var sanitized_id := MatchModeVariantCatalog.sanitize_variant_id(match_mode, current_id)
+	_selected_mode_variant_by_mode[mode_key] = sanitized_id
+	return sanitized_id

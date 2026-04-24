@@ -24,6 +24,12 @@
       "inside_viewport": "qa:shell_local_setup_slots"
     },
     {
+      "inside_viewport": "qa:shell_local_setup_variant"
+    },
+    {
+      "inside_viewport": "qa:shell_local_setup_variant_cycle"
+    },
+    {
       "inside_viewport": "qa:shell_local_setup_start"
     },
     {
@@ -60,6 +66,12 @@
       "text_contains": {
         "target": "qa:shell_local_setup_scale",
         "expected": "FFA 4P"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_local_setup_variant",
+        "expected": "Score por causa"
       }
     },
     {

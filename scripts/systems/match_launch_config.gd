@@ -3,6 +3,7 @@ class_name MatchLaunchConfig
 
 const MatchConfig = preload("res://scripts/systems/match_config.gd")
 const LocalSessionBuilder = preload("res://scripts/systems/local_session_builder.gd")
+const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_variant_catalog.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const UserSettingsStore = preload("res://scripts/autoload/user_settings_store.gd")
 
@@ -13,6 +14,7 @@ const DEFAULT_MAX_LOCAL_SLOTS := 8
 @export var match_mode := 0
 @export var target_scene_path := ""
 @export var map_id := ""
+@export var mode_variant_id := MatchModeVariantCatalog.VARIANT_SCORE_BY_CAUSE
 @export var entry_context := ENTRY_CONTEXT_PLAYER_SHELL
 @export var practice_module_id := ""
 @export var hud_detail_mode: MatchConfig.HudDetailMode = MatchConfig.HudDetailMode.EXPLICIT
@@ -24,11 +26,13 @@ func configure_for_local_match(
 	next_match_mode: int,
 	next_target_scene_path: String,
 	slot_specs: Array,
-	next_map_id: String = ""
+	next_map_id: String = "",
+	next_mode_variant_id: String = ""
 ) -> void:
 	match_mode = next_match_mode
 	target_scene_path = next_target_scene_path
 	map_id = next_map_id
+	mode_variant_id = MatchModeVariantCatalog.sanitize_variant_id(match_mode, next_mode_variant_id)
 	entry_context = ENTRY_CONTEXT_PLAYER_SHELL
 	auto_restart_on_match_end = false
 	hud_detail_mode = _resolve_effective_hud_detail_mode()

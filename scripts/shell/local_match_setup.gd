@@ -7,6 +7,7 @@ const MatchLaunchConfig = preload("res://scripts/systems/match_launch_config.gd"
 const LocalSessionDraft = preload("res://scripts/systems/local_session_draft.gd")
 const LocalScaleContract = preload("res://scripts/systems/local_scale_contract.gd")
 const MapCatalog = preload("res://scripts/systems/map_catalog.gd")
+const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_variant_catalog.gd")
 const RobotBase = preload("res://scripts/robots/robot_base.gd")
 const RosterCatalog = preload("res://scripts/systems/roster_catalog.gd")
 const DEFAULT_PRESENTATION_PALETTE := preload("res://data/presentation/default_presentation_palette.tres")
@@ -25,6 +26,8 @@ const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4, 5, 6, 7, 8]
 @onready var map_summary_label: Label = %MapSummaryLabel
 @onready var map_focus_label: Label = %MapFocusLabel
 @onready var map_cycle_button: Button = %MapCycleButton
+@onready var variant_summary_label: Label = %VariantSummaryLabel
+@onready var variant_cycle_button: Button = %VariantCycleButton
 @onready var slot_summary_label: Label = %SlotSummaryLabel
 @onready var teams_button: Button = %TeamsButton
 @onready var ffa_button: Button = %FFAButton
@@ -71,6 +74,9 @@ func _ready() -> void:
 	)
 	map_cycle_button.pressed.connect(func() -> void:
 		cycle_selected_map()
+	)
+	variant_cycle_button.pressed.connect(func() -> void:
+		cycle_mode_variant()
 	)
 	for index in range(slot_buttons.size()):
 		var slot := index + 1
@@ -144,6 +150,11 @@ func cycle_selected_map(direction: int = 1) -> void:
 	_refresh_view()
 
 
+func cycle_mode_variant(direction: int = 1) -> void:
+	_session_draft.cycle_mode_variant(direction)
+	_refresh_view()
+
+
 func toggle_slot_control_mode(player_slot: int) -> void:
 	_session_draft.toggle_slot_control_mode(player_slot)
 	_refresh_view()
@@ -163,7 +174,8 @@ func build_launch_config() -> MatchLaunchConfig:
 		_session_draft.match_mode,
 		MapCatalog.resolve_scene_path(map_id, _session_draft.match_mode, active_slot_count),
 		active_slot_specs,
-		map_id
+		map_id,
+		_session_draft.get_selected_mode_variant_id()
 	)
 	return launch_config
 
@@ -187,6 +199,10 @@ func get_map_focus_line() -> String:
 	return MapCatalog.get_setup_focus_line(_get_selected_map_id(), _session_draft.match_mode, _get_active_slot_count())
 
 
+func get_variant_summary_line() -> String:
+	return _session_draft.get_mode_variant_summary_line()
+
+
 func _refresh_view() -> void:
 	mode_value_label.text = "FFA" if _session_draft.match_mode == MatchController.MatchMode.FFA else "Equipos"
 	teams_button.disabled = _session_draft.match_mode == MatchController.MatchMode.TEAMS
@@ -197,7 +213,10 @@ func _refresh_view() -> void:
 	map_focus_label.text = get_map_focus_line()
 	map_cycle_button.text = "Mapa"
 	map_cycle_button.disabled = MapCatalog.get_maps_for(_session_draft.match_mode, _get_active_slot_count()).size() <= 1
-	slot_summary_label.text = "\n".join(slot_lines)
+	variant_summary_label.text = get_variant_summary_line()
+	variant_cycle_button.text = "Variante"
+	variant_cycle_button.disabled = MatchModeVariantCatalog.get_enabled_variants(_session_draft.match_mode).size() <= 1
+	slot_summary_label.text = _build_compact_slot_summary_text(slot_lines)
 	for index in range(slot_buttons.size()):
 		var player_slot := index + 1
 		slot_buttons[index].text = _build_slot_state_button_text(player_slot)
@@ -229,6 +248,23 @@ func _build_slot_roster_button_text(player_slot: int) -> String:
 	var slot_info := _session_draft.get_slot_info(player_slot)
 	var roster_entry := RosterCatalog.get_competitive_entry(String(slot_info.get("roster_entry_id", "")))
 	return String(roster_entry.get("label", slot_info.get("roster_entry_id", "")))
+
+
+func _build_compact_slot_summary_text(slot_lines: Array[String]) -> String:
+	var rows: Array[String] = []
+	var half := ceili(float(slot_lines.size()) / 2.0)
+	for index in range(half):
+		var left := _compact_slot_summary_line(slot_lines[index])
+		var right := ""
+		var right_index := index + half
+		if right_index < slot_lines.size():
+			right = _compact_slot_summary_line(slot_lines[right_index])
+		rows.append("%s    %s" % [left, right])
+	return "\n".join(rows)
+
+
+func _compact_slot_summary_line(line: String) -> String:
+	return line.replace("teclado ", "").replace("joypad ", "joy ")
 
 
 func _on_start_pressed() -> void:
@@ -277,6 +313,8 @@ func _install_qa_ids() -> void:
 	map_summary_label.set_meta("qa_id", "shell_local_setup_map")
 	map_focus_label.set_meta("qa_id", "shell_local_setup_map_focus")
 	map_cycle_button.set_meta("qa_id", "shell_local_setup_map_cycle")
+	variant_summary_label.set_meta("qa_id", "shell_local_setup_variant")
+	variant_cycle_button.set_meta("qa_id", "shell_local_setup_variant_cycle")
 	slot_summary_label.set_meta("qa_id", "shell_local_setup_slots")
 	teams_button.set_meta("qa_id", "shell_local_setup_teams")
 	ffa_button.set_meta("qa_id", "shell_local_setup_ffa")

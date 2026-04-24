@@ -115,6 +115,10 @@ func _run() -> void:
 		setup.has_method("build_launch_config"),
 		"LocalMatchSetup deberia poder construir un MatchLaunchConfig consumible por GameShell."
 	)
+	_assert(
+		setup.has_method("get_variant_summary_line"),
+		"LocalMatchSetup deberia exponer la variante de modo visible."
+	)
 	if not (
 		setup.has_method("set_match_mode")
 		and setup.has_method("toggle_slot_control_mode")
@@ -172,6 +176,10 @@ func _run() -> void:
 			int(typed_launch_config.local_slots[1].get("control_mode", -1)) == RobotBase.ControlMode.HARD,
 			"El toggle del slot 2 deberia reflejarse en el launch config."
 		)
+		_assert(
+			_get_string_property(typed_launch_config, "mode_variant_id") == "score_by_cause",
+			"El setup local deberia transportar la variante Score por causa."
+		)
 
 	game_shell.call("launch_local_match", launch_config)
 	await process_frame
@@ -212,6 +220,15 @@ func _assert(condition: bool, message: String) -> void:
 
 	_failed = true
 	push_error(message)
+
+
+func _get_string_property(target: Object, property_name: String) -> String:
+	if target == null:
+		return ""
+	for property_info in target.get_property_list():
+		if String(property_info.get("name", "")) == property_name:
+			return String(target.get(property_name))
+	return ""
 
 
 func _finish() -> void:

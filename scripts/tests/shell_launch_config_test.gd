@@ -42,6 +42,10 @@ func _run() -> void:
 		"MatchLaunchConfig deberia exponer una configuracion minima para partidas locales."
 	)
 	_assert(
+		_has_property(launch_config, "mode_variant_id"),
+		"MatchLaunchConfig deberia transportar la variante visible de modo."
+	)
+	_assert(
 		shell_session.has_method("store_match_launch_config"),
 		"ShellSession deberia poder almacenar un launch config pendiente."
 	)
@@ -76,6 +80,10 @@ func _run() -> void:
 	_assert(
 		String(launch_config.get("entry_context")) == "player_shell",
 		"El launch config deberia marcar que la ruta viene desde player shell."
+	)
+	_assert(
+		_get_string_property(launch_config, "mode_variant_id") == "score_by_cause",
+		"El launch config deberia usar score_by_cause como variante default visible."
 	)
 	var launch_slots: Array = Array(launch_config.get("local_slots"))
 	_assert(
@@ -125,6 +133,10 @@ func _run() -> void:
 			String(stored_config.get("entry_context")) == "player_shell",
 			"El contexto de entrada debe sobrevivir al salto de escenas."
 		)
+		_assert(
+			_get_string_property(stored_config, "mode_variant_id") == "score_by_cause",
+			"La variante de modo deberia sobrevivir al clone de runtime."
+		)
 
 	var consumed_twice = shell_session.call("consume_match_launch_config")
 	_assert(
@@ -141,6 +153,21 @@ func _assert(condition: bool, message: String) -> void:
 
 	_failed = true
 	push_error(message)
+
+
+func _has_property(target: Object, property_name: String) -> bool:
+	if target == null:
+		return false
+	for property_info in target.get_property_list():
+		if String(property_info.get("name", "")) == property_name:
+			return true
+	return false
+
+
+func _get_string_property(target: Object, property_name: String) -> String:
+	if target == null or not _has_property(target, property_name):
+		return ""
+	return String(target.get(property_name))
 
 
 func _finish() -> void:
