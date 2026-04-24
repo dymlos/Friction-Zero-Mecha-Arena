@@ -20,7 +20,17 @@ func _ready() -> void:
 	match_hud.show_pause_overlay("Pausa", [
 		"Owner | P2",
 		"Navegacion | arriba/abajo mueve | ataque confirma | pausa reanuda",
+		"Acciones",
 		"> Reanudar",
 		"  Reiniciar",
 		"  Volver al menu",
+		"Informacion",
+		"  Settings",
+		"  How to Play",
+		"  Characters",
+		"Quick settings",
+		"  HUD | Contextual",
+		"  Master | 80%",
+		"  Musica | 70%",
+		"  SFX | 90%",
 	])

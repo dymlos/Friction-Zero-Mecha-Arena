@@ -1,0 +1,48 @@
+{
+  "name": "main_pause_complete_how_to_play_1280",
+  "scene": "res://scenes/qa/main_pause_complete_how_to_play_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "pause_complete_how_to_play"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:match_hud_pause_surface_root"
+    },
+    {
+      "inside_viewport": "qa:shell_how_to_play_title"
+    },
+    {
+      "inside_viewport": "qa:shell_how_to_play_list"
+    },
+    {
+      "inside_viewport": "qa:shell_how_to_play_summary"
+    },
+    {
+      "inside_viewport": "qa:shell_how_to_play_back"
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_how_to_play_title",
+        "expected": "How to Play"
+      }
+    },
+    {
+      "no_overlap": {
+        "a": "qa:shell_how_to_play_title",
+        "b": "qa:shell_how_to_play_back"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

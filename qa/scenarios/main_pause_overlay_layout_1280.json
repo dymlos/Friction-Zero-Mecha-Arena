@@ -24,6 +24,30 @@
       }
     },
     {
+      "text_contains": {
+        "target": "qa:match_hud_pause_label",
+        "expected": "Settings"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_pause_label",
+        "expected": "How to Play"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_pause_label",
+        "expected": "Characters"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:match_hud_pause_label",
+        "expected": "Quick settings"
+      }
+    },
+    {
       "no_errors": true
     }
   ]

@@ -1,0 +1,51 @@
+{
+  "name": "main_pause_complete_settings_1280",
+  "scene": "res://scenes/qa/main_pause_complete_validation.tscn",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "steps": [
+    {
+      "wait_frames": 6
+    },
+    {
+      "snapshot": "pause_complete_settings"
+    }
+  ],
+  "assert": [
+    {
+      "inside_viewport": "qa:match_hud_pause_surface_root"
+    },
+    {
+      "inside_viewport": "qa:shell_settings_title"
+    },
+    {
+      "inside_viewport": "qa:shell_settings_hud"
+    },
+    {
+      "inside_viewport": "qa:shell_settings_back"
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_settings_title",
+        "expected": "Settings"
+      }
+    },
+    {
+      "text_contains": {
+        "target": "qa:shell_settings_hud",
+        "expected": "HUD"
+      }
+    },
+    {
+      "no_overlap": {
+        "a": "qa:shell_settings_title",
+        "b": "qa:shell_settings_back"
+      }
+    },
+    {
+      "no_errors": true
+    }
+  ]
+}

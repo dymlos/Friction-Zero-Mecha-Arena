@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/qa/main_pause_complete_validation.gd" id="1_validation"]
+[ext_resource type="PackedScene" path="res://scenes/ui/match_hud.tscn" id="2_hud"]
+
+[node name="MainPauseCompleteValidation" type="Node"]
+script = ExtResource("1_validation")
+surface_id = "settings"
+
+[node name="UI" type="Node" parent="."]
+
+[node name="MatchHud" parent="UI" instance=ExtResource("2_hud")]
