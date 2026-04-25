@@ -62,6 +62,7 @@ func _ready() -> void:
 		)
 
 	_modules = PracticeCatalog.get_modules()
+	_normalize_practice_slots_for_joypad_ui()
 	_rebuild_module_list()
 	if not _modules.is_empty():
 		_select_index(0)
@@ -124,6 +125,8 @@ func get_first_pass_module_labels() -> Array[String]:
 
 
 func request_start_from_shortcut() -> bool:
+	if not _session_draft.can_launch(DEFAULT_LOCAL_SLOTS.size()):
+		return false
 	_on_start_pressed()
 	return true
 
@@ -144,6 +147,7 @@ func set_session_draft(session_draft: LocalSessionDraft) -> void:
 		return
 	_session_draft = session_draft
 	_session_draft.configure(8)
+	_normalize_practice_slots_for_joypad_ui()
 	_refresh_slot_summary()
 
 
@@ -172,7 +176,13 @@ func reserve_joypad_for_slot(player_slot: int, device_id: int, connected: bool =
 
 
 func cycle_slot_state(player_slot: int) -> void:
-	_session_draft.cycle_slot_state(player_slot)
+	var slot_info := _session_draft.get_slot_info(player_slot)
+	if not bool(slot_info.get("active", false)):
+		_activate_joypad_slot(player_slot, RobotBase.ControlMode.EASY)
+	elif int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.EASY:
+		_activate_joypad_slot(player_slot, RobotBase.ControlMode.HARD)
+	else:
+		_session_draft.set_slot_active(player_slot, false)
 	_refresh_slot_summary()
 
 
@@ -235,6 +245,7 @@ func _refresh_slot_summary() -> void:
 		lines.append(line)
 
 	slots_summary_label.text = "\n".join(lines)
+	start_button.disabled = not _session_draft.can_launch(DEFAULT_LOCAL_SLOTS.size())
 
 
 func _build_slot_state_button_text(player_slot: int) -> String:
@@ -244,9 +255,67 @@ func _build_slot_state_button_text(player_slot: int) -> String:
 	var mode_label := "Avanzado" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Simple"
 	var input_source := String(slot_info.get("input_source", LocalSessionDraft.INPUT_SOURCE_KEYBOARD))
 	if input_source == LocalSessionDraft.INPUT_SOURCE_JOYPAD:
-		var connection_label := "ok" if bool(slot_info.get("device_connected", false)) else "sin joy"
-		return "P%s | %s | %s" % [player_slot, mode_label, connection_label]
-	return "P%s | %s | teclado" % [player_slot, mode_label]
+		var device_id := int(slot_info.get("device_id", player_slot - 1))
+		var connection_label := "Joystick %s" % (device_id + 1)
+		if not bool(slot_info.get("device_connected", false)):
+			connection_label = "%s sin conectar" % connection_label
+		return "P%s | %s | %s" % [player_slot, connection_label, mode_label]
+	return "P%s | activar joystick" % player_slot
+
+
+func _normalize_practice_slots_for_joypad_ui() -> void:
+	for slot in DEFAULT_LOCAL_SLOTS:
+		var slot_info := _session_draft.get_slot_info(slot)
+		if not bool(slot_info.get("active", false)):
+			continue
+		if String(slot_info.get("input_source", LocalSessionDraft.INPUT_SOURCE_KEYBOARD)) == LocalSessionDraft.INPUT_SOURCE_JOYPAD:
+			_refresh_joypad_connection(slot)
+			continue
+		_activate_joypad_slot(slot, int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)))
+
+
+func _activate_joypad_slot(player_slot: int, control_mode: int) -> void:
+	var device_id := _pick_device_for_slot(player_slot)
+	var connected_devices := Input.get_connected_joypads()
+	_session_draft.reserve_joypad_for_slot(player_slot, device_id, connected_devices.has(device_id))
+	_session_draft.set_slot_control_mode(player_slot, control_mode)
+
+
+func _refresh_joypad_connection(player_slot: int) -> void:
+	var slot_info := _session_draft.get_slot_info(player_slot)
+	var device_id := int(slot_info.get("device_id", -1))
+	if device_id < 0:
+		device_id = _pick_device_for_slot(player_slot)
+	var connected_devices := Input.get_connected_joypads()
+	var control_mode := int(slot_info.get("control_mode", RobotBase.ControlMode.EASY))
+	_session_draft.reserve_joypad_for_slot(player_slot, device_id, connected_devices.has(device_id))
+	_session_draft.set_slot_control_mode(player_slot, control_mode)
+
+
+func _pick_device_for_slot(player_slot: int) -> int:
+	var connected_devices := Input.get_connected_joypads()
+	var slot_info := _session_draft.get_slot_info(player_slot)
+	var current_device := int(slot_info.get("device_id", -1))
+	if current_device >= 0 and connected_devices.has(current_device):
+		return current_device
+	var used_devices := {}
+	for slot in DEFAULT_LOCAL_SLOTS:
+		if slot == player_slot:
+			continue
+		var other_info := _session_draft.get_slot_info(slot)
+		if not bool(other_info.get("active", false)):
+			continue
+		if String(other_info.get("input_source", "")) != LocalSessionDraft.INPUT_SOURCE_JOYPAD:
+			continue
+		var other_device := int(other_info.get("device_id", -1))
+		if other_device >= 0:
+			used_devices[other_device] = true
+	for device_id in connected_devices:
+		if not used_devices.has(int(device_id)):
+			return int(device_id)
+	if current_device >= 0:
+		return current_device
+	return player_slot - 1
 
 
 func _build_slot_roster_button_text(player_slot: int) -> String:
@@ -267,6 +336,8 @@ func _on_module_selected(index: int) -> void:
 
 
 func _on_start_pressed() -> void:
+	if not _session_draft.can_launch(DEFAULT_LOCAL_SLOTS.size()):
+		return
 	start_requested.emit(build_launch_config())
 
 

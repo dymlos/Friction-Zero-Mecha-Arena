@@ -11,6 +11,8 @@ const MatchModeVariantCatalog = preload("res://scripts/systems/match_mode_varian
 
 const INPUT_SOURCE_KEYBOARD := "keyboard"
 const INPUT_SOURCE_JOYPAD := "joypad"
+const TEAM_BLUE := 1
+const TEAM_RED := 2
 
 @export_range(1, 8) var max_slots := 4
 @export var match_mode: MatchController.MatchMode = MatchController.MatchMode.TEAMS
@@ -103,6 +105,21 @@ func set_slot_control_mode(player_slot: int, control_mode: int) -> void:
 	var slot_info: Dictionary = _slots[player_slot]
 	slot_info["control_mode"] = _sanitize_control_mode(control_mode)
 	_slots[player_slot] = slot_info
+
+
+func set_slot_team_id(player_slot: int, team_id: int) -> void:
+	if not _slots.has(player_slot):
+		return
+	var slot_info: Dictionary = _slots[player_slot]
+	slot_info["team_id"] = _sanitize_team_id(team_id, player_slot)
+	_slots[player_slot] = slot_info
+
+
+func toggle_slot_team_id(player_slot: int) -> void:
+	if not _slots.has(player_slot):
+		return
+	var current_team := int(_slots[player_slot].get("team_id", _get_default_team_id(player_slot)))
+	set_slot_team_id(player_slot, TEAM_RED if current_team == TEAM_BLUE else TEAM_BLUE)
 
 
 func toggle_slot_control_mode(player_slot: int) -> void:
@@ -254,6 +271,7 @@ func _build_default_slot(player_slot: int) -> Dictionary:
 		"keyboard_profile": LocalSessionBuilder.get_default_keyboard_profile_for_slot(player_slot),
 		"device_id": -1,
 		"device_connected": true,
+		"team_id": _get_default_team_id(player_slot),
 		"roster_entry_id": roster_entry_id,
 		"archetype_path": String(entry.get("config_path", "")),
 	}
@@ -270,8 +288,13 @@ func _build_slot_summary_line(player_slot: int) -> String:
 	if input_source == INPUT_SOURCE_JOYPAD:
 		var device_id := int(slot_info.get("device_id", -1))
 		var connection_label := "conectado" if bool(slot_info.get("device_connected", false)) else "desconectado"
-		return "P%s | %s | joy %s %s | %s | %s" % [
+		var team_label := _get_team_label(int(slot_info.get("team_id", _get_default_team_id(player_slot))))
+		var team_segment := ""
+		if match_mode == MatchController.MatchMode.TEAMS:
+			team_segment = " | %s" % team_label
+		return "P%s%s | %s | joy %s %s | %s | %s" % [
 			player_slot,
+			team_segment,
 			mode_label,
 			device_id,
 			connection_label,
@@ -279,7 +302,11 @@ func _build_slot_summary_line(player_slot: int) -> String:
 			InputPromptCatalog.get_joypad_short_hint(device_id),
 		]
 	var profile := int(slot_info.get("keyboard_profile", LocalSessionBuilder.get_default_keyboard_profile_for_slot(player_slot)))
-	return "P%s | %s | teclado %s | %s" % [player_slot, mode_label, LocalSessionBuilder.get_keyboard_profile_label(profile), roster_label]
+	var team_label := _get_team_label(int(slot_info.get("team_id", _get_default_team_id(player_slot))))
+	var team_segment := ""
+	if match_mode == MatchController.MatchMode.TEAMS:
+		team_segment = " | %s" % team_label
+	return "P%s%s | %s | teclado %s | %s" % [player_slot, team_segment, mode_label, LocalSessionBuilder.get_keyboard_profile_label(profile), roster_label]
 
 
 func _sanitize_slot_spec(slot_info: Dictionary, fallback_slot: int) -> Dictionary:
@@ -297,6 +324,7 @@ func _sanitize_slot_spec(slot_info: Dictionary, fallback_slot: int) -> Dictionar
 		"keyboard_profile": keyboard_profile,
 		"device_id": int(slot_info.get("device_id", -1)),
 		"device_connected": bool(slot_info.get("device_connected", true)),
+		"team_id": _sanitize_team_id(int(slot_info.get("team_id", _get_default_team_id(slot))), slot) if match_mode == MatchController.MatchMode.TEAMS else 0,
 		"roster_entry_id": String(slot_info.get("roster_entry_id", RosterCatalog.get_default_entry_id_for_slot(slot))),
 		"archetype_path": String(slot_info.get("archetype_path", "")),
 	}
@@ -308,6 +336,18 @@ func _sanitize_input_source(input_source: String) -> String:
 
 func _sanitize_control_mode(control_mode: int) -> int:
 	return RobotBase.ControlMode.HARD if control_mode == RobotBase.ControlMode.HARD else RobotBase.ControlMode.EASY
+
+
+func _sanitize_team_id(team_id: int, player_slot: int) -> int:
+	return TEAM_RED if team_id == TEAM_RED else TEAM_BLUE
+
+
+func _get_default_team_id(player_slot: int) -> int:
+	return TEAM_BLUE if player_slot % 2 == 1 else TEAM_RED
+
+
+func _get_team_label(team_id: int) -> String:
+	return "Rojo" if team_id == TEAM_RED else "Azul"
 
 
 func _ensure_mode_variant_for_current_mode() -> String:

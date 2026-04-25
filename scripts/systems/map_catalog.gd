@@ -121,16 +121,10 @@ static func resolve_scene_path(map_id: String, match_mode: int, active_slots: in
 static func get_setup_summary_line(map_id: String, match_mode: int, active_slots: int) -> String:
 	var sanitized_id := sanitize_map_id(map_id, match_mode, active_slots)
 	var map_entry := get_map(sanitized_id)
-	return "Mapa | %s | %s" % [
-		String(map_entry.get("setup_label", map_entry.get("label", ""))),
-		String(map_entry.get("range_label", "")),
-	]
+	return "Mapa | %s" % String(map_entry.get("label", ""))
 
 
 static func get_setup_focus_line(map_id: String, match_mode: int, active_slots: int) -> String:
 	var sanitized_id := sanitize_map_id(map_id, match_mode, active_slots)
 	var map_entry := get_map(sanitized_id)
-	return "Idea del mapa | %s | %s" % [
-		String(map_entry.get("mode_focus", "")),
-		String(map_entry.get("edge_goal", "")),
-	]
+	return "Idea del mapa | %s" % String(map_entry.get("mode_focus", ""))

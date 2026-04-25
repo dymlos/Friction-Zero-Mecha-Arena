@@ -68,6 +68,10 @@ func get_slot_archetype_path(slot: int) -> String:
 	return String(_get_slot_info(slot).get("archetype_path", ""))
 
 
+func get_slot_team_id(slot: int) -> int:
+	return int(_get_slot_info(slot).get("team_id", 0))
+
+
 func get_disconnected_slots() -> Array[int]:
 	var slots: Array[int] = []
 	for slot in range(1, max_local_slots + 1):
@@ -103,7 +107,8 @@ func assign_keyboard_slot(
 	keyboard_profile: int,
 	control_mode: int = RobotBase.ControlMode.EASY,
 	roster_entry_id: String = "",
-	archetype_path: String = ""
+	archetype_path: String = "",
+	team_id: int = -1
 ) -> void:
 	if not _slots.has(slot):
 		return
@@ -116,6 +121,7 @@ func assign_keyboard_slot(
 		"keyboard_profile": keyboard_profile,
 		"device_id": -1,
 		"control_mode": control_mode,
+		"team_id": _sanitize_team_id(team_id),
 		"roster_entry_id": String(loadout.get("roster_entry_id", "")),
 		"archetype_path": String(loadout.get("archetype_path", "")),
 	}
@@ -126,7 +132,8 @@ func assign_joypad_slot(
 	device_id: int,
 	control_mode: int = RobotBase.ControlMode.EASY,
 	roster_entry_id: String = "",
-	archetype_path: String = ""
+	archetype_path: String = "",
+	team_id: int = -1
 ) -> void:
 	if not _slots.has(slot):
 		return
@@ -139,6 +146,7 @@ func assign_joypad_slot(
 		"keyboard_profile": RobotBase.KeyboardProfile.NONE,
 		"device_id": device_id,
 		"control_mode": control_mode,
+		"team_id": _sanitize_team_id(team_id),
 		"roster_entry_id": String(loadout.get("roster_entry_id", "")),
 		"archetype_path": String(loadout.get("archetype_path", "")),
 	}
@@ -219,6 +227,9 @@ func apply_to_robot(robot: RobotBase, slot: int) -> void:
 	robot.control_mode = int(slot_info.get("control_mode", RobotBase.ControlMode.EASY))
 	robot.keyboard_profile = int(slot_info.get("keyboard_profile", RobotBase.KeyboardProfile.NONE))
 	robot.joypad_device = int(slot_info.get("device_id", -1))
+	var team_id := int(slot_info.get("team_id", -1))
+	if team_id >= 0:
+		robot.team_id = team_id
 	var archetype_path := String(slot_info.get("archetype_path", ""))
 	if archetype_path == "":
 		return
@@ -235,6 +246,7 @@ func _build_empty_slot(slot: int) -> Dictionary:
 		"keyboard_profile": RobotBase.KeyboardProfile.NONE,
 		"device_id": -1,
 		"control_mode": RobotBase.ControlMode.EASY,
+		"team_id": -1,
 		"roster_entry_id": "",
 		"archetype_path": "",
 	}
@@ -258,3 +270,11 @@ func _resolve_loadout(slot: int, roster_entry_id: String, archetype_path: String
 		"roster_entry_id": String(entry.get("id", "")),
 		"archetype_path": String(entry.get("config_path", "")),
 	}
+
+
+func _sanitize_team_id(team_id: int) -> int:
+	if team_id < 0:
+		return -1
+	if team_id == 0:
+		return 0
+	return 2 if team_id == 2 else 1

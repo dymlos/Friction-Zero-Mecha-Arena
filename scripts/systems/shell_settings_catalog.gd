@@ -12,7 +12,7 @@ static func get_sections() -> Array[Dictionary]:
 		{
 			"id": "audio",
 			"title": "Audio",
-			"summary": "Volumen general, musica y efectos.",
+			"summary": "Volumen general y efectos. La musica esta desactivada por ahora.",
 		},
 		{
 			"id": "video",
@@ -27,7 +27,7 @@ static func get_sections() -> Array[Dictionary]:
 		{
 			"id": "controls",
 			"title": "Controles",
-			"summary": "Consulta botones de teclado y joysticks conectados.",
+			"summary": "Consulta joysticks conectados y modos simple/avanzado.",
 		},
 	]
 
@@ -75,6 +75,6 @@ static func get_connected_joypad_lines() -> Array[String]:
 
 static func get_controls_note() -> String:
 	return (
-		"Menu | %s. Por ahora se usan perfiles fijos; remapeo libre vendra despues."
+		"Menu | %s. Los jugadores se configuran con joystick en la pantalla previa a la partida."
 		% InputPromptCatalog.get_menu_navigation_help_line(true, true)
 	)

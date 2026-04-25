@@ -23,6 +23,7 @@ const MUSIC_STATE_PROFILES := {
 const UI_PLAYER_COUNT := 3
 const SFX_PLAYER_COUNT := 6
 const MIN_VOLUME_DB := -80.0
+const MUSIC_DISABLED := true
 
 static var _singleton: Node = null
 
@@ -102,6 +103,13 @@ func play_cue(cue_id: String) -> void:
 
 
 func set_music_state(state_name: String) -> void:
+	if MUSIC_DISABLED:
+		_music_state = ""
+		if _audio_playback_enabled and _music_player != null:
+			_music_player.stop()
+			_music_player.stream = null
+		return
+
 	var next_state := state_name if MUSIC_STATES.has(state_name) else ""
 	if _music_state == next_state:
 		return

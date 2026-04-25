@@ -5,6 +5,7 @@ const CHARACTERS_SCENE := preload("res://scenes/shell/characters_screen.tscn")
 const HOW_TO_PLAY_SCENE := preload("res://scenes/shell/how_to_play_screen.tscn")
 const LOCAL_MATCH_SETUP_SCENE := preload("res://scenes/shell/local_match_setup.tscn")
 const MAIN_MENU_SCENE := preload("res://scenes/shell/main_menu.tscn")
+const PLAYER_SETUP_SCENE := preload("res://scenes/shell/player_setup_screen.tscn")
 const PRACTICE_SETUP_SCENE := preload("res://scenes/shell/practice_setup.tscn")
 const SETTINGS_SCENE := preload("res://scenes/shell/settings_screen.tscn")
 const InputPromptCatalog = preload("res://scripts/systems/input_prompt_catalog.gd")
@@ -25,6 +26,7 @@ var _stick_nav_direction := Vector2i.ZERO
 var _stick_nav_cooldown := 0.0
 var _characters_return_screen_id := "main_menu"
 var _how_to_play_return_screen_id := "main_menu"
+var _player_setup_return_screen_id := "local_match_setup"
 var _practice_return_screen_id := "main_menu"
 var _settings_return_screen_id := "main_menu"
 var _shell_session := ShellSession.new()
@@ -69,6 +71,14 @@ func open_main_menu() -> void:
 
 func open_local_setup() -> void:
 	_mount_screen(LOCAL_MATCH_SETUP_SCENE, "local_match_setup")
+
+
+func open_player_setup(return_screen_id: String = "local_match_setup") -> void:
+	var resolved_return_screen_id := return_screen_id
+	if resolved_return_screen_id == "":
+		resolved_return_screen_id = "local_match_setup"
+	_player_setup_return_screen_id = resolved_return_screen_id
+	_mount_screen(PLAYER_SETUP_SCENE, "player_setup")
 
 
 func open_characters(return_screen_id: String = "") -> void:
@@ -193,6 +203,11 @@ func _wire_screen(screen: Control) -> void:
 			_play_audio_cue("ui_confirm")
 			open_practice_setup("", module_id)
 		)
+	if screen.has_signal("players_requested"):
+		screen.players_requested.connect(func() -> void:
+			_play_audio_cue("ui_confirm")
+			open_player_setup(_active_screen_id)
+		)
 	if screen.has_signal("exit_requested"):
 		screen.exit_requested.connect(func() -> void:
 			_play_audio_cue("ui_back")
@@ -219,6 +234,9 @@ func _on_back_requested() -> void:
 		return
 	if _active_screen_id == "practice_setup":
 		_return_from_practice_setup()
+		return
+	if _active_screen_id == "player_setup":
+		_return_from_player_setup()
 		return
 	if _active_screen_id == "settings":
 		_return_from_settings()
@@ -284,6 +302,24 @@ func _restore_focus_after_practice_return(target_screen_id: String) -> void:
 
 	if target_screen_id in ["main_menu", "local_match_setup", "how_to_play"] and _active_screen.has_method("focus_practice_button"):
 		_active_screen.call_deferred("focus_practice_button")
+
+
+func _return_from_player_setup() -> void:
+	var target_screen_id := _player_setup_return_screen_id
+	if target_screen_id != "local_match_setup":
+		target_screen_id = "main_menu"
+	if target_screen_id == "local_match_setup":
+		open_local_setup()
+	else:
+		open_main_menu()
+	call_deferred("_restore_focus_after_player_setup_return", target_screen_id)
+
+
+func _restore_focus_after_player_setup_return(target_screen_id: String) -> void:
+	if not is_instance_valid(_active_screen):
+		return
+	if target_screen_id == "local_match_setup" and _active_screen.has_method("focus_start_button"):
+		_active_screen.call_deferred("focus_start_button")
 
 
 func _return_from_settings() -> void:

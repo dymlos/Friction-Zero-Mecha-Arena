@@ -16,11 +16,13 @@ signal back_requested
 signal characters_requested
 signal how_to_play_requested
 signal practice_requested
+signal players_requested
 signal start_requested(launch_config: MatchLaunchConfig)
 
 const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4, 5, 6, 7, 8]
 
 @onready var backdrop: ColorRect = $Backdrop
+@onready var panel: Control = $Panel
 @onready var mode_value_label: Label = %ModeValueLabel
 @onready var scale_status_label: Label = %ScaleStatusLabel
 @onready var map_summary_label: Label = %MapSummaryLabel
@@ -28,7 +30,9 @@ const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4, 5, 6, 7, 8]
 @onready var map_cycle_button: Button = %MapCycleButton
 @onready var variant_summary_label: Label = %VariantSummaryLabel
 @onready var variant_cycle_button: Button = %VariantCycleButton
+@onready var slots_title_label: Label = $Panel/Margin/VBox/SlotsTitleLabel
 @onready var slot_summary_label: Label = %SlotSummaryLabel
+@onready var slot_buttons_grid: GridContainer = $Panel/Margin/VBox/SlotButtons
 @onready var teams_button: Button = %TeamsButton
 @onready var ffa_button: Button = %FFAButton
 @onready var slot_buttons: Array[Button] = [
@@ -59,25 +63,30 @@ const DEFAULT_LOCAL_SLOTS := [1, 2, 3, 4, 5, 6, 7, 8]
 
 var _session_draft := LocalSessionDraft.new()
 
+const PANEL_MAX_WIDTH := 920.0
+const PANEL_MAX_HEIGHT := 760.0
+const PANEL_MIN_SIDE_MARGIN := 40.0
+const PANEL_TOP_MARGIN := 24.0
+const PANEL_BOTTOM_RESERVED := 96.0
+
 
 func _ready() -> void:
 	_install_qa_ids()
 	_session_draft.configure(DEFAULT_LOCAL_SLOTS.size())
 	backdrop.color = DEFAULT_PRESENTATION_PALETTE.surface_background_alt
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	resized.connect(_apply_responsive_layout)
+	call_deferred("_apply_responsive_layout")
+	mode_value_label.visible = false
+	teams_button.toggle_mode = false
+	ffa_button.visible = false
+	slots_title_label.visible = false
+	slot_buttons_grid.visible = false
+	characters_button.visible = false
 
-	teams_button.pressed.connect(func() -> void:
-		set_match_mode(MatchController.MatchMode.TEAMS)
-	)
-	ffa_button.pressed.connect(func() -> void:
-		set_match_mode(MatchController.MatchMode.FFA)
-	)
-	map_cycle_button.pressed.connect(func() -> void:
-		cycle_selected_map()
-	)
-	variant_cycle_button.pressed.connect(func() -> void:
-		cycle_mode_variant()
-	)
+	_connect_horizontal_option(teams_button, _cycle_match_mode_from_axis)
+	_connect_horizontal_option(map_cycle_button, cycle_selected_map)
+	_connect_horizontal_option(variant_cycle_button, cycle_mode_variant)
 	for index in range(slot_buttons.size()):
 		var slot := index + 1
 		slot_buttons[index].pressed.connect(func() -> void:
@@ -93,7 +102,7 @@ func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
 	how_to_play_button.pressed.connect(_on_how_to_play_pressed)
 	practice_button.pressed.connect(_on_practice_pressed)
-	start_button.text = "Iniciar"
+	start_button.text = "Continuar"
 	characters_button.text = "Robots"
 	how_to_play_button.text = "Como jugar"
 	practice_button.text = "Practica"
@@ -113,6 +122,13 @@ func set_session_draft(session_draft: LocalSessionDraft) -> void:
 func set_match_mode(next_match_mode: MatchController.MatchMode) -> void:
 	_session_draft.set_match_mode(next_match_mode)
 	_refresh_view()
+
+
+func cycle_match_mode(direction: int = 1) -> void:
+	var next_mode := MatchController.MatchMode.FFA
+	if _session_draft.match_mode == MatchController.MatchMode.FFA:
+		next_mode = MatchController.MatchMode.TEAMS
+	set_match_mode(next_mode)
 
 
 func set_slot_active(player_slot: int, active: bool) -> void:
@@ -161,7 +177,7 @@ func toggle_slot_control_mode(player_slot: int) -> void:
 
 
 func is_start_enabled() -> bool:
-	return _session_draft.can_launch(DEFAULT_LOCAL_SLOTS.size())
+	return true
 
 
 func request_start_from_shortcut() -> bool:
@@ -200,7 +216,13 @@ func get_scale_status_line() -> String:
 
 
 func get_map_summary_line() -> String:
-	return MapCatalog.get_setup_summary_line(_get_selected_map_id(), _session_draft.match_mode, _get_active_slot_count())
+	var base_line := MapCatalog.get_setup_summary_line(_get_selected_map_id(), _session_draft.match_mode, _get_active_slot_count())
+	var map_count := MapCatalog.get_maps_for(_session_draft.match_mode, _get_active_slot_count()).size()
+	if map_count <= 0:
+		return "Mapa | no disponible"
+	if map_count == 1:
+		return "%s | sin mas mapas por ahora" % base_line
+	return "%s | %s opciones" % [base_line, map_count]
 
 
 func get_map_focus_line() -> String:
@@ -213,17 +235,23 @@ func get_variant_summary_line() -> String:
 
 func _refresh_view() -> void:
 	mode_value_label.text = "Todos contra todos" if _session_draft.match_mode == MatchController.MatchMode.FFA else "Equipos"
-	teams_button.disabled = _session_draft.match_mode == MatchController.MatchMode.TEAMS
-	ffa_button.disabled = _session_draft.match_mode == MatchController.MatchMode.FFA
+	teams_button.disabled = false
+	ffa_button.disabled = false
+	teams_button.text = "< %s >" % mode_value_label.text
+	teams_button.theme_type_variation = &"ShellButtonSecondary"
 	var slot_lines := get_slot_summary_lines()
 	scale_status_label.text = get_scale_status_line()
 	map_summary_label.text = get_map_summary_line()
 	map_focus_label.text = get_map_focus_line()
-	map_cycle_button.text = "Mapa"
-	map_cycle_button.disabled = MapCatalog.get_maps_for(_session_draft.match_mode, _get_active_slot_count()).size() <= 1
+	var map_count := MapCatalog.get_maps_for(_session_draft.match_mode, _get_active_slot_count()).size()
+	map_cycle_button.text = "< Mapa >" if map_count > 1 else "Sin mas mapas"
+	map_cycle_button.theme_type_variation = &"ShellButtonSecondary" if map_count > 1 else &"ShellButtonUnavailable"
+	map_cycle_button.disabled = false
 	variant_summary_label.text = get_variant_summary_line()
-	variant_cycle_button.text = "Variante"
-	variant_cycle_button.disabled = MatchModeVariantCatalog.get_enabled_variants(_session_draft.match_mode).size() <= 1
+	var variant_count := MatchModeVariantCatalog.get_enabled_variants(_session_draft.match_mode).size()
+	variant_cycle_button.text = "< Reglas >" if variant_count > 1 else "Sin variantes"
+	variant_cycle_button.theme_type_variation = &"ShellButtonSecondary" if variant_count > 1 else &"ShellButtonUnavailable"
+	variant_cycle_button.disabled = false
 	slot_summary_label.text = _build_compact_slot_summary_text(slot_lines)
 	for index in range(slot_buttons.size()):
 		var player_slot := index + 1
@@ -243,13 +271,46 @@ func _get_selected_map_id() -> String:
 func _build_slot_state_button_text(player_slot: int) -> String:
 	var slot_info := _session_draft.get_slot_info(player_slot)
 	if not bool(slot_info.get("active", false)):
-		return "P%s | activar" % player_slot
+		return "P%s activar" % player_slot
 	var mode_label := "Avanzado" if int(slot_info.get("control_mode", RobotBase.ControlMode.EASY)) == RobotBase.ControlMode.HARD else "Simple"
 	var input_source := String(slot_info.get("input_source", LocalSessionDraft.INPUT_SOURCE_KEYBOARD))
 	if input_source == LocalSessionDraft.INPUT_SOURCE_JOYPAD:
-		var connection_label := "ok" if bool(slot_info.get("device_connected", false)) else "sin joy"
-		return "P%s | %s | %s" % [player_slot, mode_label, connection_label]
-	return "P%s | %s | teclado" % [player_slot, mode_label]
+		var connected := bool(slot_info.get("device_connected", false))
+		var device_id := int(slot_info.get("device_id", -1))
+		if connected and device_id >= 0:
+			return "P%s %s | joy %s" % [player_slot, mode_label, device_id]
+		return "P%s %s | sin joy" % [player_slot, mode_label]
+
+	return "P%s activar joystick" % player_slot
+
+
+func _apply_responsive_layout() -> void:
+	if panel == null:
+		return
+
+	var viewport_size := get_viewport_rect().size
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return
+
+	var desired_side := maxf((viewport_size.x - PANEL_MAX_WIDTH) * 0.5, PANEL_MIN_SIDE_MARGIN)
+	var max_side := maxf(PANEL_MIN_SIDE_MARGIN, (viewport_size.x - 560.0) * 0.5)
+	var side_margin := clampf(desired_side, PANEL_MIN_SIDE_MARGIN, max_side)
+
+	panel.anchor_left = 0.0
+	panel.anchor_right = 1.0
+	panel.offset_left = side_margin
+	panel.offset_right = -side_margin
+
+	var available_height := viewport_size.y - PANEL_TOP_MARGIN - PANEL_BOTTOM_RESERVED
+	var target_height := minf(available_height, PANEL_MAX_HEIGHT)
+	var slack := maxf(available_height - target_height, 0.0)
+	var top_margin := PANEL_TOP_MARGIN + (slack * 0.5)
+	var bottom_margin := PANEL_BOTTOM_RESERVED + (slack * 0.5)
+
+	panel.anchor_top = 0.0
+	panel.anchor_bottom = 1.0
+	panel.offset_top = top_margin
+	panel.offset_bottom = -bottom_margin
 
 
 func _build_slot_roster_button_text(player_slot: int) -> String:
@@ -275,8 +336,39 @@ func _compact_slot_summary_line(line: String) -> String:
 	return line.replace("teclado ", "").replace("joypad ", "joy ")
 
 
+func _cycle_match_mode_from_axis(_direction: int = 1) -> void:
+	cycle_match_mode()
+
+
+func _connect_horizontal_option(button: Button, handler: Callable) -> void:
+	if button == null:
+		return
+	button.gui_input.connect(func(event: InputEvent) -> void:
+		_handle_horizontal_option_input(event, handler)
+	)
+
+
+func _handle_horizontal_option_input(event: InputEvent, handler: Callable) -> void:
+	var direction := 0
+	if _is_pressed_action(event, "ui_left"):
+		direction = -1
+	elif _is_pressed_action(event, "ui_right"):
+		direction = 1
+	if direction == 0:
+		return
+
+	handler.call(direction)
+	accept_event()
+
+
+func _is_pressed_action(event: InputEvent, action_name: String) -> bool:
+	if event is InputEventKey and (event as InputEventKey).echo:
+		return false
+	return event.is_action_pressed(StringName(action_name))
+
+
 func _on_start_pressed() -> void:
-	start_requested.emit(build_launch_config())
+	players_requested.emit()
 
 
 func _on_characters_pressed() -> void:

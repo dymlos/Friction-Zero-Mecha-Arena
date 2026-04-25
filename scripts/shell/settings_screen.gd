@@ -22,6 +22,7 @@ const PAUSE_SECTION_IDS := ["audio", "hud"]
 @onready var audio_content: VBoxContainer = %AudioContent
 @onready var master_slider: HSlider = %MasterSlider
 @onready var master_value_label: Label = %MasterValueLabel
+@onready var music_row: HBoxContainer = $CenterPanel/Margin/VBox/ContentPanel/Margin/ContentScroll/VBox/AudioContent/MusicRow
 @onready var music_slider: HSlider = %MusicSlider
 @onready var music_value_label: Label = %MusicValueLabel
 @onready var sfx_slider: HSlider = %SFXSlider
@@ -47,12 +48,14 @@ func _ready() -> void:
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_label.text = "Opciones"
 	subtitle_label.text = "Ajusta audio, video, ayudas en pantalla y revisa los controles."
+	music_row.visible = false
 	back_button.text = "Volver"
 	back_button.pressed.connect(go_back)
 	_store = get_node_or_null("/root/UserSettingsStore")
 	_settings = _store.call("get_settings") if _store != null and _store.has_method("get_settings") else UserSettings.new()
 	_populate_catalog()
 	_bind_controls()
+	_configure_section_buttons()
 	_apply_surface_scope()
 	_apply_settings_to_controls()
 	_select_section("audio")
@@ -151,14 +154,19 @@ func _populate_catalog() -> void:
 	controls_summary_label.text = _build_controls_summary()
 
 
+func _configure_section_buttons() -> void:
+	for button in [audio_button, video_button, hud_button, controls_button]:
+		button.toggle_mode = true
+
+
 func _apply_surface_scope() -> void:
 	if not is_node_ready():
 		return
 	var pause_scope := _surface_scope == SURFACE_SCOPE_PAUSE
 	video_button.visible = not pause_scope
 	controls_button.visible = not pause_scope
-	video_button.disabled = pause_scope or _active_section_id == "video"
-	controls_button.disabled = pause_scope or _active_section_id == "controls"
+	video_button.disabled = pause_scope
+	controls_button.disabled = pause_scope
 	subtitle_label.text = (
 		"Ajustes rapidos de pausa: audio y ayudas en pantalla."
 		if pause_scope
@@ -228,10 +236,18 @@ func _select_section(section_id: String) -> void:
 	video_content.visible = section_id == "video"
 	hud_content.visible = section_id == "hud"
 	controls_content.visible = section_id == "controls"
-	audio_button.disabled = section_id == "audio"
-	video_button.disabled = _surface_scope == SURFACE_SCOPE_PAUSE or section_id == "video"
-	hud_button.disabled = section_id == "hud"
-	controls_button.disabled = _surface_scope == SURFACE_SCOPE_PAUSE or section_id == "controls"
+	audio_button.disabled = false
+	video_button.disabled = _surface_scope == SURFACE_SCOPE_PAUSE
+	hud_button.disabled = false
+	controls_button.disabled = _surface_scope == SURFACE_SCOPE_PAUSE
+	audio_button.button_pressed = section_id == "audio"
+	video_button.button_pressed = section_id == "video"
+	hud_button.button_pressed = section_id == "hud"
+	controls_button.button_pressed = section_id == "controls"
+	audio_button.text = "< Audio >" if audio_button.button_pressed else "Audio"
+	video_button.text = "< Video >" if video_button.button_pressed else "Video"
+	hud_button.text = "< Ayudas >" if hud_button.button_pressed else "Ayudas"
+	controls_button.text = "< Controles >" if controls_button.button_pressed else "Controles"
 	_refresh_section_summary()
 
 
@@ -246,9 +262,8 @@ func _refresh_section_summary() -> void:
 
 func _build_controls_summary() -> String:
 	var lines: Array[String] = []
-	lines.append("Perfiles | %s" % ", ".join(ShellSettingsCatalog.get_keyboard_profile_lines()))
 	lines.append("Modos | %s" % ", ".join(ShellSettingsCatalog.get_control_mode_lines()))
-	lines.append("Dispositivos | %s" % ", ".join(ShellSettingsCatalog.get_connected_joypad_lines()))
+	lines.append("Joysticks | %s" % ", ".join(ShellSettingsCatalog.get_connected_joypad_lines()))
 	lines.append(ShellSettingsCatalog.get_controls_note())
 	return "\n".join(lines)
 

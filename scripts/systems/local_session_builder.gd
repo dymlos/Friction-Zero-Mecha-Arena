@@ -34,7 +34,8 @@ static func build_from_slot_specs(slot_specs: Array, default_config: LocalSessio
 					device_id,
 					control_mode,
 					String(slot_spec.get("roster_entry_id", "")),
-					String(slot_spec.get("archetype_path", ""))
+					String(slot_spec.get("archetype_path", "")),
+					int(slot_spec.get("team_id", -1))
 				)
 				if not bool(slot_spec.get("device_connected", true)):
 					session.mark_slot_disconnected(slot)
@@ -48,7 +49,8 @@ static func build_from_slot_specs(slot_specs: Array, default_config: LocalSessio
 			),
 			control_mode,
 			String(slot_spec.get("roster_entry_id", "")),
-			String(slot_spec.get("archetype_path", ""))
+			String(slot_spec.get("archetype_path", "")),
+			int(slot_spec.get("team_id", -1))
 		)
 
 	return session
@@ -83,6 +85,7 @@ static func sanitize_slot_specs(slot_specs: Array) -> Array[Dictionary]:
 			"keyboard_profile": keyboard_profile,
 			"device_id": int(slot_spec.get("device_id", -1)),
 			"device_connected": bool(slot_spec.get("device_connected", true)),
+			"team_id": _sanitize_team_id(int(slot_spec.get("team_id", -1))),
 			"roster_entry_id": String(loadout.get("roster_entry_id", "")),
 			"archetype_path": String(loadout.get("archetype_path", "")),
 		})
@@ -136,3 +139,11 @@ static func _sanitize_loadout(slot_spec: Dictionary, slot: int) -> Dictionary:
 		"roster_entry_id": String(entry.get("id", "")),
 		"archetype_path": String(entry.get("config_path", "")),
 	}
+
+
+static func _sanitize_team_id(team_id: int) -> int:
+	if team_id < 0:
+		return -1
+	if team_id == 0:
+		return 0
+	return 2 if team_id == 2 else 1

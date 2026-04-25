@@ -91,6 +91,16 @@ func _rebuild() -> void:
 	set_stylebox("disabled", "ShellButtonSecondary", palette.make_button_style(palette.surface_overlay, palette.text_secondary.darkened(0.2), palette.text_secondary))
 	set_stylebox("focus", "ShellButtonSecondary", button_focus.duplicate())
 
+	set_color("font_color", "ShellButtonUnavailable", palette.accent_danger.lightened(0.2))
+	set_color("font_focus_color", "ShellButtonUnavailable", palette.accent_danger.lightened(0.25))
+	set_color("font_hover_color", "ShellButtonUnavailable", palette.accent_danger.lightened(0.25))
+	set_color("font_pressed_color", "ShellButtonUnavailable", palette.accent_danger.lightened(0.25))
+	set_stylebox("normal", "ShellButtonUnavailable", palette.make_button_style(palette.surface_overlay, palette.accent_danger.darkened(0.08), palette.accent_danger))
+	set_stylebox("hover", "ShellButtonUnavailable", palette.make_button_style(palette.surface_panel, palette.accent_danger, palette.accent_danger.lightened(0.2)))
+	set_stylebox("pressed", "ShellButtonUnavailable", palette.make_button_style(palette.surface_overlay, palette.accent_danger, palette.accent_danger.lightened(0.2)))
+	set_stylebox("disabled", "ShellButtonUnavailable", palette.make_button_style(palette.surface_overlay, palette.accent_danger.darkened(0.2), palette.accent_danger))
+	set_stylebox("focus", "ShellButtonUnavailable", button_focus.duplicate())
+
 	set_stylebox("panel", "HudPanel", palette.make_panel_style(palette.surface_overlay, hud_border, 1, 14))
 	set_font_size("font_size", "HudTitle", 20)
 	set_color("font_color", "HudTitle", palette.accent_warm)

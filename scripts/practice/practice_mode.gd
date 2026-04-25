@@ -269,7 +269,7 @@ func request_resume_for_slot(player_slot: int) -> bool:
 
 func _build_pause_lines() -> Array[String]:
 	if not _pause_controller.is_paused():
-		return ["Sin pausa | Select pausa | teclado usa pausa del slot activo."]
+		return ["Sin pausa | Select pausa."]
 
 	var lines: Array[String] = [
 		"P%s pausa" % _pause_controller.get_pause_owner_slot(),

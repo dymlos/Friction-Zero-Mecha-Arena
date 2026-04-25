@@ -56,6 +56,8 @@ func _ready() -> void:
 	all_filter_button.text = "Todos"
 	impact_filter_button.text = "Impacto"
 	range_zone_filter_button.text = "Rango / zona"
+	for button in [teaching_focus_filter_button, all_filter_button, impact_filter_button, range_zone_filter_button]:
+		button.toggle_mode = true
 	back_button.text = "Volver"
 	back_button.pressed.connect(go_back)
 	teaching_focus_filter_button.pressed.connect(func() -> void:
@@ -125,6 +127,7 @@ func set_filter(filter_id: String) -> void:
 
 	_active_filter = filter_id
 	_rebuild_list()
+	_refresh_filter_buttons()
 	_select_first_available(previous_id)
 
 
@@ -149,6 +152,7 @@ func _rebuild_list() -> void:
 	_visible_roster = _filter_roster(_roster)
 	for entry in _visible_roster:
 		character_list.add_item(String(entry.get("label", "")))
+	_refresh_filter_buttons()
 
 
 func _select_index(index: int) -> void:
@@ -226,6 +230,17 @@ func _select_first_available(preferred_entry_id: String = "") -> void:
 	_selected_index = -1
 	if not _visible_roster.is_empty():
 		_select_index(0)
+
+
+func _refresh_filter_buttons() -> void:
+	teaching_focus_filter_button.button_pressed = _active_filter == FILTER_TEACHING_FOCUS
+	all_filter_button.button_pressed = _active_filter == FILTER_ALL
+	impact_filter_button.button_pressed = _active_filter == FILTER_IMPACT
+	range_zone_filter_button.button_pressed = _active_filter == FILTER_RANGE_ZONE
+	teaching_focus_filter_button.text = "< Foco inicial >" if teaching_focus_filter_button.button_pressed else "Foco inicial"
+	all_filter_button.text = "< Todos >" if all_filter_button.button_pressed else "Todos"
+	impact_filter_button.text = "< Impacto >" if impact_filter_button.button_pressed else "Impacto"
+	range_zone_filter_button.text = "< Rango / zona >" if range_zone_filter_button.button_pressed else "Rango / zona"
 
 
 func _get_selected_entry_id() -> String:

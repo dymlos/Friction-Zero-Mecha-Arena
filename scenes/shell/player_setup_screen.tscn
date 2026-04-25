@@ -1,0 +1,108 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/shell/player_setup_screen.gd" id="1_player_setup"]
+[ext_resource type="Theme" path="res://data/theme/fz_ui_theme.tres" id="2_theme"]
+
+[node name="PlayerSetupScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_player_setup")
+theme = ExtResource("2_theme")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0509804, 0.0705882, 0.0941176, 1)
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+theme_type_variation = &"ShellPanelElevated"
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 92.0
+offset_top = 24.0
+offset_right = -92.0
+offset_bottom = -96.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ShellTitle"
+horizontal_alignment = 1
+text = "Jugadores y robots"
+
+[node name="SummaryLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ShellSubtitle"
+horizontal_alignment = 1
+autowrap_mode = 2
+text = ""
+
+[node name="ControlHintLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ShellSubtitle"
+horizontal_alignment = 1
+autowrap_mode = 2
+text = ""
+
+[node name="SlotScroll" type="ScrollContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="SlotsVBox" type="VBoxContainer" parent="Panel/Margin/VBox/SlotScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="StatusLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ShellSubtitle"
+horizontal_alignment = 1
+autowrap_mode = 2
+text = ""
+
+[node name="ActionsRow" type="HBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 8
+
+[node name="BackButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+theme_type_variation = &"ShellButtonSecondary"
+text = "Volver"
+
+[node name="StartButton" type="Button" parent="Panel/Margin/VBox/ActionsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+theme_type_variation = &"ShellButtonPrimary"
+text = "Iniciar"
